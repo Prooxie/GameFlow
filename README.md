@@ -1,7 +1,5 @@
 ## Support
 
-Support
-
 If you find this project useful, you can support its development here:
 
 [![Buy Me a Coffee](https://user-images.githubusercontent.com/1286821/181085373-12eee197-187a-4438-90fe-571ac6d68900.png)](https://buymeacoffee.com/ProxyDarkness)
