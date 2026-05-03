@@ -1,3 +1,14 @@
+## Support
+
+Support
+
+If you find this project useful, you can support its development here:
+
+[![Buy Me a Coffee](https://user-images.githubusercontent.com/1286821/181085373-12eee197-187a-4438-90fe-571ac6d68900.png)](https://buymeacoffee.com/ProxyDarkness)
+
+No pressure. your support is always appreciated, but just using and sharing the project already helps a lot. Thank you!
+
+
 # Autofire Next
 
 A modern cross-platform desktop application for configuring **autofire (rapid fire)**, input remapping, and gamepad behavior.
@@ -51,8 +62,8 @@ This is required for:
 ### Clone repository
 
 ```bash
-git clone https://github.com/<your-username>/AutofireNext.git
-cd AutofireNext
+git clone https://github.com/Prooxie/Autofire-Next.git
+cd Autofire-Next
 ```
 
 ---
@@ -111,44 +122,6 @@ Additional folders:
 
 ---
 
-## Publishing
-
-### Linux / macOS
-
-```bash
-./scripts/publish.sh
-```
-
-### Windows (PowerShell)
-
-```powershell
-./scripts/publish.ps1
-```
-
-You can customize runtime identifiers (RID), e.g.:
-
-* `win-x64`
-* `linux-x64`
-* `osx-x64`
-
----
-
-## Development
-
-Run in development mode:
-
-```bash
-dotnet run --project src/Autofire.App
-```
-
-CI is configured via GitHub Actions:
-
-```text
-.github/workflows/ci.yml
-```
-
----
-
 ## Gamepad & Input
 
 The project works with:
@@ -180,17 +153,23 @@ This project is licensed under the **MIT License**.
 
 ---
 
-## Roadmap Ideas
-
-* GUI mapping editor (partial implementation exists)
-* profile import/export UI
-* better real-time input visualization
-* plugin system
-
----
-
 ## Author
 
-Proxy Darkness (Me)
+Proxy Darkness (Me) - Feel free to checkout my other projects, my videos or my stream!
+
+## Thanks to
+
+Nazzareno96 
+
+Keeping me sane in development - Betatesting
+
+https://www.twitch.tv/nazzareno96
+
+
+NoobKillerRoof  
+
+For voicing his problems with current hardware / software and inspiring me to do this - Betatesting
+
+https://www.twitch.tv/noobkillerroof
 
 ---
