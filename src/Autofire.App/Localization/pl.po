@@ -1,0 +1,328 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: pl\n"
+
+msgid "WindowTitle"
+msgstr "Autofire Next"
+
+msgid "DashboardTab"
+msgstr "Panel"
+
+msgid "ProfilesTab"
+msgstr "Profile"
+
+msgid "DiagnosticsTab"
+msgstr "Diagnostyka"
+
+msgid "AboutTab"
+msgstr "O programie"
+
+msgid "LanguageLabel"
+msgstr "Język"
+
+msgid "RefreshButton"
+msgstr "Odśwież"
+
+msgid "SaveProfileButton"
+msgstr "Zapisz profil"
+
+msgid "ResetProfileButton"
+msgstr "Przywróć domyślne"
+
+msgid "PhysicalInputLabel"
+msgstr "Wejście fizyczne"
+
+msgid "VirtualOutputLabel"
+msgstr "Wyjście wirtualne"
+
+msgid "RuleSummaryLabel"
+msgstr "Zapisane reguły"
+
+msgid "ProfileEditorLabel"
+msgstr "Edytor profilu"
+
+msgid "DiagnosticsLabel"
+msgstr "Diagnostyka"
+
+msgid "AboutLabel"
+msgstr "O tej wersji"
+
+msgid "StatusPrefix"
+msgstr "Działanie"
+
+msgid "ActiveProfilePrefix"
+msgstr "Profil"
+
+msgid "ProviderPlanHeading"
+msgstr "Mapa drogowa dostawców"
+
+msgid "DashboardSettingsLabel"
+msgstr "Ustawienia panelu"
+
+msgid "DashboardSubtitle"
+msgstr "Wybierz backend kontrolera, urządzenie do odczytu, dostosuj częstotliwość pollingu i zachowaj konfigurację w oknie głównym."
+
+msgid "InputProviderLabel"
+msgstr "Dostawca wejścia"
+
+msgid "OutputProviderLabel"
+msgstr "Dostawca wyjścia"
+
+msgid "ControllerLabel"
+msgstr "Kontroler"
+
+msgid "ControllerInventoryLabel"
+msgstr "Wykryte kontrolery"
+
+msgid "ProviderStatusLabel"
+msgstr "Status dostawcy"
+
+msgid "PollingRateLabel"
+msgstr "Częstotliwość pollingu"
+
+msgid "PhysicalStyleLabel"
+msgstr "Wygląd fizycznego kontrolera"
+
+msgid "VirtualStyleLabel"
+msgstr "Wygląd wirtualnego kontrolera"
+
+msgid "ApplyDashboardSettingsButtonLabel"
+msgstr "Zastosuj ustawienia"
+
+msgid "SelectedControlLabel"
+msgstr "Wybrany element sterowania"
+
+msgid "RuntimeNotesLabel"
+msgstr "Notatki środowiska"
+
+msgid "RawPhysicalLabel"
+msgstr "Surowy snapshot fizyczny"
+
+msgid "RawVirtualLabel"
+msgstr "Surowy snapshot wirtualny"
+
+msgid "AutomaticControllerSelection"
+msgstr "Automatyczny wybór"
+
+msgid "AutomaticControllerSelectionDescription"
+msgstr "Użyj domyślnego zachowania dostawcy. Jeśli podłączone jest tylko jedno zgodne urządzenie wejściowe, zostanie wybrane automatycznie."
+
+msgid "NoControllersDetected"
+msgstr "Nie wykryto urządzeń wejściowych."
+
+msgid "ControllersDetectedSingle"
+msgstr "Wykryto 1 urządzenie wejściowe: {0}"
+
+msgid "ControllersDetectedMultiple"
+msgstr "Wykryto {0} urządzeń wejściowych."
+
+msgid "AboutBodyLine1"
+msgstr "Autofire Next to przepisane w .NET 10 i Avalonia narzędzie speedrunningowe dla kontrolerów, oparte na oryginalnej wersji w Pythonie."
+
+msgid "AboutBodyLine2"
+msgstr "Ta wersja koncentruje się na panelu sterowania kontrolerem, zunifikowanym wykrywaniu urządzeń, trwałości profili, logowaniu, tłumaczeniach i silniku mapowania."
+
+msgid "AboutBodyLine3"
+msgstr "Natywni dostawcy kontrolerów są odizolowani za interfejsami, aby Windows, Linux i macOS mogły rozwijać się niezależnie."
+
+msgid "AboutBodyLine4"
+msgstr "Kolejny krok edytora powinien zastąpić przepływ pracy z surowym JSON dedykowanym edytorem dla przycisków, drążków, wyzwalaczy, touchpada, klawiszy i skryptów."
+
+msgid "ProfileComboLabel"
+msgstr "Profil konfiguracyjny"
+
+msgid "ProfileToolbarSubtitle"
+msgstr "Przełączaj, importuj, eksportuj, duplikuj, zmieniaj nazwy i edytuj pełne profile bez dotykania surowego JSON."
+
+msgid "ProfileNameLabel"
+msgstr "Nazwa profilu"
+
+msgid "ProfileNameHint"
+msgstr "Wybierz krótką, opisową nazwę dla tego profilu."
+
+msgid "ProfileNameWatermark"
+msgstr "Profil speedrun / preset gry"
+
+msgid "RenameProfileButton"
+msgstr "Zmień nazwę"
+
+msgid "CreateProfileButton"
+msgstr "Nowy profil"
+
+msgid "DuplicateProfileButton"
+msgstr "Duplikuj"
+
+msgid "ImportProfileButton"
+msgstr "Importuj"
+
+msgid "ExportProfileButton"
+msgstr "Eksportuj"
+
+msgid "MappingOverviewLabel"
+msgstr "Przegląd mapowania sterowania"
+
+msgid "MappingOverviewSubtitle"
+msgstr "Każda karta podsumowuje jeden skonfigurowany element sterowania, w tym przemapowania, progi, martwe strefy, reguły turbo i zapisane skrypty."
+
+msgid "OpenControlEditorButton"
+msgstr "Konfiguruj"
+
+msgid "NoMappingCardsText"
+msgstr "W tym profilu nie ma jeszcze mapowań. Kliknij element na fizycznym kontrolerze lub dodaj regułę w edytorze."
+
+msgid "AboutBrandSubtitle"
+msgstr "Wieloplatformowe narzędzia kontrolerów"
+
+msgid "ControlMappingWindowTitle"
+msgstr "Konfiguruj element sterowania"
+
+msgid "ImportProfileDialogTitle"
+msgstr "Importuj profil"
+
+msgid "ExportProfileDialogTitle"
+msgstr "Eksportuj profil"
+
+msgid "JsonProfileFileTypeLabel"
+msgstr "Profil JSON"
+
+msgid "MappingEditorMappingRulesLabel"
+msgstr "Reguły mapowania"
+
+msgid "MappingEditorAddRuleButton"
+msgstr "Dodaj regułę"
+
+msgid "MappingEditorEditButton"
+msgstr "Edytuj"
+
+msgid "MappingEditorDeleteButton"
+msgstr "Usuń"
+
+msgid "MappingEditorSelectRuleTitle"
+msgstr "Wybierz regułę do edycji"
+
+msgid "MappingEditorSelectRuleHint"
+msgstr "Wybierz istniejącą regułę z listy lub dodaj nową dla wybranego elementu sterowania."
+
+msgid "MappingEditorRuleNameLabel"
+msgstr "Nazwa reguły"
+
+msgid "MappingEditorRuleTypeLabel"
+msgstr "Typ reguły"
+
+msgid "MappingEditorModeLabel"
+msgstr "Tryb"
+
+msgid "MappingEditorEnabledLabel"
+msgstr "Włączone"
+
+msgid "MappingEditorSourceButtonLabel"
+msgstr "Przycisk źródłowy"
+
+msgid "MappingEditorTargetButtonLabel"
+msgstr "Przycisk docelowy"
+
+msgid "MappingEditorTriggerButtonLabel"
+msgstr "Przycisk wyzwalający"
+
+msgid "MappingEditorOutputButtonLabel"
+msgstr "Przycisk wyjściowy"
+
+msgid "MappingEditorSuppressSourceButton"
+msgstr "Tłum przycisk źródłowy (blokuj oryginał)"
+
+msgid "MappingEditorTargetStickLabel"
+msgstr "Docelowy drążek"
+
+msgid "MappingEditorSuppressRawStick"
+msgstr "Tłum surowy drążek po kształtowaniu"
+
+msgid "MappingEditorDeadzoneLabel"
+msgstr "Martwa strefa"
+
+msgid "MappingEditorDeadzoneHint"
+msgstr "Wartości w martwej strefie są wymuszane na zero."
+
+msgid "MappingEditorFullAtLabel"
+msgstr "Pełny zakres od"
+
+msgid "MappingEditorFullAtHint"
+msgstr "Wartości powyżej tego progu są wzmacniane do maksimum."
+
+msgid "MappingEditorSourceStickLabel"
+msgstr "Źródłowy drążek"
+
+msgid "MappingEditorBlendModeLabel"
+msgstr "Tryb mieszania"
+
+msgid "MappingEditorSuppressSourceStick"
+msgstr "Tłum wyjście źródłowego drążka"
+
+msgid "MappingEditorActivationDeadzoneLabel"
+msgstr "Martwa strefa aktywacji"
+
+msgid "MappingEditorActivationFullAtLabel"
+msgstr "Pełna aktywacja od"
+
+msgid "MappingEditorTargetControlKeyLabel"
+msgstr "Klucz docelowego elementu sterowania"
+
+msgid "MappingEditorControlKeyWatermark"
+msgstr "LeftStick / South / Touchpad …"
+
+msgid "MappingEditorSuppressSourceInput"
+msgstr "Tłum wejście źródłowe"
+
+msgid "MappingEditorScriptStoredHint"
+msgstr "Kod skryptu jest zapisany w profilu i zostanie przetworzony przez przyszłe środowisko uruchomieniowe."
+
+msgid "MappingEditorScriptLabel"
+msgstr "Kod skryptu"
+
+msgid "MappingEditorActivationButtonLabel"
+msgstr "Przycisk aktywacji"
+
+msgid "MappingEditorCaptureStickLabel"
+msgstr "Przechwytywany drążek"
+
+msgid "MappingEditorOutputStickLabel"
+msgstr "Wyjściowy drążek"
+
+msgid "MappingEditorSuppressActivationButton"
+msgstr "Tłum przycisk aktywacji podczas zamrożenia"
+
+msgid "MappingEditorSuppressCaptureStick"
+msgstr "Tłum przechwycony drążek podczas zamrożenia"
+
+msgid "MappingEditorPulseWhileFrozenLabel"
+msgstr "Pulsuj podczas zamrożenia (autofire przy przytrzymaniu)"
+
+msgid "MappingEditorTimingLabel"
+msgstr "Taktowanie"
+
+msgid "MappingEditorHoldLabel"
+msgstr "Przytrzymanie"
+
+msgid "MappingEditorHoldHint"
+msgstr "Jak długo aktywna faza pozostaje wciśnięta."
+
+msgid "MappingEditorReleaseLabel"
+msgstr "Zwolnienie"
+
+msgid "MappingEditorReleaseHint"
+msgstr "Jak długo nieaktywna faza pozostaje zwolniona."
+
+msgid "MappingEditorSaveRuleButton"
+msgstr "Zapisz regułę"
+
+msgid "MappingEditorCancelButton"
+msgstr "Anuluj"
+
+msgid "MappingEditorAddNewRuleTitle"
+msgstr "Dodaj nową regułę"
+
+msgid "MappingEditorEditRuleTitle"
+msgstr "Edytuj regułę: {0}"
+
+msgid "MappingEditorRuleFallbackName"
+msgstr "Nienazwana reguła"

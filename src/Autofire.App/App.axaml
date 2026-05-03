@@ -1,0 +1,9 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:themes="clr-namespace:Avalonia.Themes.Fluent;assembly=Avalonia.Themes.Fluent"
+             x:Class="Autofire.App.App">
+  <Application.Styles>
+    <themes:FluentTheme />
+    <StyleInclude Source="avares://Autofire.App/Assets/Styles/AppTheme.axaml" />
+  </Application.Styles>
+</Application>

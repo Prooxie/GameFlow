@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Autofire.Core</RootNamespace>
+    <AssemblyName>Autofire.Core</AssemblyName>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,328 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: en\n"
+
+msgid "WindowTitle"
+msgstr "Autofire Next"
+
+msgid "DashboardTab"
+msgstr "Dashboard"
+
+msgid "ProfilesTab"
+msgstr "Profiles"
+
+msgid "DiagnosticsTab"
+msgstr "Diagnostics"
+
+msgid "AboutTab"
+msgstr "About"
+
+msgid "LanguageLabel"
+msgstr "Language"
+
+msgid "RefreshButton"
+msgstr "Refresh"
+
+msgid "SaveProfileButton"
+msgstr "Save profile"
+
+msgid "ResetProfileButton"
+msgstr "Reset to defaults"
+
+msgid "PhysicalInputLabel"
+msgstr "Physical input"
+
+msgid "VirtualOutputLabel"
+msgstr "Virtual output"
+
+msgid "RuleSummaryLabel"
+msgstr "Saved rules"
+
+msgid "ProfileEditorLabel"
+msgstr "Profile editor"
+
+msgid "DiagnosticsLabel"
+msgstr "Diagnostics"
+
+msgid "AboutLabel"
+msgstr "About this build"
+
+msgid "StatusPrefix"
+msgstr "Runtime"
+
+msgid "ActiveProfilePrefix"
+msgstr "Profile"
+
+msgid "ProviderPlanHeading"
+msgstr "Provider roadmap"
+
+msgid "DashboardSettingsLabel"
+msgstr "Dashboard settings"
+
+msgid "DashboardSubtitle"
+msgstr "Choose the controller backend, pick the device you want to read, tune the polling rate, and keep configuration inside the main window."
+
+msgid "InputProviderLabel"
+msgstr "Input provider"
+
+msgid "ControllerLabel"
+msgstr "Controller"
+
+msgid "ControllerInventoryLabel"
+msgstr "Detected controllers"
+
+msgid "ProviderStatusLabel"
+msgstr "Provider status"
+
+msgid "PollingRateLabel"
+msgstr "Polling rate"
+
+msgid "PhysicalStyleLabel"
+msgstr "Physical controller skin"
+
+msgid "VirtualStyleLabel"
+msgstr "Virtual controller skin"
+
+msgid "ApplyDashboardSettingsButtonLabel"
+msgstr "Apply runtime settings"
+
+msgid "SelectedControlLabel"
+msgstr "Selected control"
+
+msgid "RuntimeNotesLabel"
+msgstr "Runtime notes"
+
+msgid "RawPhysicalLabel"
+msgstr "Raw physical snapshot"
+
+msgid "RawVirtualLabel"
+msgstr "Raw virtual snapshot"
+
+msgid "AutomaticControllerSelection"
+msgstr "Automatic selection"
+
+msgid "AutomaticControllerSelectionDescription"
+msgstr "Use the provider default. If only one compatible input device is connected, it will be selected automatically."
+
+msgid "NoControllersDetected"
+msgstr "No input devices detected."
+
+msgid "ControllersDetectedSingle"
+msgstr "1 input device detected: {0}"
+
+msgid "ControllersDetectedMultiple"
+msgstr "{0} input devices detected."
+
+msgid "AboutBodyLine1"
+msgstr "Autofire Next is a .NET 10 and Avalonia rewrite of the original Python speedrunning controller tool."
+
+msgid "AboutBodyLine2"
+msgstr "This build now focuses on a controller-first dashboard, unified controller detection, profile persistence, logging, translations, and a reusable mapping engine."
+
+msgid "AboutBodyLine3"
+msgstr "Native controller providers are isolated behind interfaces so Windows, Linux, and macOS can grow independently."
+
+msgid "AboutBodyLine4"
+msgstr "The next editor pass should replace the raw JSON workflow with a dedicated per-control binding editor for buttons, sticks, triggers, touchpad actions, keyboard targets, and scripts."
+
+msgid "OutputProviderLabel"
+msgstr "Output provider"
+
+msgid "ProfileComboLabel"
+msgstr "Configuration profile"
+
+msgid "ProfileToolbarSubtitle"
+msgstr "Switch, import, export, duplicate, and edit complete control profiles without touching raw JSON."
+
+msgid "CreateProfileButton"
+msgstr "New profile"
+
+msgid "DuplicateProfileButton"
+msgstr "Duplicate"
+
+msgid "ImportProfileButton"
+msgstr "Import"
+
+msgid "ExportProfileButton"
+msgstr "Export"
+
+msgid "MappingOverviewLabel"
+msgstr "Mapped controls overview"
+
+msgid "MappingOverviewSubtitle"
+msgstr "Each card summarizes one configured control, including remaps, thresholds, deadzones, turbo rules, and stored scripts."
+
+msgid "OpenControlEditorButton"
+msgstr "Configure"
+
+msgid "NoMappingCardsText"
+msgstr "No control-specific mappings are stored in this profile yet. Click a control on the physical controller or add a rule from the editor."
+
+msgid "ProfileNameLabel"
+msgstr "Profile name"
+
+msgid "ProfileNameHint"
+msgstr "Pick a short, descriptive name for this profile."
+
+msgid "ProfileNameWatermark"
+msgstr "Speedrun profile / game preset"
+
+msgid "RenameProfileButton"
+msgstr "Rename"
+
+msgid "AboutBrandSubtitle"
+msgstr "Cross-platform controller tooling"
+
+msgid "ControlMappingWindowTitle"
+msgstr "Configure control"
+
+msgid "ImportProfileDialogTitle"
+msgstr "Import profile"
+
+msgid "ExportProfileDialogTitle"
+msgstr "Export profile"
+
+msgid "JsonProfileFileTypeLabel"
+msgstr "JSON profile"
+
+msgid "MappingEditorMappingRulesLabel"
+msgstr "Mapping rules"
+
+msgid "MappingEditorAddRuleButton"
+msgstr "Add rule"
+
+msgid "MappingEditorEditButton"
+msgstr "Edit"
+
+msgid "MappingEditorDeleteButton"
+msgstr "Delete"
+
+msgid "MappingEditorSelectRuleTitle"
+msgstr "Select a rule to edit"
+
+msgid "MappingEditorSelectRuleHint"
+msgstr "Pick an existing rule from the list, or add a new one for the selected control."
+
+msgid "MappingEditorRuleNameLabel"
+msgstr "Rule name"
+
+msgid "MappingEditorRuleTypeLabel"
+msgstr "Rule type"
+
+msgid "MappingEditorModeLabel"
+msgstr "Mode"
+
+msgid "MappingEditorEnabledLabel"
+msgstr "Enabled"
+
+msgid "MappingEditorSourceButtonLabel"
+msgstr "Source button"
+
+msgid "MappingEditorTargetButtonLabel"
+msgstr "Target button"
+
+msgid "MappingEditorTriggerButtonLabel"
+msgstr "Trigger button"
+
+msgid "MappingEditorOutputButtonLabel"
+msgstr "Output button"
+
+msgid "MappingEditorSuppressSourceButton"
+msgstr "Suppress source button (block original)"
+
+msgid "MappingEditorTargetStickLabel"
+msgstr "Target stick"
+
+msgid "MappingEditorSuppressRawStick"
+msgstr "Suppress raw stick after shaping"
+
+msgid "MappingEditorDeadzoneLabel"
+msgstr "Deadzone"
+
+msgid "MappingEditorDeadzoneHint"
+msgstr "Values within the deadzone are forced to zero."
+
+msgid "MappingEditorFullAtLabel"
+msgstr "Full at"
+
+msgid "MappingEditorFullAtHint"
+msgstr "Values above this threshold are amplified to maximum."
+
+msgid "MappingEditorSourceStickLabel"
+msgstr "Source stick"
+
+msgid "MappingEditorBlendModeLabel"
+msgstr "Blend mode"
+
+msgid "MappingEditorSuppressSourceStick"
+msgstr "Suppress source stick output"
+
+msgid "MappingEditorActivationDeadzoneLabel"
+msgstr "Activation deadzone"
+
+msgid "MappingEditorActivationFullAtLabel"
+msgstr "Activation full at"
+
+msgid "MappingEditorTargetControlKeyLabel"
+msgstr "Target control key"
+
+msgid "MappingEditorControlKeyWatermark"
+msgstr "LeftStick / South / Touchpad …"
+
+msgid "MappingEditorSuppressSourceInput"
+msgstr "Suppress source input"
+
+msgid "MappingEditorScriptStoredHint"
+msgstr "Script code is saved in the profile and processed by a future runtime."
+
+msgid "MappingEditorScriptLabel"
+msgstr "Script code"
+
+msgid "MappingEditorActivationButtonLabel"
+msgstr "Activation button"
+
+msgid "MappingEditorCaptureStickLabel"
+msgstr "Capture stick"
+
+msgid "MappingEditorOutputStickLabel"
+msgstr "Output stick"
+
+msgid "MappingEditorSuppressActivationButton"
+msgstr "Suppress activation button while freezing"
+
+msgid "MappingEditorSuppressCaptureStick"
+msgstr "Suppress captured stick while frozen"
+
+msgid "MappingEditorPulseWhileFrozenLabel"
+msgstr "Pulse while frozen (autofire while held)"
+
+msgid "MappingEditorTimingLabel"
+msgstr "Timing"
+
+msgid "MappingEditorHoldLabel"
+msgstr "Hold"
+
+msgid "MappingEditorHoldHint"
+msgstr "How long the active phase stays pressed."
+
+msgid "MappingEditorReleaseLabel"
+msgstr "Release"
+
+msgid "MappingEditorReleaseHint"
+msgstr "How long the inactive phase stays released."
+
+msgid "MappingEditorSaveRuleButton"
+msgstr "Save rule"
+
+msgid "MappingEditorCancelButton"
+msgstr "Cancel"
+
+msgid "MappingEditorAddNewRuleTitle"
+msgstr "Add a new rule"
+
+msgid "MappingEditorEditRuleTitle"
+msgstr "Edit rule: {0}"
+
+msgid "MappingEditorRuleFallbackName"
+msgstr "Unnamed rule"

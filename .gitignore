@@ -22,6 +22,10 @@ mono_crash.*
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
 
 [Dd]ebug/x64/
 [Dd]ebugPublic/x64/
@@ -93,6 +97,25 @@ ScaffoldingReadMe.txt
 
 # StyleCop
 StyleCopReport.xml
+# Visual Studio files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS 2026 cache / temp
+*.cache
+*.dbmdl
+*.opendb
+*.VC.db
+
+# Dotnet tools
+.dotnet/
+
+# Rider / VS Code (optional)
+.idea/
+.vscode/
 
 # Files built by Visual Studio
 *_i.c
@@ -126,6 +149,24 @@ StyleCopReport.xml
 *.pidb
 *.svclog
 *.scc
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+.nuget/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Avalonia specific
+# Generated XAML / compiled UI
+*.g.cs
+*.g.i.cs
+
+# Avalonia designer temp files
+*.axaml.g.cs
+*.axaml.g.i.cs
 
 # Chutzpah Test files
 _Chutzpah*
@@ -243,6 +284,33 @@ csx/
 # Microsoft Azure Emulator
 ecf/
 rcf/
+
+# Publish output
+publish/
+*.publishproj
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Logs & temp
+*.log
+*.tmp
+*.temp
+
+# Test results
+TestResults/
+*.trx
+
+# Coverage
+coverage/
+*.coverage
+*.coveragexml
+
+# Resharper / analyzers
+_ReSharper*/
+*.DotSettings.user
 
 # Windows Store app package directories and files
 AppPackages/

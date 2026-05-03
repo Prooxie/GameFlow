@@ -1,0 +1,296 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<!-- ═══════════════════════════════════════════════════════════════════
+       AUTOFIRE NEXT — Design System
+       Palette:
+         Surface-0  #050B12   deepest background
+         Surface-1  #07101D   card background
+         Surface-2  #0A1628   input / hover
+         Border-0   #0F2035   subtle borders
+         Border-1   #1E3A5A   visible borders
+         Cyan       #00D4FF   primary accent
+         Blue       #4F8CFF   secondary
+         Purple     #A78BFA   tertiary
+         Green      #10B981   success / online
+         Red        #EF4444   danger
+         Slate-400  #94A3B8   muted text
+         Slate-500  #64748B   dimmer text
+         Slate-600  #475569   dimmest text
+  ═══════════════════════════════════════════════════════════════════ -->
+
+	<!-- ── Global font + text defaults ────────────────────────────── -->
+	<Style Selector="TextBlock">
+		<Setter Property="Foreground" Value="#E2E8F0" />
+		<Setter Property="FontFamily" Value="Segoe UI Variable,Segoe UI,Inter,system-ui,sans-serif" />
+		<Setter Property="FontSize" Value="13" />
+	</Style>
+
+	<!-- ── Window ───────────────────────────────────────────────────── -->
+	<Style Selector="Window">
+		<Setter Property="Background" Value="#050B12" />
+	</Style>
+
+	<!-- ── ScrollBar ────────────────────────────────────────────────── -->
+	<Style Selector="ScrollBar /template/ Thumb">
+		<Setter Property="Background" Value="#1E3A5A" />
+		<Setter Property="CornerRadius" Value="3" />
+	</Style>
+
+	<Style Selector="ScrollBar /template/ Thumb:pointerover">
+		<Setter Property="Background" Value="#2A5278" />
+	</Style>
+
+	<Style Selector="ScrollBar /template/ Border#Root">
+		<Setter Property="Background" Value="Transparent" />
+	</Style>
+
+	<!-- ── TextBox ──────────────────────────────────────────────────── -->
+	<Style Selector="TextBox">
+		<Setter Property="Background" Value="#060F1C" />
+		<Setter Property="Foreground" Value="#CBD5E1" />
+		<Setter Property="BorderBrush" Value="#0F2035" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="CaretBrush" Value="#00D4FF" />
+		<Setter Property="SelectionBrush" Value="#1A4A6A" />
+		<Setter Property="CornerRadius" Value="8" />
+		<Setter Property="Padding" Value="10,8" />
+		<Setter Property="FontSize" Value="13" />
+	</Style>
+
+	<Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+		<Setter Property="BorderBrush" Value="#00D4FF" />
+	</Style>
+
+	<Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+		<Setter Property="BorderBrush" Value="#1E3A5A" />
+	</Style>
+
+	<Style Selector="TextBox.code">
+		<Setter Property="FontFamily" Value="Cascadia Code,Consolas,Fira Code,monospace" />
+		<Setter Property="FontSize" Value="12" />
+		<Setter Property="Background" Value="#04080F" />
+		<Setter Property="Padding" Value="14,12" />
+		<Setter Property="LineHeight" Value="20" />
+	</Style>
+
+	<!-- ── ComboBox ─────────────────────────────────────────────────── -->
+	<Style Selector="ComboBox">
+		<Setter Property="Background" Value="#060F1C" />
+		<Setter Property="Foreground" Value="#CBD5E1" />
+		<Setter Property="BorderBrush" Value="#0F2035" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="CornerRadius" Value="8" />
+		<Setter Property="Padding" Value="10,8" />
+		<Setter Property="MinWidth" Value="0" />
+	</Style>
+
+	<Style Selector="ComboBox:pointerover /template/ Border#Background">
+		<Setter Property="Background" Value="#0A1628" />
+		<Setter Property="BorderBrush" Value="#1E3A5A" />
+	</Style>
+
+	<Style Selector="ComboBox:focus /template/ Border#Background">
+		<Setter Property="BorderBrush" Value="#00D4FF" />
+	</Style>
+
+	<Style Selector="ComboBoxItem">
+		<Setter Property="Background" Value="#060F1C" />
+		<Setter Property="Foreground" Value="#CBD5E1" />
+		<Setter Property="Padding" Value="10,7" />
+	</Style>
+
+	<Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter">
+		<Setter Property="Background" Value="#0A1628" />
+	</Style>
+
+	<Style Selector="ComboBoxItem:selected /template/ ContentPresenter">
+		<Setter Property="Background" Value="#0D2040" />
+	</Style>
+
+	<!-- ── Slider ───────────────────────────────────────────────────── -->
+	<Style Selector="Slider /template/ Border#TrackBackground">
+		<Setter Property="Background" Value="#0F2035" />
+		<Setter Property="CornerRadius" Value="3" />
+	</Style>
+
+	<Style Selector="Slider /template/ Border#PART_SelectingPart">
+		<Setter Property="Background" Value="#00D4FF" />
+		<Setter Property="CornerRadius" Value="3" />
+	</Style>
+
+	<Style Selector="Slider /template/ Thumb">
+		<Setter Property="Background" Value="#050B12" />
+		<Setter Property="BorderBrush" Value="#00D4FF" />
+		<Setter Property="BorderThickness" Value="2" />
+		<Setter Property="Width" Value="16" />
+		<Setter Property="Height" Value="16" />
+		<Setter Property="CornerRadius" Value="999" />
+	</Style>
+
+	<Style Selector="Slider /template/ Thumb:pointerover">
+		<Setter Property="Background" Value="#0A1628" />
+	</Style>
+
+	<!-- ── ProgressBar ──────────────────────────────────────────────── -->
+	<Style Selector="ProgressBar">
+		<Setter Property="Background" Value="#0A1628" />
+		<Setter Property="CornerRadius" Value="2" />
+		<Setter Property="Height" Value="4" />
+	</Style>
+
+	<Style Selector="ProgressBar /template/ Border#ProgressBarIndicator">
+		<Setter Property="CornerRadius" Value="2" />
+		<Setter Property="Background">
+			<Setter.Value>
+				<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+					<GradientStop Color="#00D4FF" Offset="0" />
+					<GradientStop Color="#4F8CFF" Offset="1" />
+				</LinearGradientBrush>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<!-- ── Button — base ────────────────────────────────────────────── -->
+	<Style Selector="Button">
+		<Setter Property="Background" Value="#0A1628" />
+		<Setter Property="Foreground" Value="#94A3B8" />
+		<Setter Property="BorderBrush" Value="#0F2035" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="CornerRadius" Value="8" />
+		<Setter Property="Padding" Value="14,9" />
+		<Setter Property="FontSize" Value="13" />
+		<Setter Property="Cursor" Value="Hand" />
+	</Style>
+
+	<Style Selector="Button:pointerover /template/ ContentPresenter">
+		<Setter Property="Background" Value="#0F1E35" />
+		<Setter Property="BorderBrush" Value="#1E3A5A" />
+	</Style>
+
+	<Style Selector="Button:pressed /template/ ContentPresenter">
+		<Setter Property="Background" Value="#060F1C" />
+		<Setter Property="Opacity" Value="0.92" />
+	</Style>
+
+	<!-- Button.primary — cyan CTA -->
+	<Style Selector="Button.primary">
+		<Setter Property="Background" Value="#00D4FF" />
+		<Setter Property="Foreground" Value="#040C16" />
+		<Setter Property="BorderBrush" Value="#00D4FF" />
+		<Setter Property="FontWeight" Value="SemiBold" />
+	</Style>
+
+	<Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+		<Setter Property="Background" Value="#22DEFF" />
+		<Setter Property="BorderBrush" Value="#22DEFF" />
+	</Style>
+
+	<Style Selector="Button.primary:pressed /template/ ContentPresenter">
+		<Setter Property="Background" Value="#00A8CC" />
+		<Setter Property="BorderBrush" Value="#00A8CC" />
+	</Style>
+
+	<!-- Button.ghost -->
+	<Style Selector="Button.ghost">
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="Foreground" Value="#64748B" />
+		<Setter Property="BorderBrush" Value="#0F2035" />
+	</Style>
+
+	<Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
+		<Setter Property="Background" Value="#060F1C" />
+		<Setter Property="BorderBrush" Value="#1E3A5A" />
+	</Style>
+
+	<!-- Button.danger -->
+	<Style Selector="Button.danger">
+		<Setter Property="Background" Value="#170808" />
+		<Setter Property="Foreground" Value="#FCA5A5" />
+		<Setter Property="BorderBrush" Value="#7F1D1D" />
+	</Style>
+
+	<Style Selector="Button.danger:pointerover /template/ ContentPresenter">
+		<Setter Property="Background" Value="#200E0E" />
+		<Setter Property="BorderBrush" Value="#991B1B" />
+	</Style>
+
+	<!-- ── TabControl — left sidebar layout ────────────────────────── -->
+	<Style Selector="TabControl">
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="Padding" Value="0" />
+	</Style>
+
+	<Style Selector="TabControl /template/ Border#PART_Border">
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="BorderThickness" Value="0" />
+	</Style>
+
+	<Style Selector="TabControl /template/ TabStrip">
+		<Setter Property="Background" Value="#060D1C" />
+	</Style>
+
+	<!-- Tab item base -->
+	<Style Selector="TabItem">
+		<Setter Property="Foreground" Value="#475569" />
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="Padding" Value="0" />
+		<Setter Property="Margin" Value="0" />
+		<Setter Property="MinWidth" Value="0" />
+		<Setter Property="FontSize" Value="13.5" />
+		<Setter Property="Cursor" Value="Hand" />
+	</Style>
+
+	<Style Selector="TabItem /template/ Border#PART_LayoutRoot">
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="CornerRadius" Value="0" />
+	</Style>
+
+	<Style Selector="TabItem:pointerover">
+		<Setter Property="Foreground" Value="#94A3B8" />
+	</Style>
+
+	<Style Selector="TabItem:pointerover /template/ Border#PART_LayoutRoot">
+		<Setter Property="Background" Value="#0A1626" />
+	</Style>
+
+	<Style Selector="TabItem:selected">
+		<Setter Property="Foreground" Value="#E2E8F0" />
+	</Style>
+
+	<Style Selector="TabItem:selected /template/ Border#PART_LayoutRoot">
+		<Setter Property="Background" Value="#0D1E36" />
+	</Style>
+
+	<!-- Hide FluentTheme's default bottom/top selection indicator -->
+	<Style Selector="TabItem /template/ Border#PART_SelectedPipe">
+		<Setter Property="IsVisible" Value="False" />
+	</Style>
+
+	<!-- Accent bar inside tab header — toggled by .navAccent class -->
+	<Style Selector="Border.navAccent">
+		<Setter Property="Opacity" Value="0" />
+		<Setter Property="Transitions">
+			<Transitions>
+				<DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+			</Transitions>
+		</Setter>
+	</Style>
+
+	<Style Selector="TabItem:selected Border.navAccent">
+		<Setter Property="Opacity" Value="1" />
+	</Style>
+
+	<Style Selector="TabItem:pointerover Border.navAccent">
+		<Setter Property="Opacity" Value="0.30" />
+	</Style>
+
+	<!-- ── Separator ───────────────────────────────────────────────── -->
+	<Style Selector="Separator">
+		<Setter Property="Background" Value="#0F2035" />
+		<Setter Property="Height" Value="1" />
+		<Setter Property="Margin" Value="0,4" />
+	</Style>
+
+</Styles>

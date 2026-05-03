@@ -1,0 +1,328 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: ru\n"
+
+msgid "WindowTitle"
+msgstr "Autofire Next"
+
+msgid "DashboardTab"
+msgstr "Панель"
+
+msgid "ProfilesTab"
+msgstr "Профили"
+
+msgid "DiagnosticsTab"
+msgstr "Диагностика"
+
+msgid "AboutTab"
+msgstr "О программе"
+
+msgid "LanguageLabel"
+msgstr "Язык"
+
+msgid "RefreshButton"
+msgstr "Обновить"
+
+msgid "SaveProfileButton"
+msgstr "Сохранить профиль"
+
+msgid "ResetProfileButton"
+msgstr "Сбросить по умолчанию"
+
+msgid "PhysicalInputLabel"
+msgstr "Физический ввод"
+
+msgid "VirtualOutputLabel"
+msgstr "Виртуальный вывод"
+
+msgid "RuleSummaryLabel"
+msgstr "Сохранённые правила"
+
+msgid "ProfileEditorLabel"
+msgstr "Редактор профиля"
+
+msgid "DiagnosticsLabel"
+msgstr "Диагностика"
+
+msgid "AboutLabel"
+msgstr "Об этой сборке"
+
+msgid "StatusPrefix"
+msgstr "Состояние"
+
+msgid "ActiveProfilePrefix"
+msgstr "Профиль"
+
+msgid "ProviderPlanHeading"
+msgstr "План провайдеров"
+
+msgid "DashboardSettingsLabel"
+msgstr "Настройки панели"
+
+msgid "DashboardSubtitle"
+msgstr "Выберите backend контроллера, устройство для чтения, настройте частоту опроса и держите конфигурацию в главном окне."
+
+msgid "InputProviderLabel"
+msgstr "Провайдер ввода"
+
+msgid "OutputProviderLabel"
+msgstr "Провайдер вывода"
+
+msgid "ControllerLabel"
+msgstr "Контроллер"
+
+msgid "ControllerInventoryLabel"
+msgstr "Обнаруженные контроллеры"
+
+msgid "ProviderStatusLabel"
+msgstr "Состояние провайдера"
+
+msgid "PollingRateLabel"
+msgstr "Частота опроса"
+
+msgid "PhysicalStyleLabel"
+msgstr "Вид физического контроллера"
+
+msgid "VirtualStyleLabel"
+msgstr "Вид виртуального контроллера"
+
+msgid "ApplyDashboardSettingsButtonLabel"
+msgstr "Применить настройки"
+
+msgid "SelectedControlLabel"
+msgstr "Выбранный элемент"
+
+msgid "RuntimeNotesLabel"
+msgstr "Заметки runtime"
+
+msgid "RawPhysicalLabel"
+msgstr "Сырые данные физического ввода"
+
+msgid "RawVirtualLabel"
+msgstr "Сырые данные виртуального вывода"
+
+msgid "AutomaticControllerSelection"
+msgstr "Автовыбор"
+
+msgid "AutomaticControllerSelectionDescription"
+msgstr "Использовать поведение провайдера по умолчанию. Если подключено только одно совместимое устройство, оно будет выбрано автоматически."
+
+msgid "NoControllersDetected"
+msgstr "Совместимые устройства ввода не обнаружены."
+
+msgid "ControllersDetectedSingle"
+msgstr "Обнаружено 1 устройство ввода: {0}"
+
+msgid "ControllersDetectedMultiple"
+msgstr "Обнаружено устройств ввода: {0}."
+
+msgid "AboutBodyLine1"
+msgstr "Autofire Next — это переписанная на .NET 10 и Avalonia версия исходного Python-инструмента для спидран-контроллеров."
+
+msgid "AboutBodyLine2"
+msgstr "Эта сборка сосредоточена на панели, ориентированной на контроллер, едином обнаружении устройств, хранении профилей, логировании, переводах и переиспользуемом движке правил."
+
+msgid "AboutBodyLine3"
+msgstr "Нативные провайдеры контроллеров изолированы за интерфейсами, чтобы Windows, Linux и macOS могли развиваться независимо."
+
+msgid "AboutBodyLine4"
+msgstr "Следующий этап редактора должен заменить работу с сырым JSON специализированным редактором для кнопок, стиков, триггеров, тачпада, клавиатурных целей и скриптов."
+
+msgid "ProfileComboLabel"
+msgstr "Профиль конфигурации"
+
+msgid "ProfileToolbarSubtitle"
+msgstr "Переключайте, импортируйте, экспортируйте, дублируйте, переименовывайте и редактируйте полные профили без работы с сырым JSON."
+
+msgid "ProfileNameLabel"
+msgstr "Имя профиля"
+
+msgid "ProfileNameHint"
+msgstr "Выберите короткое и понятное имя для этого профиля."
+
+msgid "ProfileNameWatermark"
+msgstr "Профиль для спидрана / игровой пресет"
+
+msgid "RenameProfileButton"
+msgstr "Переименовать"
+
+msgid "CreateProfileButton"
+msgstr "Новый профиль"
+
+msgid "DuplicateProfileButton"
+msgstr "Дублировать"
+
+msgid "ImportProfileButton"
+msgstr "Импорт"
+
+msgid "ExportProfileButton"
+msgstr "Экспорт"
+
+msgid "MappingOverviewLabel"
+msgstr "Обзор назначенных элементов"
+
+msgid "MappingOverviewSubtitle"
+msgstr "Каждая карточка показывает один настроенный элемент управления: remap, threshold, deadzone, turbo, freeze и сохранённые скрипты."
+
+msgid "OpenControlEditorButton"
+msgstr "Настроить"
+
+msgid "NoMappingCardsText"
+msgstr "В этом профиле пока нет сохранённых привязок для отдельных элементов. Нажмите на элемент физического контроллера или добавьте правило в редакторе."
+
+msgid "AboutBrandSubtitle"
+msgstr "Кроссплатформенные инструменты для контроллеров"
+
+msgid "ControlMappingWindowTitle"
+msgstr "Настройка элемента управления"
+
+msgid "ImportProfileDialogTitle"
+msgstr "Импорт профиля"
+
+msgid "ExportProfileDialogTitle"
+msgstr "Экспорт профиля"
+
+msgid "JsonProfileFileTypeLabel"
+msgstr "JSON-профиль"
+
+msgid "MappingEditorMappingRulesLabel"
+msgstr "Правила привязки"
+
+msgid "MappingEditorAddRuleButton"
+msgstr "Добавить правило"
+
+msgid "MappingEditorEditButton"
+msgstr "Изменить"
+
+msgid "MappingEditorDeleteButton"
+msgstr "Удалить"
+
+msgid "MappingEditorSelectRuleTitle"
+msgstr "Выберите правило для редактирования"
+
+msgid "MappingEditorSelectRuleHint"
+msgstr "Выберите существующее правило из списка или добавьте новое для выбранного элемента."
+
+msgid "MappingEditorRuleNameLabel"
+msgstr "Название правила"
+
+msgid "MappingEditorRuleTypeLabel"
+msgstr "Тип правила"
+
+msgid "MappingEditorModeLabel"
+msgstr "Режим"
+
+msgid "MappingEditorEnabledLabel"
+msgstr "Включено"
+
+msgid "MappingEditorSourceButtonLabel"
+msgstr "Исходная кнопка"
+
+msgid "MappingEditorTargetButtonLabel"
+msgstr "Целевая кнопка"
+
+msgid "MappingEditorTriggerButtonLabel"
+msgstr "Кнопка активации"
+
+msgid "MappingEditorOutputButtonLabel"
+msgstr "Выходная кнопка"
+
+msgid "MappingEditorSuppressSourceButton"
+msgstr "Подавлять исходную кнопку"
+
+msgid "MappingEditorTargetStickLabel"
+msgstr "Целевой стик"
+
+msgid "MappingEditorSuppressRawStick"
+msgstr "Подавлять сырой стик после обработки"
+
+msgid "MappingEditorDeadzoneLabel"
+msgstr "Мёртвая зона"
+
+msgid "MappingEditorDeadzoneHint"
+msgstr "Значения внутри мёртвой зоны принудительно обнуляются."
+
+msgid "MappingEditorFullAtLabel"
+msgstr "Полное значение при"
+
+msgid "MappingEditorFullAtHint"
+msgstr "Значения выше этого порога усиливаются до максимума."
+
+msgid "MappingEditorSourceStickLabel"
+msgstr "Исходный стик"
+
+msgid "MappingEditorBlendModeLabel"
+msgstr "Режим смешивания"
+
+msgid "MappingEditorSuppressSourceStick"
+msgstr "Подавлять исходный стик"
+
+msgid "MappingEditorActivationDeadzoneLabel"
+msgstr "Мёртвая зона активации"
+
+msgid "MappingEditorActivationFullAtLabel"
+msgstr "Полная активация при"
+
+msgid "MappingEditorTargetControlKeyLabel"
+msgstr "Ключ целевого элемента"
+
+msgid "MappingEditorControlKeyWatermark"
+msgstr "LeftStick / South / Touchpad …"
+
+msgid "MappingEditorSuppressSourceInput"
+msgstr "Подавлять исходный ввод"
+
+msgid "MappingEditorScriptStoredHint"
+msgstr "Код скрипта сохраняется в профиле и сможет обрабатываться будущим runtime-исполнителем."
+
+msgid "MappingEditorScriptLabel"
+msgstr "Код скрипта"
+
+msgid "MappingEditorActivationButtonLabel"
+msgstr "Кнопка активации"
+
+msgid "MappingEditorCaptureStickLabel"
+msgstr "Захватываемый стик"
+
+msgid "MappingEditorOutputStickLabel"
+msgstr "Выходной стик"
+
+msgid "MappingEditorSuppressActivationButton"
+msgstr "Подавлять кнопку активации"
+
+msgid "MappingEditorSuppressCaptureStick"
+msgstr "Подавлять захваченный стик"
+
+msgid "MappingEditorPulseWhileFrozenLabel"
+msgstr "Пульсировать во время фиксации"
+
+msgid "MappingEditorTimingLabel"
+msgstr "Тайминг"
+
+msgid "MappingEditorHoldLabel"
+msgstr "Удержание"
+
+msgid "MappingEditorHoldHint"
+msgstr "Сколько времени активная фаза остаётся нажатой."
+
+msgid "MappingEditorReleaseLabel"
+msgstr "Отпускание"
+
+msgid "MappingEditorReleaseHint"
+msgstr "Сколько времени неактивная фаза остаётся отпущенной."
+
+msgid "MappingEditorSaveRuleButton"
+msgstr "Сохранить правило"
+
+msgid "MappingEditorCancelButton"
+msgstr "Отмена"
+
+msgid "MappingEditorAddNewRuleTitle"
+msgstr "Добавить новое правило"
+
+msgid "MappingEditorEditRuleTitle"
+msgstr "Редактировать правило: {0}"
+
+msgid "MappingEditorRuleFallbackName"
+msgstr "Безымянное правило"
