@@ -1,0 +1,92 @@
+{
+  "id": "speedrunner-default",
+  "name": "Speedrunner Default",
+  "version": 4,
+  "pollingRateHz": 250,
+  "inputProvider": "xinput",
+  "outputProvider": "vigem-xbox360",
+  "ui": {
+    "languageCode": "en",
+    "showPreviewPane": true,
+    "theme": "System",
+    "startMinimized": false,
+    "physicalControllerStyle": "Auto",
+    "virtualControllerStyle": "PlayStation5",
+    "showRawMonitor": true
+  },
+  "rules": [
+    {
+      "$type": "stick-threshold",
+      "id": "right-stick-threshold",
+      "name": "Right Stick Threshold",
+      "enabled": true,
+      "mode": "Modify",
+      "targetStick": "Right",
+      "deadzone": 0.25,
+      "fullAt": 0.9
+    },
+    {
+      "$type": "stick-autofire",
+      "id": "right-to-left-autofire",
+      "name": "Right Stick -> Left Stick Autofire",
+      "enabled": true,
+      "mode": "Modify",
+      "sourceStick": "Right",
+      "targetStick": "Left",
+      "blendMode": "Additive",
+      "suppressSourceStick": false,
+      "timing": {
+        "holdMs": 128,
+        "releaseMs": 32,
+        "settleMs": 0,
+        "pauseAfterReleaseMs": 0
+      }
+    },
+    {
+      "$type": "freeze-last-direction",
+      "id": "freeze-last-direction",
+      "name": "Freeze Last Direction on L1",
+      "enabled": true,
+      "mode": "Modify",
+      "activationButton": "LeftShoulder",
+      "captureStick": "Right",
+      "targetStick": "Left",
+      "blendMode": "Additive",
+      "suppressCaptureStick": false,
+      "pulseEnabled": true,
+      "timing": {
+        "holdMs": 128,
+        "releaseMs": 32,
+        "settleMs": 0,
+        "pauseAfterReleaseMs": 0
+      }
+    },
+    {
+      "$type": "button-autofire",
+      "id": "r1-turbo-a",
+      "name": "R1 Turbo South",
+      "enabled": true,
+      "mode": "Modify",
+      "sourceButton": "RightShoulder",
+      "targetButton": "South",
+      "suppressSourceButton": false,
+      "timing": {
+        "holdMs": 64,
+        "releaseMs": 32,
+        "settleMs": 0,
+        "pauseAfterReleaseMs": 0
+      }
+    },
+    {
+      "$type": "button-remap",
+      "id": "right-stick-click-to-north",
+      "name": "Right Stick Click -> North",
+      "enabled": true,
+      "mode": "Modify",
+      "sourceButton": "RightStick",
+      "targetButton": "North",
+      "suppressSourceButton": true
+    }
+  ],
+  "preferredInputDeviceId": ""
+}

@@ -1,0 +1,328 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: cs\n"
+
+msgid "WindowTitle"
+msgstr "Autofire Next"
+
+msgid "DashboardTab"
+msgstr "Přehled"
+
+msgid "ProfilesTab"
+msgstr "Profily"
+
+msgid "DiagnosticsTab"
+msgstr "Diagnostika"
+
+msgid "AboutTab"
+msgstr "O aplikaci"
+
+msgid "LanguageLabel"
+msgstr "Jazyk"
+
+msgid "RefreshButton"
+msgstr "Obnovit"
+
+msgid "SaveProfileButton"
+msgstr "Uložit profil"
+
+msgid "ResetProfileButton"
+msgstr "Obnovit výchozí nastavení"
+
+msgid "PhysicalInputLabel"
+msgstr "Fyzický vstup"
+
+msgid "VirtualOutputLabel"
+msgstr "Virtuální výstup"
+
+msgid "RuleSummaryLabel"
+msgstr "Uložená pravidla"
+
+msgid "ProfileEditorLabel"
+msgstr "Editor profilu"
+
+msgid "DiagnosticsLabel"
+msgstr "Diagnostika"
+
+msgid "AboutLabel"
+msgstr "O této verzi"
+
+msgid "StatusPrefix"
+msgstr "Běh"
+
+msgid "ActiveProfilePrefix"
+msgstr "Profil"
+
+msgid "ProviderPlanHeading"
+msgstr "Plán backendů"
+
+msgid "DashboardSettingsLabel"
+msgstr "Nastavení panelu"
+
+msgid "DashboardSubtitle"
+msgstr "Vyber backend ovladače, zvol zařízení, které se má číst, nastav frekvenci dotazování a měj konfiguraci přímo v hlavním okně."
+
+msgid "InputProviderLabel"
+msgstr "Zdroj vstupu"
+
+msgid "ControllerLabel"
+msgstr "Ovladač"
+
+msgid "ControllerInventoryLabel"
+msgstr "Detekované ovladače"
+
+msgid "ProviderStatusLabel"
+msgstr "Stav backendu"
+
+msgid "PollingRateLabel"
+msgstr "Frekvence dotazování"
+
+msgid "PhysicalStyleLabel"
+msgstr "Vzhled fyzického ovladače"
+
+msgid "VirtualStyleLabel"
+msgstr "Vzhled virtuálního ovladače"
+
+msgid "ApplyDashboardSettingsButtonLabel"
+msgstr "Použít nastavení běhu"
+
+msgid "SelectedControlLabel"
+msgstr "Vybraný ovládací prvek"
+
+msgid "RuntimeNotesLabel"
+msgstr "Poznámky běhu"
+
+msgid "RawPhysicalLabel"
+msgstr "Surový stav fyzického vstupu"
+
+msgid "RawVirtualLabel"
+msgstr "Surový stav virtuálního výstupu"
+
+msgid "AutomaticControllerSelection"
+msgstr "Automatický výběr"
+
+msgid "AutomaticControllerSelectionDescription"
+msgstr "Použije výchozí chování provideru. Pokud je připojeno jen jedno kompatibilní vstupní zařízení, vybere se automaticky."
+
+msgid "NoControllersDetected"
+msgstr "Nebyla detekována žádná vstupní zařízení."
+
+msgid "ControllersDetectedSingle"
+msgstr "Detekováno 1 vstupní zařízení: {0}"
+
+msgid "ControllersDetectedMultiple"
+msgstr "Detekováno {0} vstupních zařízení."
+
+msgid "AboutBodyLine1"
+msgstr "Autofire Next je přepis původního pythonového nástroje pro speedrunningové ovladače do .NET 10 a Avalonie."
+
+msgid "AboutBodyLine2"
+msgstr "Tato verze se soustředí na panel orientovaný na ovladač, sjednocenou detekci zařízení, ukládání profilů, logování, překlady a znovupoužitelný mapovací engine."
+
+msgid "AboutBodyLine3"
+msgstr "Nativní providery ovladačů jsou odděleny za rozhraními, aby se Windows, Linux a macOS mohly rozvíjet nezávisle."
+
+msgid "AboutBodyLine4"
+msgstr "Další krok editoru by měl nahradit práci se surovým JSONem specializovaným editorem mapování pro tlačítka, páčky, triggery, touchpad, klávesnici a skripty."
+
+msgid "OutputProviderLabel"
+msgstr "Výstupní backend"
+
+msgid "ProfileComboLabel"
+msgstr "Konfigurační profil"
+
+msgid "ProfileToolbarSubtitle"
+msgstr "Přepínej, importuj, exportuj, duplikuj a upravuj celé profily ovládání bez práce se surovým JSONem."
+
+msgid "CreateProfileButton"
+msgstr "Nový profil"
+
+msgid "DuplicateProfileButton"
+msgstr "Duplikovat"
+
+msgid "ImportProfileButton"
+msgstr "Importovat"
+
+msgid "ExportProfileButton"
+msgstr "Exportovat"
+
+msgid "MappingOverviewLabel"
+msgstr "Přehled namapovaných prvků"
+
+msgid "MappingOverviewSubtitle"
+msgstr "Každá karta shrnuje jeden nakonfigurovaný ovládací prvek včetně remapů, thresholdů, deadzon, turbo pravidel a uložených skriptů."
+
+msgid "OpenControlEditorButton"
+msgstr "Nastavit"
+
+msgid "NoMappingCardsText"
+msgstr "V tomto profilu zatím nejsou uložená žádná mapování konkrétních ovládacích prvků. Klikni na prvek fyzického ovladače nebo přidej pravidlo v editoru."
+
+msgid "ProfileNameLabel"
+msgstr "Název profilu"
+
+msgid "ProfileNameHint"
+msgstr "Zvolte krátký, výstižný název tohoto profilu."
+
+msgid "ProfileNameWatermark"
+msgstr "Speedrun profil / herní preset"
+
+msgid "RenameProfileButton"
+msgstr "Přejmenovat"
+
+msgid "AboutBrandSubtitle"
+msgstr "Multiplatformní nástroje pro ovladače"
+
+msgid "ControlMappingWindowTitle"
+msgstr "Nastavit ovládací prvek"
+
+msgid "ImportProfileDialogTitle"
+msgstr "Importovat profil"
+
+msgid "ExportProfileDialogTitle"
+msgstr "Exportovat profil"
+
+msgid "JsonProfileFileTypeLabel"
+msgstr "JSON profil"
+
+msgid "MappingEditorMappingRulesLabel"
+msgstr "Pravidla mapování"
+
+msgid "MappingEditorAddRuleButton"
+msgstr "Přidat pravidlo"
+
+msgid "MappingEditorEditButton"
+msgstr "Upravit"
+
+msgid "MappingEditorDeleteButton"
+msgstr "Smazat"
+
+msgid "MappingEditorSelectRuleTitle"
+msgstr "Vyberte pravidlo k úpravě"
+
+msgid "MappingEditorSelectRuleHint"
+msgstr "Vyberte existující pravidlo ze seznamu nebo přidejte nové pro vybraný ovládací prvek."
+
+msgid "MappingEditorRuleNameLabel"
+msgstr "Název pravidla"
+
+msgid "MappingEditorRuleTypeLabel"
+msgstr "Typ pravidla"
+
+msgid "MappingEditorModeLabel"
+msgstr "Režim"
+
+msgid "MappingEditorEnabledLabel"
+msgstr "Povoleno"
+
+msgid "MappingEditorSourceButtonLabel"
+msgstr "Zdrojové tlačítko"
+
+msgid "MappingEditorTargetButtonLabel"
+msgstr "Cílové tlačítko"
+
+msgid "MappingEditorTriggerButtonLabel"
+msgstr "Spouštěcí tlačítko"
+
+msgid "MappingEditorOutputButtonLabel"
+msgstr "Výstupní tlačítko"
+
+msgid "MappingEditorSuppressSourceButton"
+msgstr "Potlačit zdrojové tlačítko (blokovat originál)"
+
+msgid "MappingEditorTargetStickLabel"
+msgstr "Cílová páčka"
+
+msgid "MappingEditorSuppressRawStick"
+msgstr "Potlačit surový vstup páčky po úpravě"
+
+msgid "MappingEditorDeadzoneLabel"
+msgstr "Mrtvá zóna"
+
+msgid "MappingEditorDeadzoneHint"
+msgstr "Hodnoty v mrtvé zóně jsou vynuceny na nulu."
+
+msgid "MappingEditorFullAtLabel"
+msgstr "Plný výstup od"
+
+msgid "MappingEditorFullAtHint"
+msgstr "Hodnoty nad tímto prahem jsou zesíleny na maximum."
+
+msgid "MappingEditorSourceStickLabel"
+msgstr "Zdrojová páčka"
+
+msgid "MappingEditorBlendModeLabel"
+msgstr "Režim míchání"
+
+msgid "MappingEditorSuppressSourceStick"
+msgstr "Potlačit výstup zdrojové páčky"
+
+msgid "MappingEditorActivationDeadzoneLabel"
+msgstr "Aktivační mrtvá zóna"
+
+msgid "MappingEditorActivationFullAtLabel"
+msgstr "Aktivace plného výstupu od"
+
+msgid "MappingEditorTargetControlKeyLabel"
+msgstr "Klíč cílového ovládacího prvku"
+
+msgid "MappingEditorControlKeyWatermark"
+msgstr "LeftStick / South / Touchpad …"
+
+msgid "MappingEditorSuppressSourceInput"
+msgstr "Potlačit zdrojový vstup"
+
+msgid "MappingEditorScriptStoredHint"
+msgstr "Kód skriptu je uložen v profilu a bude zpracován budoucím runtime."
+
+msgid "MappingEditorScriptLabel"
+msgstr "Kód skriptu"
+
+msgid "MappingEditorActivationButtonLabel"
+msgstr "Aktivační tlačítko"
+
+msgid "MappingEditorCaptureStickLabel"
+msgstr "Zachycená páčka"
+
+msgid "MappingEditorOutputStickLabel"
+msgstr "Výstupní páčka"
+
+msgid "MappingEditorSuppressActivationButton"
+msgstr "Potlačit aktivační tlačítko při zmražení"
+
+msgid "MappingEditorSuppressCaptureStick"
+msgstr "Potlačit zachycenou páčku při zmražení"
+
+msgid "MappingEditorPulseWhileFrozenLabel"
+msgstr "Pulsovat při zmražení (autofire při držení)"
+
+msgid "MappingEditorTimingLabel"
+msgstr "Časování"
+
+msgid "MappingEditorHoldLabel"
+msgstr "Podržení"
+
+msgid "MappingEditorHoldHint"
+msgstr "Jak dlouho zůstane aktivní fáze stisknutá."
+
+msgid "MappingEditorReleaseLabel"
+msgstr "Uvolnění"
+
+msgid "MappingEditorReleaseHint"
+msgstr "Jak dlouho zůstane neaktivní fáze uvolněna."
+
+msgid "MappingEditorSaveRuleButton"
+msgstr "Uložit pravidlo"
+
+msgid "MappingEditorCancelButton"
+msgstr "Zrušit"
+
+msgid "MappingEditorAddNewRuleTitle"
+msgstr "Přidat nové pravidlo"
+
+msgid "MappingEditorEditRuleTitle"
+msgstr "Upravit pravidlo: {0}"
+
+msgid "MappingEditorRuleFallbackName"
+msgstr "Nepojmenované pravidlo"

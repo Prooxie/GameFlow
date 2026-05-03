@@ -1,0 +1,42 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="using:Autofire.App.Views"
+        xmlns:vm="using:Autofire.App.ViewModels"
+        x:Class="Autofire.App.Views.ControlMappingWindow"
+        x:DataType="vm:ControlMappingDialogViewModel"
+        x:CompileBindings="False"
+        Width="1320"
+        Height="900"
+        MinWidth="1120"
+        MinHeight="760"
+        WindowStartupLocation="CenterOwner"
+        Background="#050B12"
+        Title="Control mapping">
+
+  <Grid RowDefinitions="132,*" RowSpacing="0">
+    <Border Grid.Row="0"
+            MinHeight="132"
+            MaxHeight="132"
+            ClipToBounds="True"
+            Padding="24,18"
+            Background="#060E1C"
+            BorderBrush="#0F2035"
+            BorderThickness="0,0,0,1">
+      <StackPanel Spacing="6">
+        <TextBlock Text="{Binding SelectionTitle}"
+                   FontSize="22"
+                   FontWeight="Bold"
+                   Foreground="White"
+                   TextTrimming="CharacterEllipsis" />
+        <TextBlock Text="{Binding SelectionHint}"
+                   FontSize="12.5"
+                   Foreground="#64748B"
+                   TextWrapping="Wrap"
+                   MaxHeight="38" />
+      </StackPanel>
+    </Border>
+
+    <views:MappingEditorView Grid.Row="1"
+                             DataContext="{Binding Editor}" />
+  </Grid>
+</Window>

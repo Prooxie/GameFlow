@@ -1,0 +1,328 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: es\n"
+
+msgid "WindowTitle"
+msgstr "Autofire Next"
+
+msgid "DashboardTab"
+msgstr "Panel"
+
+msgid "ProfilesTab"
+msgstr "Perfiles"
+
+msgid "DiagnosticsTab"
+msgstr "Diagnóstico"
+
+msgid "AboutTab"
+msgstr "Acerca de"
+
+msgid "LanguageLabel"
+msgstr "Idioma"
+
+msgid "RefreshButton"
+msgstr "Actualizar"
+
+msgid "SaveProfileButton"
+msgstr "Guardar perfil"
+
+msgid "ResetProfileButton"
+msgstr "Restablecer"
+
+msgid "PhysicalInputLabel"
+msgstr "Entrada física"
+
+msgid "VirtualOutputLabel"
+msgstr "Salida virtual"
+
+msgid "RuleSummaryLabel"
+msgstr "Reglas guardadas"
+
+msgid "ProfileEditorLabel"
+msgstr "Editor de perfil"
+
+msgid "DiagnosticsLabel"
+msgstr "Diagnóstico"
+
+msgid "AboutLabel"
+msgstr "Acerca de esta versión"
+
+msgid "StatusPrefix"
+msgstr "Ejecución"
+
+msgid "ActiveProfilePrefix"
+msgstr "Perfil"
+
+msgid "ProviderPlanHeading"
+msgstr "Hoja de ruta de proveedores"
+
+msgid "DashboardSettingsLabel"
+msgstr "Configuración del panel"
+
+msgid "DashboardSubtitle"
+msgstr "Elige el backend del mando, selecciona el dispositivo que quieres leer, ajusta la frecuencia de sondeo y mantén la configuración dentro de la ventana principal."
+
+msgid "InputProviderLabel"
+msgstr "Proveedor de entrada"
+
+msgid "OutputProviderLabel"
+msgstr "Proveedor de salida"
+
+msgid "ControllerLabel"
+msgstr "Mando"
+
+msgid "ControllerInventoryLabel"
+msgstr "Mandos detectados"
+
+msgid "ProviderStatusLabel"
+msgstr "Estado del proveedor"
+
+msgid "PollingRateLabel"
+msgstr "Frecuencia de sondeo"
+
+msgid "PhysicalStyleLabel"
+msgstr "Aspecto del mando físico"
+
+msgid "VirtualStyleLabel"
+msgstr "Aspecto del mando virtual"
+
+msgid "ApplyDashboardSettingsButtonLabel"
+msgstr "Aplicar configuración"
+
+msgid "SelectedControlLabel"
+msgstr "Control seleccionado"
+
+msgid "RuntimeNotesLabel"
+msgstr "Notas de ejecución"
+
+msgid "RawPhysicalLabel"
+msgstr "Estado físico sin procesar"
+
+msgid "RawVirtualLabel"
+msgstr "Estado virtual sin procesar"
+
+msgid "AutomaticControllerSelection"
+msgstr "Selección automática"
+
+msgid "AutomaticControllerSelectionDescription"
+msgstr "Usa el comportamiento predeterminado del proveedor. Si solo hay un dispositivo de entrada compatible conectado, se seleccionará automáticamente."
+
+msgid "NoControllersDetected"
+msgstr "No se detectaron dispositivos de entrada."
+
+msgid "ControllersDetectedSingle"
+msgstr "1 dispositivo de entrada detectado: {0}"
+
+msgid "ControllersDetectedMultiple"
+msgstr "{0} dispositivos de entrada detectados."
+
+msgid "AboutBodyLine1"
+msgstr "Autofire Next es una reescritura en .NET 10 y Avalonia de la herramienta original de controladores para speedrunning en Python."
+
+msgid "AboutBodyLine2"
+msgstr "Esta versión se centra en un panel orientado al mando, detección unificada de dispositivos, persistencia de perfiles, registro, traducciones y un motor de mapeo reutilizable."
+
+msgid "AboutBodyLine3"
+msgstr "Los proveedores nativos de mando están aislados detrás de interfaces para que Windows, Linux y macOS puedan evolucionar de forma independiente."
+
+msgid "AboutBodyLine4"
+msgstr "La siguiente pasada del editor debería reemplazar el flujo de trabajo con JSON sin procesar por un editor dedicado por control para botones, sticks, gatillos, touchpad, objetivos de teclado y scripts."
+
+msgid "ProfileComboLabel"
+msgstr "Perfil de configuración"
+
+msgid "ProfileToolbarSubtitle"
+msgstr "Cambia, importa, exporta, duplica, renombra y edita perfiles completos sin tocar JSON sin procesar."
+
+msgid "ProfileNameLabel"
+msgstr "Nombre del perfil"
+
+msgid "ProfileNameHint"
+msgstr "Elige un nombre corto y descriptivo para este perfil."
+
+msgid "ProfileNameWatermark"
+msgstr "Perfil de speedrun / preset del juego"
+
+msgid "RenameProfileButton"
+msgstr "Renombrar"
+
+msgid "CreateProfileButton"
+msgstr "Nuevo perfil"
+
+msgid "DuplicateProfileButton"
+msgstr "Duplicar"
+
+msgid "ImportProfileButton"
+msgstr "Importar"
+
+msgid "ExportProfileButton"
+msgstr "Exportar"
+
+msgid "MappingOverviewLabel"
+msgstr "Resumen de controles asignados"
+
+msgid "MappingOverviewSubtitle"
+msgstr "Cada tarjeta resume un control configurado, incluidos remapeos, umbrales, zonas muertas, reglas turbo, reglas de congelación y scripts guardados."
+
+msgid "OpenControlEditorButton"
+msgstr "Configurar"
+
+msgid "NoMappingCardsText"
+msgstr "Todavía no hay asignaciones específicas de controles en este perfil. Haz clic en un control del mando físico o agrega una regla desde el editor."
+
+msgid "AboutBrandSubtitle"
+msgstr "Herramientas multiplataforma para mandos"
+
+msgid "ControlMappingWindowTitle"
+msgstr "Configurar control"
+
+msgid "ImportProfileDialogTitle"
+msgstr "Importar perfil"
+
+msgid "ExportProfileDialogTitle"
+msgstr "Exportar perfil"
+
+msgid "JsonProfileFileTypeLabel"
+msgstr "Perfil JSON"
+
+msgid "MappingEditorMappingRulesLabel"
+msgstr "Reglas de mapeo"
+
+msgid "MappingEditorAddRuleButton"
+msgstr "Agregar regla"
+
+msgid "MappingEditorEditButton"
+msgstr "Editar"
+
+msgid "MappingEditorDeleteButton"
+msgstr "Eliminar"
+
+msgid "MappingEditorSelectRuleTitle"
+msgstr "Selecciona una regla para editar"
+
+msgid "MappingEditorSelectRuleHint"
+msgstr "Selecciona una regla existente de la lista o agrega una nueva para el control seleccionado."
+
+msgid "MappingEditorRuleNameLabel"
+msgstr "Nombre de la regla"
+
+msgid "MappingEditorRuleTypeLabel"
+msgstr "Tipo de regla"
+
+msgid "MappingEditorModeLabel"
+msgstr "Modo"
+
+msgid "MappingEditorEnabledLabel"
+msgstr "Activado"
+
+msgid "MappingEditorSourceButtonLabel"
+msgstr "Botón de origen"
+
+msgid "MappingEditorTargetButtonLabel"
+msgstr "Botón de destino"
+
+msgid "MappingEditorTriggerButtonLabel"
+msgstr "Botón de activación"
+
+msgid "MappingEditorOutputButtonLabel"
+msgstr "Botón de salida"
+
+msgid "MappingEditorSuppressSourceButton"
+msgstr "Suprimir botón de origen"
+
+msgid "MappingEditorTargetStickLabel"
+msgstr "Stick de destino"
+
+msgid "MappingEditorSuppressRawStick"
+msgstr "Suprimir stick sin procesar tras el ajuste"
+
+msgid "MappingEditorDeadzoneLabel"
+msgstr "Zona muerta"
+
+msgid "MappingEditorDeadzoneHint"
+msgstr "Los valores dentro de la zona muerta se fuerzan a cero."
+
+msgid "MappingEditorFullAtLabel"
+msgstr "Máximo en"
+
+msgid "MappingEditorFullAtHint"
+msgstr "Los valores por encima de este umbral se amplifican al máximo."
+
+msgid "MappingEditorSourceStickLabel"
+msgstr "Stick de origen"
+
+msgid "MappingEditorBlendModeLabel"
+msgstr "Modo de mezcla"
+
+msgid "MappingEditorSuppressSourceStick"
+msgstr "Suprimir stick de origen"
+
+msgid "MappingEditorActivationDeadzoneLabel"
+msgstr "Zona muerta de activación"
+
+msgid "MappingEditorActivationFullAtLabel"
+msgstr "Activación al máximo en"
+
+msgid "MappingEditorTargetControlKeyLabel"
+msgstr "Clave de control de destino"
+
+msgid "MappingEditorControlKeyWatermark"
+msgstr "LeftStick / South / Touchpad …"
+
+msgid "MappingEditorSuppressSourceInput"
+msgstr "Suprimir entrada de origen"
+
+msgid "MappingEditorScriptStoredHint"
+msgstr "El código del script se guarda en el perfil y podrá ser procesado por un ejecutor futuro."
+
+msgid "MappingEditorScriptLabel"
+msgstr "Código del script"
+
+msgid "MappingEditorActivationButtonLabel"
+msgstr "Botón de activación"
+
+msgid "MappingEditorCaptureStickLabel"
+msgstr "Stick capturado"
+
+msgid "MappingEditorOutputStickLabel"
+msgstr "Stick de salida"
+
+msgid "MappingEditorSuppressActivationButton"
+msgstr "Suprimir botón de activación"
+
+msgid "MappingEditorSuppressCaptureStick"
+msgstr "Suprimir stick capturado"
+
+msgid "MappingEditorPulseWhileFrozenLabel"
+msgstr "Pulsar mientras está congelado"
+
+msgid "MappingEditorTimingLabel"
+msgstr "Temporización"
+
+msgid "MappingEditorHoldLabel"
+msgstr "Mantener"
+
+msgid "MappingEditorHoldHint"
+msgstr "Cuánto tiempo permanece pulsada la fase activa."
+
+msgid "MappingEditorReleaseLabel"
+msgstr "Liberar"
+
+msgid "MappingEditorReleaseHint"
+msgstr "Cuánto tiempo permanece liberada la fase inactiva."
+
+msgid "MappingEditorSaveRuleButton"
+msgstr "Guardar regla"
+
+msgid "MappingEditorCancelButton"
+msgstr "Cancelar"
+
+msgid "MappingEditorAddNewRuleTitle"
+msgstr "Agregar una regla nueva"
+
+msgid "MappingEditorEditRuleTitle"
+msgstr "Editar regla: {0}"
+
+msgid "MappingEditorRuleFallbackName"
+msgstr "Regla sin nombre"

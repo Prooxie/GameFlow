@@ -1,0 +1,637 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Autofire.App.ViewModels"
+             x:Class="Autofire.App.Views.ControllerSurface"
+             x:DataType="vm:ControllerVisualStateViewModel"
+             x:CompileBindings="False">
+
+  <UserControl.Styles>
+    <!-- Shoulder / utility buttons — pill shape, subtle surface -->
+    <Style Selector="Button.surface">
+      <Setter Property="Background" Value="#0B1928" />
+      <Setter Property="Foreground" Value="#94A3B8" />
+      <Setter Property="BorderBrush" Value="#1E3A5A" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.surface:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#102238" />
+      <Setter Property="BorderBrush" Value="#2A5278" />
+    </Style>
+
+    <!-- Face buttons — perfectly circular -->
+    <Style Selector="Button.face">
+      <Setter Property="Background" Value="#08111A" />
+      <Setter Property="Foreground" Value="White" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="999" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.face:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Opacity" Value="0.85" />
+    </Style>
+
+    <!-- Stick knob buttons — circular, moves with TranslateTransform -->
+    <Style Selector="Button.knob">
+      <Setter Property="Background" Value="#0C1E32" />
+      <Setter Property="Foreground" Value="#64748B" />
+      <Setter Property="BorderBrush" Value="#1E3A5A" />
+      <Setter Property="BorderThickness" Value="1.5" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="999" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.knob:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#132436" />
+    </Style>
+
+    <!-- HUD data card -->
+    <Style Selector="Border.hudCard">
+      <Setter Property="Background" Value="#070F1A" />
+      <Setter Property="BorderBrush" Value="#0F2030" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Padding" Value="10,8" />
+      <Setter Property="CornerRadius" Value="8" />
+    </Style>
+  </UserControl.Styles>
+
+  <Border Padding="20"
+          CornerRadius="22"
+          Background="{Binding PanelBrush}"
+          BorderBrush="{Binding PanelBorderBrush}"
+          BorderThickness="1.5">
+
+    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="14">
+
+      <!-- ── Panel header ─────────────────────────────────────────── -->
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <StackPanel Spacing="3">
+          <TextBlock Text="{Binding PanelTitle}" FontSize="16"
+                     FontWeight="Bold" Foreground="White" />
+          <TextBlock Text="{Binding DeviceName}" FontSize="11.5"
+                     TextWrapping="Wrap" Foreground="#475569" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Spacing="6" HorizontalAlignment="Right">
+          <!-- Live / Idle badge -->
+          <Border Padding="12,5" CornerRadius="999"
+                  Background="{Binding AccentSoftBrush}"
+                  BorderBrush="{Binding ConnectionBrush}"
+                  BorderThickness="1">
+            <TextBlock Text="{Binding ConnectionLabel}" FontWeight="Bold"
+                       FontSize="11" LetterSpacing="0.5"
+                       Foreground="{Binding ConnectionBrush}" />
+          </Border>
+          <TextBlock Text="{Binding StyleLabel}" FontSize="10.5"
+                     HorizontalAlignment="Right" Foreground="#334155" />
+        </StackPanel>
+      </Grid>
+
+      <!-- ── Controller body ─────────────────────────────────────── -->
+      <Grid Grid.Row="1"
+            ColumnDefinitions="72,*,72"
+            ColumnSpacing="12">
+
+        <!-- Left trigger column -->
+        <StackPanel Grid.Column="0" Spacing="6" VerticalAlignment="Center">
+          <Button Classes="surface" Width="68" Height="126"
+                  Command="{Binding SelectElementCommand}"
+                  CommandParameter="LeftTrigger.Analog">
+            <Grid RowDefinitions="18,*" Margin="8,6,8,6">
+              <TextBlock Grid.Row="0"
+                         Text="{Binding LeftTriggerLabel}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                         Foreground="{Binding AccentBrush}"
+                         FontSize="11" FontWeight="SemiBold" />
+              <Border Grid.Row="1" CornerRadius="8" ClipToBounds="True"
+                      Background="#040810" BorderBrush="#0F1E30" BorderThickness="1">
+                <Grid>
+                  <Border CornerRadius="6" Background="#090F18" VerticalAlignment="Stretch" />
+                  <Border Width="28" CornerRadius="5"
+                          VerticalAlignment="Bottom" HorizontalAlignment="Center"
+                          Height="{Binding LeftTriggerBarHeight}">
+                    <Border.Background>
+                      <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                        <GradientStop Color="#33E8FF" Offset="0" />
+                        <GradientStop Color="#006E8C" Offset="1" />
+                      </LinearGradientBrush>
+                    </Border.Background>
+                  </Border>
+                  <TextBlock Text="{Binding LeftTriggerPercentText}"
+                             HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                             Margin="0,0,0,4"
+                             Foreground="White" FontSize="10" FontWeight="SemiBold" />
+                </Grid>
+              </Border>
+            </Grid>
+          </Button>
+          <Button Classes="surface" Width="68" Height="26"
+                  Command="{Binding SelectElementCommand}"
+                  CommandParameter="LeftTrigger.Button"
+                  Opacity="{Binding LeftTriggerButtonOpacity}">
+            <TextBlock Text="L2 btn" HorizontalAlignment="Center"
+                       VerticalAlignment="Center" FontSize="10" />
+          </Button>
+        </StackPanel>
+
+        <!-- ── Centre canvas ────────────────────────────────────── -->
+        <Grid Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+          <Canvas Width="660" Height="400"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  ClipToBounds="False">
+
+            <!-- Shell body with gradient overlay for depth -->
+            <Border Canvas.Left="50" Canvas.Top="58"
+                    Width="560" Height="244"
+                    CornerRadius="145"
+                    IsVisible="{Binding ShowShell}"
+                    BorderBrush="{Binding AccentBrush}"
+                    BorderThickness="1.4">
+              <Border.Background>
+                <LinearGradientBrush StartPoint="50%,0%" EndPoint="50%,100%">
+                  <GradientStop Color="#0D1E34" Offset="0" />
+                  <GradientStop Color="#060E1C" Offset="1" />
+                </LinearGradientBrush>
+              </Border.Background>
+            </Border>
+
+            <!-- Side grips -->
+            <Ellipse Canvas.Left="38" Canvas.Top="90"
+                     Width="184" Height="230"
+                     Opacity="0.6"
+                     IsVisible="{Binding ShowShell}">
+              <Ellipse.Fill>
+                <RadialGradientBrush Center="50%,40%" Radius="55%">
+                  <GradientStop Color="#0E2236" Offset="0" />
+                  <GradientStop Color="#060C18" Offset="1" />
+                </RadialGradientBrush>
+              </Ellipse.Fill>
+            </Ellipse>
+            <Ellipse Canvas.Left="438" Canvas.Top="90"
+                     Width="184" Height="230"
+                     Opacity="0.6"
+                     IsVisible="{Binding ShowShell}">
+              <Ellipse.Fill>
+                <RadialGradientBrush Center="50%,40%" Radius="55%">
+                  <GradientStop Color="#0E2236" Offset="0" />
+                  <GradientStop Color="#060C18" Offset="1" />
+                </RadialGradientBrush>
+              </Ellipse.Fill>
+            </Ellipse>
+
+            <!-- ── Shoulder buttons ─────────────────────────────── -->
+            <Button Classes="surface"
+                    Canvas.Left="132" Canvas.Top="46"
+                    Width="90" Height="28"
+                    Command="{Binding SelectElementCommand}"
+                    CommandParameter="LeftShoulder"
+                    Opacity="{Binding LeftShoulderOpacity}">
+              <TextBlock Text="{Binding LeftShoulderLabel}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="11" FontWeight="SemiBold" />
+            </Button>
+
+            <Button Classes="surface"
+                    Canvas.Left="438" Canvas.Top="46"
+                    Width="90" Height="28"
+                    Command="{Binding SelectElementCommand}"
+                    CommandParameter="RightShoulder"
+                    Opacity="{Binding RightShoulderOpacity}">
+              <TextBlock Text="{Binding RightShoulderLabel}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="11" FontWeight="SemiBold" />
+            </Button>
+
+            <!-- ── Centre utility buttons ──────────────────────── -->
+            <Button Classes="surface"
+                    Canvas.Left="278" Canvas.Top="46"
+                    Width="50" Height="24"
+                    Command="{Binding SelectElementCommand}"
+                    CommandParameter="Back"
+                    Opacity="{Binding BackOpacity}">
+              <TextBlock Text="{Binding BackLabel}" FontSize="9.5"
+                         TextAlignment="Center" HorizontalAlignment="Center"
+                         VerticalAlignment="Center" />
+            </Button>
+
+            <Button Classes="surface"
+                    Canvas.Left="332" Canvas.Top="46"
+                    Width="50" Height="24"
+                    Command="{Binding SelectElementCommand}"
+                    CommandParameter="Start"
+                    Opacity="{Binding StartOpacity}">
+              <TextBlock Text="{Binding StartLabel}" FontSize="9.5"
+                         TextAlignment="Center" HorizontalAlignment="Center"
+                         VerticalAlignment="Center" />
+            </Button>
+
+            <!-- Guide button — round, centre -->
+            <Ellipse Canvas.Left="302" Canvas.Top="79"
+                     Width="57" Height="57"
+                     Fill="{Binding AccentSoftBrush}"
+                     Stroke="{Binding AccentBrush}"
+                     StrokeThickness="1.2" />
+            <Button Classes="face"
+                    Canvas.Left="306" Canvas.Top="83"
+                    Width="49" Height="49"
+                    Background="{Binding AccentSoftBrush}"
+                    Command="{Binding SelectElementCommand}"
+                    CommandParameter="Guide"
+                    Opacity="{Binding GuideOpacity}">
+              <TextBlock Text="{Binding GuideLabel}" FontSize="10"
+                         FontWeight="SemiBold"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Button>
+
+            <!-- ── Touchpad ─────────────────────────────────────── -->
+            <Border Canvas.Left="244" Canvas.Top="118"
+                    Width="172" Height="58"
+                    CornerRadius="12"
+                    IsVisible="{Binding ShowTouchpad}"
+                    Background="#06101A"
+                    BorderBrush="{Binding AccentBrush}"
+                    BorderThickness="1"
+                    Opacity="{Binding TouchpadOpacity}">
+              <Button Classes="face" Width="172" Height="58"
+                      CornerRadius="12"
+                      Command="{Binding SelectElementCommand}"
+                      CommandParameter="Touchpad">
+                <Grid>
+                  <TextBlock Text="{Binding TouchpadLabel}"
+                             HorizontalAlignment="Center" VerticalAlignment="Center"
+                             FontSize="11" Foreground="#475569" />
+                  <Ellipse Width="14" Height="14"
+                           Fill="{Binding AccentBrush}"
+                           HorizontalAlignment="Left" Margin="40,0,0,0"
+                           Opacity="0.9"
+                           IsVisible="{Binding ShowTouchFinger1}" />
+                  <Ellipse Width="14" Height="14"
+                           Fill="{Binding AccentBrush}"
+                           HorizontalAlignment="Right" Margin="0,0,40,0"
+                           Opacity="0.9"
+                           IsVisible="{Binding ShowTouchFinger2}" />
+                </Grid>
+              </Button>
+            </Border>
+
+            <!-- ── D-pad ────────────────────────────────────────── -->
+            <!-- Cross shape background -->
+            <Rectangle Canvas.Left="76" Canvas.Top="196"
+                       Width="114" Height="38"
+                       Fill="#0A1828" RadiusX="7" RadiusY="7" />
+            <Rectangle Canvas.Left="110" Canvas.Top="162"
+                       Width="38" Height="106"
+                       Fill="#0A1828" RadiusX="7" RadiusY="7" />
+
+            <Button Classes="surface"
+                    Canvas.Left="110" Canvas.Top="162"
+                    Width="38" Height="34" CornerRadius="8,8,4,4"
+                    Command="{Binding SelectElementCommand}"
+                    CommandParameter="DpadUp"
+                    Opacity="{Binding DpadUpOpacity}">
+              <TextBlock Text="▲" HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="11" />
+            </Button>
+            <Button Classes="surface"
+                    Canvas.Left="110" Canvas.Top="234"
+                    Width="38" Height="34" CornerRadius="4,4,8,8"
+                    Command="{Binding SelectElementCommand}"
+                    CommandParameter="DpadDown"
+                    Opacity="{Binding DpadDownOpacity}">
+              <TextBlock Text="▼" HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="11" />
+            </Button>
+            <Button Classes="surface"
+                    Canvas.Left="76" Canvas.Top="196"
+                    Width="34" Height="38" CornerRadius="8,4,4,8"
+                    Command="{Binding SelectElementCommand}"
+                    CommandParameter="DpadLeft"
+                    Opacity="{Binding DpadLeftOpacity}">
+              <TextBlock Text="◀" HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="11" />
+            </Button>
+            <Button Classes="surface"
+                    Canvas.Left="148" Canvas.Top="196"
+                    Width="42" Height="38" CornerRadius="4,8,8,4"
+                    Command="{Binding SelectElementCommand}"
+                    CommandParameter="DpadRight"
+                    Opacity="{Binding DpadRightOpacity}">
+              <TextBlock Text="▶" HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="11" />
+            </Button>
+
+            <!-- ── Face buttons — circular with soft halos ──────── -->
+            <!-- Static halos (always dim, brighten only via parent opacity) -->
+            <Ellipse Canvas.Left="510" Canvas.Top="152" Width="62" Height="62"
+                     Fill="{Binding NorthFaceBrush}" Opacity="0.10"
+                     IsVisible="{Binding ShowShell}" />
+            <Ellipse Canvas.Left="554" Canvas.Top="196" Width="62" Height="62"
+                     Fill="{Binding EastFaceBrush}" Opacity="0.10"
+                     IsVisible="{Binding ShowShell}" />
+            <Ellipse Canvas.Left="510" Canvas.Top="240" Width="62" Height="62"
+                     Fill="{Binding SouthFaceBrush}" Opacity="0.10"
+                     IsVisible="{Binding ShowShell}" />
+            <Ellipse Canvas.Left="468" Canvas.Top="196" Width="62" Height="62"
+                     Fill="{Binding WestFaceBrush}" Opacity="0.10"
+                     IsVisible="{Binding ShowShell}" />
+
+            <!-- North (Y / △) -->
+            <Button Classes="face"
+                    Canvas.Left="521" Canvas.Top="163"
+                    Width="40" Height="40"
+                    Background="{Binding NorthFaceBrush}"
+                    Command="{Binding SelectElementCommand}"
+                    CommandParameter="North"
+                    Opacity="{Binding NorthGlowOpacity}">
+              <TextBlock Text="{Binding NorthLegend}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Button>
+
+            <!-- East (B / ○) -->
+            <Button Classes="face"
+                    Canvas.Left="565" Canvas.Top="207"
+                    Width="40" Height="40"
+                    Background="{Binding EastFaceBrush}"
+                    Command="{Binding SelectElementCommand}"
+                    CommandParameter="East"
+                    Opacity="{Binding EastGlowOpacity}">
+              <TextBlock Text="{Binding EastLegend}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Button>
+
+            <!-- South (A / ×) -->
+            <Button Classes="face"
+                    Canvas.Left="521" Canvas.Top="251"
+                    Width="40" Height="40"
+                    Background="{Binding SouthFaceBrush}"
+                    Command="{Binding SelectElementCommand}"
+                    CommandParameter="South"
+                    Opacity="{Binding SouthGlowOpacity}">
+              <TextBlock Text="{Binding SouthLegend}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Button>
+
+            <!-- West (X / □) -->
+            <Button Classes="face"
+                    Canvas.Left="479" Canvas.Top="207"
+                    Width="40" Height="40"
+                    Background="{Binding WestFaceBrush}"
+                    Command="{Binding SelectElementCommand}"
+                    CommandParameter="West"
+                    Opacity="{Binding WestGlowOpacity}">
+              <TextBlock Text="{Binding WestLegend}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Button>
+
+            <!-- ── Left stick ────────────────────────────────────── -->
+            <!-- Direction tap arrows (subtle) -->
+            <Button Classes="surface"
+                    Canvas.Left="194" Canvas.Top="180" Width="26" Height="26"
+                    CornerRadius="6" Command="{Binding SelectElementCommand}"
+                    CommandParameter="LeftStick.Up"
+                    Opacity="{Binding LeftStickUpOpacity}">
+              <TextBlock Text="▲" HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="9" />
+            </Button>
+            <Button Classes="surface"
+                    Canvas.Left="194" Canvas.Top="294" Width="26" Height="26"
+                    CornerRadius="6" Command="{Binding SelectElementCommand}"
+                    CommandParameter="LeftStick.Down"
+                    Opacity="{Binding LeftStickDownOpacity}">
+              <TextBlock Text="▼" HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="9" />
+            </Button>
+            <Button Classes="surface"
+                    Canvas.Left="140" Canvas.Top="237" Width="26" Height="26"
+                    CornerRadius="6" Command="{Binding SelectElementCommand}"
+                    CommandParameter="LeftStick.Left"
+                    Opacity="{Binding LeftStickLeftOpacity}">
+              <TextBlock Text="◀" HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="9" />
+            </Button>
+            <Button Classes="surface"
+                    Canvas.Left="248" Canvas.Top="237" Width="26" Height="26"
+                    CornerRadius="6" Command="{Binding SelectElementCommand}"
+                    CommandParameter="LeftStick.Right"
+                    Opacity="{Binding LeftStickRightOpacity}">
+              <TextBlock Text="▶" HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="9" />
+            </Button>
+
+            <!-- Left stick well with radial gradient -->
+            <Border Canvas.Left="162" Canvas.Top="208"
+                    Width="90" Height="90" CornerRadius="999"
+                    BorderBrush="{Binding AccentBrush}" BorderThickness="1.4">
+              <Border.Background>
+                <RadialGradientBrush Center="50%,35%" GradientOrigin="50%,35%" Radius="60%">
+                  <GradientStop Color="#0C1E32" Offset="0" />
+                  <GradientStop Color="#040A14" Offset="1" />
+                </RadialGradientBrush>
+              </Border.Background>
+            </Border>
+
+            <!-- Left stick knob (moves) -->
+            <Button Classes="knob"
+                    Canvas.Left="178" Canvas.Top="224"
+                    Width="58" Height="58"
+                    Command="{Binding SelectElementCommand}"
+                    CommandParameter="LeftStick.Button"
+                    BorderBrush="{Binding AccentBrush}"
+                    Opacity="{Binding LeftStickClickOpacity}">
+              <Button.Background>
+                <RadialGradientBrush Center="45%,38%" GradientOrigin="45%,38%" Radius="55%">
+                  <GradientStop Color="#14263E" Offset="0" />
+                  <GradientStop Color="#08131F" Offset="1" />
+                </RadialGradientBrush>
+              </Button.Background>
+              <Button.RenderTransform>
+                <TranslateTransform X="{Binding LeftStickOffsetX}"
+                                    Y="{Binding LeftStickOffsetY}" />
+              </Button.RenderTransform>
+              <TextBlock Text="L3" HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="11" />
+            </Button>
+
+            <!-- ── Right stick ───────────────────────────────────── -->
+            <Button Classes="surface"
+                    Canvas.Left="390" Canvas.Top="180" Width="26" Height="26"
+                    CornerRadius="6" Command="{Binding SelectElementCommand}"
+                    CommandParameter="RightStick.Up"
+                    Opacity="{Binding RightStickUpOpacity}">
+              <TextBlock Text="▲" HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="9" />
+            </Button>
+            <Button Classes="surface"
+                    Canvas.Left="390" Canvas.Top="294" Width="26" Height="26"
+                    CornerRadius="6" Command="{Binding SelectElementCommand}"
+                    CommandParameter="RightStick.Down"
+                    Opacity="{Binding RightStickDownOpacity}">
+              <TextBlock Text="▼" HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="9" />
+            </Button>
+            <Button Classes="surface"
+                    Canvas.Left="336" Canvas.Top="237" Width="26" Height="26"
+                    CornerRadius="6" Command="{Binding SelectElementCommand}"
+                    CommandParameter="RightStick.Left"
+                    Opacity="{Binding RightStickLeftOpacity}">
+              <TextBlock Text="◀" HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="9" />
+            </Button>
+            <Button Classes="surface"
+                    Canvas.Left="444" Canvas.Top="237" Width="26" Height="26"
+                    CornerRadius="6" Command="{Binding SelectElementCommand}"
+                    CommandParameter="RightStick.Right"
+                    Opacity="{Binding RightStickRightOpacity}">
+              <TextBlock Text="▶" HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="9" />
+            </Button>
+
+            <!-- Right stick well -->
+            <Border Canvas.Left="358" Canvas.Top="208"
+                    Width="90" Height="90" CornerRadius="999"
+                    BorderBrush="{Binding AccentBrush}" BorderThickness="1.4">
+              <Border.Background>
+                <RadialGradientBrush Center="50%,35%" GradientOrigin="50%,35%" Radius="60%">
+                  <GradientStop Color="#0C1E32" Offset="0" />
+                  <GradientStop Color="#040A14" Offset="1" />
+                </RadialGradientBrush>
+              </Border.Background>
+            </Border>
+
+            <!-- Right stick knob (moves) -->
+            <Button Classes="knob"
+                    Canvas.Left="374" Canvas.Top="224"
+                    Width="58" Height="58"
+                    Command="{Binding SelectElementCommand}"
+                    CommandParameter="RightStick.Button"
+                    BorderBrush="{Binding AccentBrush}"
+                    Opacity="{Binding RightStickClickOpacity}">
+              <Button.Background>
+                <RadialGradientBrush Center="45%,38%" GradientOrigin="45%,38%" Radius="55%">
+                  <GradientStop Color="#14263E" Offset="0" />
+                  <GradientStop Color="#08131F" Offset="1" />
+                </RadialGradientBrush>
+              </Button.Background>
+              <Button.RenderTransform>
+                <TranslateTransform X="{Binding RightStickOffsetX}"
+                                    Y="{Binding RightStickOffsetY}" />
+              </Button.RenderTransform>
+              <TextBlock Text="R3" HorizontalAlignment="Center" VerticalAlignment="Center"
+                         FontSize="11" />
+            </Button>
+
+          </Canvas>
+        </Grid>
+
+        <!-- Right trigger column -->
+        <StackPanel Grid.Column="2" Spacing="6" VerticalAlignment="Center">
+          <Button Classes="surface" Width="68" Height="126"
+                  Command="{Binding SelectElementCommand}"
+                  CommandParameter="RightTrigger.Analog">
+            <Grid RowDefinitions="18,*" Margin="8,6,8,6">
+              <TextBlock Grid.Row="0"
+                         Text="{Binding RightTriggerLabel}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                         Foreground="{Binding AccentBrush}"
+                         FontSize="11" FontWeight="SemiBold" />
+              <Border Grid.Row="1" CornerRadius="8" ClipToBounds="True"
+                      Background="#040810" BorderBrush="#0F1E30" BorderThickness="1">
+                <Grid>
+                  <Border CornerRadius="6" Background="#090F18" VerticalAlignment="Stretch" />
+                  <Border Width="28" CornerRadius="5"
+                          VerticalAlignment="Bottom" HorizontalAlignment="Center"
+                          Height="{Binding RightTriggerBarHeight}">
+                    <Border.Background>
+                      <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                        <GradientStop Color="#33E8FF" Offset="0" />
+                        <GradientStop Color="#006E8C" Offset="1" />
+                      </LinearGradientBrush>
+                    </Border.Background>
+                  </Border>
+                  <TextBlock Text="{Binding RightTriggerPercentText}"
+                             HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                             Margin="0,0,0,4"
+                             Foreground="White" FontSize="10" FontWeight="SemiBold" />
+                </Grid>
+              </Border>
+            </Grid>
+          </Button>
+          <Button Classes="surface" Width="68" Height="26"
+                  Command="{Binding SelectElementCommand}"
+                  CommandParameter="RightTrigger.Button"
+                  Opacity="{Binding RightTriggerButtonOpacity}">
+            <TextBlock Text="R2 btn" HorizontalAlignment="Center"
+                       VerticalAlignment="Center" FontSize="10" />
+          </Button>
+        </StackPanel>
+      </Grid>
+
+      <!-- ── HUD strip ────────────────────────────────────────────── -->
+      <Border Grid.Row="2" Padding="10" CornerRadius="14"
+              Background="#06101A" BorderBrush="#0F2030" BorderThickness="1">
+        <!-- Fixed-height row: NoWrap + Ellipsis on ACTIVE so button combos never push height -->
+        <Grid ColumnDefinitions="*,*,90,190,80" ColumnSpacing="8">
+
+          <Border Classes="hudCard" Grid.Column="0">
+            <StackPanel Spacing="3">
+              <TextBlock Text="LEFT STICK" FontSize="9.5" Foreground="#334155"
+                         FontWeight="SemiBold" LetterSpacing="0.5" />
+              <TextBlock Text="{Binding LeftStickValueText}" FontSize="12"
+                         Foreground="#CBD5E1" FontFamily="Cascadia Code,Consolas,monospace"
+                         TextWrapping="NoWrap" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="hudCard" Grid.Column="1">
+            <StackPanel Spacing="3">
+              <TextBlock Text="RIGHT STICK" FontSize="9.5" Foreground="#334155"
+                         FontWeight="SemiBold" LetterSpacing="0.5" />
+              <TextBlock Text="{Binding RightStickValueText}" FontSize="12"
+                         Foreground="#CBD5E1" FontFamily="Cascadia Code,Consolas,monospace"
+                         TextWrapping="NoWrap" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="hudCard" Grid.Column="2">
+            <StackPanel Spacing="3">
+              <TextBlock Text="TRIGGERS" FontSize="9.5" Foreground="#334155"
+                         FontWeight="SemiBold" LetterSpacing="0.5" />
+              <TextBlock Text="{Binding TriggerSummaryText}" FontSize="12"
+                         Foreground="#CBD5E1" TextWrapping="NoWrap" />
+            </StackPanel>
+          </Border>
+
+          <!-- ACTIVE: fixed width, no-wrap, ellipsis — never shifts layout -->
+          <Border Classes="hudCard" Grid.Column="3">
+            <StackPanel Spacing="3">
+              <TextBlock Text="ACTIVE" FontSize="9.5" Foreground="#334155"
+                         FontWeight="SemiBold" LetterSpacing="0.5" />
+              <TextBlock Text="{Binding PressedButtonsText}" FontSize="12"
+                         Foreground="#CBD5E1"
+                         TextWrapping="NoWrap"
+                         TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="hudCard" Grid.Column="4">
+            <StackPanel Spacing="3">
+              <TextBlock Text="TOUCH" FontSize="9.5" Foreground="#334155"
+                         FontWeight="SemiBold" LetterSpacing="0.5" />
+              <TextBlock Text="{Binding TouchSummaryText}" FontSize="12"
+                         Foreground="#CBD5E1" TextWrapping="NoWrap" />
+            </StackPanel>
+          </Border>
+        </Grid>
+      </Border>
+    </Grid>
+  </Border>
+</UserControl>

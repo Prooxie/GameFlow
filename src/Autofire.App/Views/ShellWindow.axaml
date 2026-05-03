@@ -1,0 +1,558 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="using:Autofire.App.Views"
+        xmlns:vm="using:Autofire.App.ViewModels"
+        x:Class="Autofire.App.Views.ShellWindow"
+        x:DataType="vm:ShellViewModel"
+        x:CompileBindings="False"
+        Width="1700"
+        Height="1040"
+        MinWidth="1420"
+        MinHeight="860"
+        Background="#050B12"
+        Title="{Binding WindowTitle}">
+
+  <Window.Resources>
+    <DataTemplate x:Key="InputProviderTemplate">
+      <StackPanel Margin="0,4" Spacing="3">
+        <TextBlock Text="{Binding Label}" FontWeight="SemiBold" Foreground="#E2E8F0" />
+        <TextBlock Text="{Binding Description}" FontSize="11" TextWrapping="Wrap" Foreground="#64748B" />
+      </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="OutputProviderTemplate">
+      <StackPanel Margin="0,4" Spacing="3">
+        <TextBlock Text="{Binding Label}" FontWeight="SemiBold" Foreground="#E2E8F0" />
+        <TextBlock Text="{Binding Description}" FontSize="11" TextWrapping="Wrap" Foreground="#64748B" />
+      </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="ControllerStyleTemplate">
+      <TextBlock Text="{Binding Label}" Foreground="#CBD5E1" />
+    </DataTemplate>
+
+    <DataTemplate x:Key="DetectedControllerTemplate">
+      <StackPanel Margin="0,4" Spacing="3">
+        <TextBlock Text="{Binding Label}" FontWeight="SemiBold" Foreground="#E2E8F0" />
+        <TextBlock Text="{Binding Description}" FontSize="11" TextWrapping="Wrap" Foreground="#64748B" />
+      </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="ProfileOptionTemplate">
+      <StackPanel Margin="0,4" Spacing="3">
+        <TextBlock Text="{Binding Label}" FontWeight="SemiBold" Foreground="#E2E8F0" />
+        <TextBlock Text="{Binding Description}" FontSize="11" TextWrapping="Wrap" Foreground="#64748B" />
+      </StackPanel>
+    </DataTemplate>
+  </Window.Resources>
+
+  <!-- Root layout: header bar + sidebar nav -->
+  <Grid RowDefinitions="72,*" RowSpacing="0">
+
+    <!-- ── Header ─────────────────────────────────────────────────── -->
+    <Border Grid.Row="0"
+            Padding="24,0"
+            Background="#060E1C"
+            BorderBrush="#0F2035"
+            BorderThickness="0,0,0,1">
+      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16">
+
+        <!-- Wordmark + status -->
+        <!-- Issue #8: HorizontalAlignment="Left" on the outer StackPanel ensures
+             the status text sits flush-left, aligned under the logo wordmark. -->
+        <StackPanel VerticalAlignment="Center" Spacing="3"
+                    HorizontalAlignment="Left">
+          <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+            <Border Width="32" Height="32" CornerRadius="8"
+                    Background="#001B26" BorderBrush="#00D4FF" BorderThickness="1">
+              <TextBlock Text="⊕" FontSize="16" FontWeight="Bold"
+                         Foreground="#00D4FF"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <StackPanel Spacing="0" VerticalAlignment="Center">
+              <TextBlock Text="AUTOFIRE" FontSize="19" FontWeight="Black" Foreground="#EEF2FF"
+                         LetterSpacing="2" />
+              <TextBlock Text="NEXT" FontSize="9" FontWeight="Bold" Foreground="#00D4FF"
+                         LetterSpacing="3" Margin="1,0,0,0" />
+            </StackPanel>
+          </StackPanel>
+          <!-- Issue #8: Margin="42,0,0,0" aligns under logo (32 icon + 10 spacing) -->
+          <TextBlock Text="{Binding StatusText}" FontSize="12"
+                     Foreground="#475569" Margin="42,0,0,0"
+                     HorizontalAlignment="Left"
+                     MaxWidth="1000"
+                     TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+
+        <!-- Language selector -->
+        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+          <TextBlock Text="{Binding LanguageLabel}" FontSize="10.5"
+                     Foreground="#475569" FontWeight="SemiBold" LetterSpacing="0.5" />
+          <ComboBox Width="150"
+                    ItemsSource="{Binding SupportedLanguages}"
+                    SelectedItem="{Binding SelectedLanguage}" />
+        </StackPanel>
+
+        <!-- Refresh button -->
+        <Button Grid.Column="2"
+                Classes="ghost"
+                VerticalAlignment="Center"
+                Padding="14,9"
+                Command="{Binding RefreshCommand}"
+                Content="{Binding RefreshButtonLabel}" />
+      </Grid>
+    </Border>
+
+    <!-- ── Sidebar + content ──────────────────────────────────────── -->
+    <!-- Issue #7: wrap in a Grid so we can overlay the footer over
+         the bottom of the 210 px sidebar strip. -->
+    <Grid Grid.Row="1">
+      <TabControl TabStripPlacement="Left">
+
+        <!-- ── Sidebar decoration ──────────────────────────────────── -->
+        <TabControl.Styles>
+          <Style Selector="TabControl /template/ TabStrip">
+            <Setter Property="Width" Value="210" />
+            <Setter Property="Margin" Value="0" />
+          </Style>
+          <Style Selector="TabControl /template/ Border#PART_Border">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+          </Style>
+        </TabControl.Styles>
+
+        <!-- ═══ DASHBOARD ══════════════════════════════════════════════ -->
+        <TabItem>
+          <TabItem.Header>
+            <Panel Width="210" Height="50">
+              <Border Classes="navAccent" Width="3" HorizontalAlignment="Left"
+                      VerticalAlignment="Stretch" Background="#00D4FF"
+                      Opacity="0" CornerRadius="0,3,3,0" />
+              <StackPanel Orientation="Horizontal" Spacing="14"
+                          Margin="22,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="▣" FontSize="15" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding DashboardTabLabel}"
+                           FontWeight="Medium" VerticalAlignment="Center" />
+              </StackPanel>
+            </Panel>
+          </TabItem.Header>
+
+          <ScrollViewer Margin="20,16,20,16"
+                        VerticalScrollBarVisibility="Auto"
+                        HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="16">
+
+              <!-- Stat cards row -->
+              <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
+
+                <!-- Input -->
+                <Border Grid.Column="0" CornerRadius="14"
+                        Background="#08111E" BorderBrush="#162740" BorderThickness="1">
+                  <Grid ColumnDefinitions="4,*">
+                    <Border Grid.Column="0" Background="#00D4FF"
+                            CornerRadius="13,0,0,13" Opacity="0.85" />
+                    <StackPanel Grid.Column="1" Margin="14,14" Spacing="5">
+                      <TextBlock Text="{Binding InputProviderLabel}" FontSize="10"
+                                 Foreground="#475569" FontWeight="SemiBold"
+                                 LetterSpacing="0.8" />
+                      <TextBlock Text="{Binding SelectedInputProviderSummary}" FontSize="17"
+                                 FontWeight="Bold" Foreground="White" TextWrapping="Wrap"
+                                 MaxHeight="44" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+
+                <!-- Output -->
+                <Border Grid.Column="1" CornerRadius="14"
+                        Background="#08111E" BorderBrush="#162740" BorderThickness="1">
+                  <Grid ColumnDefinitions="4,*">
+                    <Border Grid.Column="0" Background="#4F8CFF"
+                            CornerRadius="13,0,0,13" Opacity="0.85" />
+                    <StackPanel Grid.Column="1" Margin="14,14" Spacing="5">
+                      <TextBlock Text="{Binding OutputProviderLabel}" FontSize="10"
+                                 Foreground="#475569" FontWeight="SemiBold"
+                                 LetterSpacing="0.8" />
+                      <TextBlock Text="{Binding SelectedOutputProviderSummary}" FontSize="17"
+                                 FontWeight="Bold" Foreground="White" TextWrapping="Wrap"
+                                 MaxHeight="44" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+
+                <!-- Controller -->
+                <Border Grid.Column="2" CornerRadius="14"
+                        Background="#08111E" BorderBrush="#162740" BorderThickness="1">
+                  <Grid ColumnDefinitions="4,*">
+                    <Border Grid.Column="0" Background="#A78BFA"
+                            CornerRadius="13,0,0,13" Opacity="0.85" />
+                    <StackPanel Grid.Column="1" Margin="14,14" Spacing="5">
+                      <TextBlock Text="{Binding ControllerInventoryLabel}" FontSize="10"
+                                 Foreground="#475569" FontWeight="SemiBold"
+                                 LetterSpacing="0.8" />
+                      <TextBlock Text="{Binding ControllerInventoryText}" FontSize="17"
+                                 FontWeight="Bold" Foreground="White" TextWrapping="Wrap"
+                                 MaxHeight="44" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+
+                <!-- Polling rate -->
+                <Border Grid.Column="3" CornerRadius="14"
+                        Background="#08111E" BorderBrush="#162740" BorderThickness="1">
+                  <Grid ColumnDefinitions="4,*">
+                    <Border Grid.Column="0" Background="#10B981"
+                            CornerRadius="13,0,0,13" Opacity="0.85" />
+                    <StackPanel Grid.Column="1" Margin="14,14" Spacing="5">
+                      <TextBlock Text="{Binding PollingRateLabel}" FontSize="10"
+                                 Foreground="#475569" FontWeight="SemiBold"
+                                 LetterSpacing="0.8" />
+                      <TextBlock Text="{Binding SelectedPollingRateText}" FontSize="17"
+                                 FontWeight="Bold" Foreground="White" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </Grid>
+
+              <!-- Settings panel -->
+              <Border Padding="20,18" CornerRadius="16"
+                      Background="#08111E" BorderBrush="#162740" BorderThickness="1">
+                <StackPanel Spacing="14">
+                  <StackPanel Spacing="3">
+                    <TextBlock Text="{Binding DashboardSettingsLabel}" FontSize="15"
+                               FontWeight="SemiBold" Foreground="#EEF2FF" />
+                    <TextBlock Text="{Binding DashboardSubtitle}" FontSize="12"
+                               Foreground="#475569" TextWrapping="Wrap" />
+                  </StackPanel>
+
+                  <Grid ColumnDefinitions="1.1*,1.1*,1.2*,1*,1*,1.1*,Auto"
+                        ColumnSpacing="12">
+                    <StackPanel Grid.Column="0" Spacing="5">
+                      <TextBlock Text="{Binding InputProviderLabel}" FontSize="11"
+                                 Foreground="#475569" FontWeight="SemiBold" LetterSpacing="0.5" />
+                      <ComboBox ItemsSource="{Binding InputProviderOptions}"
+                                SelectedItem="{Binding SelectedInputProvider}"
+                                ItemTemplate="{StaticResource InputProviderTemplate}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="5">
+                      <TextBlock Text="{Binding OutputProviderLabel}" FontSize="11"
+                                 Foreground="#475569" FontWeight="SemiBold" LetterSpacing="0.5" />
+                      <ComboBox ItemsSource="{Binding OutputProviderOptions}"
+                                SelectedItem="{Binding SelectedOutputProvider}"
+                                ItemTemplate="{StaticResource OutputProviderTemplate}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="5">
+                      <TextBlock Text="{Binding ControllerLabel}" FontSize="11"
+                                 Foreground="#475569" FontWeight="SemiBold" LetterSpacing="0.5" />
+                      <ComboBox ItemsSource="{Binding AvailableControllers}"
+                                SelectedItem="{Binding SelectedController}"
+                                ItemTemplate="{StaticResource DetectedControllerTemplate}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="3" Spacing="5">
+                      <TextBlock Text="{Binding PhysicalStyleLabel}" FontSize="11"
+                                 Foreground="#475569" FontWeight="SemiBold" LetterSpacing="0.5" />
+                      <ComboBox ItemsSource="{Binding ControllerStyleOptions}"
+                                SelectedItem="{Binding SelectedPhysicalStyle}"
+                                ItemTemplate="{StaticResource ControllerStyleTemplate}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="4" Spacing="5">
+                      <TextBlock Text="{Binding VirtualStyleLabel}" FontSize="11"
+                                 Foreground="#475569" FontWeight="SemiBold" LetterSpacing="0.5" />
+                      <ComboBox ItemsSource="{Binding ControllerStyleOptions}"
+                                SelectedItem="{Binding SelectedVirtualStyle}"
+                                ItemTemplate="{StaticResource ControllerStyleTemplate}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="5" Spacing="5">
+                      <TextBlock Text="{Binding PollingRateLabel}" FontSize="11"
+                                 Foreground="#475569" FontWeight="SemiBold" LetterSpacing="0.5" />
+                      <Slider Minimum="30" Maximum="1000" TickFrequency="10"
+                              Value="{Binding SelectedPollingRateHz}" />
+                      <TextBlock Text="{Binding SelectedPollingRateText}"
+                                 HorizontalAlignment="Right" FontSize="11"
+                                 Foreground="#94A3B8" />
+                    </StackPanel>
+                    <Button Grid.Column="6" Classes="primary"
+                            VerticalAlignment="Bottom" Padding="18,10"
+                            Command="{Binding ApplyDashboardPreferencesCommand}"
+                            Content="{Binding ApplyDashboardSettingsButtonLabel}" />
+                  </Grid>
+                </StackPanel>
+              </Border>
+
+              <!-- Issue #1: Controller surfaces side-by-side, full width —
+                   removed the 340px right inspector column. -->
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="14">
+                <views:ControllerSurface Grid.Column="0"
+                                         DataContext="{Binding PhysicalController}" />
+                <views:ControllerSurface Grid.Column="1"
+                                         DataContext="{Binding VirtualController}" />
+              </Grid>
+
+            </StackPanel>
+          </ScrollViewer>
+        </TabItem>
+
+        <!-- ═══ PROFILES ══════════════════════════════════════════════ -->
+        <TabItem>
+          <TabItem.Header>
+            <Panel Width="210" Height="50">
+              <Border Classes="navAccent" Width="3" HorizontalAlignment="Left"
+                      VerticalAlignment="Stretch" Background="#00D4FF"
+                      Opacity="0" CornerRadius="0,3,3,0" />
+              <StackPanel Orientation="Horizontal" Spacing="14"
+                          Margin="22,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="≡" FontSize="17" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding ProfilesTabLabel}"
+                           FontWeight="Medium" VerticalAlignment="Center" />
+              </StackPanel>
+            </Panel>
+          </TabItem.Header>
+
+          <Grid Margin="20,16" RowDefinitions="Auto,*" RowSpacing="14">
+            <Border Grid.Row="0" Padding="18,16" CornerRadius="14"
+                    Background="#08111E" BorderBrush="#162740" BorderThickness="1">
+              <StackPanel Spacing="14">
+
+                <!-- Toolbar header -->
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                  <StackPanel Spacing="3">
+                    <TextBlock Text="{Binding ProfileEditorLabel}"
+                               FontSize="15" FontWeight="SemiBold" Foreground="White" />
+                    <TextBlock Text="{Binding ProfileToolbarSubtitle}"
+                               FontSize="12" Foreground="#475569" TextWrapping="Wrap" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button Classes="ghost" Padding="14,9"
+                            Command="{Binding CreateProfileCommand}"
+                            Content="{Binding CreateProfileButtonLabel}" />
+                    <Button Classes="ghost" Padding="14,9"
+                            Command="{Binding DuplicateProfileCommand}"
+                            Content="{Binding DuplicateProfileButtonLabel}" />
+                    <Button Classes="ghost" Padding="14,9"
+                            Command="{Binding ImportProfileCommand}"
+                            Content="{Binding ImportProfileButtonLabel}" />
+                    <Button Classes="ghost" Padding="14,9"
+                            Command="{Binding ExportProfileCommand}"
+                            Content="{Binding ExportProfileButtonLabel}" />
+                    <Button Classes="primary" Padding="14,9"
+                            Command="{Binding SaveProfileCommand}"
+                            Content="{Binding SaveProfileButtonLabel}" />
+                    <Button Classes="ghost" Padding="14,9"
+                            Command="{Binding ResetProfileCommand}"
+                            Content="{Binding ResetProfileButtonLabel}" />
+                  </StackPanel>
+                </Grid>
+
+                <!-- Profile selector row -->
+                <Grid ColumnDefinitions="180,*" ColumnSpacing="12">
+                  <StackPanel Grid.Column="0" Spacing="5">
+                    <TextBlock Text="{Binding ProfileComboLabel}" FontSize="10" FontWeight="SemiBold"
+                               Foreground="#475569" LetterSpacing="0.8" />
+                    <TextBlock Text="{Binding SelectedProfileSummary}" FontSize="12"
+                               Foreground="#94A3B8" TextWrapping="Wrap" />
+                  </StackPanel>
+                  <ComboBox Grid.Column="1"
+                            ItemsSource="{Binding AvailableProfiles}"
+                            SelectedItem="{Binding SelectedProfileOption}"
+                            ItemTemplate="{StaticResource ProfileOptionTemplate}" />
+                </Grid>
+
+                <!-- Issue #4: Inline profile rename. The TextBox and button sit
+                     directly under the profile picker for quick access. -->
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                  <TextBlock Grid.Column="0" Text="{Binding ProfileNameLabel}"
+                             FontSize="11" FontWeight="SemiBold"
+                             Foreground="#475569" VerticalAlignment="Center"
+                             LetterSpacing="0.5" />
+                  <TextBox Grid.Column="1"
+                           Text="{Binding ProfileName}"
+                           Watermark="{Binding ProfileNameWatermark}" />
+                  <Button Grid.Column="2" Classes="ghost" Padding="14,9"
+                          Command="{Binding RenameProfileCommand}"
+                          Content="{Binding RenameProfileButtonLabel}" />
+                </Grid>
+
+              </StackPanel>
+            </Border>
+
+            <!-- Issue #2: The profile mapping overview and rule editor are placed
+                 side by side. MappingEditorView already has Margin built in so
+                 no extra margins needed here. -->
+            <Grid Grid.Row="1" ColumnDefinitions="440,*" ColumnSpacing="14">
+              <Border Grid.Column="0" Padding="18,16" CornerRadius="14"
+                      Background="#08111E" BorderBrush="#162740" BorderThickness="1">
+                <Grid RowDefinitions="Auto,*" RowSpacing="12">
+                  <StackPanel Grid.Row="0" Spacing="4">
+                    <TextBlock Text="{Binding MappingOverviewLabel}"
+                               FontSize="15" FontWeight="SemiBold" Foreground="White" />
+                    <TextBlock Text="{Binding MappingOverviewSubtitle}"
+                               FontSize="12" Foreground="#475569" TextWrapping="Wrap" />
+                  </StackPanel>
+                  <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="10">
+                      <TextBlock Text="{Binding NoMappingCardsText}"
+                                 FontSize="11" Foreground="#334155" TextWrapping="Wrap"
+                                 IsVisible="{Binding HasNoControlConfigurationCards}" />
+                      <ItemsControl ItemsSource="{Binding ControlConfigurationCards}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate>
+                            <Border CornerRadius="12" Padding="14,12"
+                                    Background="#060E1C" BorderBrush="#0F2035" BorderThickness="1">
+                              <StackPanel Spacing="10">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                  <StackPanel Spacing="3">
+                                    <TextBlock Text="{Binding Title}" FontSize="13.5"
+                                               FontWeight="SemiBold" Foreground="White" />
+                                    <TextBlock Text="{Binding Subtitle}" FontSize="11"
+                                               Foreground="#64748B" TextWrapping="Wrap" />
+                                  </StackPanel>
+                                  <StackPanel Grid.Column="1" Spacing="6" HorizontalAlignment="Right">
+                                    <Border Background="#0F2530" BorderBrush="#00D4FF" BorderThickness="1"
+                                            CornerRadius="999" Padding="10,4">
+                                      <TextBlock Text="{Binding RuleCountText}" FontSize="10" FontWeight="Bold"
+                                                 Foreground="#00D4FF" />
+                                    </Border>
+                                    <Button Classes="ghost" Padding="10,6"
+                                            Command="{Binding $parent[ItemsControl].DataContext.OpenControlEditorCommand}"
+                                            CommandParameter="{Binding SelectionKey}"
+                                            Content="{Binding $parent[ItemsControl].DataContext.OpenControlEditorButtonLabel}" />
+                                  </StackPanel>
+                                </Grid>
+                                <ItemsControl ItemsSource="{Binding Entries}">
+                                  <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                      <Border CornerRadius="10" Padding="10,8"
+                                              Background="#040A14" BorderBrush="#0B1727" BorderThickness="1">
+                                        <Grid ColumnDefinitions="4,Auto,*" ColumnSpacing="10">
+                                          <Border Grid.Column="0" Width="4" CornerRadius="999"
+                                                  Background="{Binding AccentColor}" />
+                                          <TextBlock Grid.Column="1" Text="{Binding Label}" FontSize="10.5"
+                                                     FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center" />
+                                          <TextBlock Grid.Column="2" Text="{Binding Value}" FontSize="11.5"
+                                                     Foreground="#E2E8F0" TextWrapping="Wrap"
+                                                     MaxHeight="36" />
+                                        </Grid>
+                                      </Border>
+                                    </DataTemplate>
+                                  </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                              </StackPanel>
+                            </Border>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </StackPanel>
+                  </ScrollViewer>
+                </Grid>
+              </Border>
+
+              <views:MappingEditorView Grid.Column="1"
+                                       DataContext="{Binding MappingEditor}" />
+            </Grid>
+          </Grid>
+        </TabItem>
+
+        <!-- ═══ DIAGNOSTICS ════════════════════════════════════════════ -->
+        <TabItem>
+          <TabItem.Header>
+            <Panel Width="210" Height="50">
+              <Border Classes="navAccent" Width="3" HorizontalAlignment="Left"
+                      VerticalAlignment="Stretch" Background="#00D4FF"
+                      Opacity="0" CornerRadius="0,3,3,0" />
+              <StackPanel Orientation="Horizontal" Spacing="14"
+                          Margin="22,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="⊛" FontSize="15" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding DiagnosticsTabLabel}"
+                           FontWeight="Medium" VerticalAlignment="Center" />
+              </StackPanel>
+            </Panel>
+          </TabItem.Header>
+
+          <Grid Margin="20,16" ColumnDefinitions="*,*"
+                RowDefinitions="Auto,*" ColumnSpacing="14" RowSpacing="14">
+
+            <!-- Diagnostics text -->
+            <Border Grid.Row="0" Grid.ColumnSpan="2"
+                    Padding="18,16" CornerRadius="14"
+                    Background="#08111E" BorderBrush="#162740" BorderThickness="1">
+              <Grid RowDefinitions="Auto,*" RowSpacing="10">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+                  <Border Width="3" CornerRadius="999" Background="#00D4FF" />
+                  <TextBlock Text="{Binding DiagnosticsLabel}"
+                             FontSize="14" FontWeight="SemiBold" Foreground="White" />
+                </StackPanel>
+                <TextBox Grid.Row="1" Classes="code"
+                         Text="{Binding DiagnosticsText}" FontSize="12"
+                         IsReadOnly="True" AcceptsReturn="True"
+                         MaxHeight="180"
+                         TextWrapping="Wrap"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto" />
+              </Grid>
+            </Border>
+
+            <!-- Physical raw JSON -->
+            <Border Grid.Row="1" Grid.Column="0"
+                    Padding="18,16" CornerRadius="14"
+                    Background="#08111E" BorderBrush="#162740" BorderThickness="1">
+              <Grid RowDefinitions="Auto,*" RowSpacing="10">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+                  <Border Width="3" CornerRadius="999" Background="#4F8CFF" />
+                  <TextBlock Text="{Binding RawPhysicalLabel}"
+                             FontSize="14" FontWeight="SemiBold" Foreground="White" />
+                </StackPanel>
+                <TextBox Grid.Row="1" Classes="code"
+                         Text="{Binding PhysicalStateJson}" FontSize="11.5"
+                         IsReadOnly="True" AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto" />
+              </Grid>
+            </Border>
+
+            <!-- Virtual raw JSON -->
+            <Border Grid.Row="1" Grid.Column="1"
+                    Padding="18,16" CornerRadius="14"
+                    Background="#08111E" BorderBrush="#162740" BorderThickness="1">
+              <Grid RowDefinitions="Auto,*" RowSpacing="10">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+                  <Border Width="3" CornerRadius="999" Background="#A78BFA" />
+                  <TextBlock Text="{Binding RawVirtualLabel}"
+                             FontSize="14" FontWeight="SemiBold" Foreground="White" />
+                </StackPanel>
+                <TextBox Grid.Row="1" Classes="code"
+                         Text="{Binding VirtualStateJson}" FontSize="11.5"
+                         IsReadOnly="True" AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto" />
+              </Grid>
+            </Border>
+          </Grid>
+        </TabItem>
+
+        <!-- Issue #7: About tab removed. Version info is in the sidebar footer below. -->
+
+      </TabControl>
+
+      <!-- Issue #7: Sidebar footer pinned over the bottom of the 210 px tab strip.
+           Shows app credits and version without needing a dedicated About page. -->
+      <Border Width="210"
+              HorizontalAlignment="Left"
+              VerticalAlignment="Bottom"
+              Padding="16,12"
+              Background="#060E1C"
+              BorderBrush="#0F2035"
+              BorderThickness="0,1,0,0">
+        <StackPanel Spacing="2">
+          <TextBlock Text="Made by Proxy Darkness"
+                     FontSize="10" Foreground="#1E3A5A"
+                     HorizontalAlignment="Left" />
+          <TextBlock Text="{x:Static vm:ShellViewModel.AppVersion}"
+                     FontSize="10" Foreground="#1E3A5A"
+                     HorizontalAlignment="Left" />
+          <TextBlock Text="Copyright © 2026"
+                     FontSize="10" Foreground="#1E3A5A"
+                     HorizontalAlignment="Left" />
+        </StackPanel>
+      </Border>
+
+    </Grid>
+  </Grid>
+</Window>
