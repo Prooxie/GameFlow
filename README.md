@@ -17,11 +17,12 @@ Built with **.NET** and **Avalonia UI**, focused on performance, flexibility, an
 
 ## Features
 
+* Virtual drivers for support for any device
 * Autofire / rapid fire configuration
 * Button remapping
 * JSON-based profiles
-* Gamepad input testing tools
-* Cross-platform UI (Windows, Linux, macOS)
+* Cross-platform UI (Windows, Linux, macOS) // Linux and MacOS are not tested!
+* Multi-language
 
 ---
 
