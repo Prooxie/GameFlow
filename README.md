@@ -292,13 +292,9 @@ This project is licensed under the **[MIT License](LICENSE)**.
 
 ---
 
-## Author
+## Credits
 
-**Proxy Darkness** — feel free to check out my other projects, videos, and stream.
-
-[Youtube](https://www.youtube.com/@ProxyDarkness)
-
-[Twitch](https://www.twitch.tv/ProxyDarkness)
+Checkout my other projects on the github, [Youtube](https://www.youtube.com/@ProxyDarkness) and [Twitch](https://www.twitch.tv/ProxyDarkness).
 
 ---
 
