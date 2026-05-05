@@ -28,6 +28,14 @@ Built with **.NET 10** · **Avalonia UI** · **ViGEm**
 Autofire Next is a desktop application that sits between your physical gamepad and any game or application.
 It reads your physical controller, transforms its inputs according to a saved **profile**, and writes the result to a **virtual controller** that the game sees.
 
+This project started first as a script to elevate players from doing tasks that would damage both their controllers and their hands. 
+The script was not good alternative and barely worked at all. 
+
+Later on this progress was done in Python for application Autofire to address issues from Joy2Key, DSX/DS4Windows and Gamepad Viewer. 
+However Python relied heavily on libraries and was pain to maintain.
+
+It however served as an architecture prototype for C# application that we can see now.
+
 Transformations include:
 
 - **Autofire / rapid fire** — pulse any button or stick at a configurable rate
