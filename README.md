@@ -1,308 +1,342 @@
+# Autofire Next
 
-<div align="center">
-
-<img src="https://user-images.githubusercontent.com/1286821/181085373-12eee197-187a-4438-90fe-571ac6d68900.png" width="0" height="0" />
-
-# ⊕ Autofire Next
-
-**Cross-platform gamepad tooling for speedrunners and power users.**  
-Autofire, remapping, stick shaping, freeze macros, and virtual controller output — all in one clean UI.
-
-Built with **.NET 10** · **Avalonia UI** · **ViGEm**
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-informational)](https://github.com/Prooxie/Autofire-Next)
-[![Made by Proxy Darkness](https://img.shields.io/badge/made%20by-Proxy%20Darkness-blueviolet)](https://buymeacoffee.com/ProxyDarkness)
+> A controller-mapping engine for Windows, Linux, and macOS — turbo, freeze-direction, stick shaping, button combos, and Lua scripting on top of any gamepad your OS can see.
 
 ---
 
-[![Buy Me a Coffee](https://user-images.githubusercontent.com/1286821/181085373-12eee197-187a-4438-90fe-571ac6d68900.png)](https://buymeacoffee.com/ProxyDarkness)
-*No pressure — using and sharing the project already helps a lot. Thank you!*
+## Table of contents
 
-</div>
-
----
-
-## What is Autofire Next?
-
-Autofire Next is a desktop application that sits between your physical gamepad and any game or application.
-It reads your physical controller, transforms its inputs according to a saved **profile**, and writes the result to a **virtual controller** that the game sees.
-
-This project started first as a script to elevate players from doing tasks that would damage both their controllers and their hands. 
-The script was not good alternative and barely worked at all. 
-
-Later on this progress was done in Python for application Autofire to address issues from Joy2Key, DSX/DS4Windows and Gamepad Viewer. 
-However Python relied heavily on libraries and was pain to maintain.
-
-It however served as an architecture prototype for C# application that we can see now.
-
-Transformations include:
-
-- **Autofire / rapid fire** — pulse any button or stick at a configurable rate
-- **Button remapping** — re-route any button to any other button
-- **Stick shaping** — deadzone, full-at threshold, and blend-mode control
-- **Freeze last direction** — latch the stick vector at the moment a button is pressed
-- **Profile system** — create, duplicate, rename, import, and export JSON profiles
-- **Live diagnostics** — real-time frame-age, input snapshot, and provider status at 60 Hz
+1. [What it does](#what-it-does)
+2. [Install](#install)
+3. [First-run tutorial](#first-run-tutorial)
+4. [Mapping rule types](#mapping-rule-types)
+5. [Lua scripting](#lua-scripting)
+6. [Profiles & sharing](#profiles--sharing)
+7. [Platform notes](#platform-notes)
+8. [Build from source](#build-from-source)
+9. [Release process (for maintainers)](#release-process-for-maintainers)
+10. [Troubleshooting](#troubleshooting)
 
 ---
 
-## Features at a Glance
+## What it does
 
-| Category | Details |
-|---|---|
-| **Autofire** | Button and stick autofire with configurable hold / release timing and jitter-resistant hysteresis |
-| **Remapping** | Button-to-button remap with optional source suppression |
-| **Stick shaping** | Per-stick deadzone and full-at threshold, applied directly to virtual output |
-| **Freeze macro** | Captures stick vector on rising edge of activation button; optional pulse-while-frozen mode |
-| **Profiles** | JSON-based, per-profile polling rate, input/output provider, controller style and rename support |
-| **Input providers** | XInput (Windows), SDL3 unified (all platforms), Demo preview, None |
-| **Output providers** | ViGEm Xbox 360, ViGEm DualShock 4, Preview (no virtual device) |
-| **Planned output** | Linux uinput, macOS CoreHID |
-| **UI** | Dual controller surface (physical + virtual side-by-side), live diagnostics, 8-language UI |
-| **Translations** | English, Czech, German, Spanish, French, Italian, Polish, Russian |
+Autofire Next reads a physical controller (XInput, SDL3, Linux evdev, or macOS CoreHID), runs your mapping profile through a deterministic pipeline, and writes the result to a virtual controller (ViGEm Xbox 360, ViGEm DualShock 4, ViGEm DualSense, or a preview buffer).
+
+The mapping pipeline supports:
+
+- **Button remap** — re-route any button to any other button.
+- **Button autofire / turbo** — hold a button to pulse another at a configurable hold/release rate.
+- **Stick threshold shaping** — deadzone + saturation curve per stick.
+- **Stick autofire / pulse** — pulse the virtual stick in any direction while a real stick is held.
+- **Freeze last direction** — capture the stick vector at the rising edge of an activation button and hold it until released.
+- **Button combos** (joy2key-style) — one source button → an ordered sequence of virtual button presses with per-step delay and hold.
+- **Lua scripts** — full programmable control over the virtual snapshot.
+
+Five visual themes (Cyber Blue, Midnight Purple, Neon Green, Solar Red, Light), 30 Hz dashboard, every UI string is localised.
 
 ---
 
-## Requirements
+## Install
 
-### All platforms
+### Windows
+1. Install the **ViGEm Bus driver** if you want virtual-controller output: <https://github.com/nefarius/ViGEmBus/releases>
+2. Download `Autofire-Next-vX.Y.Z-win-x64.zip` from the [releases page](../../releases).
+3. Unzip anywhere and run `Autofire.App.exe`.
 
-| Requirement | Version |
-|---|---|
-| [.NET SDK](https://dotnet.microsoft.com/download) | 10.0 or later |
-| Git | Any recent version |
-
-### Windows — virtual controller output
-
-To create a virtual Xbox 360 or DualShock 4 controller, the **ViGEm Bus driver** must be installed:
-
-> **[Download ViGEm Bus → vigembusdriver.com](https://vigembusdriver.com/)**
-
-Without it the application starts normally but the output provider falls back to **Preview** mode (no virtual device is created; the transformed state is shown in the dashboard only).
-
-### Linux — input
-
-SDL3 unified input works out of the box on most distributions.
-For joystick / gamepad access without `sudo`, add your user to the `input` group:
-
-```bash
-sudo usermod -aG input $USER
-# then log out and back in
-```
-
-The Linux virtual output provider (`uinput`) is planned. Place SDL3's shared library (`libSDL3.so`) in a system library path or next to the application binary.
+### Linux
+1. Add yourself to the `input` group so the app can read gamepads:
+   ```bash
+   sudo usermod -aG input $USER
+   newgrp input
+   ```
+2. Download `Autofire-Next-vX.Y.Z-linux-x64.tar.gz`.
+3. Extract and run `./Autofire.App`.
 
 ### macOS
-
-Place `libSDL3.dylib` in the application directory or a system library path (`/usr/local/lib`).
-The macOS virtual output provider (`CoreHID`) is planned.
-
-### SDL3 native library
-
-SDL3 unified input requires the SDL3 native library for your platform:
-
-| Platform | File |
-|---|---|
-| Windows | `SDL3.dll` (place next to `Autofire.App.exe`) |
-| Linux | `libSDL3.so` (system path or app directory) |
-| macOS | `libSDL3.dylib` (system path or app directory) |
-
-Download from [libsdl.org](https://libsdl.org/) or build from source.
-An optional `gamecontrollerdb.txt` ([SDL_GameControllerDB](https://github.com/mdqinc/SDL_GameControllerDB)) can be placed in the application directory to extend the built-in mapping database.
+1. Download `Autofire-Next-vX.Y.Z-osx-arm64.tar.gz` (Apple Silicon) or `osx-x64.tar.gz` (Intel).
+2. Extract anywhere.
+3. First launch will prompt for **Input Monitoring** permission — grant it in *System Settings → Privacy & Security → Input Monitoring*.
 
 ---
 
-## Quick Start
+## First-run tutorial
 
-### 1. Clone
+When you launch Autofire Next you land on the **Dashboard** tab. Before anything else, set the four dashboard fields top-to-bottom.
+
+### Step 1 — pick an input provider
+
+| Provider | When to choose it |
+|----------|-------------------|
+| **XInput** | Windows, Xbox-class controller |
+| **SDL3 unified input** | Anything else on Windows, all Linux, all macOS — broadest hardware support |
+| **Demo preview** | Test the UI without a real controller |
+| **No live input** | Pause the pipeline |
+
+### Step 2 — pick an output provider
+
+| Provider | When to choose it |
+|----------|-------------------|
+| **ViGEm Xbox 360** | Most Windows games — broadest game compatibility |
+| **ViGEm DualShock 4** | Games that prefer PlayStation prompts |
+| **ViGEm DualSense (DS5)** | Games that detect DS5 specifically (uses DS4 transport with DS5 product strings) |
+| **Preview only** | Cross-platform — view the transformed output in-app, do **not** create a virtual device |
+
+> **Linux/macOS** today only support **Preview only** as an output provider. Linux uinput output is on the roadmap.
+
+### Step 3 — pick the controller and visual styles
+
+Leave **Controller** on *Automatic* unless you have multiple gamepads. **Physical style** and **Virtual style** affect *only* the dashboard visualisation.
+
+### Step 4 — set the polling rate, then click **Apply**
+
+For most desktop gamepads, **250 Hz** is a sweet spot. For competitive setups with high-poll-rate pads, push it to **1000 Hz**.
+
+Click **Apply**. You should see your physical controller's inputs reflected in both visualisations.
+
+### Step 5 — add your first rule
+
+Switch to the **Profiles** tab.
+
+**Example: turbo Y at 10 Hz when right-bumper is held.**
+
+1. In the *Mapping rules* combobox, choose **Button autofire**, then click **+ Add rule**.
+2. In the form on the right:
+   - **Rule name:** `Turbo Y`
+   - **Trigger button:** `RightShoulder`
+   - **Output button:** `North`
+   - **Suppress source button:** ✓
+   - **Hold:** `60 ms`
+   - **Release:** `40 ms`
+3. Click **Save rule**.
+4. Click the green **Save** button in the profile toolbar to persist the profile to disk.
+
+Hold RB. The dashboard's virtual controller will pulse Y at ~10 Hz.
+
+### Step 6 — switch language and theme
+
+The two header dropdowns swap UI language and colour theme without restarting. All five themes meet WCAG-compliant text contrast — text stays visible.
+
+---
+
+## Mapping rule types
+
+| Rule | What it does | Use case |
+|------|--------------|----------|
+| Button remap | Source button → target button. | Swap A/B, route stick-click to Back. |
+| Button autofire | Source held → pulse target at HoldMs / ReleaseMs. | Turbo, rapid-fire. |
+| Stick threshold | Deadzone + saturation curve per stick. | Tighten loose sticks, fix drift. |
+| Stick autofire | Pulse a stick direction while a real stick is held. | Auto-walk, pulse-aim. |
+| Freeze last direction | Capture stick vector on the rising edge of a button, hold until release. | "Aim lock" while throwing grenades. |
+| Button combo (joy2key) | Source button → ordered sequence of virtual presses with per-step delay & hold. | Fighting-game macros, jump-cancel. |
+| Script | Lua code that reads physical, writes virtual, every tick. | Anything not covered above. |
+
+Every rule has **Enabled**, **Name**, **Mode** and **Suppress source** controls plus rule-specific fields. Rules execute in list order, so later rules can read what earlier rules wrote.
+
+---
+
+## Lua scripting
+
+Autofire Next embeds a sandboxed [MoonSharp](https://www.moonsharp.org/) interpreter for arbitrary scripts.
+
+1. *Profiles* tab → **Add rule** → **Script** → save.
+2. Click **Edit** on the rule.
+3. Set **Target control key** (informational — the script can press anything).
+4. Type your Lua in the **Script** field.
+
+### Required entry point
+
+```lua
+function on_tick(ctx)
+  -- runs once per polling tick
+end
+```
+
+### Context API
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `ctx.left.x`, `ctx.left.y`     | number (-1..1) | Physical left-stick vector |
+| `ctx.right.x`, `ctx.right.y`   | number (-1..1) | Physical right-stick vector |
+| `ctx.lt`, `ctx.rt`             | number (0..1)  | Physical triggers |
+| `ctx.is_pressed("South")`      | bool           | Query a physical button by name (any `ButtonId` value) |
+| `ctx.press("South")`           | function       | Set the named virtual button pressed |
+| `ctx.release("South")`         | function       | Set the named virtual button released |
+| `ctx.set_left(x, y)`           | function       | Write the virtual left stick |
+| `ctx.set_right(x, y)`          | function       | Write the virtual right stick |
+| `ctx.set_lt(value)`, `ctx.set_rt(value)` | function | Write virtual triggers |
+| `ctx.now_ms`                   | number         | Tick timestamp in ms since Unix epoch |
+| `ctx.dt_ms`                    | number         | Ms elapsed since the previous invocation of *this* script |
+| `ctx.state`                    | table          | Persistent per-script state |
+
+Button names: `South`, `East`, `West`, `North`, `LeftShoulder`, `RightShoulder`, `LeftTriggerButton`, `RightTriggerButton`, `Back`, `Start`, `Guide`, `LeftStick`, `RightStick`, `DpadUp`, `DpadDown`, `DpadLeft`, `DpadRight`, `Touchpad`.
+
+### Example 1 — turbo Y while LB is held
+
+```lua
+local TURBO_HZ = 10
+local PERIOD_MS = 1000 / TURBO_HZ
+
+function on_tick(ctx)
+  if not ctx.is_pressed("LeftShoulder") then
+    ctx.state.t = nil
+    return
+  end
+
+  ctx.state.t = (ctx.state.t or 0) + ctx.dt_ms
+  local phase = ctx.state.t % PERIOD_MS
+  if phase < (PERIOD_MS / 2) then
+    ctx.press("North")
+  else
+    ctx.release("North")
+  end
+end
+```
+
+### Example 2 — radial deadzone + sensitivity curve on the right stick
+
+```lua
+local DEADZONE = 0.12
+local CURVE = 1.4   -- >1 = slower around centre, faster at the edges
+
+function on_tick(ctx)
+  local x, y = ctx.right.x, ctx.right.y
+  local mag = math.sqrt(x*x + y*y)
+
+  if mag < DEADZONE then
+    ctx.set_right(0, 0)
+    return
+  end
+
+  local scaled = ((mag - DEADZONE) / (1 - DEADZONE)) ^ CURVE
+  local nx, ny = (x / mag) * scaled, (y / mag) * scaled
+  ctx.set_right(nx, ny)
+end
+```
+
+### Example 3 — fighting-game macro on RB (quarter-circle + South)
+
+```lua
+local SEQUENCE = {
+  { dir = {0, -1},  ms = 60 },           -- down
+  { dir = {1, -1},  ms = 60 },           -- down-forward
+  { dir = {1, 0},   ms = 60 },           -- forward
+  { dir = nil, btn = "South", ms = 80 }, -- punch
+}
+
+function on_tick(ctx)
+  if ctx.is_pressed("RightShoulder") and not ctx.state.running then
+    ctx.state.running = { started = ctx.now_ms }
+  end
+  if not ctx.state.running then return end
+
+  local elapsed = ctx.now_ms - ctx.state.running.started
+  local cumulative = 0
+  for _, step in ipairs(SEQUENCE) do
+    cumulative = cumulative + step.ms
+    if elapsed < cumulative then
+      if step.dir then ctx.set_left(step.dir[1], step.dir[2]) end
+      if step.btn then ctx.press(step.btn) end
+      return
+    end
+  end
+
+  ctx.state.running = nil
+end
+```
+
+### Sandbox restrictions
+
+The Lua sandbox **disables** `os`, `io`, `debug`, `package`, `require`, `loadfile`, and `dofile`. Scripts can compute, read `ctx`, write virtual state, and use `ctx.state` for persistence — nothing else.
+
+---
+
+## Profiles & sharing
+
+Profiles are JSON, stored at:
+
+| OS | Path |
+|----|------|
+| Windows | `%APPDATA%\Autofire.Next\profiles\` |
+| Linux   | `~/.config/Autofire.Next/profiles/` |
+| macOS   | `~/Library/Application Support/Autofire.Next/profiles/` |
+
+Use **Export** to share, **Import** to receive.
+
+---
+
+## Platform notes
+
+| Platform | Input | Output |
+|----------|-------|--------|
+| Windows  | XInput, SDL3, Microsoft.GameInput\* | ViGEm 360 / DS4 / DS5, Preview |
+| Linux    | SDL3, evdev | Preview |
+| macOS    | SDL3, CoreHID | Preview |
+
+\*GameInput is shipped **disabled** until the interop layer is hosted out-of-process — flip `Runtime:EnableExperimentalGameInput=true` in `appsettings.json` to opt in.
+
+### PlayStation 3 controllers (Sixaxis / DS3)
+
+DS3 controllers render with a dedicated silhouette and are detected on every platform, but full feature support requires platform-specific drivers:
+
+- **Windows:** [DsHidMini](https://github.com/nefarius/DsHidMini) or [ScpToolkit](https://github.com/nefarius/ScpToolkit). The DS3 then enumerates as XInput.
+- **Linux:** kernel drivers `hid-sony` (USB) and `hid-playstation` (Bluetooth) work on kernel 5.12+ without any user setup.
+- **macOS:** USB only out of the box; Bluetooth needs a third-party kext.
+
+---
+
+## Build from source
 
 ```bash
-git clone https://github.com/Prooxie/Autofire-Next.git
+git clone https://github.com/YOUR_GH_USER/Autofire-Next.git
 cd Autofire-Next
-```
 
-### 2. Build
-
-```bash
-dotnet build
-```
-
-### 3. Run
-
-```bash
+dotnet restore Autofire.Next.sln
+dotnet build  Autofire.Next.sln --configuration Release
+dotnet test   Autofire.Next.sln --configuration Release --no-build
 dotnet run --project src/Autofire.App
 ```
 
-On first launch the application creates a default profile under:
-
-| Platform | Location |
-|---|---|
-| Windows | `%LOCALAPPDATA%\AutofireNext\` |
-| Linux | `~/.local/share/AutofireNext/` |
-| macOS | `~/Library/Application Support/AutofireNext/` |
+Requires .NET **10.0** SDK or newer.
 
 ---
 
-## Configuration
+## Release process (for maintainers)
 
-### appsettings.json
+GitHub Actions handles everything once a version tag lands:
 
-`src/Autofire.App/appsettings.json` controls runtime behaviour:
-
-```json
-{
-  "Runtime": {
-    "EnableViGEm": true,
-    "EnableExperimentalGameInput": false,
-    "DashboardRefreshHz": 60
-  }
-}
+```bash
+# bump version in src/Autofire.App/Autofire.App.csproj <Version>X.Y.Z</Version>
+git commit -am "chore: bump to vX.Y.Z"
+git tag -a vX.Y.Z -m "vX.Y.Z"
+git push origin main --tags
 ```
 
-| Key | Default | Description |
-|---|---|---|
-| `EnableViGEm` | `true` | Enable ViGEm virtual controller output on Windows |
-| `EnableExperimentalGameInput` | `false` | Enable Microsoft GameInput provider (Windows, experimental, out-of-process isolation required) |
-| `DashboardRefreshHz` | `60` | UI refresh rate for the live dashboard and diagnostics panel |
+The `ci.yml` workflow then:
 
-### Profiles
+1. Builds & tests on Windows, Linux, macOS (Apple Silicon **and** Intel).
+2. Publishes self-contained single-file binaries for `win-x64`, `linux-x64`, `osx-arm64`, `osx-x64`.
+3. Creates a GitHub Release named after the tag and attaches all four artifacts.
+4. Auto-generates release notes from PRs / commits since the previous tag.
 
-Profiles are JSON files stored in the application data directory.
-An example is included at:
-
-```
-samples/SpeedrunnerDefault.profile.json
-```
-
-Each profile defines:
-
-- Input and output provider selection
-- Per-controller polling rate (30 – 1000 Hz)
-- All mapping rules (autofire, remap, threshold, freeze)
-- Controller surface display style
-- Preferred input device ID
-
-Profiles can be created, duplicated, renamed, imported, and exported from the **Profiles** tab without touching JSON directly.
+Watch the workflow run at *Actions → ci → \<your tag\>*.
 
 ---
 
-## Input Providers
+## Troubleshooting
 
-| ID | Platform | Status | Notes |
-|---|---|---|---|
-| `sdl` | All | Stable | SDL3 unified; supports mapped gamepads and joystick fallback. Recommended default. |
-| `xinput` | Windows | Stable | Native Windows XInput. Up to 4 simultaneous Xbox-compatible controllers. |
-| `demo` | All | Stable | Animated preview source for UI testing. No hardware required. |
-| `none` | All | Stable | Disables live input. Dashboard stays idle. |
-| `gameinput` | Windows | Experimental | Microsoft GameInput. Disabled by default. Requires out-of-process interop isolation. |
-
----
-
-## Output Providers
-
-| ID | Platform | Status | Notes |
-|---|---|---|---|
-| `vigem-xbox360` | Windows | Stable | Virtual Xbox 360 controller via ViGEm Bus. |
-| `vigem-ds4` | Windows | Stable | Virtual DualShock 4 controller via ViGEm Bus. |
-| `preview` | All | Stable | No virtual device. Shows transformed state in the dashboard only. |
-| `uinput` | Linux | Planned | Kernel uinput virtual device. Implementation in progress. |
-| `corehid` | macOS | Planned | IOHIDUserDevice virtual device. Implementation in progress. |
-
----
-
-## Project Structure
-
-```
-Autofire-Next/
-├── src/
-│   ├── Autofire.App              # Avalonia UI, ViewModels, Views, Localization
-│   ├── Autofire.Core             # Domain models, pipeline, rule types, schedulers
-│   └── Autofire.Infrastructure   # SDL3, XInput, ViGEm, profile persistence, runtime
-├── samples/                      # Example profile JSON files
-├── docs/                         # Architecture notes, GameInput integration guide
-└── scripts/                      # Publish and packaging scripts
-```
-
----
-
-## Architecture Overview
-
-```
-Physical controller
-        │  (SDL3 / XInput / GameInput)
-        ▼
- InputSource.ReadAsync()
-        │
-        ▼
- ControllerMappingPipeline
-   ├── StickThresholdRule   (deadzone / full-at)
-   ├── ButtonRemapRule      (source → target)
-   ├── ButtonAutofireRule   (binary pulse scheduler)
-   ├── StickAutofireRule    (stick pulse scheduler + hysteresis)
-   └── FreezeLastDirectionRule  (rising-edge capture + optional pulse)
-        │
-        ▼
- OutputSink.WriteAsync()
-        │  (ViGEm Xbox360 / DS4 / Preview / uinput / CoreHID)
-        ▼
-  Virtual controller seen by games
-```
-
-All rules are stored in the profile JSON and applied in order every polling tick.
-The UI reads from a lock-free `RuntimeSnapshotStore` on a 16 ms timer (≈ 60 Hz) without blocking the pipeline.
-
----
-
-## Localization
-
-The UI is fully translated into:
-
-🇬🇧 English · 🇨🇿 Czech · 🇩🇪 German · 🇪🇸 Spanish · 🇫🇷 French · 🇮🇹 Italian · 🇵🇱 Polish · 🇷🇺 Russian
-
-Language can be changed live from the header bar without restarting the application.
-
----
-
-## Contributing
-
-Contributions are welcome.
-
-1. Fork the repository
-2. Create a branch: `git checkout -b feature/my-feature`
-3. Commit your changes
-4. Open a Pull Request
-
-Please keep commits focused and include a short description of what changed and why.
-
----
-
-## Documentation
-
-Additional technical documentation is available in the `docs/` directory:
-
-- `docs/MicrosoftGameInput.md` — GameInput provider integration notes
-- `docs/GameInputSmokeTest.md` — Manual smoke-test procedure for GameInput
+| Symptom | Fix |
+|--------|------|
+| "No controllers detected" on Windows even though my pad works in games | Try the **SDL3** input provider — XInput only sees Xbox-class devices. |
+| `DllNotFoundException: SDL3` on first launch | The SDL3 native library lives in `runtimes/<rid>/native/`. Reinstall and verify SmartScreen didn't quarantine it. |
+| Linux: app starts but enumerates zero pads | Confirm `groups` shows `input`. `udevadm monitor` should print events when you replug a pad. |
+| ViGEm output silently does nothing | ViGEm Bus driver is not installed or has been blocked by Secure Boot — reinstall from <https://github.com/nefarius/ViGEmBus/releases>. |
+| Crash on application exit | Fixed in v1.0.0+. Make sure you're on the latest release. |
 
 ---
 
 ## License
 
-This project is licensed under the **[MIT License](LICENSE)**.
+MIT — see `LICENSE`.
 
----
-
-## Credits
-
-Checkout my other projects on the github, [Youtube](https://www.youtube.com/@ProxyDarkness) and [Twitch](https://www.twitch.tv/ProxyDarkness).
-
----
-
-## Thanks to
-
-**Nazzareno96** — keeping me sane during development, beta testing  
-[twitch.tv/nazzareno96](https://www.twitch.tv/nazzareno96)
-
-**NoobKillerRoof** — voicing real hardware/software pain points that inspired this project, beta testing  
-[twitch.tv/noobkillerroof](https://www.twitch.tv/noobkillerroof)
-
+Made by **Proxy Darkness**. Pull requests welcome.

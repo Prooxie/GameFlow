@@ -31,8 +31,11 @@ public sealed class StickPulseSchedulerTests
     }
 
     [Fact]
-    public void Tick_ShouldReturnZeroImmediatelyWhenDesiredBecomesZero()
+    public void Tick_ShouldReturnZeroAfterSustainedZeroDesire()
     {
+        // ZeroHysteresisFrames = 3 in StickPulseScheduler, so three consecutive
+        // SetDesired(Zero) calls are required before the scheduler actually stops.
+        // This prevents a single jitter frame from interrupting an active pulse.
         var scheduler = new StickPulseScheduler(new PulseTimingOptions());
 
         var now = DateTimeOffset.UtcNow;
@@ -40,8 +43,11 @@ public sealed class StickPulseSchedulerTests
 
         _ = scheduler.Tick(now);
 
+        // Simulate 3 consecutive zero-input frames (matching ZeroHysteresisFrames)
         scheduler.SetDesired(StickVector.Zero, now.AddMilliseconds(10));
-        var stopped = scheduler.Tick(now.AddMilliseconds(12));
+        scheduler.SetDesired(StickVector.Zero, now.AddMilliseconds(11));
+        scheduler.SetDesired(StickVector.Zero, now.AddMilliseconds(12));
+        var stopped = scheduler.Tick(now.AddMilliseconds(13));
 
         Assert.Equal(StickVector.Zero, stopped.Value);
     }

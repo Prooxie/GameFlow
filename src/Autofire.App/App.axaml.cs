@@ -47,7 +47,7 @@ public partial class App : Application
             host = HostBuilderFactory.Create(Environment.GetCommandLineArgs()).Build();
             await host.StartAsync();
 
-            var profileSession = host.Services.GetRequiredService<ProfileSession>();
+            var profileSession   = host.Services.GetRequiredService<ProfileSession>();
             await profileSession.EnsureInitializedAsync();
 
             var localization = host.Services.GetRequiredService<ILocalizationService>();
@@ -104,15 +104,22 @@ public partial class App : Application
 
         try
         {
-            currentHost.StopAsync(TimeSpan.FromSeconds(2)).GetAwaiter().GetResult();
+            // Use a generous timeout so native providers (SDL, XInput, ViGEm) have
+            // time to release OS handles before the process exits.  Without this
+            // the CLR garbage collector may run finalizers AFTER the native DLLs
+            // have already been unloaded, causing an AccessViolation on shutdown.
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            currentHost.StopAsync(cts.Token).GetAwaiter().GetResult();
         }
         catch (OperationCanceledException)
         {
-            Log.Debug("Host shutdown was cancelled during application exit.");
+            Log.Debug("Host shutdown timed out — forcing process exit.");
         }
-        catch (AggregateException exception) when (exception.InnerExceptions.All(inner => inner is OperationCanceledException or ObjectDisposedException))
+        catch (AggregateException ex) when
+            (ex.InnerExceptions.All(inner =>
+                inner is OperationCanceledException or ObjectDisposedException))
         {
-            Log.Debug("Host shutdown ended with cancellation or disposal during application exit.");
+            Log.Debug("Host shutdown completed with cancellation during application exit.");
         }
         catch (ObjectDisposedException)
         {
@@ -124,6 +131,9 @@ public partial class App : Application
         }
         finally
         {
+            // Dispose BEFORE the process exits so native destructors run in the
+            // correct order and don't fault when the SDL / XInput / ViGEm DLLs
+            // are still mapped in memory.
             try
             {
                 currentHost.Dispose();
@@ -132,6 +142,9 @@ public partial class App : Application
             {
                 Log.Debug(exception, "Host dispose reported an error during application exit.");
             }
+
+            // Flush Serilog after everything else is torn down.
+            Log.CloseAndFlush();
         }
     }
 }
