@@ -19,13 +19,13 @@ public partial class ShellWindow : Window
 
         refreshTimer = new DispatcherTimer
         {
-            Interval = TimeSpan.FromMilliseconds(33)
+            Interval = TimeSpan.FromMilliseconds(33)   // ~30 Hz UI tick
         };
 
         refreshTimer.Tick += RefreshTimerOnTick;
-        Opened += OnOpened;
+        Opened  += OnOpened;
         Closing += OnClosing;
-        Closed += OnClosed;
+        Closed  += OnClosed;
     }
 
     private void InitializeComponent()
@@ -36,9 +36,7 @@ public partial class ShellWindow : Window
     protected override void OnDataContextChanged(EventArgs e)
     {
         shellViewModel?.ControlMappingRequested -= OnControlMappingRequested;
-
         base.OnDataContextChanged(e);
-
         shellViewModel = DataContext as ShellViewModel;
         shellViewModel?.ControlMappingRequested += OnControlMappingRequested;
     }
@@ -84,9 +82,9 @@ public partial class ShellWindow : Window
     {
         refreshTimer.Stop();
         refreshTimer.Tick -= RefreshTimerOnTick;
-        Opened -= OnOpened;
+        Opened  -= OnOpened;
         Closing -= OnClosing;
-        Closed -= OnClosed;
+        Closed  -= OnClosed;
         shellViewModel?.ControlMappingRequested -= OnControlMappingRequested;
         shellViewModel = null;
 
@@ -108,9 +106,7 @@ public partial class ShellWindow : Window
             isRefreshing = true;
             await viewModel.RefreshRuntimeAsync();
         }
-        catch (OperationCanceledException)
-        {
-        }
+        catch (OperationCanceledException) { }
         catch (ObjectDisposedException)
         {
             refreshTimer.Stop();

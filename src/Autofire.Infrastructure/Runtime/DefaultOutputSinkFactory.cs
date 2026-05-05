@@ -21,10 +21,11 @@ public sealed class DefaultOutputSinkFactory(
 
         return normalized switch
         {
-            "preview" => ActivatorUtilities.CreateInstance<PreviewOutputSink>(serviceProvider),
-            "vigem-xbox360" or "vigem-xbox" => CreateViGEmXbox360OrFallback(),
-            "vigem-ds4" or "vigem-dualshock4" => CreateViGEmDs4OrFallback(),
-            _ => CreateUnknownFallback(normalized),
+            "preview"                           => ActivatorUtilities.CreateInstance<PreviewOutputSink>(serviceProvider),
+            "vigem-xbox360" or "vigem-xbox"     => CreateViGEmXbox360OrFallback(),
+            "vigem-ds4" or "vigem-dualshock4"   => CreateViGEmDs4OrFallback(),
+            "vigem-ds5" or "vigem-dualsense"    => CreateViGEmDs5OrFallback(),
+            _                                   => CreateUnknownFallback(normalized),
         };
     }
 
@@ -32,7 +33,8 @@ public sealed class DefaultOutputSinkFactory(
     {
         if (!runtimeOptions.EnableViGEm)
         {
-            return CreateFallback("vigem-xbox360", "ViGEm output is disabled in appsettings. Set Runtime.EnableViGEm to true.");
+            return CreateFallback("vigem-xbox360",
+                "ViGEm output is disabled in appsettings. Set Runtime.EnableViGEm to true.");
         }
 
         if (!OperatingSystem.IsWindows())
@@ -47,8 +49,7 @@ public sealed class DefaultOutputSinkFactory(
         catch (Exception exception)
         {
             logger.LogError(exception, "ViGEm Xbox 360 virtual controller could not be created.");
-            return CreateFallback(
-                "vigem-xbox360",
+            return CreateFallback("vigem-xbox360",
                 $"ViGEm failed to initialize: {exception.Message} — " +
                 "Make sure the ViGEm Bus driver is installed: https://github.com/nefarius/ViGEmBus/releases");
         }
@@ -58,7 +59,8 @@ public sealed class DefaultOutputSinkFactory(
     {
         if (!runtimeOptions.EnableViGEm)
         {
-            return CreateFallback("vigem-ds4", "ViGEm output is disabled in appsettings. Set Runtime.EnableViGEm to true.");
+            return CreateFallback("vigem-ds4",
+                "ViGEm output is disabled in appsettings. Set Runtime.EnableViGEm to true.");
         }
 
         if (!OperatingSystem.IsWindows())
@@ -73,14 +75,39 @@ public sealed class DefaultOutputSinkFactory(
         catch (Exception exception)
         {
             logger.LogError(exception, "ViGEm DualShock 4 virtual controller could not be created.");
-            return CreateFallback(
-                "vigem-ds4",
+            return CreateFallback("vigem-ds4",
                 $"ViGEm failed to initialize: {exception.Message} — " +
                 "Make sure the ViGEm Bus driver is installed: https://github.com/nefarius/ViGEmBus/releases");
         }
     }
 
-    private Autofire.Infrastructure.Runtime.PreviewOutputSink CreateUnknownFallback(string normalized)
+    private IOutputSink CreateViGEmDs5OrFallback()
+    {
+        if (!runtimeOptions.EnableViGEm)
+        {
+            return CreateFallback("vigem-ds5",
+                "ViGEm output is disabled in appsettings. Set Runtime.EnableViGEm to true.");
+        }
+
+        if (!OperatingSystem.IsWindows())
+        {
+            return CreateFallback("vigem-ds5", "ViGEm is only available on Windows.");
+        }
+
+        try
+        {
+            return ActivatorUtilities.CreateInstance<ViGEmDualSenseOutputSink>(serviceProvider);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "ViGEm DualSense virtual controller could not be created.");
+            return CreateFallback("vigem-ds5",
+                $"ViGEm failed to initialize: {exception.Message} — " +
+                "Make sure the ViGEm Bus driver is installed: https://github.com/nefarius/ViGEmBus/releases");
+        }
+    }
+
+    private PreviewOutputSink CreateUnknownFallback(string normalized)
     {
         logger.LogWarning(
             "Requested output provider {RequestedProvider} is not recognised. Falling back to preview output.",
@@ -89,12 +116,11 @@ public sealed class DefaultOutputSinkFactory(
         return ActivatorUtilities.CreateInstance<PreviewOutputSink>(serviceProvider);
     }
 
-    private Autofire.Infrastructure.Runtime.PreviewOutputSink CreateFallback(string requestedProvider, string reason)
+    private PreviewOutputSink CreateFallback(string requestedProvider, string reason)
     {
         logger.LogWarning(
             "Requested output provider {RequestedProvider} is unavailable. {Reason} Falling back to preview output.",
-            requestedProvider,
-            reason);
+            requestedProvider, reason);
 
         return ActivatorUtilities.CreateInstance<PreviewOutputSink>(serviceProvider);
     }
@@ -102,7 +128,7 @@ public sealed class DefaultOutputSinkFactory(
     private static string Normalize(string? providerId)
     {
         return string.IsNullOrWhiteSpace(providerId)
-                ? "preview"
-                : providerId.Trim().ToLowerInvariant();
+            ? "preview"
+            : providerId.Trim().ToLowerInvariant();
     }
 }

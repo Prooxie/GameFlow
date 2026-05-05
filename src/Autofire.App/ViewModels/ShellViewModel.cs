@@ -19,25 +19,22 @@ namespace Autofire.App.ViewModels;
 /// Shell-level view-model.
 ///
 /// Performance contract:
-///   Fast path  (every 33 ms tick): update controller visuals and status text.
-///   Medium path (~0.5 s / 15 ticks): rebuild diagnostics, controller inventory, runtime notes.
+///   Fast path  (every 33 ms tick): update controller visuals, status text,
+///              diagnostics text (no longer throttled — cheap string build).
+///   Medium path (~0.5 s / 15 ticks): rebuild controller inventory, runtime notes.
 ///   Slow path  (~3 s / 90 ticks): rebuild JSON snapshots.
-///   Event path (profile or culture changed): rebuild rule summary, about text,
-///              re-sync dashboard selections.
+///   Event path (profile or culture changed): rebuild rule summary, re-sync selections.
 /// </summary>
 public sealed class ShellViewModel : ViewModelBase, IDisposable
 {
-    // ─── Slow-path rate limiting ───────────────────────────────────────────────
-    private const int SlowPathEvery = 90;   // ticks  (~3 s at 33 ms)
-    private const int MedPathEvery  = 15;   // ticks  (~0.5 s)
+    private const int SlowPathEvery = 90;
+    private const int MedPathEvery  = 15;
     private int refreshTick;
 
-    // ─── Dirty flags set by event handlers ────────────────────────────────────
     private bool ruleSummaryDirty = true;
     private bool aboutTextDirty   = true;
     private bool jsonDirty        = true;
 
-    // ─── Infrastructure ───────────────────────────────────────────────────────
     private readonly ProfileSession profileSession;
     private readonly RuntimeSnapshotStore runtimeSnapshotStore;
     private readonly ILocalizationService localizationService;
@@ -48,8 +45,8 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     private readonly AppRuntimeOptions runtimeOptions;
     private readonly SemaphoreSlim rulesSaveGate = new(1, 1);
 
-    // ─── Backing fields ───────────────────────────────────────────────────────
     private LanguageOption? selectedLanguage;
+    private AppThemeOption? selectedTheme;
     private DetectedControllerOption? selectedController;
     private ProfileOption? selectedProfileOption;
     private string providerSummary = string.Empty;
@@ -57,7 +54,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     private bool isSwitchingProfile;
     private bool disposed;
 
-    // ─── App version (computed once) ──────────────────────────────────────────
     public static string AppVersion { get; } =
         Assembly.GetEntryAssembly()?.GetName().Version is { } v
             ? $"v{v.Major}.{v.Minor}.{v.Build}"
@@ -65,8 +61,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     public static string AppFooterText { get; } =
         $"Made by Proxy Darkness  ·  {AppVersion}  ·  © 2026";
-
-    // ─── Construction ─────────────────────────────────────────────────────────
 
     public ShellViewModel(
         ProfileSession profileSession,
@@ -87,43 +81,45 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         this.loggerFactory = loggerFactory;
         this.logger = logger;
 
-        RefreshCommand                  = new AsyncRelayCommand(RefreshRuntimeAsync);
-        SaveProfileCommand              = new AsyncRelayCommand(SaveProfileAsync);
-        ResetProfileCommand             = new AsyncRelayCommand(ResetProfileAsync);
+        SaveProfileCommand               = new AsyncRelayCommand(SaveProfileAsync);
+        ResetProfileCommand              = new AsyncRelayCommand(ResetProfileAsync);
         ApplyDashboardPreferencesCommand = new AsyncRelayCommand(ApplyDashboardPreferencesAsync);
-        CreateProfileCommand            = new AsyncRelayCommand(CreateProfileAsync);
-        DuplicateProfileCommand         = new AsyncRelayCommand(DuplicateProfileAsync);
-        ImportProfileCommand            = new AsyncRelayCommand(ImportProfileAsync);
-        ExportProfileCommand            = new AsyncRelayCommand(ExportProfileAsync);
-        RenameProfileCommand            = new AsyncRelayCommand(RenameProfileAsync);   // Issue #4
-        OpenControlEditorCommand        = new RelayCommand<string>(OpenControlEditor);
+        CreateProfileCommand             = new AsyncRelayCommand(CreateProfileAsync);
+        DuplicateProfileCommand          = new AsyncRelayCommand(DuplicateProfileAsync);
+        ImportProfileCommand             = new AsyncRelayCommand(ImportProfileAsync);
+        ExportProfileCommand             = new AsyncRelayCommand(ExportProfileAsync);
+        RenameProfileCommand             = new AsyncRelayCommand(RenameProfileAsync);
+        OpenControlEditorCommand         = new RelayCommand<string>(OpenControlEditor);
 
-        SupportedLanguages    = localizationService.SupportedLanguages;
-        InputProviderOptions  = CreateInputProviderOptions();
-        OutputProviderOptions = CreateOutputProviderOptions();
+        SupportedLanguages     = localizationService.SupportedLanguages;
+        ThemeOptions           = CreateThemeOptions();
+        InputProviderOptions   = CreateInputProviderOptions();
+        OutputProviderOptions  = CreateOutputProviderOptions();
         ControllerStyleOptions = CreateControllerStyleOptions();
-        MappingEditor = new MappingEditorViewModel(loggerFactory.CreateLogger<MappingEditorViewModel>());
+        MappingEditor          = new MappingEditorViewModel(loggerFactory.CreateLogger<MappingEditorViewModel>());
         MappingEditor.RulesChanged += OnMappingRulesChanged;
 
         selectedLanguage = SupportedLanguages
             .FirstOrDefault(l => l.Code == localizationService.CurrentCulture)
             ?? SupportedLanguages.FirstOrDefault();
 
+        selectedTheme = ThemeOptions.FirstOrDefault(t => t.Kind == AppThemeKind.CyberBlue)
+            ?? ThemeOptions.FirstOrDefault();
+
         PhysicalController = new ControllerVisualStateViewModel(OnControllerElementSelected);
         VirtualController  = new ControllerVisualStateViewModel(OnControllerElementSelected);
 
         providerSummary = string.Join(
             Environment.NewLine,
-            ProviderCatalog.KnownProviders.Select(provider =>
-                $"- {provider.DisplayName}: {(provider.IsImplemented ? "available" : "planned")} — {provider.Notes}"));
+            ProviderCatalog.KnownProviders.Select(p =>
+                $"- {p.DisplayName}: {(p.IsImplemented ? "available" : "planned")} — {p.Notes}"));
 
         localizationService.CultureChanged += OnCultureChanged;
-        profileSession.Changed += OnProfileChanged;
+        profileSession.Changed             += OnProfileChanged;
     }
 
     // ─── Commands ─────────────────────────────────────────────────────────────
 
-    public IAsyncRelayCommand RefreshCommand                   { get; }
     public IAsyncRelayCommand SaveProfileCommand               { get; }
     public IAsyncRelayCommand ResetProfileCommand              { get; }
     public IAsyncRelayCommand ApplyDashboardPreferencesCommand { get; }
@@ -131,7 +127,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     public IAsyncRelayCommand DuplicateProfileCommand          { get; }
     public IAsyncRelayCommand ImportProfileCommand             { get; }
     public IAsyncRelayCommand ExportProfileCommand             { get; }
-    public IAsyncRelayCommand RenameProfileCommand             { get; } // Issue #4
+    public IAsyncRelayCommand RenameProfileCommand             { get; }
     public IRelayCommand<string> OpenControlEditorCommand      { get; }
 
     public event EventHandler<ControlMappingRequestedEventArgs>? ControlMappingRequested;
@@ -139,32 +135,27 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     // ─── Collections ──────────────────────────────────────────────────────────
 
     public IReadOnlyList<LanguageOption> SupportedLanguages    { get; }
+    public IReadOnlyList<AppThemeOption> ThemeOptions          { get; }
     public IReadOnlyList<InputProviderOption> InputProviderOptions  { get; }
     public IReadOnlyList<OutputProviderOption> OutputProviderOptions { get; }
     public IReadOnlyList<ControllerStyleOption> ControllerStyleOptions { get; }
 
     public IReadOnlyList<DetectedControllerOption> AvailableControllers
     {
-        get;
-        private set => SetProperty(ref field, value);
+        get; private set => SetProperty(ref field, value);
     } = [];
 
     public IReadOnlyList<ProfileOption> AvailableProfiles
     {
-        get;
-        private set => SetProperty(ref field, value);
+        get; private set => SetProperty(ref field, value);
     } = [];
 
     public IReadOnlyList<ControlConfigurationCardViewModel> ControlConfigurationCards
     {
-        get;
-        private set => SetProperty(ref field, value);
+        get; private set => SetProperty(ref field, value);
     } = [];
 
     public MappingEditorViewModel MappingEditor { get; }
-
-    // ─── Controller panels ────────────────────────────────────────────────────
-
     public ControllerVisualStateViewModel PhysicalController { get; }
     public ControllerVisualStateViewModel VirtualController  { get; }
 
@@ -172,50 +163,42 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     public string WindowTitle
     {
-        get;
-        private set => SetProperty(ref field, value);
+        get; private set => SetProperty(ref field, value);
     } = "Autofire Next";
 
     public string StatusText
     {
-        get;
-        private set => SetProperty(ref field, value);
+        get; private set => SetProperty(ref field, value);
     } = string.Empty;
 
     public string PhysicalStateJson
     {
-        get;
-        private set => SetProperty(ref field, value);
+        get; private set => SetProperty(ref field, value);
     } = "{}";
 
     public string VirtualStateJson
     {
-        get;
-        private set => SetProperty(ref field, value);
+        get; private set => SetProperty(ref field, value);
     } = "{}";
 
     public string ProfileJson
     {
-        get;
-        set => SetProperty(ref field, value);
+        get; set => SetProperty(ref field, value);
     } = "{}";
 
     public string DiagnosticsText
     {
-        get;
-        private set => SetProperty(ref field, value);
+        get; private set => SetProperty(ref field, value);
     } = string.Empty;
 
     public string AboutText
     {
-        get;
-        private set => SetProperty(ref field, value);
+        get; private set => SetProperty(ref field, value);
     } = string.Empty;
 
     public string RuleSummary
     {
-        get;
-        private set => SetProperty(ref field, value);
+        get; private set => SetProperty(ref field, value);
     } = string.Empty;
 
     public string ProviderSummary
@@ -226,51 +209,42 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     public string SelectedControlTitle
     {
-        get;
-        private set => SetProperty(ref field, value);
+        get; private set => SetProperty(ref field, value);
     } = string.Empty;
 
     public string SelectedControlValue
     {
-        get;
-        private set => SetProperty(ref field, value);
+        get; private set => SetProperty(ref field, value);
     } = string.Empty;
 
     public string SelectedControlRules
     {
-        get;
-        private set => SetProperty(ref field, value);
+        get; private set => SetProperty(ref field, value);
     } = string.Empty;
 
     public string SelectedControlHint
     {
-        get;
-        private set => SetProperty(ref field, value);
+        get; private set => SetProperty(ref field, value);
     } = string.Empty;
 
     public string RuntimeNotesText
     {
-        get;
-        private set => SetProperty(ref field, value);
+        get; private set => SetProperty(ref field, value);
     } = string.Empty;
 
     public string ControllerInventoryText
     {
-        get;
-        private set => SetProperty(ref field, value);
+        get; private set => SetProperty(ref field, value);
     } = string.Empty;
 
     public string ProviderStatusText
     {
-        get;
-        private set => SetProperty(ref field, value);
+        get; private set => SetProperty(ref field, value);
     } = string.Empty;
 
-    // Issue #4: editable profile name
     public string ProfileName
     {
-        get;
-        set => SetProperty(ref field, value);
+        get; set => SetProperty(ref field, value);
     } = string.Empty;
 
     // ─── Localised label properties ───────────────────────────────────────────
@@ -279,7 +253,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     public string ProfilesTabLabel               => localizationService["ProfilesTab"];
     public string DiagnosticsTabLabel            => localizationService["DiagnosticsTab"];
     public string LanguageLabel                  => localizationService["LanguageLabel"];
-    public string RefreshButtonLabel             => localizationService["RefreshButton"];
+    public string ThemeLabel                     => "Theme";
     public string SaveProfileButtonLabel         => localizationService["SaveProfileButton"];
     public string ResetProfileButtonLabel        => localizationService["ResetProfileButton"];
     public string PhysicalInputLabel             => localizationService["PhysicalInputLabel"];
@@ -304,9 +278,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     public string RawVirtualLabel                => localizationService["RawVirtualLabel"];
     public string ProfileComboLabel              => localizationService["ProfileComboLabel"];
     public string ProfileToolbarSubtitle         => localizationService["ProfileToolbarSubtitle"];
-    public string ProfileNameLabel               => localizationService["ProfileNameLabel"];   // Issue #4
-    public string ProfileNameWatermark           => localizationService["ProfileNameWatermark"]; // Issue #4
-    public string RenameProfileButtonLabel       => localizationService["RenameProfileButton"]; // Issue #4
+    public string ProfileNameLabel               => localizationService["ProfileNameLabel"];
+    public string ProfileNameWatermark           => localizationService["ProfileNameWatermark"];
+    public string RenameProfileButtonLabel       => localizationService["RenameProfileButton"];
     public string CreateProfileButtonLabel       => localizationService["CreateProfileButton"];
     public string DuplicateProfileButtonLabel    => localizationService["DuplicateProfileButton"];
     public string ImportProfileButtonLabel       => localizationService["ImportProfileButton"];
@@ -328,13 +302,12 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             : SelectedController.Label;
 
     public string SelectedPollingRateText => $"{SelectedPollingRateHz:0} Hz";
+    public string SelectedProfileSummary  => SelectedProfileOption?.Description ?? string.Empty;
 
-    public string SelectedProfileSummary => SelectedProfileOption?.Description ?? string.Empty;
+    public bool HasControlConfigurationCards   => ControlConfigurationCards.Count > 0;
+    public bool HasNoControlConfigurationCards => !HasControlConfigurationCards;
 
-    public bool HasControlConfigurationCards    => ControlConfigurationCards.Count > 0;
-    public bool HasNoControlConfigurationCards  => !HasControlConfigurationCards;
-
-    // ─── Mutable selection properties ────────────────────────────────────────
+    // ─── Mutable selection properties ─────────────────────────────────────────
 
     public LanguageOption? SelectedLanguage
     {
@@ -352,10 +325,23 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         }
     }
 
+    public AppThemeOption? SelectedTheme
+    {
+        get => selectedTheme;
+        set
+        {
+            if (!SetProperty(ref selectedTheme, value) || value is null)
+            {
+                return;
+            }
+
+            AppThemeService.Apply(value.Kind);
+        }
+    }
+
     public InputProviderOption? SelectedInputProvider
     {
-        get;
-        set
+        get; set
         {
             if (!SetProperty(ref field, value))
             {
@@ -368,8 +354,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     public OutputProviderOption? SelectedOutputProvider
     {
-        get;
-        set
+        get; set
         {
             if (!SetProperty(ref field, value))
             {
@@ -382,14 +367,12 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     public ControllerStyleOption? SelectedPhysicalStyle
     {
-        get;
-        set => SetProperty(ref field, value);
+        get; set => SetProperty(ref field, value);
     }
 
     public ControllerStyleOption? SelectedVirtualStyle
     {
-        get;
-        set => SetProperty(ref field, value);
+        get; set => SetProperty(ref field, value);
     }
 
     public DetectedControllerOption? SelectedController
@@ -420,7 +403,8 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
             OnPropertyChanged(nameof(SelectedProfileSummary));
 
-            if (value is null || isSwitchingProfile || string.Equals(value.Id, profileSession.CurrentProfile.Id, StringComparison.Ordinal))
+            if (value is null || isSwitchingProfile ||
+                string.Equals(value.Id, profileSession.CurrentProfile.Id, StringComparison.Ordinal))
             {
                 return;
             }
@@ -431,8 +415,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     public double SelectedPollingRateHz
     {
-        get;
-        set
+        get; set
         {
             var normalized = Math.Clamp(Math.Round(value), 30d, 1000d);
             if (!SetProperty(ref field, normalized))
@@ -452,8 +435,16 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         await profileSession.EnsureInitializedAsync();
 
         SelectedLanguage = SupportedLanguages
-            .FirstOrDefault(language => language.Code == profileSession.Settings.SelectedCulture)
+            .FirstOrDefault(l => l.Code == profileSession.Settings.SelectedCulture)
             ?? SupportedLanguages.FirstOrDefault();
+
+        // Apply the saved theme (defaults to CyberBlue if not stored)
+        var savedThemeKey = profileSession.CurrentProfile.Ui.Theme;
+        if (Enum.TryParse<AppThemeKind>(savedThemeKey, true, out var savedKind))
+        {
+            SelectedTheme = ThemeOptions.FirstOrDefault(t => t.Kind == savedKind)
+                            ?? ThemeOptions.FirstOrDefault();
+        }
 
         SyncDashboardSelectionsFromProfile();
         MappingEditor.LoadFromProfile(profileSession.CurrentProfile);
@@ -467,7 +458,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         ProfileJson = profileSession.SerializeCurrentProfile();
         jsonDirty = false;
 
-        // Issue #4: seed the profile name editor
         ProfileName = profileSession.CurrentProfile.Name;
 
         RefreshLocalizedText();
@@ -475,7 +465,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         await RefreshRuntimeAsync();
     }
 
-    // ─── Main refresh — called every 33 ms by ShellWindow timer ──────────────
+    // ─── Main refresh — called every 33 ms ────────────────────────────────────
 
     public Task RefreshRuntimeAsync()
     {
@@ -497,6 +487,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             $"{localizationService["StatusPrefix"]} {snapshot.InputProvider} → {snapshot.OutputProvider}  ·  " +
             $"{localizationService["ActiveProfilePrefix"]} {profile.Name}";
 
+        // Diagnostics update on every tick (fast path) — the build is cheap
+        // (one StringBuilder pass with no I/O) so it does not cause performance issues.
+        DiagnosticsText = BuildDiagnostics(snapshot);
+
         if (!string.IsNullOrWhiteSpace(selectedControlKey))
         {
             ApplySelection(selectedControlKey, snapshot);
@@ -509,11 +503,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         {
             RefreshControllerInventory();
             RuntimeNotesText = BuildRuntimeNotes(snapshot);
-
-            // Issue #6: diagnostics moved to medium path so they visibly update.
-            // BuildDiagnostics now always includes the current wall-clock time so
-            // SetProperty detects a change on every medium-path tick.
-            DiagnosticsText = BuildDiagnostics(snapshot);
         }
 
         // ── Slow path: ~3 s ───────────────────────────────────────────────────
@@ -521,12 +510,12 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         {
             PhysicalStateJson = JsonSerializer.Serialize(
                 snapshot.PhysicalSnapshot, ProfileJsonOptions.Default);
-            VirtualStateJson = JsonSerializer.Serialize(
+            VirtualStateJson  = JsonSerializer.Serialize(
                 snapshot.VirtualSnapshot, ProfileJsonOptions.Default);
             jsonDirty = false;
         }
 
-        // ── Dirty-flag driven paths ───────────────────────────────────────────
+        // ── Dirty-flag paths ──────────────────────────────────────────────────
         if (ruleSummaryDirty)
         {
             RuleSummary = string.Join(
@@ -558,6 +547,8 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             var outputKey = SelectedOutputProvider?.Key
                 ?? profileSession.CurrentProfile.OutputProvider;
 
+            var themeKey = SelectedTheme?.Kind.ToString() ?? "CyberBlue";
+
             var profile = profileSession.CurrentProfile with
             {
                 InputProvider = SelectedInputProvider.Key,
@@ -567,13 +558,14 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                 Ui = profileSession.CurrentProfile.Ui with
                 {
                     PhysicalControllerStyle = SelectedPhysicalStyle.Style,
-                    VirtualControllerStyle  = SelectedVirtualStyle.Style
+                    VirtualControllerStyle  = SelectedVirtualStyle.Style,
+                    Theme = themeKey
                 }
             };
 
             await profileSession.SaveCurrentProfileAsync(profile);
-            ProfileJson = profileSession.SerializeCurrentProfile();
-            jsonDirty = false;
+            ProfileJson      = profileSession.SerializeCurrentProfile();
+            jsonDirty        = false;
             ruleSummaryDirty = true;
             await RefreshRuntimeAsync();
         }
@@ -584,15 +576,15 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         }
     }
 
-    // ─── Save / reset / import / export / rename profile ─────────────────────
+    // ─── Save / reset / duplicate / rename helpers ────────────────────────────
 
     private async Task SaveProfileAsync()
     {
         try
         {
             await profileSession.SaveCurrentProfileAsync(profileSession.CurrentProfile);
-            ProfileJson = profileSession.SerializeCurrentProfile();
-            jsonDirty = false;
+            ProfileJson      = profileSession.SerializeCurrentProfile();
+            jsonDirty        = false;
             ruleSummaryDirty = true;
             if (logger.IsEnabled(LogLevel.Information))
             {
@@ -609,8 +601,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     private async Task ResetProfileAsync()
     {
-        // Issue #5: guard against rapid switching caused by the Changed event
-        // firing while we are already performing a reset.
         isSwitchingProfile = true;
         try
         {
@@ -620,13 +610,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             await RefreshAvailableProfilesAsync();
             SyncDashboardSelectionsFromProfile();
             RefreshControllerInventory();
-            ProfileJson = profileSession.SerializeCurrentProfile();
-            jsonDirty = false;
+            ProfileJson      = profileSession.SerializeCurrentProfile();
+            jsonDirty        = false;
             ruleSummaryDirty = true;
-
-            // Issue #4: sync rename field
-            ProfileName = profileSession.CurrentProfile.Name;
-
+            ProfileName      = profileSession.CurrentProfile.Name;
             await RefreshRuntimeAsync();
         }
         catch (Exception exception)
@@ -642,16 +629,13 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     private async Task CreateProfileAsync()
     {
-        // Issue #5: guard
         isSwitchingProfile = true;
         try
         {
             var profile = await profileSession.CreateNewProfileAsync($"Profile {DateTime.Now:HHmmss}");
             await RefreshAvailableProfilesAsync();
             ProfileName = profile.Name;
-
-            // Suppress event-driven switch then select explicitly.
-            var target = AvailableProfiles.FirstOrDefault(option => option.Id == profile.Id);
+            var target = AvailableProfiles.FirstOrDefault(o => o.Id == profile.Id);
             if (target is not null)
             {
                 selectedProfileOption = target;
@@ -661,7 +645,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Failed to create a new profile.");
+            logger.LogError(exception, "Failed to create profile.");
             StatusText = $"Create profile failed: {exception.Message}";
         }
         finally
@@ -672,16 +656,13 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     private async Task DuplicateProfileAsync()
     {
-        // Issue #5: guard against rapid switching caused by the Changed event
-        // that SaveCurrentProfileAsync fires inside DuplicateCurrentProfileAsync.
         isSwitchingProfile = true;
         try
         {
             var copy = await profileSession.DuplicateCurrentProfileAsync($"{profileSession.CurrentProfile.Name} Copy");
             await RefreshAvailableProfilesAsync();
             ProfileName = copy.Name;
-
-            var target = AvailableProfiles.FirstOrDefault(option => option.Id == copy.Id);
+            var target = AvailableProfiles.FirstOrDefault(o => o.Id == copy.Id);
             if (target is not null)
             {
                 selectedProfileOption = target;
@@ -691,7 +672,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Failed to duplicate the current profile.");
+            logger.LogError(exception, "Failed to duplicate profile.");
             StatusText = $"Duplicate profile failed: {exception.Message}";
         }
         finally
@@ -715,8 +696,8 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             {
                 await profileSession.ImportProfileAsync(json);
                 await RefreshAvailableProfilesAsync();
-                ProfileJson = profileSession.SerializeCurrentProfile();
-                jsonDirty = false;
+                ProfileJson      = profileSession.SerializeCurrentProfile();
+                jsonDirty        = false;
                 ruleSummaryDirty = true;
                 RebuildControlConfigurationCards();
                 ProfileName = profileSession.CurrentProfile.Name;
@@ -738,8 +719,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     {
         try
         {
-            var suggestedFileName = SanitizeFileName(profileSession.CurrentProfile.Name);
-            _ = await profileFileDialogService.ExportProfileJsonAsync($"{suggestedFileName}.json", profileSession.SerializeCurrentProfile());
+            var name = SanitizeFileName(profileSession.CurrentProfile.Name);
+            _ = await profileFileDialogService.ExportProfileJsonAsync($"{name}.json",
+                profileSession.SerializeCurrentProfile());
         }
         catch (Exception exception)
         {
@@ -748,9 +730,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         }
     }
 
-    /// <summary>
-    /// Issue #4: Rename the current profile to the name entered by the user.
-    /// </summary>
     private async Task RenameProfileAsync()
     {
         var newName = ProfileName?.Trim() ?? string.Empty;
@@ -765,20 +744,17 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         {
             var profile = profileSession.CurrentProfile with { Name = newName };
             await profileSession.SaveCurrentProfileAsync(profile);
-            ProfileJson = profileSession.SerializeCurrentProfile();
-            jsonDirty = false;
+            ProfileJson      = profileSession.SerializeCurrentProfile();
+            jsonDirty        = false;
             ruleSummaryDirty = true;
             await RefreshAvailableProfilesAsync();
-
-            // Keep selection on the renamed profile without triggering a switch.
-            var target = AvailableProfiles.FirstOrDefault(opt => opt.Id == profile.Id);
+            var target = AvailableProfiles.FirstOrDefault(o => o.Id == profile.Id);
             if (target is not null)
             {
                 selectedProfileOption = target;
                 OnPropertyChanged(nameof(SelectedProfileOption));
                 OnPropertyChanged(nameof(SelectedProfileSummary));
             }
-
             await RefreshRuntimeAsync();
         }
         catch (Exception exception)
@@ -799,32 +775,43 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         var profile = profileSession.CurrentProfile;
 
         SelectedInputProvider = InputProviderOptions
-            .FirstOrDefault(option => option.Key == profile.InputProvider)
+            .FirstOrDefault(o => o.Key == profile.InputProvider)
             ?? InputProviderOptions.FirstOrDefault();
 
         SelectedOutputProvider = OutputProviderOptions
-            .FirstOrDefault(option => option.Key == profile.OutputProvider)
+            .FirstOrDefault(o => o.Key == profile.OutputProvider)
             ?? OutputProviderOptions.FirstOrDefault();
 
         SelectedPhysicalStyle = ControllerStyleOptions
-            .FirstOrDefault(option => option.Style == profile.Ui.PhysicalControllerStyle)
+            .FirstOrDefault(o => o.Style == profile.Ui.PhysicalControllerStyle)
             ?? ControllerStyleOptions.FirstOrDefault();
 
         SelectedVirtualStyle = ControllerStyleOptions
-            .FirstOrDefault(option => option.Style == profile.Ui.VirtualControllerStyle)
+            .FirstOrDefault(o => o.Style == profile.Ui.VirtualControllerStyle)
             ?? ControllerStyleOptions.FirstOrDefault();
 
         SelectedPollingRateHz = profile.PollingRateHz;
+
+        if (Enum.TryParse<AppThemeKind>(profile.Ui.Theme, true, out var savedKind))
+        {
+            var themeOpt = ThemeOptions.FirstOrDefault(t => t.Kind == savedKind);
+            if (themeOpt is not null && themeOpt != selectedTheme)
+            {
+                selectedTheme = themeOpt;
+                OnPropertyChanged(nameof(SelectedTheme));
+                AppThemeService.Apply(savedKind);
+            }
+        }
     }
 
     private async Task RefreshAvailableProfilesAsync()
     {
         var profiles = await profileSession.ListProfilesAsync();
         AvailableProfiles = [.. profiles
-            .Select(profile => new ProfileOption(profile.Id, profile.Name, profile.Id))
-            .OrderBy(profile => profile.Label, StringComparer.OrdinalIgnoreCase)];
+            .Select(p => new ProfileOption(p.Id, p.Name, p.Id))
+            .OrderBy(p => p.Label, StringComparer.OrdinalIgnoreCase)];
 
-        var current = AvailableProfiles.FirstOrDefault(option => option.Id == profileSession.CurrentProfile.Id)
+        var current = AvailableProfiles.FirstOrDefault(o => o.Id == profileSession.CurrentProfile.Id)
             ?? AvailableProfiles.FirstOrDefault();
 
         if (!ReferenceEquals(selectedProfileOption, current))
@@ -843,10 +830,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             await profileSession.SwitchToProfileAsync(profileId);
             MappingEditor.LoadFromProfile(profileSession.CurrentProfile);
             RebuildControlConfigurationCards();
-            ProfileJson = profileSession.SerializeCurrentProfile();
-            jsonDirty = false;
+            ProfileJson      = profileSession.SerializeCurrentProfile();
+            jsonDirty        = false;
             ruleSummaryDirty = true;
-            ProfileName = profileSession.CurrentProfile.Name;   // Issue #4
+            ProfileName      = profileSession.CurrentProfile.Name;
             await RefreshRuntimeAsync();
         }
         catch (Exception exception)
@@ -877,11 +864,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                 localizationService["AutomaticControllerSelectionDescription"])
         };
 
-        options.AddRange(devices.Select(device =>
-            new DetectedControllerOption(
-                device.Id,
-                device.DisplayName,
-                string.IsNullOrWhiteSpace(device.HardwareId) ? device.DisplayName : device.HardwareId)));
+        options.AddRange(devices.Select(d =>
+            new DetectedControllerOption(d.Id, d.DisplayName,
+                string.IsNullOrWhiteSpace(d.HardwareId) ? d.DisplayName : d.HardwareId)));
 
         AvailableControllers = options;
 
@@ -897,7 +882,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         }
 
         var nextSelected = AvailableControllers
-            .FirstOrDefault(option => string.Equals(option.Id, preferredId, StringComparison.OrdinalIgnoreCase))
+            .FirstOrDefault(o => string.Equals(o.Id, preferredId, StringComparison.OrdinalIgnoreCase))
             ?? AvailableControllers.First();
 
         if (selectedController != nextSelected)
@@ -907,7 +892,8 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             OnPropertyChanged(nameof(SelectedControllerSummary));
         }
 
-        inputDeviceCatalog.SetSelectedDevice(string.IsNullOrWhiteSpace(nextSelected.Id) ? null : nextSelected.Id);
+        inputDeviceCatalog.SetSelectedDevice(
+            string.IsNullOrWhiteSpace(nextSelected.Id) ? null : nextSelected.Id);
 
         ControllerInventoryText = devices.Count switch
         {
@@ -923,12 +909,12 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     {
         var grouped = profileSession.CurrentProfile.Rules
             .GroupBy(ControlRuleMatcher.GetPrimarySelectionKey)
-            .OrderBy(group => ControlRuleMatcher.GetTitle(group.Key), StringComparer.OrdinalIgnoreCase)
-            .Select(group => new ControlConfigurationCardViewModel(
-                group.Key,
-                ControlRuleMatcher.GetTitle(group.Key),
-                ControlRuleMatcher.GetHint(group.Key),
-                [.. group.Select(ControlRuleMatcher.CreateEntry)]))
+            .OrderBy(g => ControlRuleMatcher.GetTitle(g.Key), StringComparer.OrdinalIgnoreCase)
+            .Select(g => new ControlConfigurationCardViewModel(
+                g.Key,
+                ControlRuleMatcher.GetTitle(g.Key),
+                ControlRuleMatcher.GetHint(g.Key),
+                [.. g.Select(ControlRuleMatcher.CreateEntry)]))
             .ToArray();
 
         ControlConfigurationCards = grouped;
@@ -944,9 +930,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         }
 
         var dialogViewModel = new ControlMappingDialogViewModel(
-            selectionKey,
-            profileSession.CurrentProfile,
-            loggerFactory);
+            selectionKey, profileSession.CurrentProfile, loggerFactory);
 
         dialogViewModel.MergedRulesChanged += OnDialogMergedRulesChanged;
         ControlMappingRequested?.Invoke(this, new ControlMappingRequestedEventArgs(dialogViewModel));
@@ -972,14 +956,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         await rulesSaveGate.WaitAsync();
         try
         {
-            var profile = profileSession.CurrentProfile with
-            {
-                Rules = [.. rules]
-            };
-
+            var profile = profileSession.CurrentProfile with { Rules = [.. rules] };
             await profileSession.SaveCurrentProfileAsync(profile);
-            ProfileJson = profileSession.SerializeCurrentProfile();
-            jsonDirty = false;
+            ProfileJson      = profileSession.SerializeCurrentProfile();
+            jsonDirty        = false;
             ruleSummaryDirty = true;
             RebuildControlConfigurationCards();
         }
@@ -999,9 +979,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     private string BuildDiagnostics(RuntimeSnapshot snapshot)
     {
         var sb = new StringBuilder();
-        // Issue #6: always include current wall-clock time so the string changes
-        // on every medium-path tick, making SetProperty fire and updating the UI.
-        _ = sb.AppendLine($"--- {localizationService["DiagnosticsLabel"]}  [{DateTimeOffset.Now:HH:mm:ss}] ---");
+        _ = sb.AppendLine($"--- {localizationService["DiagnosticsLabel"]}  [{DateTimeOffset.Now:HH:mm:ss.fff}] ---");
         _ = sb.AppendLine($"- Logs: {AppPaths.LogsDirectory}");
         _ = sb.AppendLine($"- Last input frame: {(snapshot.LastUpdated == default ? "no data yet" : snapshot.LastUpdated.LocalDateTime.ToString("HH:mm:ss.fff"))}");
         _ = sb.AppendLine($"- Dashboard refresh: {runtimeOptions.DashboardRefreshHz} Hz target");
@@ -1020,15 +998,14 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     private string BuildAboutText()
     {
-        return string.Join(
-            Environment.NewLine,
-            [
-                localizationService["AboutBodyLine1"],
-                localizationService["AboutBodyLine2"],
-                localizationService["AboutBodyLine3"],
-                string.Empty,
-                localizationService["AboutBodyLine4"]
-            ]);
+        return string.Join(Environment.NewLine,
+        [
+            localizationService["AboutBodyLine1"],
+            localizationService["AboutBodyLine2"],
+            localizationService["AboutBodyLine3"],
+            string.Empty,
+            localizationService["AboutBodyLine4"]
+        ]);
     }
 
     private string BuildRuntimeNotes(RuntimeSnapshot snapshot)
@@ -1127,8 +1104,8 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     {
         var selectionKey = ControlRuleMatcher.EnsurePhysicalSelectionKey(elementKey);
         var lines = profileSession.CurrentProfile.Rules
-            .Where(rule => ControlRuleMatcher.Matches(selectionKey, rule))
-            .Select(rule => $"- {rule.Name}: {ControlRuleMatcher.CreateEntry(rule).Value}")
+            .Where(r => ControlRuleMatcher.Matches(selectionKey, r))
+            .Select(r => $"- {r.Name}: {ControlRuleMatcher.CreateEntry(r).Value}")
             .ToArray();
 
         return lines.Length == 0
@@ -1149,7 +1126,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         SelectedControlHint  = "Clicking a physical control opens its dedicated configuration window.";
     }
 
-    // ─── Localised-text refresh ───────────────────────────────────────────────
+    // ─── Localised text refresh ───────────────────────────────────────────────
 
     private void RefreshLocalizedText()
     {
@@ -1165,7 +1142,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(ProfilesTabLabel));
         OnPropertyChanged(nameof(DiagnosticsTabLabel));
         OnPropertyChanged(nameof(LanguageLabel));
-        OnPropertyChanged(nameof(RefreshButtonLabel));
+        OnPropertyChanged(nameof(ThemeLabel));
         OnPropertyChanged(nameof(SaveProfileButtonLabel));
         OnPropertyChanged(nameof(ResetProfileButtonLabel));
         OnPropertyChanged(nameof(PhysicalInputLabel));
@@ -1218,8 +1195,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     private void OnProfileChanged(object? sender, EventArgs e)
     {
-        // Issue #5: if we are already handling a profile operation (create/duplicate/reset/
-        // import/switch) suppress the event-driven refresh to avoid rapid double-switching.
         if (isSwitchingProfile)
         {
             return;
@@ -1232,10 +1207,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             RebuildControlConfigurationCards();
             RefreshControllerInventory();
             _ = RefreshAvailableProfilesAsync();
-            ProfileJson = profileSession.SerializeCurrentProfile();
-            jsonDirty = false;
+            ProfileJson      = profileSession.SerializeCurrentProfile();
+            jsonDirty        = false;
             ruleSummaryDirty = true;
-            ProfileName = profileSession.CurrentProfile.Name;   // Issue #4
+            ProfileName      = profileSession.CurrentProfile.Name;
             OnPropertyChanged(nameof(SelectedProfileSummary));
             OnPropertyChanged(nameof(HasControlConfigurationCards));
             OnPropertyChanged(nameof(HasNoControlConfigurationCards));
@@ -1272,41 +1247,58 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     // ─── Static factory helpers ───────────────────────────────────────────────
 
+    private static IReadOnlyList<AppThemeOption> CreateThemeOptions()
+    {
+        return
+        [
+            new AppThemeOption(AppThemeKind.CyberBlue,      "Cyber Blue"),
+            new AppThemeOption(AppThemeKind.MidnightPurple, "Midnight Purple"),
+            new AppThemeOption(AppThemeKind.NeonGreen,      "Neon Green"),
+            new AppThemeOption(AppThemeKind.SolarRed,       "Solar Red"),
+            new AppThemeOption(AppThemeKind.Light,          "Light"),
+        ];
+    }
+
     private static IReadOnlyList<InputProviderOption> CreateInputProviderOptions()
     {
-        return [
-        new InputProviderOption("xinput", "XInput",
-            "Windows native XInput driver. Enumerates up to 4 Xbox-compatible controllers."),
-        new InputProviderOption("sdl", "SDL3 unified input",
-            "Cross-platform SDL3 gamepad mapping plus joystick fallback."),
-        new InputProviderOption("demo", "Demo preview",
-            "Animated preview source for UI testing — no hardware required."),
-        new InputProviderOption("none", "No live input",
-            "Turns off live input and leaves the dashboard idle."),
-    ];
+        return
+        [
+            new InputProviderOption("xinput", "XInput",
+                "Windows native XInput driver. Enumerates up to 4 Xbox-compatible controllers."),
+            new InputProviderOption("sdl", "SDL3 unified input",
+                "Cross-platform SDL3 gamepad mapping plus joystick fallback."),
+            new InputProviderOption("demo", "Demo preview",
+                "Animated preview source for UI testing — no hardware required."),
+            new InputProviderOption("none", "No live input",
+                "Turns off live input and leaves the dashboard idle."),
+        ];
     }
 
     private static IReadOnlyList<OutputProviderOption> CreateOutputProviderOptions()
     {
-        return [
-        new OutputProviderOption("vigem-xbox360", "ViGEm Xbox 360",
-            "Virtual Xbox 360 controller via ViGEm Bus. Requires ViGEm Bus driver."),
-        new OutputProviderOption("vigem-ds4", "ViGEm DualShock 4",
-            "Virtual DualShock 4 controller via ViGEm Bus. Requires ViGEm Bus driver."),
-        new OutputProviderOption("preview", "Preview only",
-            "Shows the transformed output in the dashboard without creating a virtual device."),
-    ];
+        return
+        [
+            new OutputProviderOption("vigem-xbox360", "ViGEm Xbox 360",
+                "Virtual Xbox 360 controller via ViGEm Bus. Requires ViGEm Bus driver."),
+            new OutputProviderOption("vigem-ds4", "ViGEm DualShock 4",
+                "Virtual DualShock 4 controller via ViGEm Bus. Requires ViGEm Bus driver."),
+            new OutputProviderOption("vigem-ds5", "ViGEm DualSense (DS5)",
+                "Virtual DualSense controller via ViGEm Bus. Requires ViGEm Bus driver v1.22+."),
+            new OutputProviderOption("preview", "Preview only",
+                "Shows the transformed output in the dashboard without creating a virtual device."),
+        ];
     }
 
     private static IReadOnlyList<ControllerStyleOption> CreateControllerStyleOptions()
     {
-        return [
-        new ControllerStyleOption(ControllerVisualStyle.Auto,         "Auto"),
-        new ControllerStyleOption(ControllerVisualStyle.Xbox,         "Xbox"),
-        new ControllerStyleOption(ControllerVisualStyle.PlayStation4, "PlayStation 4"),
-        new ControllerStyleOption(ControllerVisualStyle.PlayStation5, "PlayStation 5"),
-        new ControllerStyleOption(ControllerVisualStyle.None,         "Minimal"),
-    ];
+        return
+        [
+            new ControllerStyleOption(ControllerVisualStyle.Auto,         "Auto"),
+            new ControllerStyleOption(ControllerVisualStyle.Xbox,         "Xbox"),
+            new ControllerStyleOption(ControllerVisualStyle.PlayStation4, "PlayStation 4"),
+            new ControllerStyleOption(ControllerVisualStyle.PlayStation5, "PlayStation 5"),
+            new ControllerStyleOption(ControllerVisualStyle.None,         "Minimal"),
+        ];
     }
 
     // ─── Misc helpers ─────────────────────────────────────────────────────────
@@ -1318,16 +1310,16 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     private static string FormatElementName(string k)
     {
-        return k.Replace("LeftStick",   "Left stick",   StringComparison.OrdinalIgnoreCase)
-         .Replace("RightStick",  "Right stick",  StringComparison.OrdinalIgnoreCase)
-         .Replace("LeftTrigger", "Left trigger", StringComparison.OrdinalIgnoreCase)
-         .Replace("RightTrigger","Right trigger",StringComparison.OrdinalIgnoreCase)
-         .Replace(".Analog", " · Analog", StringComparison.OrdinalIgnoreCase)
-         .Replace(".Button", " · Click",  StringComparison.OrdinalIgnoreCase)
-         .Replace(".Up",     " · Up",     StringComparison.OrdinalIgnoreCase)
-         .Replace(".Down",   " · Down",   StringComparison.OrdinalIgnoreCase)
-         .Replace(".Left",   " · Left",   StringComparison.OrdinalIgnoreCase)
-         .Replace(".Right",  " · Right",  StringComparison.OrdinalIgnoreCase);
+        return k.Replace("LeftStick",    "Left stick",    StringComparison.OrdinalIgnoreCase)
+                .Replace("RightStick",   "Right stick",   StringComparison.OrdinalIgnoreCase)
+                .Replace("LeftTrigger",  "Left trigger",  StringComparison.OrdinalIgnoreCase)
+                .Replace("RightTrigger", "Right trigger", StringComparison.OrdinalIgnoreCase)
+                .Replace(".Analog", " · Analog", StringComparison.OrdinalIgnoreCase)
+                .Replace(".Button", " · Click",  StringComparison.OrdinalIgnoreCase)
+                .Replace(".Up",     " · Up",     StringComparison.OrdinalIgnoreCase)
+                .Replace(".Down",   " · Down",   StringComparison.OrdinalIgnoreCase)
+                .Replace(".Left",   " · Left",   StringComparison.OrdinalIgnoreCase)
+                .Replace(".Right",  " · Right",  StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool TryParseButton(string elementKey, out ButtonId button)
@@ -1356,13 +1348,12 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         var invalidChars = Path.GetInvalidFileNameChars();
         var builder      = new StringBuilder(value.Length);
 
-        foreach (var character in value.Trim())
+        foreach (var ch in value.Trim())
         {
-            _ = builder.Append(Array.IndexOf(invalidChars, character) >= 0 ? '_' : character);
+            _ = builder.Append(Array.IndexOf(invalidChars, ch) >= 0 ? '_' : ch);
         }
 
         var sanitized = builder.ToString().Trim().Trim('.');
-
         return string.IsNullOrWhiteSpace(sanitized) ? "profile" : sanitized;
     }
 
@@ -1377,8 +1368,8 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
         disposed = true;
         localizationService.CultureChanged -= OnCultureChanged;
-        profileSession.Changed -= OnProfileChanged;
-        MappingEditor.RulesChanged -= OnMappingRulesChanged;
+        profileSession.Changed             -= OnProfileChanged;
+        MappingEditor.RulesChanged         -= OnMappingRulesChanged;
         MappingEditor.Dispose();
         rulesSaveGate.Dispose();
     }

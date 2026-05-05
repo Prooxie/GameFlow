@@ -1,232 +1,147 @@
+using Autofire.Infrastructure.Localization;
+
 namespace Autofire.Infrastructure.Runtime;
 
 /// <summary>
-/// Thread-safe registry of detected input devices and provider status text.
+/// Catalog of input devices currently visible to the active provider.
 ///
-/// The <see cref="Changed"/> event is debounced: it fires at most once per
-/// <see cref="DebounceMs"/> milliseconds regardless of how often the underlying
-/// data changes. This prevents background polling loops from flooding the
-/// Avalonia UI dispatcher with notifications.
+/// Every status string surfaced from this class — including "No devices found"
+/// and the per-provider status text — is resolved through ILocalizationService
+/// so it follows the active culture. Previously these were emitted as literal
+/// English strings during provider startup, which meant they remained in the
+/// language that was active when the provider initialised even after the user
+/// switched languages.
 /// </summary>
-public sealed class InputDeviceCatalog : IDisposable
+public sealed class InputDeviceCatalog
 {
-    private const int DebounceMs = 800;
+    private readonly ILocalizationService localization;
+    private readonly Lock gate = new();
 
-    private readonly Lock syncRoot = new();
-    private readonly System.Threading.Timer debounceTimer;
-    private IReadOnlyList<InputDeviceInfo> rawDevices = [];
-    private IReadOnlyList<InputDeviceInfo> devices = [];
-    private HashSet<string> ignoredDeviceIds = new(StringComparer.OrdinalIgnoreCase);
+    private IReadOnlyList<DetectedInputDevice> devices = [];
+    private string providerStatusKey = "ProviderStatus_NoActiveProvider";
+    private object?[] providerStatusArgs = [];
     private string? selectedDeviceId;
-    private string providerStatus = "No live input selected.";
-    private bool pendingChange;
-    private bool disposed;
 
-    public InputDeviceCatalog()
+    public InputDeviceCatalog(ILocalizationService localization)
     {
-        debounceTimer = new System.Threading.Timer(
-            _ => FirePendingChange(),
-            state: null,
-            Timeout.Infinite,
-            Timeout.Infinite);
+        this.localization = localization;
+        this.localization.CultureChanged += OnCultureChanged;
     }
 
-    public event EventHandler? Changed;
+    public event EventHandler? Updated;
 
-    public IReadOnlyList<InputDeviceInfo> Devices
+    public IReadOnlyList<DetectedInputDevice> Devices
     {
-        get { lock (syncRoot) { return devices; } }
+        get
+        {
+            lock (gate)
+            {
+                return devices;
+            }
+        }
     }
 
     public string? SelectedDeviceId
     {
-        get { lock (syncRoot) { return selectedDeviceId; } }
-    }
-
-    public string ProviderStatus
-    {
-        get { lock (syncRoot) { return providerStatus; } }
-    }
-
-    public void SetProviderStatus(string? status)
-    {
-        var normalized = string.IsNullOrWhiteSpace(status)
-            ? "Provider status unavailable."
-            : status.Trim();
-
-        lock (syncRoot)
+        get
         {
-            if (string.Equals(providerStatus, normalized, StringComparison.Ordinal))
+            lock (gate)
             {
-                return;
+                return selectedDeviceId;
             }
-
-            providerStatus = normalized;
-            ScheduleChange();
         }
     }
 
-    public void ReplaceDevices(IEnumerable<InputDeviceInfo> sourceDevices)
+    /// <summary>Translated, end-user-facing description of the provider's current state.</summary>
+    public string ProviderStatus
     {
-        var list = sourceDevices
-            .Where(d => !string.IsNullOrWhiteSpace(d.Id))
-            .GroupBy(d => d.Id, StringComparer.OrdinalIgnoreCase)
-            .Select(g => g.First())
-            .OrderBy(d => d.DisplayName, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(d => d.Id, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-        lock (syncRoot)
+        get
         {
-            rawDevices = list;
-            if (RebuildVisibleDevicesNoLock())
+            lock (gate)
             {
-                ScheduleChange();
+                return ResolveProviderStatus();
             }
         }
     }
 
     public void SetSelectedDevice(string? deviceId)
     {
-        var normalized = string.IsNullOrWhiteSpace(deviceId) ? null : deviceId.Trim();
-
-        lock (syncRoot)
+        lock (gate)
         {
-            if (!string.IsNullOrWhiteSpace(normalized) &&
-                devices.All(d => !string.Equals(d.Id, normalized, StringComparison.OrdinalIgnoreCase)))
-            {
-                normalized = null;
-            }
-
-            if (string.Equals(selectedDeviceId, normalized, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(selectedDeviceId, deviceId, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
-            selectedDeviceId = normalized;
-            if (RebuildVisibleDevicesNoLock())
-            {
-                ScheduleChange();
-            }
+            selectedDeviceId = string.IsNullOrWhiteSpace(deviceId) ? null : deviceId;
         }
+
+        RaiseUpdated();
     }
 
-    public void SetIgnoredDeviceIds(IEnumerable<string>? deviceIds)
+    public void Update(IEnumerable<DetectedInputDevice> nextDevices, string statusKey, params object?[] statusArgs)
     {
-        var normalized = deviceIds?
-            .Where(id => !string.IsNullOrWhiteSpace(id))
-            .Select(id => id.Trim())
-            .ToHashSet(StringComparer.OrdinalIgnoreCase)
-            ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        lock (syncRoot)
+        lock (gate)
         {
-            if (ignoredDeviceIds.SetEquals(normalized))
-            {
-                return;
-            }
-
-            ignoredDeviceIds = normalized;
-            if (RebuildVisibleDevicesNoLock())
-            {
-                ScheduleChange();
-            }
+            devices = [.. nextDevices.Distinct(DetectedInputDeviceComparer.Instance)];
+            providerStatusKey = string.IsNullOrWhiteSpace(statusKey)
+                ? "ProviderStatus_NoActiveProvider"
+                : statusKey;
+            providerStatusArgs = statusArgs ?? [];
         }
+
+        RaiseUpdated();
     }
 
-    public void Clear(string? status = null)
+    public void Clear(string? statusKey = null)
     {
-        lock (syncRoot)
+        lock (gate)
         {
-            rawDevices = [];
             devices = [];
-            ignoredDeviceIds.Clear();
-            selectedDeviceId = null;
-            providerStatus = string.IsNullOrWhiteSpace(status)
-                ? "No live input selected."
-                : status.Trim();
-            ScheduleChange();
+            providerStatusKey = string.IsNullOrWhiteSpace(statusKey)
+                ? "ProviderStatus_NoActiveProvider"
+                : statusKey;
+            providerStatusArgs = [];
         }
+
+        RaiseUpdated();
     }
 
-    private bool RebuildVisibleDevicesNoLock()
+    private string ResolveProviderStatus()
     {
-        var visible = rawDevices
-            .Where(d => !ignoredDeviceIds.Contains(d.Id))
-            .ToList();
-
-        var previousSelectedId = selectedDeviceId;
-        if (!string.IsNullOrWhiteSpace(selectedDeviceId) &&
-            visible.All(d => !string.Equals(d.Id, selectedDeviceId, StringComparison.OrdinalIgnoreCase)))
-        {
-            selectedDeviceId = null;
-        }
-
-        if (string.IsNullOrWhiteSpace(selectedDeviceId) && visible.Count == 1)
-        {
-            selectedDeviceId = visible[0].Id;
-        }
-
-        var normalized = visible
-            .Select(d => d with
-            {
-                IsSelected = !string.IsNullOrWhiteSpace(selectedDeviceId) &&
-                             string.Equals(d.Id, selectedDeviceId, StringComparison.OrdinalIgnoreCase)
-            })
-            .ToArray();
-
-        var changed = previousSelectedId != selectedDeviceId || !AreEqual(devices, normalized);
-        devices = normalized;
-        return changed;
+        var template = localization[providerStatusKey];
+        return providerStatusArgs.Length == 0
+            ? template
+            : string.Format(template, providerStatusArgs);
     }
 
-    private static bool AreEqual(IReadOnlyList<InputDeviceInfo> left, IReadOnlyList<InputDeviceInfo> right)
+    private void OnCultureChanged(object? sender, EventArgs e)
     {
-        if (left.Count != right.Count)
-        {
-            return false;
-        }
-
-        for (var index = 0; index < left.Count; index++)
-        {
-            if (left[index] != right[index])
-            {
-                return false;
-            }
-        }
-
-        return true;
+        // Status string is now stale — fire Updated so any UI re-reads it.
+        RaiseUpdated();
     }
 
-    private void ScheduleChange()
+    private void RaiseUpdated()
     {
-        pendingChange = true;
-        _ = debounceTimer.Change(DebounceMs, Timeout.Infinite);
+        Updated?.Invoke(this, EventArgs.Empty);
     }
 
-    private void FirePendingChange()
+    private sealed class DetectedInputDeviceComparer : IEqualityComparer<DetectedInputDevice>
     {
-        bool fire;
-        lock (syncRoot)
+        public static readonly DetectedInputDeviceComparer Instance = new();
+
+        public bool Equals(DetectedInputDevice? x, DetectedInputDevice? y)
         {
-            fire = pendingChange;
-            pendingChange = false;
+            return ReferenceEquals(x, y)
+                || (x is not null && y is not null
+                    && string.Equals(x.Id, y.Id, StringComparison.OrdinalIgnoreCase));
         }
 
-        if (fire && !disposed)
+        public int GetHashCode(DetectedInputDevice obj)
         {
-            Changed?.Invoke(this, EventArgs.Empty);
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Id);
         }
-    }
-
-    public void Dispose()
-    {
-        if (disposed)
-        {
-            return;
-        }
-
-        disposed = true;
-        debounceTimer.Dispose();
     }
 }
+
+public sealed record DetectedInputDevice(string Id, string DisplayName, string? HardwareId);
