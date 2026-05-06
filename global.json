@@ -1,0 +1,8 @@
+{
+  "$comment": "Pins the .NET SDK band that maintainers and CI must use. rollForward=latestFeature lets devs pick up a newer 10.0.x but blocks accidental builds on 8.x or 9.x.",
+  "sdk": {
+    "version": "10.0.100",
+    "rollForward": "latestFeature",
+    "allowPrerelease": false
+  }
+}

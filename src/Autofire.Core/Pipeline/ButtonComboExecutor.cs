@@ -28,7 +28,10 @@ public sealed class ButtonComboExecutor
     /// Updates the virtual snapshot in-place to reflect any currently-active
     /// steps in this combo for the given timestamp.
     /// </summary>
-    public void Apply(ControllerSnapshot physical, ButtonState[] virtualButtons, DateTimeOffset now)
+    /// <param name="physical">Physical controller snapshot for the current tick.</param>
+    /// <param name="virtualButtons">Virtual button state vector, indexed by <c>(int)<see cref="ButtonId"/></c>.</param>
+    /// <param name="now">Current tick timestamp.</param>
+    public void Apply(ControllerSnapshot physical, bool[] virtualButtons, DateTimeOffset now)
     {
         if (rule.SourceButton == ButtonId.None || rule.Steps.Count == 0)
         {

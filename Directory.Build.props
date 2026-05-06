@@ -1,12 +1,54 @@
 <Project>
+
+  <!--
+    Properties that apply to every project in the solution.
+    Centralising these keeps the per-project .csproj files focused on
+    dependencies and project-specific overrides only.
+  -->
   <PropertyGroup>
+    <!-- Target framework. .NET 10 is the LTS we ship on. -->
     <TargetFramework>net10.0</TargetFramework>
+
+    <!-- Modern C# defaults. -->
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <LangVersion>latest</LangVersion>
+
+    <!-- Build hygiene. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+
+    <!-- Reproducible builds: same inputs => same outputs. -->
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
-    <AnalysisLevel>latest</AnalysisLevel>
+
+    <!--
+      Generate XML documentation files for every project. This both feeds
+      Doxygen / DocFX downstream and surfaces "missing summary" hints in
+      the IDE for new public APIs. CS1591 is downgraded so we don't drown
+      in noise while doc coverage is still partial.
+    -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <!-- Common assembly metadata for every binary we ship. -->
+    <Company>Autofire Next contributors</Company>
+    <Product>Autofire Next</Product>
+    <Copyright>Copyright (c) Autofire Next contributors</Copyright>
+    <NeutralLanguage>en</NeutralLanguage>
+    <Version Condition="'$(Version)' == ''">0.1.0</Version>
   </PropertyGroup>
+
+  <!--
+    Embed Source Link (when the file is present) so released builds can be
+    debugged against the original git revision.
+  -->
+  <PropertyGroup Condition="'$(CI)' == 'true'">
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
 </Project>
