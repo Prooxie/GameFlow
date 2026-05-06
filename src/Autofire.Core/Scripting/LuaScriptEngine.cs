@@ -8,11 +8,11 @@ using MoonSharp.Interpreter.Loaders;
 namespace Autofire.Core.Scripting;
 
 /// <summary>
-/// Lua scripting engine for <see cref="ScriptRule"/> instances.
+/// Lua scripting engine for <see cref="ControlScriptRule"/> instances.
 ///
 /// Why Lua and not C#?
 ///   • C# scripting (Roslyn / CSharpScript) has a multi-second JIT cost on cold start.
-///   • Lua scripts compile in <50 ms and execute in ~microseconds per tick — a must
+///   • Lua scripts compile in under 50 ms and execute in ~microseconds per tick — a must
 ///     for a 1000 Hz polling loop.
 ///   • MoonSharp is a pure-managed Lua 5.x interpreter (no native deps), so the engine
 ///     ships in the same x-platform NuGet bundle as the rest of the app.
@@ -58,7 +58,7 @@ public sealed class LuaScriptEngine : IDisposable
         this.logger = logger;
     }
 
-    public void EnsureCompiled(ScriptRule rule)
+    public void EnsureCompiled(ControlScriptRule rule)
     {
         if (disposed)
         {
@@ -118,8 +118,8 @@ public sealed class LuaScriptEngine : IDisposable
         }
     }
 
-    public void Execute(ScriptRule rule, ControllerSnapshot physical, ControllerSnapshot virtualBefore,
-                        ButtonState[] virtualButtons, ref StickVector virtualLeft, ref StickVector virtualRight,
+    public void Execute(ControlScriptRule rule, ControllerSnapshot physical, ControllerSnapshot virtualBefore,
+                        bool[] virtualButtons, ref StickVector virtualLeft, ref StickVector virtualRight,
                         ref float virtualLt, ref float virtualRt, DateTimeOffset now)
     {
         if (disposed)
@@ -158,7 +158,7 @@ public sealed class LuaScriptEngine : IDisposable
             t.Set("rt",    DynValue.NewNumber(physical.RightTrigger));
 
             // Local copies that get written back after the script returns.
-            var localButtons = ButtonState.Clone(virtualButtons);
+            var localButtons = (bool[])virtualButtons.Clone();
             var localLeft    = virtualLeft;
             var localRight   = virtualRight;
             var localLt      = virtualLt;
@@ -288,7 +288,7 @@ public sealed class LuaScriptEngine : IDisposable
         return fallback;
     }
 
-    private void ReportRuntimeError(ScriptRule rule, LoadedScript loaded, string message, DateTimeOffset now)
+    private void ReportRuntimeError(ControlScriptRule rule, LoadedScript loaded, string message, DateTimeOffset now)
     {
         const int throttleSeconds = 5;
 

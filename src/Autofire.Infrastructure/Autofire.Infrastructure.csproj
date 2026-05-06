@@ -18,11 +18,35 @@
     <PackageReference Include="Nefarius.ViGEm.Client" />
   </ItemGroup>
 
-  <!-- SDL3 unified source is not yet complete; excluded until the interop layer is stabilised. -->
+  <!--
+    Work-in-progress interop / provider files.
+
+    These are kept in source for the next refactor pass but are excluded from the
+    build because they reference types that have not yet been merged onto the
+    `dev` branch:
+
+      * The Sdl3Interop / SdlGamepadInterop / SdlRuntimeLease trio is the
+        prototype "unified" SDL3 interop layer; the live provider currently
+        uses Runtime/Sdl/SdlInterop.cs (which is included).
+      * Runtime/Providers/{Sdl3InputProvider,LinuxEvdevInputProvider,
+        MacOsCoreHidInputProvider}.cs implement an `IInputProvider` interface
+        that does not exist yet (the live abstraction is `IInputSource` in
+        Runtime/IInputSource.cs). Sdl3InputProvider also depends on the
+        SDL3-CS managed bindings (the `using SDL;` namespace), which are NOT
+        the same as SDL3-CS.Native (we ship only the latter). Reintroducing
+        these will require either adding the SDL3-CS package and renaming the
+        interface, or deleting them outright.
+
+    Until that work is done, leaving these on disk keeps the diff small while
+    making sure `dotnet build` succeeds on a clean checkout.
+  -->
   <ItemGroup>
     <Compile Remove="Runtime\SdlGamepadInputSource.cs" />
     <Compile Remove="Runtime\Sdl\Sdl3Interop.cs" />
     <Compile Remove="Runtime\Sdl\SdlGamepadInterop.cs" />
     <Compile Remove="Runtime\Sdl\SdlRuntimeLease.cs" />
+    <Compile Remove="Runtime\Providers\Sdl3InputProvider.cs" />
+    <Compile Remove="Runtime\Providers\LinuxEvdevInputProvider.cs" />
+    <Compile Remove="Runtime\Providers\MacOsCoreHidInputProvider.cs" />
   </ItemGroup>
 </Project>

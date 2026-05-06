@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
+using Autofire.App.ViewModels;
 
 namespace Autofire.App.Services;
 
