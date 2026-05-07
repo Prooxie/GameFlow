@@ -34,6 +34,13 @@ public sealed class ViGEmXbox360OutputSink : IOutputSink
 
     public string DisplayName => "ViGEm Xbox 360";
 
+    /// <summary>
+    /// VID/PID of the Microsoft Xbox 360 wired controller, which is what
+    /// ViGEm Bus advertises this virtual device as. Used by the runtime to
+    /// hide this sink from the input source dropdown while it is active.
+    /// </summary>
+    public (ushort Vid, ushort Pid)? OwnedHardwareSignature => (0x045E, 0x028E);
+
     public ValueTask WriteAsync(ControllerSnapshot snapshot, CancellationToken cancellationToken)
     {
         if (disposed)
@@ -121,6 +128,13 @@ public sealed class ViGEmDualShock4OutputSink : IOutputSink
     }
 
     public string DisplayName => "ViGEm DualShock 4";
+
+    /// <summary>
+    /// VID/PID of the Sony DualShock 4 (wired CUH-ZCT2 revision), which is
+    /// what ViGEm Bus advertises this virtual device as. Used by the runtime
+    /// to hide this sink from the input source dropdown while it is active.
+    /// </summary>
+    public (ushort Vid, ushort Pid)? OwnedHardwareSignature => (0x054C, 0x09CC);
 
     public ValueTask WriteAsync(ControllerSnapshot snapshot, CancellationToken cancellationToken)
     {

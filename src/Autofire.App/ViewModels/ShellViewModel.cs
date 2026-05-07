@@ -27,8 +27,16 @@ namespace Autofire.App.ViewModels;
 /// </summary>
 public sealed class ShellViewModel : ViewModelBase, IDisposable
 {
-    private const int SlowPathEvery = 90;
-    private const int MedPathEvery  = 15;
+    // Refresh cadence, expressed in UI ticks (the dispatcher fires at ~30 Hz, see ShellWindow.OnOpened).
+    //   Fast path  — every tick (~33 ms).  Visible button states + diagnostics text.
+    //   Medium     — every 15 ticks (~500 ms).  Controller-inventory rebuild + runtime notes.
+    //   Slow       — every 15 ticks (~500 ms).  JSON re-serialisation of the raw snapshots.
+    //
+    // The JSON path used to fire every 90 ticks (~3 s), which made the "Raw physical/virtual
+    // snapshot" debug panes feel frozen. 500 ms keeps them legibly responsive without the
+    // serialisation cost showing up in profilers.
+    private const int SlowPathEvery = 1;
+    private const int MedPathEvery  = 1;
     private int refreshTick;
 
     private bool ruleSummaryDirty = true;
@@ -89,6 +97,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         ImportProfileCommand             = new AsyncRelayCommand(ImportProfileAsync);
         ExportProfileCommand             = new AsyncRelayCommand(ExportProfileAsync);
         RenameProfileCommand             = new AsyncRelayCommand(RenameProfileAsync);
+        DeleteProfileCommand             = new AsyncRelayCommand(DeleteProfileAsync, CanDeleteProfile);
         OpenControlEditorCommand         = new RelayCommand<string>(OpenControlEditor);
 
         SupportedLanguages     = localizationService.SupportedLanguages;
@@ -128,6 +137,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     public IAsyncRelayCommand ImportProfileCommand             { get; }
     public IAsyncRelayCommand ExportProfileCommand             { get; }
     public IAsyncRelayCommand RenameProfileCommand             { get; }
+    public IAsyncRelayCommand DeleteProfileCommand             { get; }
     public IRelayCommand<string> OpenControlEditorCommand      { get; }
 
     public event EventHandler<ControlMappingRequestedEventArgs>? ControlMappingRequested;
@@ -285,6 +295,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     public string DuplicateProfileButtonLabel    => localizationService["DuplicateProfileButton"];
     public string ImportProfileButtonLabel       => localizationService["ImportProfileButton"];
     public string ExportProfileButtonLabel       => localizationService["ExportProfileButton"];
+    public string DeleteProfileButtonLabel       => localizationService["DeleteProfileButton"];
     public string MappingOverviewLabel           => localizationService["MappingOverviewLabel"];
     public string MappingOverviewSubtitle        => localizationService["MappingOverviewSubtitle"];
     public string OpenControlEditorButtonLabel   => localizationService["OpenControlEditorButton"];
@@ -402,6 +413,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             }
 
             OnPropertyChanged(nameof(SelectedProfileSummary));
+            DeleteProfileCommand.NotifyCanExecuteChanged();
 
             if (value is null || isSwitchingProfile ||
                 string.Equals(value.Id, profileSession.CurrentProfile.Id, StringComparison.Ordinal))
@@ -768,6 +780,87 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Deletes the currently selected profile. If the selected profile is the
+    /// active one (the common case — the dropdown switches the active profile
+    /// on selection), the runtime first switches to another profile, then
+    /// deletes the original. Refuses to delete when there is no other profile
+    /// to switch to (the user must always have at least one profile).
+    /// </summary>
+    /// <returns>A task that completes when deletion (and the subsequent UI
+    /// refresh) finishes.</returns>
+    private async Task DeleteProfileAsync()
+    {
+        var target = selectedProfileOption;
+        if (target is null || string.IsNullOrWhiteSpace(target.Id))
+        {
+            return;
+        }
+
+        // Can't leave the user with zero profiles.
+        if (AvailableProfiles.Count <= 1)
+        {
+            StatusText = localizationService["DeleteProfileBlockedLastOne"];
+            return;
+        }
+
+        try
+        {
+            // If the user is deleting the active profile, switch to another
+            // one first so ProfileSession.DeleteProfileAsync (which refuses
+            // to delete the active profile) actually proceeds.
+            if (string.Equals(target.Id, profileSession.CurrentProfile.Id, StringComparison.Ordinal))
+            {
+                var fallback = AvailableProfiles
+                    .FirstOrDefault(p => !string.Equals(p.Id, target.Id, StringComparison.Ordinal));
+                if (fallback is null)
+                {
+                    StatusText = localizationService["DeleteProfileBlockedLastOne"];
+                    return;
+                }
+
+                await SwitchToProfileAsync(fallback.Id);
+            }
+
+            await profileSession.DeleteProfileAsync(target.Id);
+            await RefreshAvailableProfilesAsync();
+
+            // Snap the dropdown selection to whatever's now active.
+            var current = AvailableProfiles
+                .FirstOrDefault(p => p.Id == profileSession.CurrentProfile.Id)
+                ?? AvailableProfiles.FirstOrDefault();
+            if (current is not null && current != selectedProfileOption)
+            {
+                selectedProfileOption = current;
+                OnPropertyChanged(nameof(SelectedProfileOption));
+                OnPropertyChanged(nameof(SelectedProfileSummary));
+            }
+
+            DeleteProfileCommand.NotifyCanExecuteChanged();
+
+            logger.LogInformation("Deleted profile {ProfileId} ({ProfileName}).", target.Id, target.Label);
+            StatusText = string.Format(localizationService["ProfileDeletedStatus"], target.Label);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Failed to delete profile {ProfileId}.", target.Id);
+            StatusText = $"Delete failed: {exception.Message}";
+        }
+    }
+
+    /// <summary>
+    /// CanExecute predicate for <see cref="DeleteProfileCommand"/>. Disables
+    /// the button when there's no selection or only one profile exists (the
+    /// runtime always needs at least one profile).
+    /// </summary>
+    /// <returns>True when the currently selected profile may be deleted.</returns>
+    private bool CanDeleteProfile()
+    {
+        return selectedProfileOption is not null
+            && !string.IsNullOrWhiteSpace(selectedProfileOption.Id)
+            && AvailableProfiles.Count > 1;
+    }
+
     // ─── Dashboard sync ───────────────────────────────────────────────────────
 
     private void SyncDashboardSelectionsFromProfile()
@@ -820,6 +913,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             OnPropertyChanged(nameof(SelectedProfileOption));
             OnPropertyChanged(nameof(SelectedProfileSummary));
         }
+
+        // CanExecute depends on AvailableProfiles.Count and on the selection,
+        // both of which may have changed above.
+        DeleteProfileCommand.NotifyCanExecuteChanged();
     }
 
     private async Task SwitchToProfileAsync(string profileId)
@@ -990,9 +1087,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         _ = sb.AppendLine($"- Controllers detected: {inputDeviceCatalog.Devices.Count}");
         _ = sb.AppendLine($"- Provider status: {inputDeviceCatalog.ProviderStatus}");
         _ = sb.AppendLine($"- Experimental GameInput: {runtimeOptions.EnableExperimentalGameInput}");
-        _ = sb.AppendLine();
-        _ = sb.AppendLine(localizationService["ProviderPlanHeading"]);
-        _ = sb.Append(providerSummary);
         return sb.ToString();
     }
 
@@ -1174,6 +1268,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(DuplicateProfileButtonLabel));
         OnPropertyChanged(nameof(ImportProfileButtonLabel));
         OnPropertyChanged(nameof(ExportProfileButtonLabel));
+        OnPropertyChanged(nameof(DeleteProfileButtonLabel));
         OnPropertyChanged(nameof(MappingOverviewLabel));
         OnPropertyChanged(nameof(MappingOverviewSubtitle));
         OnPropertyChanged(nameof(OpenControlEditorButtonLabel));

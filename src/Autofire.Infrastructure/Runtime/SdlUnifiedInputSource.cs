@@ -83,7 +83,7 @@ public sealed class SdlUnifiedInputSource : IInputSource
             }
         }
 
-        inputDeviceCatalog.Clear("SDL3 input is not active.");
+        inputDeviceCatalog.Clear("ProviderStatus_NoActiveProvider");
         return ValueTask.CompletedTask;
     }
 
@@ -93,7 +93,7 @@ public sealed class SdlUnifiedInputSource : IInputSource
         if (devices.Count == 0)
         {
             CloseOpenedDevice();
-            inputDeviceCatalog.SetProviderStatus("No SDL3 gamepad, joystick, or HID-style input device was detected.");
+            inputDeviceCatalog.SetProviderStatus("ProviderStatus_SdlNoDevices");
             return ControllerSnapshot.Empty("No SDL3 device detected") with { Timestamp = DateTimeOffset.UtcNow };
         }
 
@@ -414,14 +414,12 @@ public sealed class SdlUnifiedInputSource : IInputSource
 
         if (devices.Count == 0)
         {
-            inputDeviceCatalog.SetProviderStatus("SDL3 did not detect any mapped gamepad or generic joystick device.");
+            inputDeviceCatalog.SetProviderStatus("ProviderStatus_SdlNoDevices");
             return;
         }
 
-        inputDeviceCatalog.SetProviderStatus(
-            inputDeviceCatalog.SelectedDeviceId is null
-                ? $"SDL3 detected {devices.Count} input device(s). Automatic selection is active until you choose a specific controller."
-                : $"SDL3 detected {devices.Count} input device(s). A manual controller selection is active.");
+        // ProviderStatus_SdlActive's translation is "SDL3 unified input active — {0} gamepad(s) detected"
+        inputDeviceCatalog.SetProviderStatus("ProviderStatus_SdlActive", devices.Count);
     }
 
     private void TryLoadOptionalMappings()

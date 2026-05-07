@@ -35,7 +35,7 @@ public sealed class DemoInputSource : IInputSource
                 true)
         ]);
         inputDeviceCatalog.SetSelectedDevice("demo-preview-device");
-        inputDeviceCatalog.SetProviderStatus("Demo preview is active. Select 'SDL3 unified input' for a real controller.");
+        inputDeviceCatalog.SetProviderStatus("ProviderStatus_DemoActive");
     }
 
     public string DisplayName { get; }
@@ -82,7 +82,7 @@ public sealed class DemoInputSource : IInputSource
         buttons[ButtonId.LeftTriggerButton] = leftTrigger > 0.92f;
         buttons[ButtonId.RightTriggerButton] = rightTrigger > 0.92f;
 
-        inputDeviceCatalog.SetProviderStatus("Demo preview is active. Select 'SDL3 unified input' for a real controller.");
+        inputDeviceCatalog.SetProviderStatus("ProviderStatus_DemoActive");
 
         var snapshot = new ControllerSnapshot
         {
@@ -101,7 +101,7 @@ public sealed class DemoInputSource : IInputSource
 
     public ValueTask DisposeAsync()
     {
-        inputDeviceCatalog.Clear("Demo preview is not active.");
+        inputDeviceCatalog.Clear("ProviderStatus_NoActiveProvider");
         return ValueTask.CompletedTask;
     }
 }

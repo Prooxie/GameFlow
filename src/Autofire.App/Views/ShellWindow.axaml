@@ -350,6 +350,10 @@
                     <Button Classes="ghost" Padding="14,9"
                             Command="{Binding ExportProfileCommand}"
                             Content="{Binding ExportProfileButtonLabel}" />
+                    <Button Classes="ghost" Padding="14,9"
+                            Command="{Binding DeleteProfileCommand}"
+                            Content="{Binding DeleteProfileButtonLabel}"
+                            Foreground="#E5484D" />
                     <Button Classes="primary" Padding="14,9"
                             Command="{Binding SaveProfileCommand}"
                             Content="{Binding SaveProfileButtonLabel}" />
