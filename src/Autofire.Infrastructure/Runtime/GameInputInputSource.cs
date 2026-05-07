@@ -136,7 +136,7 @@ public sealed class GameInputInputSource : IInputSource
             }
         }
 
-        inputDeviceCatalog.Clear("Microsoft.GameInput is not active.");
+        inputDeviceCatalog.Clear("ProviderStatus_NoActiveProvider");
         logger.LogInformation("Disposed Microsoft.GameInput input provider.");
         return ValueTask.CompletedTask;
     }

@@ -82,7 +82,7 @@ public sealed class XInputInputSource : IInputSource
             }
         }
 
-        inputDeviceCatalog.Clear("XInput is not active.");
+        inputDeviceCatalog.Clear("ProviderStatus_NoActiveProvider");
         return ValueTask.CompletedTask;
     }
 
@@ -155,14 +155,17 @@ public sealed class XInputInputSource : IInputSource
 
         inputDeviceCatalog.ReplaceDevices(devices);
 
-        var status = devices.Count switch
+        // Use existing ProviderStatus_XInput* localization keys so culture
+        // changes flip the status text immediately (see InputDeviceCatalog
+        // doc comment on its localization model).
+        if (devices.Count == 0)
         {
-            0 => "No XInput controller detected. Connect an Xbox-compatible controller.",
-            1 => $"XInput: {devices[0].DisplayName} ready.",
-            _ => $"XInput: {devices.Count} controllers detected."
-        };
-
-        inputDeviceCatalog.SetProviderStatus(status);
+            inputDeviceCatalog.SetProviderStatus("ProviderStatus_XInputNoDevices");
+        }
+        else
+        {
+            inputDeviceCatalog.SetProviderStatus("ProviderStatus_XInputActive", devices.Count);
+        }
     }
 
     private uint GetState(uint userIndex, out XInputInterop.XInputState state)

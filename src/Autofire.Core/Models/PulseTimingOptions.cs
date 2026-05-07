@@ -2,8 +2,8 @@ namespace Autofire.Core.Models;
 
 public sealed record PulseTimingOptions
 {
-    public int HoldMs { get; init; } = 128;
-    public int ReleaseMs { get; init; } = 32;
+    public int HoldMs { get; init; }
+    public int ReleaseMs { get; init; } 
     public int SettleMs { get; init; }
     public int PauseAfterReleaseMs { get; init; }
 

@@ -40,6 +40,13 @@ public sealed class ViGEmDualSenseOutputSink : IOutputSink
 
     public string DisplayName => "ViGEm DualSense";
 
+    /// <summary>
+    /// VID/PID of the Sony DualSense (PS5) controller, which is what ViGEm
+    /// Bus advertises this virtual device as. Used by the runtime to hide
+    /// this sink from the input source dropdown while it is active.
+    /// </summary>
+    public (ushort Vid, ushort Pid)? OwnedHardwareSignature => (0x054C, 0x0CE6);
+
     public ValueTask WriteAsync(ControllerSnapshot snapshot, CancellationToken cancellationToken)
     {
         if (disposed)

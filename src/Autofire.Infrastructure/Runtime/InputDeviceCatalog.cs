@@ -29,17 +29,27 @@ public sealed class InputDeviceCatalog
 
     private IReadOnlyList<InputDeviceInfo> devices = [];
     private IReadOnlySet<string> ignoredDeviceIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+    private IReadOnlyList<(ushort Vid, ushort Pid)> ignoredHardwareSignatures = [];
     private string? selectedDeviceId;
 
     /// <summary>
-    /// Free-form provider status string. When non-null, takes precedence
-    /// over <see cref="defaultStatusKey"/>. Set by
-    /// <see cref="SetProviderStatus(string)"/>.
+    /// Provider-status localization key (or English literal — the localizer
+    /// falls through to the input string when no resource is found, so input
+    /// sources that don't yet have a translated key still display their text).
+    /// Resolved through <see cref="ILocalizationService"/> on every read so
+    /// that culture changes are reflected immediately without callers having
+    /// to push a new value.
     /// </summary>
-    private string? literalProviderStatus;
+    private string? statusKey;
 
     /// <summary>
-    /// Localization key consulted when no literal status has been set
+    /// Format arguments interpolated into the resolved <see cref="statusKey"/>
+    /// string when it contains <c>{0}</c>-style placeholders.
+    /// </summary>
+    private object?[] statusArgs = [];
+
+    /// <summary>
+    /// Localization key consulted when <see cref="statusKey"/> is null
     /// (i.e. the catalog has just been cleared or freshly created).
     /// </summary>
     private readonly string defaultStatusKey = "ProviderStatus_NoActiveProvider";
@@ -135,6 +145,7 @@ public sealed class InputDeviceCatalog
                 [
                     .. nextDevices
                         .Where(d => !ignoredDeviceIds.Contains(d.Id))
+                        .Where(d => !MatchesIgnoredHardwareSignature(d))
                         .GroupBy(d => d.Id, StringComparer.OrdinalIgnoreCase)
                         .Select(g => g.First())
                 ];
@@ -145,21 +156,39 @@ public sealed class InputDeviceCatalog
     }
 
     /// <summary>
-    /// Sets the provider's free-form status string. The string is surfaced
-    /// verbatim by <see cref="ProviderStatus"/>; the localization layer is
-    /// not consulted. Pass null or empty to revert to the localized default.
+    /// Sets the provider-status string. <paramref name="keyOrLiteral"/> is
+    /// resolved through <see cref="ILocalizationService"/> on every read so
+    /// culture changes are reflected without callers having to push a new
+    /// value. If no resource matches, the localizer falls through to the
+    /// input string verbatim — making this method safe to call with either
+    /// a known localization key (e.g. <c>ProviderStatus_XInputActive</c>) or
+    /// an English literal during incremental localization rollout.
     /// </summary>
-    /// <param name="status">The status text, or null/empty to clear.</param>
-    public void SetProviderStatus(string? status)
+    /// <param name="keyOrLiteral">
+    /// The localization key (preferred) or English literal to display. Pass
+    /// null or empty to revert to the localized default
+    /// (<c>ProviderStatus_NoActiveProvider</c>).
+    /// </param>
+    /// <param name="args">
+    /// Optional <see cref="string.Format(string, object?[])"/> arguments
+    /// interpolated into the resolved string. Use these for keys whose
+    /// translation contains <c>{0}</c>-style placeholders, e.g.
+    /// <c>"ProviderStatus_XInputActive"</c> + <c>controllerCount</c>.
+    /// </param>
+    public void SetProviderStatus(string? keyOrLiteral, params object?[] args)
     {
+        var normalisedKey  = string.IsNullOrWhiteSpace(keyOrLiteral) ? null : keyOrLiteral;
+        var normalisedArgs = args ?? [];
+
         lock (gate)
         {
-            var normalised = string.IsNullOrWhiteSpace(status) ? null : status;
-            if (string.Equals(literalProviderStatus, normalised, StringComparison.Ordinal))
+            if (string.Equals(statusKey, normalisedKey, StringComparison.Ordinal)
+                && ArgsEqual(statusArgs, normalisedArgs))
             {
                 return;
             }
-            literalProviderStatus = normalised;
+            statusKey  = normalisedKey;
+            statusArgs = normalisedArgs;
         }
 
         RaiseUpdated();
@@ -198,17 +227,61 @@ public sealed class InputDeviceCatalog
     }
 
     /// <summary>
-    /// Resets the catalog: empties the device list and updates the status.
+    /// Replaces the set of (vendor id, product id) pairs that should be
+    /// hidden from <see cref="Devices"/>. The runtime uses this to hide its
+    /// own virtual output device (e.g. a ViGEm Xbox 360 controller advertises
+    /// VID 0x045E PID 0x028E and would otherwise re-appear in the input
+    /// source dropdown, creating a confusing self-referential entry).
+    ///
+    /// A real Xbox/DS4 plugged into the same machine matches the same
+    /// signature — so this filter only fires when the user has explicitly
+    /// chosen the matching virtual output sink.
     /// </summary>
-    /// <param name="status">Optional literal status text describing why the
-    /// catalog was cleared. When null, the catalog reverts to the localized
-    /// default ("no active provider").</param>
-    public void Clear(string? status = null)
+    /// <param name="signatures">
+    /// VID/PID pairs to ignore. Pass an empty collection to clear the filter.
+    /// </param>
+    public void SetIgnoredHardwareSignatures(IEnumerable<(ushort Vid, ushort Pid)>? signatures)
     {
+        var next = (signatures ?? []).Distinct().ToArray();
+
+        bool changed;
         lock (gate)
         {
-            devices = [];
-            literalProviderStatus = string.IsNullOrWhiteSpace(status) ? null : status;
+            changed = !ignoredHardwareSignatures.SequenceEqual(next);
+            ignoredHardwareSignatures = next;
+
+            if (changed && devices.Count > 0)
+            {
+                // Re-apply the filter to the existing list.
+                devices = [.. devices.Where(d => !MatchesIgnoredHardwareSignature(d))];
+            }
+        }
+
+        if (changed)
+        {
+            RaiseUpdated();
+        }
+    }
+
+    /// <summary>
+    /// Resets the catalog: empties the device list and updates the status.
+    /// </summary>
+    /// <param name="statusKeyOrLiteral">
+    /// Optional localization key or English literal describing why the catalog
+    /// was cleared. Pass null to revert to the localized default ("no active
+    /// provider").
+    /// </param>
+    /// <param name="args">Format arguments for the status string, when applicable.</param>
+    public void Clear(string? statusKeyOrLiteral = null, params object?[] args)
+    {
+        var normalisedKey  = string.IsNullOrWhiteSpace(statusKeyOrLiteral) ? null : statusKeyOrLiteral;
+        var normalisedArgs = args ?? [];
+
+        lock (gate)
+        {
+            devices    = [];
+            statusKey  = normalisedKey;
+            statusArgs = normalisedArgs;
         }
 
         RaiseUpdated();
@@ -217,15 +290,81 @@ public sealed class InputDeviceCatalog
     /// <summary>
     /// Resolves the user-visible provider status. Must be called under <see cref="gate"/>.
     /// </summary>
-    /// <returns>The literal status if one is set, otherwise the localized default.</returns>
+    /// <returns>The fully-localized status string (or the literal text if no resource matched).</returns>
     private string ResolveProviderStatus()
     {
-        return literalProviderStatus ?? localization[defaultStatusKey];
+        var key      = statusKey ?? defaultStatusKey;
+        var template = localization[key];
+
+        if (statusArgs.Length == 0)
+        {
+            return template;
+        }
+
+        // Best-effort string.Format. If the template is a literal that doesn't
+        // have placeholders we return it unchanged; if string.Format throws on
+        // a malformed template we surface the raw template rather than crash.
+        try
+        {
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture, template, statusArgs);
+        }
+        catch (FormatException)
+        {
+            return template;
+        }
+    }
+
+    /// <summary>
+    /// True when <paramref name="device"/> matches one of the registered
+    /// (vendor id, product id) pairs in <see cref="ignoredHardwareSignatures"/>.
+    /// </summary>
+    /// <param name="device">The device to check.</param>
+    /// <returns>True if the device is hardware-signature-filtered.</returns>
+    private bool MatchesIgnoredHardwareSignature(InputDeviceInfo device)
+    {
+        if (ignoredHardwareSignatures.Count == 0 || (device.VendorId == 0 && device.ProductId == 0))
+        {
+            return false;
+        }
+
+        for (var i = 0; i < ignoredHardwareSignatures.Count; i++)
+        {
+            var sig = ignoredHardwareSignatures[i];
+            if (sig.Vid == device.VendorId && sig.Pid == device.ProductId)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>Reference-and-value-equality compare for the status args array.</summary>
+    /// <param name="a">First args array.</param>
+    /// <param name="b">Second args array.</param>
+    /// <returns>True if both arrays carry the same values in the same order.</returns>
+    private static bool ArgsEqual(object?[] a, object?[] b)
+    {
+        if (ReferenceEquals(a, b))
+        {
+            return true;
+        }
+        if (a.Length != b.Length)
+        {
+            return false;
+        }
+        for (var i = 0; i < a.Length; i++)
+        {
+            if (!Equals(a[i], b[i]))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     /// <summary>
     /// Reacts to a culture change by re-raising <see cref="Updated"/> so any UI
-    /// re-reads the (now possibly different) localized default status.
+    /// re-reads the (now possibly different) localized status.
     /// </summary>
     private void OnCultureChanged(object? sender, EventArgs e)
     {

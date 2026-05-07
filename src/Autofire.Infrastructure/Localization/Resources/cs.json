@@ -39,6 +39,9 @@
   "DuplicateProfileButton": "Duplikovat",
   "ImportProfileButton": "Importovat",
   "ExportProfileButton": "Exportovat",
+  "DeleteProfileButton": "Smazat",
+  "ProfileDeletedStatus": "Profil „{0}“ byl smazán.",
+  "DeleteProfileBlockedLastOne": "Nelze smazat poslední profil — alespoň jeden profil musí vždy existovat.",
 
   "MappingOverviewLabel": "Přehled mapování",
   "MappingOverviewSubtitle": "Klikněte na libovolný ovládací prvek a otevře se jeho editor.",

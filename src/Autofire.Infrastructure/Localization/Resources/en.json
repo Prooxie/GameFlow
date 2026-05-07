@@ -39,6 +39,9 @@
   "DuplicateProfileButton": "Duplicate",
   "ImportProfileButton": "Import",
   "ExportProfileButton": "Export",
+  "DeleteProfileButton": "Delete",
+  "ProfileDeletedStatus": "Profile '{0}' deleted.",
+  "DeleteProfileBlockedLastOne": "Cannot delete the last remaining profile — at least one profile must always exist.",
 
   "MappingOverviewLabel": "Mapping overview",
   "MappingOverviewSubtitle": "Click any control to open its dedicated editor.",

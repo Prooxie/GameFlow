@@ -149,6 +149,16 @@ public sealed class RuntimeCoordinator(
 
             currentOutputSink = outputSinkFactory.Create(profile.OutputProvider);
 
+            // Hide the runtime's own virtual output device from the input source
+            // dropdown (e.g. when the ViGEm DualShock 4 sink is active, the
+            // virtual DS4 it creates would otherwise show up as a selectable
+            // SDL3 input device — confusing and almost never useful). Sinks
+            // that don't materialise an OS-visible device return null here and
+            // contribute nothing to the filter.
+            var ownedSignature = currentOutputSink.OwnedHardwareSignature;
+            inputDeviceCatalog.SetIgnoredHardwareSignatures(
+                ownedSignature is null ? [] : [ownedSignature.Value]);
+
             if (logger.IsEnabled(LogLevel.Information))
             {
                 logger.LogInformation(
@@ -226,6 +236,7 @@ public sealed class RuntimeCoordinator(
         finally
         {
             inputDeviceCatalog.SetIgnoredDeviceIds([]);
+            inputDeviceCatalog.SetIgnoredHardwareSignatures([]);
             _ = Interlocked.Exchange(ref disposeStarted, 0);
         }
     }
