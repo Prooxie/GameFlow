@@ -1,4 +1,5 @@
 using Autofire.App.Services;
+using Autofire.App.Startup;
 using Autofire.App.ViewModels;
 using Autofire.App.Views;
 using Autofire.Infrastructure;
@@ -7,14 +8,55 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 
 namespace Autofire.App.Bootstrap;
 
+/// <summary>
+/// Factory that produces the application's <see cref="IHostBuilder"/>.
+///
+/// <para>
+/// Two extra responsibilities beyond a standard host build:
+/// </para>
+///
+/// <list type="bullet">
+///   <item>
+///     <description>
+///       Eagerly creates a Serilog <see cref="LoggingLevelSwitch"/> seeded
+///       from <c>appsettings.json</c>'s <c>Serilog:MinimumLevel:Default</c>
+///       value. The switch is wired into the Serilog pipeline through
+///       <c>MinimumLevel.ControlledBy(...)</c>, then exposed to the rest
+///       of the app as an <see cref="ILogLevelSwitch"/> via
+///       <see cref="SerilogLogLevelSwitch"/> so the user can change the
+///       level from the settings menu without restarting the process.
+///     </description>
+///   </item>
+///   <item>
+///     <description>
+///       Registers the App-only services (<see cref="IProfileFileDialogService"/>,
+///       <see cref="ShellViewModel"/>, <see cref="ShellWindow"/>) on top of
+///       the Infrastructure registrations.
+///     </description>
+///   </item>
+/// </list>
+/// </summary>
 public static class HostBuilderFactory
 {
+    /// <summary>
+    /// Builds and returns a configured but un-started host.
+    /// </summary>
+    /// <param name="args">Process command-line arguments, forwarded to the
+    /// host builder so it can pick up CLI configuration overrides.</param>
     public static IHostBuilder Create(string[] args)
     {
+        // Created up front so it can be referenced from both the Serilog
+        // configuration and the DI service registrations below. The seeded
+        // value is overwritten as soon as UserSettingsService.InitializeAsync
+        // runs at app startup; until then the level reflects what the static
+        // appsettings.json said.
+        var loggingLevelSwitch = new LoggingLevelSwitch(LogEventLevel.Information);
+
         return Host.CreateDefaultBuilder(args)
             .ConfigureAppConfiguration((hostingContext, configurationBuilder) =>
             {
@@ -26,10 +68,17 @@ public static class HostBuilderFactory
             {
                 _ = Directory.CreateDirectory(AppPaths.LogsDirectory);
 
+                // Seed the switch from configuration so we honour whatever
+                // the user pinned in appsettings.json on first launch (before
+                // the persisted settings.json has been read).
+                var seedLevel = ParseSeedLevel(hostingContext.Configuration);
+                loggingLevelSwitch.MinimumLevel = seedLevel;
+
                 _ = loggerConfiguration
                     .ReadFrom.Configuration(hostingContext.Configuration)
                     .ReadFrom.Services(services)
                     .Enrich.FromLogContext()
+                    .MinimumLevel.ControlledBy(loggingLevelSwitch)
                     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                     .WriteTo.Console()
                     .WriteTo.File(
@@ -44,10 +93,33 @@ public static class HostBuilderFactory
                     options.ShutdownTimeout = TimeSpan.FromSeconds(5);
                 });
 
+                // Expose the underlying Serilog switch and the framework-neutral
+                // wrapper. The wrapper is what UserSettingsService actually
+                // consumes; the raw switch is registered too in case any
+                // future code wants to read its current value directly.
+                _ = services.AddSingleton(loggingLevelSwitch);
+                _ = services.AddSingleton<ILogLevelSwitch>(_ => new SerilogLogLevelSwitch(loggingLevelSwitch));
+
                 _ = services.AddAutofireInfrastructure(hostingContext.Configuration);
                 _ = services.AddSingleton<IProfileFileDialogService, ProfileFileDialogService>();
+                _ = services.AddSingleton<StartupChecksCoordinator>();
+                _ = services.AddTransient<SettingsDialogViewModel>();
                 _ = services.AddSingleton<ShellViewModel>();
                 _ = services.AddSingleton<ShellWindow>();
             });
+    }
+
+    /// <summary>
+    /// Reads the initial Serilog level from
+    /// <c>Serilog:MinimumLevel:Default</c>, falling back to
+    /// <see cref="LogEventLevel.Information"/> when the value is missing
+    /// or unparseable.
+    /// </summary>
+    private static LogEventLevel ParseSeedLevel(IConfiguration configuration)
+    {
+        var raw = configuration["Serilog:MinimumLevel:Default"];
+        return Enum.TryParse<LogEventLevel>(raw, ignoreCase: true, out var parsed)
+            ? parsed
+            : LogEventLevel.Information;
     }
 }

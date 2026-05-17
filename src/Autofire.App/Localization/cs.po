@@ -326,3 +326,364 @@ msgstr "Upravit pravidlo: {0}"
 
 msgid "MappingEditorRuleFallbackName"
 msgstr "Nepojmenované pravidlo"
+
+msgid "DeleteProfileButton"
+msgstr "Smazat profil"
+
+msgid "DeleteProfileBlockedLastOne"
+msgstr "Nelze smazat: toto je jediný profil."
+
+msgid "ProfileDeletedStatus"
+msgstr "Profil {0} smazán."
+
+
+msgid "ThemeLabel"
+msgstr "Vzhled"
+
+msgid "OpenSettingsButtonLabel"
+msgstr "Možnosti"
+
+msgid "SettingsDialogTitle"
+msgstr "Možnosti"
+
+msgid "SettingsDialogDiagnosticsHeader"
+msgstr "Diagnostika"
+
+msgid "SettingsDialogLogLevelLabel"
+msgstr "Úroveň protokolování"
+
+msgid "SettingsDialogLogLevelHint"
+msgstr "Úrovně Trace a Debug jsou velmi podrobné; používejte je jen při hledání problému."
+
+msgid "SettingsDialogWindowHeader"
+msgstr "Okno"
+
+msgid "SettingsDialogRememberWindowSizeLabel"
+msgstr "Zapamatovat velikost okna mezi spuštěními"
+
+msgid "SettingsDialogWindowWidthLabel"
+msgstr "Šířka"
+
+msgid "SettingsDialogWindowHeightLabel"
+msgstr "Výška"
+
+msgid "SettingsDialogPollingHeader"
+msgstr "Frekvence pollingu"
+
+msgid "SettingsDialogDashboardRefreshLabel"
+msgstr "Aktualizace přehledu"
+
+msgid "SettingsDialogPollingRateLabel"
+msgstr "Frekvence pollingu"
+
+msgid "SettingsDialogPollingHint"
+msgstr "Ponechte prázdné pro použití výchozích hodnot z profilu. Platný rozsah: 30–1000 Hz."
+
+msgid "SettingsDialogPathsHeader"
+msgstr "Úložné cesty"
+
+msgid "SettingsDialogProfilesDirectoryLabel"
+msgstr "Adresář profilů"
+
+msgid "SettingsDialogLogsDirectoryLabel"
+msgstr "Adresář protokolů"
+
+msgid "SettingsDialogLogsPathHint"
+msgstr "Změna adresáře protokolů se projeví po dalším spuštění."
+
+msgid "SettingsDialogBrowseButton"
+msgstr "Procházet…"
+
+msgid "SettingsDialogStartupHeader"
+msgstr "Spuštění"
+
+msgid "SettingsDialogCheckUpdatesLabel"
+msgstr "Při spuštění hledat aktualizace"
+
+msgid "SettingsDialogCheckRequirementsLabel"
+msgstr "Při spuštění zkontrolovat požadavky (ViGEm Bus apod.)"
+
+msgid "SettingsDialogApplyButton"
+msgstr "Uložit"
+
+msgid "SettingsDialogCancelButton"
+msgstr "Zrušit"
+
+msgid "SettingsDialogRestoreDefaultsButton"
+msgstr "Obnovit výchozí"
+
+msgid "SettingsDialogAppliedStatus"
+msgstr "Nastavení uloženo."
+
+msgid "SettingsDialogRestoredStatus"
+msgstr "Výchozí obnoveny — klikněte na Uložit pro použití."
+
+msgid "SettingsDialogApplyFailedStatus"
+msgstr "Nastavení nelze uložit: {0}"
+
+
+msgid "ThemeNameCyberBlue"
+msgstr "Kybernetická modrá"
+
+msgid "ThemeNameMidnightPurple"
+msgstr "Půlnoční fialová"
+
+msgid "ThemeNameNeonGreen"
+msgstr "Neonová zelená"
+
+msgid "ThemeNameSolarRed"
+msgstr "Solární červená"
+
+msgid "ThemeNameLight"
+msgstr "Světlý"
+
+msgid "InputProviderXInputLabel"
+msgstr "XInput"
+
+msgid "InputProviderXInputDescription"
+msgstr "Nativní ovladač XInput pro Windows. Rozpozná až 4 ovladače kompatibilní s Xboxem."
+
+msgid "InputProviderSdlLabel"
+msgstr "SDL3 univerzální vstup"
+
+msgid "InputProviderSdlDescription"
+msgstr "Multiplatformní SDL3 mapování gamepadu plus záložní režim joysticku."
+
+msgid "InputProviderDemoLabel"
+msgstr "Ukázkový náhled"
+
+msgid "InputProviderDemoDescription"
+msgstr "Animovaný náhledový zdroj pro testování UI — nevyžaduje hardware."
+
+msgid "InputProviderNoneLabel"
+msgstr "Bez živého vstupu"
+
+msgid "InputProviderNoneDescription"
+msgstr "Vypne živý vstup a ponechá přehled v klidovém stavu."
+
+msgid "OutputProviderViGEmXbox360Label"
+msgstr "ViGEm Xbox 360"
+
+msgid "OutputProviderViGEmXbox360Description"
+msgstr "Virtuální ovladač Xbox 360 přes ViGEm Bus. Vyžaduje ovladač ViGEm Bus."
+
+msgid "OutputProviderViGEmDs4Label"
+msgstr "ViGEm DualShock 4"
+
+msgid "OutputProviderViGEmDs4Description"
+msgstr "Virtuální ovladač DualShock 4 přes ViGEm Bus. Vyžaduje ovladač ViGEm Bus."
+
+msgid "OutputProviderViGEmDs5Label"
+msgstr "ViGEm DualSense (DS5)"
+
+msgid "OutputProviderViGEmDs5Description"
+msgstr "Virtuální ovladač DualSense přes ViGEm Bus. Vyžaduje ovladač ViGEm Bus v1.22+."
+
+msgid "OutputProviderPreviewLabel"
+msgstr "Pouze náhled"
+
+msgid "OutputProviderPreviewDescription"
+msgstr "Zobrazí transformovaný výstup v přehledu bez vytvoření virtuálního zařízení."
+
+msgid "ControllerStyleAuto"
+msgstr "Automaticky"
+
+msgid "ControllerStyleXbox"
+msgstr "Xbox"
+
+msgid "ControllerStylePlayStation4"
+msgstr "PlayStation 4"
+
+msgid "ControllerStylePlayStation5"
+msgstr "PlayStation 5"
+
+msgid "ControllerStyleMinimal"
+msgstr "Minimální"
+
+
+msgid "StyleLabelXbox"
+msgstr "Rozložení Xbox"
+
+msgid "StyleLabelPlayStation4"
+msgstr "Rozložení DualShock 4"
+
+msgid "StyleLabelPlayStation5"
+msgstr "Rozložení DualSense"
+
+msgid "StyleLabelMinimal"
+msgstr "Minimální skin"
+
+msgid "StyleLabelAuto"
+msgstr "Automatické rozložení"
+
+msgid "DiagLogsLabel"
+msgstr "Protokoly"
+
+msgid "DiagLastInputFrameLabel"
+msgstr "Poslední snímek vstupu"
+
+msgid "DiagNoDataYetLabel"
+msgstr "zatím žádná data"
+
+msgid "DiagDashboardRefreshLabel"
+msgstr "Aktualizace přehledu"
+
+msgid "DiagHzTargetFormat"
+msgstr "cíl {0} Hz"
+
+msgid "DiagInputProviderRequestedLabel"
+msgstr "Zdroj vstupu (požadovaný)"
+
+msgid "DiagInputProviderEffectiveLabel"
+msgstr "Zdroj vstupu (efektivní)"
+
+msgid "DiagOutputProviderLabel"
+msgstr "Výstupní backend"
+
+msgid "DiagViGEmEnabledLabel"
+msgstr "ViGEm povolen"
+
+msgid "DiagControllersDetectedLabel"
+msgstr "Detekované ovladače"
+
+msgid "DiagProviderStatusLabel"
+msgstr "Stav zdroje"
+
+msgid "DiagExperimentalGameInputLabel"
+msgstr "Experimentální GameInput"
+
+msgid "RuntimeNoteDemoActive"
+msgstr "Ukázkový náhled je aktivní. Přehled animuje bez hardwaru."
+
+msgid "RuntimeNoteXInputActive"
+msgstr "XInput je aktivní. Rozpoznávají se pouze ovladače kompatibilní s XInput (třída Xbox)."
+
+msgid "RuntimeNoteSdlActive"
+msgstr "SDL3 univerzální vstup je aktivní. Používá standardní mapování gamepadů se záložním režimem joysticku."
+
+msgid "RuntimeNoteLiveInputDisabled"
+msgstr "Živý vstup je pro tento profil zakázán."
+
+msgid "RuleKindButtonRemapLabel"
+msgstr "Přemapování tlačítka"
+
+msgid "RuleKindButtonRemapDescription"
+msgstr "Přesměrovat jedno tlačítko na druhé."
+
+msgid "RuleKindButtonAutofireLabel"
+msgstr "Autofire / Turbo tlačítka"
+
+msgid "RuleKindButtonAutofireDescription"
+msgstr "Rychlá střelba tlačítka s nastavitelnou frekvencí."
+
+msgid "RuleKindStickThresholdLabel"
+msgstr "Práh páčky"
+
+msgid "RuleKindStickThresholdDescription"
+msgstr "Tvarování mrtvé zóny a prahu pro páčku."
+
+msgid "RuleKindStickAutofireLabel"
+msgstr "Autofire páčky"
+
+msgid "RuleKindStickAutofireDescription"
+msgstr "Pulzování výstupu jedné páčky podle druhé."
+
+msgid "RuleKindFreezeLastDirectionLabel"
+msgstr "Zmrazit poslední směr"
+
+msgid "RuleKindFreezeLastDirectionDescription"
+msgstr "Drží poslední pozorovaný směr páčky, dokud je tlačítko stisknuté."
+
+msgid "RuleKindScriptLabel"
+msgstr "Skript ovladače"
+
+msgid "RuleKindScriptDescription"
+msgstr "Uložit text skriptu pro konkrétní prvek."
+
+msgid "MappingEditorAddRule"
+msgstr "+ Přidat pravidlo"
+
+msgid "MappingEditorRuleName"
+msgstr "NÁZEV PRAVIDLA"
+
+msgid "MappingEditorRuleType"
+msgstr "TYP PRAVIDLA"
+
+msgid "MappingEditorMode"
+msgstr "REŽIM"
+
+msgid "MappingEditorSourceButton"
+msgstr "ZDROJOVÉ TLAČÍTKO"
+
+msgid "MappingEditorTargetButton"
+msgstr "CÍLOVÉ TLAČÍTKO"
+
+msgid "MappingEditorSuppressSource"
+msgstr "Potlačit zdrojové tlačítko (blokovat originál)"
+
+msgid "MappingEditorEnabled"
+msgstr "Povoleno"
+
+msgid "MappingEditorDeadzoneLabel"
+msgstr "Mrtvá zóna a práh"
+
+msgid "MappingEditorStoreScript"
+msgstr "Uložte skript pro vybraný prvek. Spuštění za běhu je plánovaný krok."
+
+msgid "MappingEditorSelectRuleToEdit"
+msgstr "Vyberte pravidlo k úpravě"
+
+msgid "MappingEditorOrUseAddRule"
+msgstr "Nebo použijte „Přidat pravidlo" pro vytvoření nového mapování."
+
+msgid "MappingEditorSaveButton"
+msgstr "Uložit pravidlo"
+
+msgid "MappingEditorCancelButton"
+msgstr "Zrušit"
+
+msgid "MappingEditorRulesHeader"
+msgstr "MAPOVACÍ PRAVIDLA"
+
+
+msgid "InputProviderOpenXInputLabel"
+msgstr "OpenXInput"
+
+msgid "InputProviderOpenXInputDescription"
+msgstr "Náhrada XInput podporující více než 4 ovladače. Stub — vyžaduje OpenXinput1_4.dll vedle aplikace."
+
+msgid "InputProviderX360ceLabel"
+msgstr "x360ce"
+
+msgid "InputProviderX360ceDescription"
+msgstr "Překladač DirectInput na XInput pro starší / non-XInput ovladače. Stub — vyžaduje runtime DLL x360ce."
+
+msgid "InputProviderPs3Label"
+msgstr "DualShock 3 (PS3)"
+
+msgid "InputProviderPs3Description"
+msgstr "Čte spárovaný DualShock 3 přes DsHidMini nebo libusb. Stub — vyžaduje ovladač DsHidMini."
+
+msgid "InputProviderWindowsMidiLabel"
+msgstr "Vstup Windows MIDI"
+
+msgid "InputProviderWindowsMidiDescription"
+msgstr "Mapuje příchozí MIDI události na virtuální vstupy gamepadu. Stub — vyžaduje Windows MIDI Services a mapování v profilu."
+
+msgid "OutputProviderVJoyLabel"
+msgstr "vJoy virtuální joystick"
+
+msgid "OutputProviderVJoyDescription"
+msgstr "Obecný virtuální joystick (až 8 os / 128 tlačítek). Stub — vyžaduje ovladač vJoy."
+
+msgid "OutputProviderHidMaestroLabel"
+msgstr "HidMaestro virtuální HID"
+
+msgid "OutputProviderHidMaestroDescription"
+msgstr "Emulace vlastního HID zařízení s libovolnými popisovači. Stub — vyžaduje ovladač HidMaestro."
+
+msgid "OutputProviderWindowsMidiOutLabel"
+msgstr "Výstup Windows MIDI"
+
+msgid "OutputProviderWindowsMidiOutDescription"
+msgstr "Vysílá MIDI události z aktivity gamepadu. Stub — vyžaduje Windows MIDI Services a mapování v profilu."

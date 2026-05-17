@@ -122,6 +122,8 @@ public sealed class XInputInputSource : IInputSource
         return new ControllerSnapshot
         {
             DeviceName = selected.DisplayName,
+            VendorId   = selected.VendorId,
+            ProductId  = selected.ProductId,
             LeftStick = new StickVector(
                 ApplyDeadzone(XInputInterop.NormalizeAxis(state.Gamepad.ThumbLX), 0.12f),
                 ApplyDeadzone(XInputInterop.NormalizeAxis(state.Gamepad.ThumbLY), 0.12f)).Clamp(),

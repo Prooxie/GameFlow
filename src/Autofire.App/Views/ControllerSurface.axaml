@@ -1,519 +1,67 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="using:Autofire.App.Views"
              xmlns:vm="using:Autofire.App.ViewModels"
              x:Class="Autofire.App.Views.ControllerSurface"
              x:DataType="vm:ControllerVisualStateViewModel"
              x:CompileBindings="False">
 
-  <UserControl.Resources>
-    <SolidColorBrush x:Key="BodyXbox"   Color="#0D1B2A" />
-    <SolidColorBrush x:Key="BodyPS4"    Color="#101218" />
-    <SolidColorBrush x:Key="BodyPS5"    Color="#FFFFFF" />
-    <SolidColorBrush x:Key="BodyPS3"    Color="#0A0A0A" />
-    <SolidColorBrush x:Key="LineDim"    Color="#1E3A5A" />
-    <SolidColorBrush x:Key="LineActive" Color="#00D4FF" />
-  </UserControl.Resources>
-
-  <Border Padding="18,14" CornerRadius="14"
-          Background="{DynamicResource AppSurface1}"
-          BorderBrush="{DynamicResource AppBorder0}" BorderThickness="1">
-    <StackPanel Spacing="10">
-
-      <Grid ColumnDefinitions="*,Auto">
-        <TextBlock Text="{Binding Title}" FontSize="13"
-                   FontWeight="SemiBold"
-                   Foreground="{DynamicResource AppForeground}" />
-        <TextBlock Grid.Column="1" Text="{Binding StyleLabel}"
-                   FontSize="10"
-                   Foreground="{DynamicResource AppForegroundDim}"
-                   FontWeight="SemiBold" LetterSpacing="1" />
-      </Grid>
-
-      <!-- ═══ Outline — Xbox-style ═══════════════════════════════ -->
-      <Viewbox Stretch="Uniform" MaxHeight="280"
-               IsVisible="{Binding IsXboxStyle}">
-        <Canvas Width="540" Height="320">
-
-          <!-- Body silhouette (with grip humps that wrap forward, matching Xbox shape) -->
-          <Path Stroke="{DynamicResource AppBorder1}" StrokeThickness="2"
-                Fill="{StaticResource BodyXbox}"
-                Data="M 90,150
-                      Q 90,90 160,75
-                      L 220,68
-                      Q 270,55 320,68
-                      L 380,75
-                      Q 450,90 450,150
-                      Q 470,210 430,260
-                      Q 400,290 360,275
-                      Q 320,260 270,260
-                      Q 220,260 180,275
-                      Q 140,290 110,260
-                      Q 70,210 90,150 Z" />
-
-          <!-- Triggers — pulled close to top of body (LT left, RT right) -->
-          <Rectangle Canvas.Left="120" Canvas.Top="48" Width="56" Height="22"
-                     RadiusX="11" RadiusY="11"
-                     Fill="{Binding LeftTriggerBackground}"
-                     Stroke="{Binding LeftTriggerBorder}" StrokeThickness="1.5" />
-          <TextBlock Canvas.Left="142" Canvas.Top="50" Text="LT" FontSize="11"
-                     FontWeight="Bold" Foreground="#E2E8F0" />
-
-          <Rectangle Canvas.Left="364" Canvas.Top="48" Width="56" Height="22"
-                     RadiusX="11" RadiusY="11"
-                     Fill="{Binding RightTriggerBackground}"
-                     Stroke="{Binding RightTriggerBorder}" StrokeThickness="1.5" />
-          <TextBlock Canvas.Left="386" Canvas.Top="50" Text="RT" FontSize="11"
-                     FontWeight="Bold" Foreground="#E2E8F0" />
-
-          <!-- Bumpers -->
-          <Rectangle Canvas.Left="120" Canvas.Top="76" Width="56" Height="14"
-                     RadiusX="7" RadiusY="7"
-                     Fill="{Binding LeftBumperBackground}"
-                     Stroke="{Binding LeftBumperBorder}" StrokeThickness="1.5" />
-          <TextBlock Canvas.Left="138" Canvas.Top="77" Text="LB" FontSize="10"
-                     FontWeight="Bold" Foreground="#E2E8F0" />
-
-          <Rectangle Canvas.Left="364" Canvas.Top="76" Width="56" Height="14"
-                     RadiusX="7" RadiusY="7"
-                     Fill="{Binding RightBumperBackground}"
-                     Stroke="{Binding RightBumperBorder}" StrokeThickness="1.5" />
-          <TextBlock Canvas.Left="382" Canvas.Top="77" Text="RB" FontSize="10"
-                     FontWeight="Bold" Foreground="#E2E8F0" />
-
-          <!-- Left analog stick (no arrows) -->
-          <Ellipse Canvas.Left="125" Canvas.Top="150" Width="62" Height="62"
-                   Fill="{StaticResource BodyXbox}"
-                   Stroke="{Binding LeftStickBorder}" StrokeThickness="2" />
-          <Ellipse Canvas.Left="135" Canvas.Top="160" Width="42" Height="42"
-                   Fill="{Binding LeftStickFill}" />
-          <Ellipse Canvas.Left="151" Canvas.Top="176"
-                   Width="10" Height="10"
-                   Fill="{Binding LeftStickDot}" />
-
-          <!-- Right analog stick (no arrows) -->
-          <Ellipse Canvas.Left="305" Canvas.Top="200" Width="62" Height="62"
-                   Fill="{StaticResource BodyXbox}"
-                   Stroke="{Binding RightStickBorder}" StrokeThickness="2" />
-          <Ellipse Canvas.Left="315" Canvas.Top="210" Width="42" Height="42"
-                   Fill="{Binding RightStickFill}" />
-          <Ellipse Canvas.Left="331" Canvas.Top="226"
-                   Width="10" Height="10"
-                   Fill="{Binding RightStickDot}" />
-
-          <!-- D-pad -->
-          <Rectangle Canvas.Left="206" Canvas.Top="180" Width="20" Height="50"
-                     Fill="{StaticResource BodyXbox}"
-                     Stroke="{DynamicResource AppBorder1}" StrokeThickness="1" />
-          <Rectangle Canvas.Left="191" Canvas.Top="195" Width="50" Height="20"
-                     Fill="{StaticResource BodyXbox}"
-                     Stroke="{DynamicResource AppBorder1}" StrokeThickness="1" />
-          <Polygon Points="216,182 226,196 206,196"
-                   Fill="{Binding DpadUpFill}" />
-          <Polygon Points="216,228 206,214 226,214"
-                   Fill="{Binding DpadDownFill}" />
-          <Polygon Points="193,205 207,215 207,195"
-                   Fill="{Binding DpadLeftFill}" />
-          <Polygon Points="239,205 225,195 225,215"
-                   Fill="{Binding DpadRightFill}" />
-
-          <!-- Face buttons (ABXY) -->
-          <Ellipse Canvas.Left="395" Canvas.Top="155" Width="22" Height="22"
-                   Fill="{Binding NorthFill}" />
-          <TextBlock Canvas.Left="403" Canvas.Top="158" Text="Y" FontSize="11"
-                     FontWeight="Bold" Foreground="#E2E8F0" />
-
-          <Ellipse Canvas.Left="395" Canvas.Top="195" Width="22" Height="22"
-                   Fill="{Binding SouthFill}" />
-          <TextBlock Canvas.Left="403" Canvas.Top="198" Text="A" FontSize="11"
-                     FontWeight="Bold" Foreground="#040C16" />
-
-          <Ellipse Canvas.Left="375" Canvas.Top="175" Width="22" Height="22"
-                   Fill="{Binding WestFill}" />
-          <TextBlock Canvas.Left="383" Canvas.Top="178" Text="X" FontSize="11"
-                     FontWeight="Bold" Foreground="#E2E8F0" />
-
-          <Ellipse Canvas.Left="415" Canvas.Top="175" Width="22" Height="22"
-                   Fill="{Binding EastFill}" />
-          <TextBlock Canvas.Left="423" Canvas.Top="178" Text="B" FontSize="11"
-                     FontWeight="Bold" Foreground="#E2E8F0" />
-
-          <!-- Center cluster -->
-          <Ellipse Canvas.Left="244" Canvas.Top="145" Width="14" Height="14"
-                   Fill="{Binding BackFill}" />
-          <Ellipse Canvas.Left="282" Canvas.Top="145" Width="14" Height="14"
-                   Fill="{Binding StartFill}" />
-          <Ellipse Canvas.Left="261" Canvas.Top="115" Width="22" Height="22"
-                   Fill="{Binding GuideFill}" />
-
-        </Canvas>
-      </Viewbox>
-
-      <!-- ═══ Outline — PlayStation 4 ═══════════════════════════ -->
-      <Viewbox Stretch="Uniform" MaxHeight="280"
-               IsVisible="{Binding IsPs4Style}">
-        <Canvas Width="540" Height="320">
-
-          <!-- DS4 has more rounded grips, lower shoulder profile, touchpad on top -->
-          <Path Stroke="{DynamicResource AppBorder1}" StrokeThickness="2"
-                Fill="{StaticResource BodyPS4}"
-                Data="M 100,170
-                      Q 100,100 175,90
-                      Q 230,80 270,80
-                      Q 310,80 365,90
-                      Q 440,100 440,170
-                      Q 460,235 415,275
-                      Q 380,300 345,280
-                      Q 305,265 270,265
-                      Q 235,265 195,280
-                      Q 160,300 125,275
-                      Q 80,235 100,170 Z" />
-
-          <!-- Triggers -->
-          <Rectangle Canvas.Left="130" Canvas.Top="58" Width="56" Height="22"
-                     RadiusX="11" RadiusY="11"
-                     Fill="{Binding LeftTriggerBackground}"
-                     Stroke="{Binding LeftTriggerBorder}" StrokeThickness="1.5" />
-          <TextBlock Canvas.Left="151" Canvas.Top="60" Text="L2" FontSize="11"
-                     FontWeight="Bold" Foreground="#E2E8F0" />
-
-          <Rectangle Canvas.Left="354" Canvas.Top="58" Width="56" Height="22"
-                     RadiusX="11" RadiusY="11"
-                     Fill="{Binding RightTriggerBackground}"
-                     Stroke="{Binding RightTriggerBorder}" StrokeThickness="1.5" />
-          <TextBlock Canvas.Left="375" Canvas.Top="60" Text="R2" FontSize="11"
-                     FontWeight="Bold" Foreground="#E2E8F0" />
-
-          <Rectangle Canvas.Left="130" Canvas.Top="86" Width="56" Height="12"
-                     RadiusX="6" RadiusY="6"
-                     Fill="{Binding LeftBumperBackground}"
-                     Stroke="{Binding LeftBumperBorder}" StrokeThickness="1.5" />
-          <TextBlock Canvas.Left="151" Canvas.Top="86" Text="L1" FontSize="10"
-                     FontWeight="Bold" Foreground="#E2E8F0" />
-
-          <Rectangle Canvas.Left="354" Canvas.Top="86" Width="56" Height="12"
-                     RadiusX="6" RadiusY="6"
-                     Fill="{Binding RightBumperBackground}"
-                     Stroke="{Binding RightBumperBorder}" StrokeThickness="1.5" />
-          <TextBlock Canvas.Left="375" Canvas.Top="86" Text="R1" FontSize="10"
-                     FontWeight="Bold" Foreground="#E2E8F0" />
-
-          <!-- Touchpad -->
-          <Rectangle Canvas.Left="220" Canvas.Top="120" Width="100" Height="44"
-                     RadiusX="8" RadiusY="8"
-                     Fill="{Binding TouchpadFill}"
-                     Stroke="{DynamicResource AppBorder1}" StrokeThickness="1" />
-          <TextBlock Canvas.Left="252" Canvas.Top="135" Text="TOUCHPAD"
-                     FontSize="9" FontWeight="Bold" Foreground="#94A3B8"
-                     LetterSpacing="1" />
-
-          <!-- DS4 sticks are symmetric (lower than top, both at same height) -->
-          <Ellipse Canvas.Left="160" Canvas.Top="195" Width="58" Height="58"
-                   Fill="{StaticResource BodyPS4}"
-                   Stroke="{Binding LeftStickBorder}" StrokeThickness="2" />
-          <Ellipse Canvas.Left="170" Canvas.Top="205" Width="38" Height="38"
-                   Fill="{Binding LeftStickFill}" />
-          <Ellipse Canvas.Left="184" Canvas.Top="219"
-                   Width="10" Height="10"
-                   Fill="{Binding LeftStickDot}" />
-
-          <Ellipse Canvas.Left="322" Canvas.Top="195" Width="58" Height="58"
-                   Fill="{StaticResource BodyPS4}"
-                   Stroke="{Binding RightStickBorder}" StrokeThickness="2" />
-          <Ellipse Canvas.Left="332" Canvas.Top="205" Width="38" Height="38"
-                   Fill="{Binding RightStickFill}" />
-          <Ellipse Canvas.Left="346" Canvas.Top="219"
-                   Width="10" Height="10"
-                   Fill="{Binding RightStickDot}" />
-
-          <!-- D-pad -->
-          <Rectangle Canvas.Left="115" Canvas.Top="155" Width="18" Height="46"
-                     Fill="{StaticResource BodyPS4}"
-                     Stroke="{DynamicResource AppBorder1}" StrokeThickness="1" />
-          <Rectangle Canvas.Left="101" Canvas.Top="169" Width="46" Height="18"
-                     Fill="{StaticResource BodyPS4}"
-                     Stroke="{DynamicResource AppBorder1}" StrokeThickness="1" />
-          <Polygon Points="124,156 132,168 116,168" Fill="{Binding DpadUpFill}" />
-          <Polygon Points="124,200 116,188 132,188" Fill="{Binding DpadDownFill}" />
-          <Polygon Points="103,178 116,188 116,168" Fill="{Binding DpadLeftFill}" />
-          <Polygon Points="145,178 132,168 132,188" Fill="{Binding DpadRightFill}" />
-
-          <!-- Face buttons △ ○ ✕ □ -->
-          <Ellipse Canvas.Left="402" Canvas.Top="148" Width="22" Height="22"
-                   Fill="{Binding NorthFill}" />
-          <TextBlock Canvas.Left="409" Canvas.Top="150" Text="△" FontSize="13"
-                     FontWeight="Bold" Foreground="#22C55E" />
-
-          <Ellipse Canvas.Left="402" Canvas.Top="190" Width="22" Height="22"
-                   Fill="{Binding SouthFill}" />
-          <TextBlock Canvas.Left="410" Canvas.Top="192" Text="✕" FontSize="13"
-                     FontWeight="Bold" Foreground="#7DD3FC" />
-
-          <Ellipse Canvas.Left="382" Canvas.Top="169" Width="22" Height="22"
-                   Fill="{Binding WestFill}" />
-          <TextBlock Canvas.Left="390" Canvas.Top="172" Text="□" FontSize="13"
-                     FontWeight="Bold" Foreground="#FB7185" />
-
-          <Ellipse Canvas.Left="422" Canvas.Top="169" Width="22" Height="22"
-                   Fill="{Binding EastFill}" />
-          <TextBlock Canvas.Left="430" Canvas.Top="172" Text="○" FontSize="13"
-                     FontWeight="Bold" Foreground="#F472B6" />
-
-          <!-- SHARE / OPTIONS / PS button -->
-          <Rectangle Canvas.Left="195" Canvas.Top="132" Width="14" Height="8"
-                     RadiusX="2" RadiusY="2" Fill="{Binding BackFill}" />
-          <Rectangle Canvas.Left="333" Canvas.Top="132" Width="14" Height="8"
-                     RadiusX="2" RadiusY="2" Fill="{Binding StartFill}" />
-          <Ellipse Canvas.Left="262" Canvas.Top="180" Width="18" Height="18"
-                   Fill="{Binding GuideFill}" />
-
-          <!-- Lightbar hint -->
-          <Rectangle Canvas.Left="220" Canvas.Top="105" Width="100" Height="6"
-                     RadiusX="3" RadiusY="3"
-                     Fill="#3B82F6" Opacity="0.55" />
-        </Canvas>
-      </Viewbox>
-
-      <!-- ═══ Outline — PlayStation 5 ═══════════════════════════ -->
-      <Viewbox Stretch="Uniform" MaxHeight="280"
-               IsVisible="{Binding IsPs5Style}">
-        <Canvas Width="540" Height="320">
-          <!-- DS5 has more pronounced grips that splay outward -->
-          <Path Stroke="{DynamicResource AppBorder1}" StrokeThickness="2"
-                Fill="{StaticResource BodyPS5}"
-                Data="M 80,165
-                      Q 75,90 165,75
-                      Q 220,65 270,65
-                      Q 320,65 375,75
-                      Q 465,90 460,165
-                      Q 485,240 425,290
-                      Q 380,315 335,290
-                      Q 300,275 270,275
-                      Q 240,275 205,290
-                      Q 160,315 115,290
-                      Q 55,240 80,165 Z" />
-
-          <!-- Triggers (curved L2/R2 — adaptive trigger style) -->
-          <Path Canvas.Left="0" Canvas.Top="0"
-                Fill="{Binding LeftTriggerBackground}"
-                Stroke="{Binding LeftTriggerBorder}" StrokeThickness="1.5"
-                Data="M 130,42 Q 158,30 188,42 L 188,68 Q 158,58 130,68 Z" />
-          <TextBlock Canvas.Left="148" Canvas.Top="44" Text="L2" FontSize="11"
-                     FontWeight="Bold" Foreground="#1F2937" />
-
-          <Path Canvas.Left="0" Canvas.Top="0"
-                Fill="{Binding RightTriggerBackground}"
-                Stroke="{Binding RightTriggerBorder}" StrokeThickness="1.5"
-                Data="M 352,42 Q 380,30 410,42 L 410,68 Q 380,58 352,68 Z" />
-          <TextBlock Canvas.Left="372" Canvas.Top="44" Text="R2" FontSize="11"
-                     FontWeight="Bold" Foreground="#1F2937" />
-
-          <Rectangle Canvas.Left="130" Canvas.Top="74" Width="58" Height="12"
-                     RadiusX="6" RadiusY="6"
-                     Fill="{Binding LeftBumperBackground}"
-                     Stroke="{Binding LeftBumperBorder}" StrokeThickness="1.5" />
-          <TextBlock Canvas.Left="151" Canvas.Top="73" Text="L1" FontSize="10"
-                     FontWeight="Bold" Foreground="#1F2937" />
-
-          <Rectangle Canvas.Left="352" Canvas.Top="74" Width="58" Height="12"
-                     RadiusX="6" RadiusY="6"
-                     Fill="{Binding RightBumperBackground}"
-                     Stroke="{Binding RightBumperBorder}" StrokeThickness="1.5" />
-          <TextBlock Canvas.Left="373" Canvas.Top="73" Text="R1" FontSize="10"
-                     FontWeight="Bold" Foreground="#1F2937" />
-
-          <!-- Touchpad (DS5 is wider than DS4) -->
-          <Rectangle Canvas.Left="195" Canvas.Top="115" Width="150" Height="48"
-                     RadiusX="10" RadiusY="10"
-                     Fill="{Binding TouchpadFill}"
-                     Stroke="#475569" StrokeThickness="1" />
-
-          <Ellipse Canvas.Left="155" Canvas.Top="195" Width="58" Height="58"
-                   Fill="#1F2937"
-                   Stroke="{Binding LeftStickBorder}" StrokeThickness="2" />
-          <Ellipse Canvas.Left="165" Canvas.Top="205" Width="38" Height="38"
-                   Fill="{Binding LeftStickFill}" />
-          <Ellipse Canvas.Left="179" Canvas.Top="219"
-                   Width="10" Height="10"
-                   Fill="{Binding LeftStickDot}" />
-
-          <Ellipse Canvas.Left="327" Canvas.Top="195" Width="58" Height="58"
-                   Fill="#1F2937"
-                   Stroke="{Binding RightStickBorder}" StrokeThickness="2" />
-          <Ellipse Canvas.Left="337" Canvas.Top="205" Width="38" Height="38"
-                   Fill="{Binding RightStickFill}" />
-          <Ellipse Canvas.Left="351" Canvas.Top="219"
-                   Width="10" Height="10"
-                   Fill="{Binding RightStickDot}" />
-
-          <Rectangle Canvas.Left="110" Canvas.Top="158" Width="18" Height="46"
-                     Fill="#1F2937" />
-          <Rectangle Canvas.Left="96" Canvas.Top="172" Width="46" Height="18"
-                     Fill="#1F2937" />
-          <Polygon Points="119,159 127,171 111,171" Fill="{Binding DpadUpFill}" />
-          <Polygon Points="119,203 111,191 127,191" Fill="{Binding DpadDownFill}" />
-          <Polygon Points="98,181 111,191 111,171" Fill="{Binding DpadLeftFill}" />
-          <Polygon Points="140,181 127,171 127,191" Fill="{Binding DpadRightFill}" />
-
-          <Ellipse Canvas.Left="402" Canvas.Top="148" Width="22" Height="22"
-                   Fill="{Binding NorthFill}" />
-          <TextBlock Canvas.Left="409" Canvas.Top="150" Text="△" FontSize="13"
-                     FontWeight="Bold" Foreground="#1F2937" />
-
-          <Ellipse Canvas.Left="402" Canvas.Top="190" Width="22" Height="22"
-                   Fill="{Binding SouthFill}" />
-          <TextBlock Canvas.Left="410" Canvas.Top="192" Text="✕" FontSize="13"
-                     FontWeight="Bold" Foreground="#1F2937" />
-
-          <Ellipse Canvas.Left="382" Canvas.Top="169" Width="22" Height="22"
-                   Fill="{Binding WestFill}" />
-          <TextBlock Canvas.Left="390" Canvas.Top="172" Text="□" FontSize="13"
-                     FontWeight="Bold" Foreground="#1F2937" />
-
-          <Ellipse Canvas.Left="422" Canvas.Top="169" Width="22" Height="22"
-                   Fill="{Binding EastFill}" />
-          <TextBlock Canvas.Left="430" Canvas.Top="172" Text="○" FontSize="13"
-                     FontWeight="Bold" Foreground="#1F2937" />
-
-          <Rectangle Canvas.Left="190" Canvas.Top="130" Width="14" Height="8"
-                     RadiusX="2" RadiusY="2" Fill="{Binding BackFill}" />
-          <Rectangle Canvas.Left="338" Canvas.Top="130" Width="14" Height="8"
-                     RadiusX="2" RadiusY="2" Fill="{Binding StartFill}" />
-          <Ellipse Canvas.Left="262" Canvas.Top="180" Width="18" Height="18"
-                   Fill="{Binding GuideFill}" />
-          <Rectangle Canvas.Left="262" Canvas.Top="225" Width="18" Height="6"
-                     RadiusX="3" RadiusY="3" Fill="{Binding MuteFill}" />
-        </Canvas>
-      </Viewbox>
-
-      <!-- ═══ Outline — PlayStation 3 / DualShock 3 ════════════ -->
-      <Viewbox Stretch="Uniform" MaxHeight="280"
-               IsVisible="{Binding IsPs3Style}">
-        <Canvas Width="540" Height="320">
-          <!-- DS3 — slim flat grips, no touchpad, six buttons across centre  -->
-          <Path Stroke="{DynamicResource AppBorder1}" StrokeThickness="2"
-                Fill="{StaticResource BodyPS3}"
-                Data="M 95,160
-                      Q 95,95 175,82
-                      L 220,76
-                      Q 270,68 320,76
-                      L 365,82
-                      Q 445,95 445,160
-                      Q 460,225 415,265
-                      Q 380,290 345,270
-                      Q 305,255 270,255
-                      Q 235,255 195,270
-                      Q 160,290 125,265
-                      Q 80,225 95,160 Z" />
-
-          <Rectangle Canvas.Left="130" Canvas.Top="50" Width="56" Height="22"
-                     RadiusX="11" RadiusY="11"
-                     Fill="{Binding LeftTriggerBackground}"
-                     Stroke="{Binding LeftTriggerBorder}" StrokeThickness="1.5" />
-          <TextBlock Canvas.Left="151" Canvas.Top="52" Text="L2" FontSize="11"
-                     FontWeight="Bold" Foreground="#E2E8F0" />
-
-          <Rectangle Canvas.Left="354" Canvas.Top="50" Width="56" Height="22"
-                     RadiusX="11" RadiusY="11"
-                     Fill="{Binding RightTriggerBackground}"
-                     Stroke="{Binding RightTriggerBorder}" StrokeThickness="1.5" />
-          <TextBlock Canvas.Left="375" Canvas.Top="52" Text="R2" FontSize="11"
-                     FontWeight="Bold" Foreground="#E2E8F0" />
-
-          <Rectangle Canvas.Left="130" Canvas.Top="78" Width="56" Height="12"
-                     RadiusX="6" RadiusY="6"
-                     Fill="{Binding LeftBumperBackground}"
-                     Stroke="{Binding LeftBumperBorder}" StrokeThickness="1.5" />
-          <TextBlock Canvas.Left="151" Canvas.Top="78" Text="L1" FontSize="10"
-                     FontWeight="Bold" Foreground="#E2E8F0" />
-
-          <Rectangle Canvas.Left="354" Canvas.Top="78" Width="56" Height="12"
-                     RadiusX="6" RadiusY="6"
-                     Fill="{Binding RightBumperBackground}"
-                     Stroke="{Binding RightBumperBorder}" StrokeThickness="1.5" />
-          <TextBlock Canvas.Left="375" Canvas.Top="78" Text="R1" FontSize="10"
-                     FontWeight="Bold" Foreground="#E2E8F0" />
-
-          <!-- Sticks lower than DS4 (DS3 layout) -->
-          <Ellipse Canvas.Left="170" Canvas.Top="180" Width="58" Height="58"
-                   Fill="{StaticResource BodyPS3}"
-                   Stroke="{Binding LeftStickBorder}" StrokeThickness="2" />
-          <Ellipse Canvas.Left="180" Canvas.Top="190" Width="38" Height="38"
-                   Fill="{Binding LeftStickFill}" />
-          <Ellipse Canvas.Left="194" Canvas.Top="204"
-                   Width="10" Height="10"
-                   Fill="{Binding LeftStickDot}" />
-
-          <Ellipse Canvas.Left="312" Canvas.Top="180" Width="58" Height="58"
-                   Fill="{StaticResource BodyPS3}"
-                   Stroke="{Binding RightStickBorder}" StrokeThickness="2" />
-          <Ellipse Canvas.Left="322" Canvas.Top="190" Width="38" Height="38"
-                   Fill="{Binding RightStickFill}" />
-          <Ellipse Canvas.Left="336" Canvas.Top="204"
-                   Width="10" Height="10"
-                   Fill="{Binding RightStickDot}" />
-
-          <Rectangle Canvas.Left="125" Canvas.Top="138" Width="18" Height="46"
-                     Fill="{StaticResource BodyPS3}"
-                     Stroke="{DynamicResource AppBorder1}" StrokeThickness="1" />
-          <Rectangle Canvas.Left="111" Canvas.Top="152" Width="46" Height="18"
-                     Fill="{StaticResource BodyPS3}"
-                     Stroke="{DynamicResource AppBorder1}" StrokeThickness="1" />
-          <Polygon Points="134,139 142,151 126,151" Fill="{Binding DpadUpFill}" />
-          <Polygon Points="134,183 126,171 142,171" Fill="{Binding DpadDownFill}" />
-          <Polygon Points="113,161 126,171 126,151" Fill="{Binding DpadLeftFill}" />
-          <Polygon Points="155,161 142,151 142,171" Fill="{Binding DpadRightFill}" />
-
-          <Ellipse Canvas.Left="402" Canvas.Top="138" Width="22" Height="22"
-                   Fill="{Binding NorthFill}" />
-          <TextBlock Canvas.Left="409" Canvas.Top="140" Text="△" FontSize="13"
-                     FontWeight="Bold" Foreground="#22C55E" />
-
-          <Ellipse Canvas.Left="402" Canvas.Top="180" Width="22" Height="22"
-                   Fill="{Binding SouthFill}" />
-          <TextBlock Canvas.Left="410" Canvas.Top="182" Text="✕" FontSize="13"
-                     FontWeight="Bold" Foreground="#7DD3FC" />
-
-          <Ellipse Canvas.Left="382" Canvas.Top="159" Width="22" Height="22"
-                   Fill="{Binding WestFill}" />
-          <TextBlock Canvas.Left="390" Canvas.Top="162" Text="□" FontSize="13"
-                     FontWeight="Bold" Foreground="#FB7185" />
-
-          <Ellipse Canvas.Left="422" Canvas.Top="159" Width="22" Height="22"
-                   Fill="{Binding EastFill}" />
-          <TextBlock Canvas.Left="430" Canvas.Top="162" Text="○" FontSize="13"
-                     FontWeight="Bold" Foreground="#F472B6" />
-
-          <Ellipse Canvas.Left="222" Canvas.Top="148" Width="14" Height="14"
-                   Fill="{Binding BackFill}" />
-          <TextBlock Canvas.Left="222" Canvas.Top="164" Text="SELECT"
-                     FontSize="7" Foreground="#94A3B8" />
-
-          <Ellipse Canvas.Left="304" Canvas.Top="148" Width="14" Height="14"
-                   Fill="{Binding StartFill}" />
-          <TextBlock Canvas.Left="304" Canvas.Top="164" Text="START"
-                     FontSize="7" Foreground="#94A3B8" />
-
-          <Ellipse Canvas.Left="261" Canvas.Top="118" Width="22" Height="22"
-                   Fill="{Binding GuideFill}" />
-          <TextBlock Canvas.Left="266" Canvas.Top="121" Text="PS" FontSize="10"
-                     FontWeight="Bold" Foreground="#E2E8F0" />
-        </Canvas>
-      </Viewbox>
-
-      <!-- ═══ Minimal — only shown for Xbox/Auto styles (NEVER for PS controllers) -->
-      <Border IsVisible="{Binding IsMinimalStyle}"
-              CornerRadius="10" Padding="14"
-              Background="{DynamicResource AppSurface0}"
-              BorderBrush="{DynamicResource AppBorder0}" BorderThickness="1">
-        <StackPanel Spacing="6">
-          <TextBlock Text="{Binding StyleLabel}" FontSize="11"
-                     FontWeight="SemiBold" Foreground="{DynamicResource AppForegroundDim}"
-                     LetterSpacing="1" />
-          <TextBlock Text="{Binding MinimalSummaryText}" FontSize="12"
-                     Foreground="{DynamicResource AppForeground}" TextWrapping="Wrap" />
-        </StackPanel>
-      </Border>
-
-    </StackPanel>
-  </Border>
+    <!--
+        Outer Border background is bound to the VM so the user can flip
+        the panel between solid (default "#09111B") and "Transparent"
+        for the see-through effect described in design point 6.
+    -->
+    <Border Padding="18,14" CornerRadius="14"
+            Background="{Binding PanelBackgroundBrush}"
+            BorderBrush="{Binding PanelBorderBrush}" BorderThickness="1">
+        <Grid RowDefinitions="Auto,Auto,*,Auto" MinHeight="260">
+
+            <!-- Title row -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold"
+                           Foreground="#E5E7EB" />
+                <TextBlock Grid.Column="1" Text="{Binding ConnectionLabel}"
+                           FontSize="10" Foreground="{Binding ConnectionBrush}"
+                           FontWeight="SemiBold" LetterSpacing="1" />
+            </Grid>
+
+            <!--
+                Variant picker — shows every theme installed for the
+                current visual style so the user can swap colour/skin
+                without leaving the screen. Hidden when no themes are
+                installed for the current style.
+            -->
+            <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,0,0,8"
+                  IsVisible="{Binding HasThemeVariants}">
+                <TextBlock Text="Skin:" VerticalAlignment="Center" Margin="0,0,8,0"
+                           FontSize="11" Foreground="#94A3B8" />
+                <ComboBox Grid.Column="1"
+                          ItemsSource="{Binding AvailableThemeVariants}"
+                          SelectedItem="{Binding SelectedThemeVariant, Mode=TwoWay}"
+                          MinHeight="28" FontSize="11"
+                          HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayName}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </Grid>
+
+            <Grid Grid.Row="2">
+                <TextBlock x:Name="NoThemeMessage"
+                           IsVisible="False"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           MaxWidth="360" TextWrapping="Wrap" TextAlignment="Center"
+                           Foreground="#64748B" Opacity="0.85" FontSize="12"
+                           Text="No controller theme installed for this style. Drop a VSCView-compatible theme folder into %LocalAppData%\AutofireNext\themes." />
+                <views:ThemeSurface x:Name="ThemedSurface"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch" />
+            </Grid>
+
+            <TextBlock Grid.Row="3" Text="{Binding PressedButtonsText}"
+                       Margin="0,8,0,0" FontSize="11" Foreground="#94A3B8" />
+        </Grid>
+    </Border>
 </UserControl>

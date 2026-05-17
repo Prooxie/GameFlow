@@ -1,6 +1,9 @@
 using System.Windows.Input;
+using Autofire.App.Services;
 using Autofire.Core.Enums;
 using Autofire.Core.Models;
+using Autofire.Infrastructure.Localization;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.Input;
 
 namespace Autofire.App.ViewModels;
@@ -17,14 +20,14 @@ namespace Autofire.App.ViewModels;
 ///       Live     — opacities, stick offsets, etc.  (per-tick, only when data moved)
 ///   • String-valued live properties are cached to avoid per-tick allocations.
 /// </summary>
-public sealed class ControllerVisualStateViewModel : ViewModelBase
+public sealed partial class ControllerVisualStateViewModel : ViewModelBase
 {
     // ─── Static property-name lists ───────────────────────────────────────────
-
     private static readonly string[] IdentityProps =
     [
-        nameof(PanelTitle), nameof(DeviceName), nameof(IsConnected),
+        nameof(PanelTitle), nameof(Title), nameof(DeviceName), nameof(IsConnected),
         nameof(ConnectionLabel), nameof(ConnectionBrush), nameof(PanelBorderBrush),
+        nameof(MinimalSummaryText),
     ];
 
     private static readonly string[] StyleProps =
@@ -37,6 +40,17 @@ public sealed class ControllerVisualStateViewModel : ViewModelBase
         nameof(LeftTriggerLabel), nameof(RightTriggerLabel),
         nameof(BackLabel), nameof(StartLabel), nameof(GuideLabel),
         nameof(StyleLabel), nameof(ShowTouchpad), nameof(ShowShell),
+        // Style-flag bindings consumed by ControllerSurface.axaml. These were
+        // referenced from XAML before they existed on the VM (with
+        // CompileBindings disabled they silently resolved to false), which
+        // meant none of the four programmatic Viewbox blocks ever rendered.
+        // Keeping them in StyleProps so the bindings refresh when the style
+        // changes.
+        nameof(IsXboxStyle), nameof(IsPs4Style), nameof(IsPs5Style),
+        nameof(IsPs3Style), nameof(IsMinimalStyle),
+        // Asset-pack overlay (step 4 of the roadmap). Refreshed alongside
+        // the style flags because each style maps to a different image.
+        nameof(OverlayImageSource), nameof(HasOverlayImage), nameof(ShowProgrammaticArt),
     ];
 
     private static readonly string[] LiveProps =
@@ -61,26 +75,76 @@ public sealed class ControllerVisualStateViewModel : ViewModelBase
         nameof(LeftStickValueText), nameof(RightStickValueText),
         nameof(TriggerSummaryText), nameof(PressedButtonsText),
         nameof(TouchSummaryText), nameof(ShowTouchFinger1), nameof(ShowTouchFinger2),
+
+        // Visual-state Fill/Background/Border brushes consumed by
+        // ControllerSurface.axaml. These were referenced by the AXAML in
+        // the dev branch without ever existing on the VM — every binding
+        // resolved to default (transparent), which is why button presses
+        // were invisible on the controller surface. Adding them here fires
+        // OnPropertyChanged on each snapshot tick so the visualization
+        // tracks button state.
+        nameof(SouthFill), nameof(EastFill), nameof(WestFill), nameof(NorthFill),
+        nameof(BackFill), nameof(StartFill), nameof(GuideFill), nameof(MuteFill),
+        nameof(DpadUpFill), nameof(DpadDownFill), nameof(DpadLeftFill), nameof(DpadRightFill),
+        nameof(TouchpadFill),
+        nameof(LeftTriggerBackground), nameof(LeftTriggerBorder),
+        nameof(RightTriggerBackground), nameof(RightTriggerBorder),
+        nameof(LeftBumperBackground), nameof(LeftBumperBorder),
+        nameof(RightBumperBackground), nameof(RightBumperBorder),
+        nameof(LeftStickBorder), nameof(LeftStickFill), nameof(LeftStickDot),
+        nameof(RightStickBorder), nameof(RightStickFill), nameof(RightStickDot),
+        nameof(MinimalSummaryText),
     ];
 
     // ─── State ────────────────────────────────────────────────────────────────
 
     private readonly Action<string> onElementSelected;
+    private readonly ILocalizationService? localization;
     private ControllerSnapshot snapshot = ControllerSnapshot.Empty("No controller detected");
     private ControllerVisualStyle visualStyle = ControllerVisualStyle.Auto;
     private string panelId = "physical";
+
+    /// <summary>
+    /// Lazy-loaded asset-pack overlay PNG for <see cref="visualStyle"/>.
+    /// Refreshed when the style changes; <see langword="null"/> when no
+    /// matching file is installed.
+    /// </summary>
+    private Bitmap? cachedOverlayImage;
 
     // Cached computed string values — updated only when the underlying data changes
 
     // ─── Construction ─────────────────────────────────────────────────────────
 
-    public ControllerVisualStateViewModel(Action<string> onElementSelected)
+    /// <summary>
+    /// Constructs the view-model. <paramref name="localization"/> is
+    /// optional so existing call sites that don't have access to the
+    /// localizer (tests, design-time data) still work — when it's null,
+    /// <see cref="StyleLabel"/> falls back to its original English text.
+    /// </summary>
+    public ControllerVisualStateViewModel(
+        Action<string> onElementSelected,
+        ILocalizationService? localization = null)
     {
         this.onElementSelected = onElementSelected;
+        this.localization = localization;
         SelectElementCommand = new RelayCommand<string>(SelectElement);
     }
 
     public ICommand SelectElementCommand { get; }
+
+    /// <summary>
+    /// Forces a re-read of every label that depends on the localization
+    /// service. Called by the hosting <c>ShellViewModel</c> from its
+    /// culture-change refresh path so the panel's
+    /// <see cref="StyleLabel"/> and <see cref="MinimalSummaryText"/>
+    /// pick up the new culture without waiting for a style change or
+    /// snapshot tick.
+    /// </summary>
+    public void RefreshLocalizedLabels()
+    {
+        OnPropertyChanged(nameof(StyleLabel));
+        OnPropertyChanged(nameof(MinimalSummaryText));
+    }
 
     // ─── Update (called every refresh tick from ShellViewModel) ───────────────
 
@@ -90,7 +154,37 @@ public sealed class ControllerVisualStateViewModel : ViewModelBase
         ControllerSnapshot newSnapshot,
         ControllerVisualStyle preferredStyle)
     {
-        var newStyle = ResolveVisualStyle(preferredStyle, newSnapshot.DeviceName);
+        // ─── Live-feedback diagnostic (throttled) ────────────────────
+        // Fires before the change-detection short-circuit below so that
+        // even idle ticks produce a log line. This helps diagnose
+        // "no live feedback" reports: if these entries show buttons=0
+        // pressed while the user is actively pressing buttons, the
+        // bug is upstream in the input source, not in the VM/bindings.
+        if (++diagnosticTickCounter >= DiagnosticEveryNthTick)
+        {
+            diagnosticTickCounter = 0;
+            if (Serilog.Log.IsEnabled(Serilog.Events.LogEventLevel.Debug))
+            {
+                var pressedCount = newSnapshot.Buttons.Count(kv => kv.Value);
+                Serilog.Log.Debug(
+                    "VisualState[{Panel}]: device={Device} VID/PID={Vid:X4}/{Pid:X4} style={Style} buttons={Pressed}/{Total} ls=({LX:F2},{LY:F2}) rs=({RX:F2},{RY:F2}) lt={LT:F2} rt={RT:F2}",
+                    panelId,
+                    newSnapshot.DeviceName,
+                    newSnapshot.VendorId,
+                    newSnapshot.ProductId,
+                    visualStyle,
+                    pressedCount,
+                    newSnapshot.Buttons.Count,
+                    newSnapshot.LeftStick.X,
+                    newSnapshot.LeftStick.Y,
+                    newSnapshot.RightStick.X,
+                    newSnapshot.RightStick.Y,
+                    newSnapshot.LeftTrigger,
+                    newSnapshot.RightTrigger);
+            }
+        }
+
+        var newStyle = ResolveVisualStyle(preferredStyle, newSnapshot);
 
         var identityChanged =
             newSnapshot.DeviceName != snapshot.DeviceName ||
@@ -116,6 +210,20 @@ public sealed class ControllerVisualStateViewModel : ViewModelBase
         PanelTitle = panelTitle;
         snapshot = newSnapshot;
         visualStyle = newStyle;
+
+        if (styleChanged)
+        {
+            // Load the optional asset-pack overlay PNG for the new style.
+            // Returns null when the user hasn't installed the assets yet,
+            // in which case the AXAML falls back to programmatic art.
+            cachedOverlayImage = ControllerOverlayAssetLoader.TryLoad(newStyle);
+
+            // Theme-engine: refresh the available-variant list and the
+            // active theme. Defined in the .Theming.cs partial — safe
+            // to call even when no ThemeRegistry has been injected yet
+            // (it short-circuits to an empty list).
+            RefreshActiveTheme();
+        }
 
         if (liveChanged || styleChanged)
         {
@@ -143,9 +251,59 @@ public sealed class ControllerVisualStateViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Counts ticks since the last diagnostic log emission. Reset to
+    /// zero whenever a log line is written.
+    /// </summary>
+    private int diagnosticTickCounter;
+
+    /// <summary>
+    /// How many <see cref="Update"/> calls between diagnostic log
+    /// lines. At the default 60 Hz dashboard refresh this works out
+    /// to roughly one entry per second per panel — frequent enough
+    /// to spot a live issue, sparse enough not to flood the log.
+    /// </summary>
+    private const int DiagnosticEveryNthTick = 60;
+
     // ─── Identity properties ──────────────────────────────────────────────────
 
     public string PanelTitle { get; private set; } = "Controller";
+
+    /// <summary>
+    /// Alias for <see cref="PanelTitle"/>. The AXAML binds
+    /// <c>{Binding Title}</c> in places where this VM is consumed via a
+    /// generic interface; exposing the alias keeps the bindings working
+    /// without forcing the consumers to know the property's
+    /// "PanelTitle" name.
+    /// </summary>
+    public string Title => PanelTitle;
+
+    /// <summary>
+    /// Single-line at-a-glance summary used by the minimal (no-shell)
+    /// layout, where there's no controller silhouette to look at.
+    /// Concatenates the device name with the trigger summary and the
+    /// list of currently-pressed buttons so the user still has live
+    /// feedback even without a graphical surface.
+    /// </summary>
+    public string MinimalSummaryText
+    {
+        get
+        {
+            var parts = new List<string>(3) { DeviceName };
+
+            if (!string.IsNullOrWhiteSpace(TriggerSummaryText) && TriggerSummaryText != "0% / 0%")
+            {
+                parts.Add($"L2/R2 {TriggerSummaryText}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(PressedButtonsText) && PressedButtonsText != "—")
+            {
+                parts.Add(PressedButtonsText);
+            }
+
+            return string.Join("  ·  ", parts);
+        }
+    }
 
     public string DeviceName =>
         string.IsNullOrWhiteSpace(snapshot.DeviceName) ? "No controller detected" : snapshot.DeviceName;
@@ -199,15 +357,77 @@ public sealed class ControllerVisualStateViewModel : ViewModelBase
 
     public string StyleLabel => visualStyle switch
     {
-        ControllerVisualStyle.Xbox => "Xbox layout",
-        ControllerVisualStyle.PlayStation4 => "DualShock 4 layout",
-        ControllerVisualStyle.PlayStation5 => "DualSense layout",
-        ControllerVisualStyle.None => "Minimal shell",
-        _ => "Auto layout"
+        ControllerVisualStyle.Xbox         => Localized("StyleLabelXbox",         "Xbox layout"),
+        ControllerVisualStyle.PlayStation4 => Localized("StyleLabelPlayStation4", "DualShock 4 layout"),
+        ControllerVisualStyle.PlayStation5 => Localized("StyleLabelPlayStation5", "DualSense layout"),
+        ControllerVisualStyle.None         => Localized("StyleLabelMinimal",      "Minimal shell"),
+        _                                  => Localized("StyleLabelAuto",         "Auto layout"),
     };
+
+    /// <summary>
+    /// Internal helper: looks up <paramref name="key"/> via the optional
+    /// localization service and falls back to <paramref name="fallback"/>
+    /// if the service is null OR the key is missing (the localizer
+    /// returns the key string itself for unknown keys, so we detect that
+    /// case and use the supplied default).
+    /// </summary>
+    private string Localized(string key, string fallback)
+    {
+        if (localization is null) { return fallback; }
+        var hit = localization[key];
+        return string.IsNullOrEmpty(hit) || string.Equals(hit, key, StringComparison.Ordinal)
+            ? fallback
+            : hit;
+    }
 
     public bool ShowShell => visualStyle != ControllerVisualStyle.None;
     public bool ShowTouchpad => visualStyle is ControllerVisualStyle.PlayStation4 or ControllerVisualStyle.PlayStation5;
+
+    // ─── Style-flag bindings (consumed by ControllerSurface.axaml) ────────────
+    //
+    // These previously lived in AXAML alone with CompileBindings disabled,
+    // which meant they always evaluated to false at runtime — none of the
+    // four programmatic Viewbox blocks ever rendered. Adding them here
+    // restores the per-style art and gives the new asset-pack image
+    // overlay something concrete to bind its IsVisible to.
+
+    /// <summary>True when the resolved style is Xbox-family.</summary>
+    public bool IsXboxStyle => visualStyle == ControllerVisualStyle.Xbox;
+    public bool IsPs3Style => visualStyle == ControllerVisualStyle.PlayStation3;
+
+    /// <summary>True when the resolved style is DualShock 4.</summary>
+    public bool IsPs4Style => visualStyle == ControllerVisualStyle.PlayStation4;
+
+    /// <summary>True when the resolved style is DualSense.</summary>
+    public bool IsPs5Style => visualStyle == ControllerVisualStyle.PlayStation5;
+
+    /// <summary>True when the resolved style is the minimal/no-shell layout.</summary>
+    public bool IsMinimalStyle => visualStyle == ControllerVisualStyle.None;
+
+    // ─── Asset-pack overlay (step 4 of the roadmap) ───────────────────────────
+
+    /// <summary>
+    /// Optional bitmap painted as the base layer of the controller
+    /// surface, sourced from the AL2009man Gamepad-Asset-Pack. Set by
+    /// <see cref="Update"/> via <see cref="ControllerOverlayAssetLoader"/>.
+    /// <see langword="null"/> means no overlay is installed for the
+    /// current style and the surface falls back to programmatic XAML art.
+    /// </summary>
+    public Bitmap? OverlayImageSource => cachedOverlayImage;
+
+    /// <summary>
+    /// True when an overlay image is loaded for the current style.
+    /// The XAML <c>&lt;Image&gt;</c> layer binds <c>IsVisible</c> to this.
+    /// </summary>
+    public bool HasOverlayImage => cachedOverlayImage is not null;
+
+    /// <summary>
+    /// True when no overlay image is loaded — the existing programmatic
+    /// XAML art (Path silhouettes etc.) should render instead. Defined
+    /// as a positive form because Avalonia's binding pipeline does not
+    /// natively support a "negate" expression on raw bool bindings.
+    /// </summary>
+    public bool ShowProgrammaticArt => cachedOverlayImage is null;
 
     private bool IsPlayStation => visualStyle is ControllerVisualStyle.PlayStation4 or ControllerVisualStyle.PlayStation5;
 
@@ -259,6 +479,84 @@ public sealed class ControllerVisualStateViewModel : ViewModelBase
     public double RightStickDownOpacity => Active(snapshot.RightStick.Y < -0.25f);
     public double RightStickLeftOpacity => Active(snapshot.RightStick.X < -0.25f);
     public double RightStickRightOpacity => Active(snapshot.RightStick.X > 0.25f);
+
+    // ─── Live properties — Fill / Background / Border brushes ─────────────────
+    //
+    // All return strings (hex colours) so Avalonia's brush type-converter
+    // can fold them into SolidColorBrush at binding time, matching the
+    // pattern already established by AccentBrush / ShellHighlightBrush.
+    //
+    // Resting colours come from the cyan-on-deep-blue palette set by the
+    // surrounding shell theme; pressed/active colours pull from the per-
+    // style accent brushes so e.g. an Xbox A button glows green and a PS
+    // X button glows blue.
+
+    /// <summary>Resting colour for any unlit chrome element (face button, dpad arrow, etc.).</summary>
+    private const string ChromeRestBrush = "#1E2A38";
+
+    /// <summary>Background colour for an inactive trigger / bumper rectangle.</summary>
+    private const string ChromeBackgroundBrush = "#0F1A28";
+
+    /// <summary>Fill colour for the stick well — the dark circle the position dot moves inside.</summary>
+    private const string StickWellBrush = "#0A1320";
+
+    // Face buttons. Lit with the per-style face brush (Xbox = green/red/blue/yellow,
+    // PlayStation = blue/red/purple/light-blue) when pressed; sit at chrome rest
+    // colour otherwise.
+    public string SouthFill => snapshot.IsPressed(ButtonId.South) ? SouthFaceBrush : ChromeRestBrush;
+    public string EastFill  => snapshot.IsPressed(ButtonId.East)  ? EastFaceBrush  : ChromeRestBrush;
+    public string WestFill  => snapshot.IsPressed(ButtonId.West)  ? WestFaceBrush  : ChromeRestBrush;
+    public string NorthFill => snapshot.IsPressed(ButtonId.North) ? NorthFaceBrush : ChromeRestBrush;
+
+    // Menu buttons. Use the accent brush since they're not colour-coded
+    // per the controller's own palette.
+    public string BackFill  => snapshot.IsPressed(ButtonId.Back)  ? AccentBrush : ChromeRestBrush;
+    public string StartFill => snapshot.IsPressed(ButtonId.Start) ? AccentBrush : ChromeRestBrush;
+    public string GuideFill => snapshot.IsPressed(ButtonId.Guide) ? AccentBrush : ChromeRestBrush;
+
+    /// <summary>
+    /// Fill for the DualSense mute button. <see cref="ButtonId"/> has no
+    /// dedicated <c>Mute</c> entry, so this stays at chrome rest until /
+    /// unless the snapshot model adds one.
+    /// </summary>
+    public static string MuteFill => ChromeRestBrush;
+
+    // Dpad arrows.
+    public string DpadUpFill    => snapshot.IsPressed(ButtonId.DpadUp)    ? AccentBrush : ChromeRestBrush;
+    public string DpadDownFill  => snapshot.IsPressed(ButtonId.DpadDown)  ? AccentBrush : ChromeRestBrush;
+    public string DpadLeftFill  => snapshot.IsPressed(ButtonId.DpadLeft)  ? AccentBrush : ChromeRestBrush;
+    public string DpadRightFill => snapshot.IsPressed(ButtonId.DpadRight) ? AccentBrush : ChromeRestBrush;
+
+    // Touchpad. Lit when any contact point is reported by the snapshot or
+    // when the touchpad button itself is clicked.
+    public string TouchpadFill =>
+        (snapshot.TouchContactCount > 0 || snapshot.IsPressed(ButtonId.Touchpad))
+            ? AccentSoftBrush
+            : "#101824";
+
+    // Triggers. Background ramps to the accent-soft palette as the trigger
+    // pulls in; border switches to the bright accent once any pull is
+    // detected, which gives a clear "is this trigger active at all" cue.
+    public string LeftTriggerBackground  => snapshot.LeftTrigger  > 0.05f ? AccentSoftBrush : ChromeBackgroundBrush;
+    public string LeftTriggerBorder      => snapshot.LeftTrigger  > 0.05f ? AccentBrush     : ChromeRestBrush;
+    public string RightTriggerBackground => snapshot.RightTrigger > 0.05f ? AccentSoftBrush : ChromeBackgroundBrush;
+    public string RightTriggerBorder     => snapshot.RightTrigger > 0.05f ? AccentBrush     : ChromeRestBrush;
+
+    // Bumpers. Binary press state.
+    public string LeftBumperBackground  => snapshot.IsPressed(ButtonId.LeftShoulder)  ? AccentSoftBrush : ChromeBackgroundBrush;
+    public string LeftBumperBorder      => snapshot.IsPressed(ButtonId.LeftShoulder)  ? AccentBrush     : ChromeRestBrush;
+    public string RightBumperBackground => snapshot.IsPressed(ButtonId.RightShoulder) ? AccentSoftBrush : ChromeBackgroundBrush;
+    public string RightBumperBorder     => snapshot.IsPressed(ButtonId.RightShoulder) ? AccentBrush     : ChromeRestBrush;
+
+    // Sticks. The well stays a solid dark colour at all times; the border
+    // lights up on click (L3 / R3); the dot is the always-visible position
+    // indicator and uses the accent so it stands out against the well.
+    public string LeftStickBorder  => snapshot.IsPressed(ButtonId.LeftStick)  ? AccentBrush : ChromeRestBrush;
+    public static string LeftStickFill    => StickWellBrush;
+    public string LeftStickDot     => AccentBrush;
+    public string RightStickBorder => snapshot.IsPressed(ButtonId.RightStick) ? AccentBrush : ChromeRestBrush;
+    public static string RightStickFill   => StickWellBrush;
+    public string RightStickDot    => AccentBrush;
 
     // ─── Live properties — analogue values ────────────────────────────────────
 
@@ -341,18 +639,51 @@ public sealed class ControllerVisualStateViewModel : ViewModelBase
         }
     }
 
-    private static ControllerVisualStyle ResolveVisualStyle(ControllerVisualStyle preferred, string deviceName)
+    /// <summary>
+    /// Picks the visual style for a snapshot. When
+    /// <paramref name="preferred"/> is anything other than
+    /// <see cref="ControllerVisualStyle.Auto"/> it wins (the user
+    /// chose explicitly). In Auto mode we resolve in two steps:
+    /// <list type="number">
+    /// <item><b>VID/PID lookup</b> via
+    /// <see cref="ControllerHardwareCatalog"/> — deterministic,
+    /// language-independent, works for any device the catalog
+    /// knows about.</item>
+    /// <item><b>Device-name heuristic</b> — substring match on the
+    /// human-readable name. Only reached when VID/PID is 0 (no
+    /// hardware id reported, e.g. SDL3 with a generic mapping) or
+    /// the catalog has no entry for the device.</item>
+    /// </list>
+    /// </summary>
+    private static ControllerVisualStyle ResolveVisualStyle(
+        ControllerVisualStyle preferred,
+        ControllerSnapshot snapshot)
     {
-        return preferred != ControllerVisualStyle.Auto
-            ? preferred
-            : deviceName.Contains("dualsense", StringComparison.OrdinalIgnoreCase) ||
-            deviceName.Contains("ps5", StringComparison.OrdinalIgnoreCase)
+        if (preferred != ControllerVisualStyle.Auto)
+        {
+            return preferred;
+        }
+
+        // Step 1: hardware-id lookup
+        var byHardware = ControllerHardwareCatalog.Resolve(snapshot.VendorId, snapshot.ProductId);
+        if (byHardware != ControllerVisualStyle.Auto)
+        {
+            return byHardware;
+        }
+
+        // Step 2: name heuristic — kept for backwards compatibility
+        // with sources that don't surface VID/PID.
+        var deviceName = snapshot.DeviceName ?? string.Empty;
+        return deviceName.Contains("dualsense", StringComparison.OrdinalIgnoreCase) ||
+               deviceName.Contains("ps5", StringComparison.OrdinalIgnoreCase)
             ? ControllerVisualStyle.PlayStation5
             : deviceName.Contains("dualshock", StringComparison.OrdinalIgnoreCase) ||
-            deviceName.Contains("wireless controller", StringComparison.OrdinalIgnoreCase) ||
-            deviceName.Contains("ps4", StringComparison.OrdinalIgnoreCase)
+              deviceName.Contains("wireless controller", StringComparison.OrdinalIgnoreCase) ||
+              deviceName.Contains("ps4", StringComparison.OrdinalIgnoreCase)
             ? ControllerVisualStyle.PlayStation4
-            : deviceName.Contains("xbox", StringComparison.OrdinalIgnoreCase) ? ControllerVisualStyle.Xbox : ControllerVisualStyle.Auto;
+            : deviceName.Contains("xbox", StringComparison.OrdinalIgnoreCase)
+            ? ControllerVisualStyle.Xbox
+            : ControllerVisualStyle.Auto;
     }
 
     private static string FormatButton(ButtonId b)

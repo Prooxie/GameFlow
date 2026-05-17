@@ -326,3 +326,364 @@ msgstr "Редактировать правило: {0}"
 
 msgid "MappingEditorRuleFallbackName"
 msgstr "Безымянное правило"
+
+msgid "DeleteProfileButton"
+msgstr "Удалить профиль"
+
+msgid "DeleteProfileBlockedLastOne"
+msgstr "Невозможно удалить: это единственный профиль."
+
+msgid "ProfileDeletedStatus"
+msgstr "Профиль {0} удалён."
+
+
+msgid "ThemeLabel"
+msgstr "Тема"
+
+msgid "OpenSettingsButtonLabel"
+msgstr "Параметры"
+
+msgid "SettingsDialogTitle"
+msgstr "Параметры"
+
+msgid "SettingsDialogDiagnosticsHeader"
+msgstr "Диагностика"
+
+msgid "SettingsDialogLogLevelLabel"
+msgstr "Уровень журнала"
+
+msgid "SettingsDialogLogLevelHint"
+msgstr "Уровни Trace и Debug очень подробны; используйте их только при диагностике проблемы."
+
+msgid "SettingsDialogWindowHeader"
+msgstr "Окно"
+
+msgid "SettingsDialogRememberWindowSizeLabel"
+msgstr "Запоминать размер окна между запусками"
+
+msgid "SettingsDialogWindowWidthLabel"
+msgstr "Ширина"
+
+msgid "SettingsDialogWindowHeightLabel"
+msgstr "Высота"
+
+msgid "SettingsDialogPollingHeader"
+msgstr "Частота опроса"
+
+msgid "SettingsDialogDashboardRefreshLabel"
+msgstr "Обновление панели"
+
+msgid "SettingsDialogPollingRateLabel"
+msgstr "Частота опроса"
+
+msgid "SettingsDialogPollingHint"
+msgstr "Оставьте пустым для значений по умолчанию из профиля. Диапазон: 30–1000 Гц."
+
+msgid "SettingsDialogPathsHeader"
+msgstr "Пути хранения"
+
+msgid "SettingsDialogProfilesDirectoryLabel"
+msgstr "Каталог профилей"
+
+msgid "SettingsDialogLogsDirectoryLabel"
+msgstr "Каталог журналов"
+
+msgid "SettingsDialogLogsPathHint"
+msgstr "Изменение каталога журналов вступает в силу при следующем запуске."
+
+msgid "SettingsDialogBrowseButton"
+msgstr "Обзор…"
+
+msgid "SettingsDialogStartupHeader"
+msgstr "Запуск"
+
+msgid "SettingsDialogCheckUpdatesLabel"
+msgstr "Проверять обновления при запуске"
+
+msgid "SettingsDialogCheckRequirementsLabel"
+msgstr "Проверять требования (ViGEm Bus и пр.) при запуске"
+
+msgid "SettingsDialogApplyButton"
+msgstr "Сохранить"
+
+msgid "SettingsDialogCancelButton"
+msgstr "Отмена"
+
+msgid "SettingsDialogRestoreDefaultsButton"
+msgstr "Восстановить по умолчанию"
+
+msgid "SettingsDialogAppliedStatus"
+msgstr "Настройки сохранены."
+
+msgid "SettingsDialogRestoredStatus"
+msgstr "Восстановлены значения по умолчанию — нажмите Сохранить, чтобы применить."
+
+msgid "SettingsDialogApplyFailedStatus"
+msgstr "Не удалось сохранить настройки: {0}"
+
+
+msgid "ThemeNameCyberBlue"
+msgstr "Кибер-синий"
+
+msgid "ThemeNameMidnightPurple"
+msgstr "Полуночный фиолетовый"
+
+msgid "ThemeNameNeonGreen"
+msgstr "Неоновый зелёный"
+
+msgid "ThemeNameSolarRed"
+msgstr "Солнечный красный"
+
+msgid "ThemeNameLight"
+msgstr "Светлая"
+
+msgid "InputProviderXInputLabel"
+msgstr "XInput"
+
+msgid "InputProviderXInputDescription"
+msgstr "Нативный драйвер XInput для Windows. Распознаёт до 4 контроллеров, совместимых с Xbox."
+
+msgid "InputProviderSdlLabel"
+msgstr "Универсальный ввод SDL3"
+
+msgid "InputProviderSdlDescription"
+msgstr "Кросс-платформенное сопоставление геймпада SDL3 с резервным режимом джойстика."
+
+msgid "InputProviderDemoLabel"
+msgstr "Демо-предпросмотр"
+
+msgid "InputProviderDemoDescription"
+msgstr "Анимированный источник предпросмотра для тестирования UI — не требует оборудования."
+
+msgid "InputProviderNoneLabel"
+msgstr "Без живого ввода"
+
+msgid "InputProviderNoneDescription"
+msgstr "Отключает живой ввод и оставляет панель в покое."
+
+msgid "OutputProviderViGEmXbox360Label"
+msgstr "ViGEm Xbox 360"
+
+msgid "OutputProviderViGEmXbox360Description"
+msgstr "Виртуальный контроллер Xbox 360 через ViGEm Bus. Требуется драйвер ViGEm Bus."
+
+msgid "OutputProviderViGEmDs4Label"
+msgstr "ViGEm DualShock 4"
+
+msgid "OutputProviderViGEmDs4Description"
+msgstr "Виртуальный контроллер DualShock 4 через ViGEm Bus. Требуется драйвер ViGEm Bus."
+
+msgid "OutputProviderViGEmDs5Label"
+msgstr "ViGEm DualSense (DS5)"
+
+msgid "OutputProviderViGEmDs5Description"
+msgstr "Виртуальный контроллер DualSense через ViGEm Bus. Требуется ViGEm Bus v1.22+."
+
+msgid "OutputProviderPreviewLabel"
+msgstr "Только предпросмотр"
+
+msgid "OutputProviderPreviewDescription"
+msgstr "Показывает преобразованный вывод на панели без создания виртуального устройства."
+
+msgid "ControllerStyleAuto"
+msgstr "Авто"
+
+msgid "ControllerStyleXbox"
+msgstr "Xbox"
+
+msgid "ControllerStylePlayStation4"
+msgstr "PlayStation 4"
+
+msgid "ControllerStylePlayStation5"
+msgstr "PlayStation 5"
+
+msgid "ControllerStyleMinimal"
+msgstr "Минимальный"
+
+
+msgid "StyleLabelXbox"
+msgstr "Раскладка Xbox"
+
+msgid "StyleLabelPlayStation4"
+msgstr "Раскладка DualShock 4"
+
+msgid "StyleLabelPlayStation5"
+msgstr "Раскладка DualSense"
+
+msgid "StyleLabelMinimal"
+msgstr "Минимальный корпус"
+
+msgid "StyleLabelAuto"
+msgstr "Автоматическая раскладка"
+
+msgid "DiagLogsLabel"
+msgstr "Журналы"
+
+msgid "DiagLastInputFrameLabel"
+msgstr "Последний кадр ввода"
+
+msgid "DiagNoDataYetLabel"
+msgstr "данных пока нет"
+
+msgid "DiagDashboardRefreshLabel"
+msgstr "Обновление панели"
+
+msgid "DiagHzTargetFormat"
+msgstr "цель {0} Гц"
+
+msgid "DiagInputProviderRequestedLabel"
+msgstr "Поставщик ввода (запрошенный)"
+
+msgid "DiagInputProviderEffectiveLabel"
+msgstr "Поставщик ввода (фактический)"
+
+msgid "DiagOutputProviderLabel"
+msgstr "Поставщик вывода"
+
+msgid "DiagViGEmEnabledLabel"
+msgstr "ViGEm включён"
+
+msgid "DiagControllersDetectedLabel"
+msgstr "Обнаружено контроллеров"
+
+msgid "DiagProviderStatusLabel"
+msgstr "Состояние поставщика"
+
+msgid "DiagExperimentalGameInputLabel"
+msgstr "Экспериментальный GameInput"
+
+msgid "RuntimeNoteDemoActive"
+msgstr "Демо-предпросмотр активен. Панель анимируется без оборудования."
+
+msgid "RuntimeNoteXInputActive"
+msgstr "XInput активен. Обнаруживаются только контроллеры, совместимые с XInput (класс Xbox)."
+
+msgid "RuntimeNoteSdlActive"
+msgstr "Универсальный ввод SDL3 активен. Используются стандартные сопоставления геймпада с резервным режимом джойстика."
+
+msgid "RuntimeNoteLiveInputDisabled"
+msgstr "Живой ввод отключён для этого профиля."
+
+msgid "RuleKindButtonRemapLabel"
+msgstr "Переназначение кнопки"
+
+msgid "RuleKindButtonRemapDescription"
+msgstr "Перенаправить одну кнопку на другую."
+
+msgid "RuleKindButtonAutofireLabel"
+msgstr "Автоогонь / Турбо кнопки"
+
+msgid "RuleKindButtonAutofireDescription"
+msgstr "Быстрый огонь кнопкой с настраиваемой частотой."
+
+msgid "RuleKindStickThresholdLabel"
+msgstr "Порог стика"
+
+msgid "RuleKindStickThresholdDescription"
+msgstr "Настройка мёртвой зоны и порога для стика."
+
+msgid "RuleKindStickAutofireLabel"
+msgstr "Автоогонь стика"
+
+msgid "RuleKindStickAutofireDescription"
+msgstr "Пульсация вывода одного стика от другого."
+
+msgid "RuleKindFreezeLastDirectionLabel"
+msgstr "Заморозить последнее направление"
+
+msgid "RuleKindFreezeLastDirectionDescription"
+msgstr "Удерживает последнее наблюдавшееся направление стика, пока удерживается кнопка."
+
+msgid "RuleKindScriptLabel"
+msgstr "Скрипт элемента"
+
+msgid "RuleKindScriptDescription"
+msgstr "Сохранить текст скрипта для конкретного элемента."
+
+msgid "MappingEditorAddRule"
+msgstr "+ Добавить правило"
+
+msgid "MappingEditorRuleName"
+msgstr "ИМЯ ПРАВИЛА"
+
+msgid "MappingEditorRuleType"
+msgstr "ТИП ПРАВИЛА"
+
+msgid "MappingEditorMode"
+msgstr "РЕЖИМ"
+
+msgid "MappingEditorSourceButton"
+msgstr "ИСХОДНАЯ КНОПКА"
+
+msgid "MappingEditorTargetButton"
+msgstr "ЦЕЛЕВАЯ КНОПКА"
+
+msgid "MappingEditorSuppressSource"
+msgstr "Подавить исходную кнопку (блокировать оригинал)"
+
+msgid "MappingEditorEnabled"
+msgstr "Включено"
+
+msgid "MappingEditorDeadzoneLabel"
+msgstr "Мёртвая зона и порог"
+
+msgid "MappingEditorStoreScript"
+msgstr "Сохранить скрипт для выбранного элемента. Выполнение во время работы запланировано."
+
+msgid "MappingEditorSelectRuleToEdit"
+msgstr "Выберите правило для редактирования"
+
+msgid "MappingEditorOrUseAddRule"
+msgstr "Или используйте „Добавить правило" для создания нового сопоставления."
+
+msgid "MappingEditorSaveButton"
+msgstr "Сохранить правило"
+
+msgid "MappingEditorCancelButton"
+msgstr "Отмена"
+
+msgid "MappingEditorRulesHeader"
+msgstr "ПРАВИЛА СОПОСТАВЛЕНИЯ"
+
+
+msgid "InputProviderOpenXInputLabel"
+msgstr "OpenXInput"
+
+msgid "InputProviderOpenXInputDescription"
+msgstr "Замена XInput с поддержкой более 4 контроллеров. Заглушка — требуется OpenXinput1_4.dll рядом с приложением."
+
+msgid "InputProviderX360ceLabel"
+msgstr "x360ce"
+
+msgid "InputProviderX360ceDescription"
+msgstr "Транслятор DirectInput в XInput для старых / не-XInput геймпадов. Заглушка — требуется библиотека x360ce."
+
+msgid "InputProviderPs3Label"
+msgstr "DualShock 3 (PS3)"
+
+msgid "InputProviderPs3Description"
+msgstr "Читает сопряжённый DualShock 3 через DsHidMini или libusb. Заглушка — требуется драйвер DsHidMini."
+
+msgid "InputProviderWindowsMidiLabel"
+msgstr "Вход MIDI Windows"
+
+msgid "InputProviderWindowsMidiDescription"
+msgstr "Сопоставляет входящие MIDI-события с входами виртуального геймпада. Заглушка — требуется Windows MIDI Services и сопоставление в профиле."
+
+msgid "OutputProviderVJoyLabel"
+msgstr "Виртуальный джойстик vJoy"
+
+msgid "OutputProviderVJoyDescription"
+msgstr "Универсальный виртуальный джойстик (до 8 осей / 128 кнопок). Заглушка — требуется драйвер vJoy."
+
+msgid "OutputProviderHidMaestroLabel"
+msgstr "Виртуальный HID HidMaestro"
+
+msgid "OutputProviderHidMaestroDescription"
+msgstr "Эмуляция произвольных HID-устройств с настраиваемыми дескрипторами. Заглушка — требуется драйвер HidMaestro."
+
+msgid "OutputProviderWindowsMidiOutLabel"
+msgstr "Выход MIDI Windows"
+
+msgid "OutputProviderWindowsMidiOutDescription"
+msgstr "Выдаёт MIDI-события из активности геймпада. Заглушка — требуется Windows MIDI Services и сопоставление в профиле."

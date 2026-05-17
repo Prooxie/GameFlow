@@ -4,6 +4,7 @@ public enum ControllerVisualStyle
 {
     Auto,
     Xbox,
+    PlayStation3,
     PlayStation4,
     PlayStation5,
     None

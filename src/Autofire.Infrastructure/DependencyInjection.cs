@@ -1,7 +1,9 @@
 using Autofire.Infrastructure.Configuration;
 using Autofire.Infrastructure.Localization;
 using Autofire.Infrastructure.Profiles;
+using Autofire.Infrastructure.Requirements;
 using Autofire.Infrastructure.Runtime;
+using Autofire.Infrastructure.Updates;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,6 +20,12 @@ public static class DependencyInjection
         _ = services.AddSingleton<IProfileRepository, JsonProfileRepository>();
         _ = services.AddSingleton<ProfileSession>();
 
+        // The user-settings service depends on ILogLevelSwitch, which the App
+        // layer registers from HostBuilderFactory after wiring it into the
+        // Serilog config. Tests that need to resolve IUserSettingsService
+        // without the App must register their own ILogLevelSwitch first.
+        _ = services.AddSingleton<IUserSettingsService, UserSettingsService>();
+
         _ = services.AddSingleton<ILocalizationService, LocalizationService>();
 
         _ = services.AddSingleton<RuntimeSnapshotStore>();
@@ -25,6 +33,11 @@ public static class DependencyInjection
         _ = services.AddSingleton<IInputSourceFactory, DefaultInputSourceFactory>();
         _ = services.AddSingleton<IOutputSinkFactory, DefaultOutputSinkFactory>();
         _ = services.AddHostedService<RuntimeCoordinator>();
+
+        // Step 3 of the roadmap: requirement & update checks.
+        _ = services.AddSingleton<IRequirementChecker, DefaultRequirementChecker>();
+        _ = services.AddSingleton<IUpdateChecker, GitHubUpdateChecker>();
+        _ = services.AddSingleton<IUpdateInstaller, DefaultUpdateInstaller>();
 
         return services;
     }
