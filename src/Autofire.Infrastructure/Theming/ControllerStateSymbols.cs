@@ -1,0 +1,257 @@
+using Autofire.Core.Enums;
+using Autofire.Core.Models;
+using Autofire.Infrastructure.Theming.Flee;
+
+namespace Autofire.Infrastructure.Theming;
+
+/// <summary>
+/// Adapter that exposes a <see cref="ControllerSnapshot"/> through the
+/// VSCView Flee variable namespace described in
+/// <see href="https://github.com/Nielk1/VSCView/blob/master/THEMEENGINE.md">THEMEENGINE.md</see>.
+///
+/// <para>
+/// Variable names are <b>colon-qualified</b> in VSCView themes:
+/// </para>
+/// <list type="bullet">
+/// <item><c>quad_right:s</c>, <c>quad_right:e</c>, <c>quad_right:w</c>, <c>quad_right:n</c> — face buttons (A/B/X/Y for Xbox, ✕/○/□/△ for PlayStation, mapped to <see cref="ButtonId.South"/> etc.);</item>
+/// <item><c>quad_left:s</c>, <c>quad_left:e</c>, <c>quad_left:w</c>, <c>quad_left:n</c> — D-pad;</item>
+/// <item><c>bumpers:l</c>, <c>bumpers:r</c> — shoulder buttons (LB/RB or L1/R1);</item>
+/// <item><c>bumpers2:l</c>, <c>bumpers2:r</c> — trigger-button digital state (LeftTriggerButton / RightTriggerButton);</item>
+/// <item><c>triggers:l:analog</c>, <c>triggers:r:analog</c> — analog trigger pull, 0..1;</item>
+/// <item><c>triggers:l:stage2</c>, <c>triggers:r:stage2</c> — Steam-controller trigger second stage (always 0 on non-SC hardware);</item>
+/// <item><c>menu:l</c>, <c>menu:r</c> — Back/Select and Start/Options;</item>
+/// <item><c>home:home</c> — Guide / PS / Xbox button. Also accepted bare as <c>home</c> for the legacy spelling;</item>
+/// <item><c>mute:mute</c> — DualSense mute (no <see cref="ButtonId"/> entry yet, always 0);</item>
+/// <item><c>stick_left:x</c>, <c>stick_left:y</c>, <c>stick_left:click</c> — left analog stick;</item>
+/// <item><c>stick_right:x</c>, <c>stick_right:y</c>, <c>stick_right:click</c> — right analog stick;</item>
+/// <item><c>touch_center:click</c>, <c>touch_center:N:touch</c>, <c>touch_center:N:x</c>, <c>touch_center:N:y</c> — DualShock 4 / DualSense touchpad with finger index N (0 or 1).</item>
+/// </list>
+///
+/// <para>
+/// Unknown names resolve to <c>0</c>. This matches VSCView's behaviour of
+/// silently ignoring formulas that mention controls the current hardware
+/// doesn't have (e.g. a DualSense-only <c>mute</c> reference on a
+/// DualShock 4 theme): missing inputs render as their off-state instead
+/// of crashing the whole controller surface.
+/// </para>
+///
+/// <para>
+/// The resolver is a struct so that swapping the snapshot per render
+/// tick costs only a few words of stack space — no heap allocation per
+/// frame. The <see cref="Snapshot"/> reference field is reassigned
+/// in-place by <see cref="UpdateSnapshot"/>.
+/// </para>
+/// </summary>
+public sealed class ControllerStateSymbols : IFleeSymbols
+{
+    /// <summary>
+    /// The snapshot whose values the resolver reports. May be reassigned
+    /// per tick via <see cref="UpdateSnapshot"/> so a single symbol-table
+    /// instance can be reused across frames; no allocation on the hot path.
+    /// </summary>
+    public ControllerSnapshot Snapshot { get; private set; } = ControllerSnapshot.Empty();
+
+    /// <summary>
+    /// Replaces the active snapshot. Returns <see langword="this"/> to
+    /// support fluent reuse: <c>symbols.UpdateSnapshot(s).Resolve("x")</c>.
+    /// </summary>
+    public ControllerStateSymbols UpdateSnapshot(ControllerSnapshot snapshot)
+    {
+        Snapshot = snapshot;
+        return this;
+    }
+
+    /// <inheritdoc/>
+    public double Resolve(string name)
+    {
+        // Hot path: switch on the first colon segment. The whole switch
+        // is small enough that the JIT compiles it to a hash table, and
+        // we never allocate (ReadOnlySpan over the original string).
+        var span = name.AsSpan();
+        var firstColon = span.IndexOf(':');
+        var head = firstColon < 0 ? span : span[..firstColon];
+        var rest = firstColon < 0 ? ReadOnlySpan<char>.Empty : span[(firstColon + 1)..];
+
+        // Bare "home" / "mute" are accepted as aliases per VSCView legacy.
+        if (head.Equals("home", StringComparison.Ordinal) && rest.IsEmpty)
+        {
+            return ButtonValue(ButtonId.Guide);
+        }
+        if (head.Equals("mute", StringComparison.Ordinal) && rest.IsEmpty)
+        {
+            return 0;
+        }
+
+        if (head.Equals("quad_right", StringComparison.Ordinal))
+        {
+            return ResolveButton(rest, ButtonId.South, ButtonId.East, ButtonId.West, ButtonId.North);
+        }
+        if (head.Equals("quad_left", StringComparison.Ordinal))
+        {
+            return ResolveButton(rest, ButtonId.DpadDown, ButtonId.DpadRight, ButtonId.DpadLeft, ButtonId.DpadUp);
+        }
+        if (head.Equals("bumpers", StringComparison.Ordinal))
+        {
+            return ResolveLeftRightButton(rest, ButtonId.LeftShoulder, ButtonId.RightShoulder);
+        }
+        if (head.Equals("bumpers2", StringComparison.Ordinal))
+        {
+            return ResolveLeftRightButton(rest, ButtonId.LeftTriggerButton, ButtonId.RightTriggerButton);
+        }
+        if (head.Equals("menu", StringComparison.Ordinal))
+        {
+            return ResolveLeftRightButton(rest, ButtonId.Back, ButtonId.Start);
+        }
+        if (head.Equals("home", StringComparison.Ordinal))
+        {
+            return rest.Equals("home", StringComparison.Ordinal) ? ButtonValue(ButtonId.Guide) : 0;
+        }
+        if (head.Equals("mute", StringComparison.Ordinal))
+        {
+            // No ButtonId entry today; reserved for when the snapshot
+            // model adds DualSense mute support.
+            return 0;
+        }
+        if (head.Equals("triggers", StringComparison.Ordinal))
+        {
+            return ResolveTrigger(rest);
+        }
+        if (head.Equals("stick_left", StringComparison.Ordinal))
+        {
+            return ResolveStick(rest, Snapshot.LeftStick, ButtonId.LeftStick);
+        }
+        if (head.Equals("stick_right", StringComparison.Ordinal))
+        {
+            return ResolveStick(rest, Snapshot.RightStick, ButtonId.RightStick);
+        }
+        if (head.Equals("touch_center", StringComparison.Ordinal) ||
+            head.Equals("touch_left",   StringComparison.Ordinal) ||
+            head.Equals("touch_right",  StringComparison.Ordinal))
+        {
+            return ResolveTouch(rest);
+        }
+        if (head.Equals("grip", StringComparison.Ordinal))
+        {
+            // Steam-controller paddles map to Paddle1 / Paddle2 in our snapshot.
+            return ResolveLeftRightButton(rest, ButtonId.Paddle1, ButtonId.Paddle2);
+        }
+        if (head.Equals("motion", StringComparison.Ordinal))
+        {
+            // The snapshot model has no gyro/accel fields yet. Returning 0
+            // keeps "motion:gyro_active" style toggles in their off state
+            // until a future pass adds real IMU plumbing.
+            return 0;
+        }
+
+        // Unknown name — silently return 0 so a theme written for a
+        // richer controller still works on simpler hardware.
+        return 0;
+    }
+
+    /// <summary>
+    /// Returns 1 when <paramref name="button"/> is currently pressed,
+    /// 0 otherwise. Centralised so the snapshot's
+    /// <see cref="ControllerSnapshot.IsPressed"/> coercion stays in one
+    /// place and the call-site reads cleanly.
+    /// </summary>
+    private double ButtonValue(ButtonId button) => Snapshot.IsPressed(button) ? 1 : 0;
+
+    /// <summary>
+    /// Resolves a single-letter direction inside a <c>quad_*</c> bag.
+    /// VSCView convention: <c>s/e/w/n</c> = south/east/west/north, where
+    /// "south" is the bottom and "north" is the top (visual convention,
+    /// independent of the controller layout).
+    /// </summary>
+    private double ResolveButton(ReadOnlySpan<char> tail, ButtonId south, ButtonId east, ButtonId west, ButtonId north)
+    {
+        if (tail.Equals("s", StringComparison.Ordinal)) { return ButtonValue(south); }
+        if (tail.Equals("e", StringComparison.Ordinal)) { return ButtonValue(east); }
+        if (tail.Equals("w", StringComparison.Ordinal)) { return ButtonValue(west); }
+        if (tail.Equals("n", StringComparison.Ordinal)) { return ButtonValue(north); }
+        return 0;
+    }
+
+    /// <summary>
+    /// Resolves the <c>l</c>/<c>r</c> suffix of a paired-button bag.
+    /// Drops the optional "click" suffix that some themes append for
+    /// readability — VSCView accepts both <c>bumpers:l</c> and
+    /// <c>bumpers:l:click</c> as the same press signal.
+    /// </summary>
+    private double ResolveLeftRightButton(ReadOnlySpan<char> tail, ButtonId left, ButtonId right)
+    {
+        // Strip a trailing ":click" / ":press" before comparing so themes
+        // that name the access explicitly still resolve to the same data.
+        var dropClick = tail.LastIndexOf(':');
+        var key = dropClick < 0 ? tail : tail[..dropClick];
+
+        if (key.Equals("l", StringComparison.Ordinal)) { return ButtonValue(left); }
+        if (key.Equals("r", StringComparison.Ordinal)) { return ButtonValue(right); }
+        return 0;
+    }
+
+    private double ResolveTrigger(ReadOnlySpan<char> tail)
+    {
+        // Format is "l:analog", "r:stage2", etc. Split on the colon.
+        var sep = tail.IndexOf(':');
+        if (sep < 0) { return 0; }
+        var side = tail[..sep];
+        var axis = tail[(sep + 1)..];
+
+        if (axis.Equals("analog", StringComparison.Ordinal))
+        {
+            if (side.Equals("l", StringComparison.Ordinal)) { return Snapshot.LeftTrigger; }
+            if (side.Equals("r", StringComparison.Ordinal)) { return Snapshot.RightTrigger; }
+        }
+        if (axis.Equals("stage2", StringComparison.Ordinal))
+        {
+            // Stage-2 is a Steam Controller concept (the hard click past
+            // the analog pull). Approximated as "trigger > 0.95" so themes
+            // using stage2 still light up when the user pulls the trigger
+            // all the way on non-SC hardware.
+            if (side.Equals("l", StringComparison.Ordinal)) { return Snapshot.LeftTrigger  > 0.95f ? 1 : 0; }
+            if (side.Equals("r", StringComparison.Ordinal)) { return Snapshot.RightTrigger > 0.95f ? 1 : 0; }
+        }
+        return 0;
+    }
+
+    private double ResolveStick(ReadOnlySpan<char> tail, StickVector stick, ButtonId clickButton)
+    {
+        if (tail.Equals("x", StringComparison.Ordinal))     { return stick.X; }
+        if (tail.Equals("y", StringComparison.Ordinal))
+        {
+            // VSCView's Y axis is positive-down (screen coordinates) but
+            // our StickVector follows the Steam Input convention where
+            // positive Y is up. Flip the sign here so themes drawn for
+            // VSCView don't render their stick "upside down".
+            return -stick.Y;
+        }
+        if (tail.Equals("click", StringComparison.Ordinal)) { return ButtonValue(clickButton); }
+        return 0;
+    }
+
+    private double ResolveTouch(ReadOnlySpan<char> tail)
+    {
+        if (tail.Equals("click", StringComparison.Ordinal))
+        {
+            return Snapshot.IsPressed(ButtonId.Touchpad) ? 1 : 0;
+        }
+
+        // Finger-index axes — "0:touch", "0:x", "0:y", "1:touch", ...
+        var sep = tail.IndexOf(':');
+        if (sep < 0) { return 0; }
+        var index = tail[..sep];
+        var axis  = tail[(sep + 1)..];
+
+        if (!int.TryParse(index, out var fingerIndex)) { return 0; }
+
+        // The snapshot only tracks contact-count today (not per-finger
+        // coordinates), so we report touch state for finger #0 and zero
+        // for the rest. When the snapshot grows real touch fields this
+        // is the only place that needs to learn about them.
+        if (axis.Equals("touch", StringComparison.Ordinal))
+        {
+            return Snapshot.TouchContactCount > fingerIndex ? 1 : 0;
+        }
+        return 0;
+    }
+}

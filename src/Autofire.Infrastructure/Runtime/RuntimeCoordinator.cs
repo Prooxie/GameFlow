@@ -6,6 +6,40 @@ using Microsoft.Extensions.Logging;
 
 namespace Autofire.Infrastructure.Runtime;
 
+/// <summary>
+/// The hosted background service that owns the controller mapping loop.
+///
+/// <para>
+/// Activates the input source and output sink configured by the active
+/// profile, then ticks the mapping pipeline at the profile's polling rate
+/// (clamped to 30–1000 Hz). Reacts to profile changes mid-loop without a
+/// host restart, swapping providers when the profile's input/output
+/// selection has actually changed.
+/// </para>
+///
+/// <para>
+/// Reliability contract:
+/// <list type="bullet">
+///   <item>
+///     <description>
+///       Per-tick exceptions are caught, logged, and the loop continues.
+///       The first failure after a healthy stretch is logged at Warning
+///       with the full stack; subsequent consecutive failures collapse to
+///       Debug to keep the log readable. A successful tick after failures
+///       emits an Information line so operators know recovery happened.
+///     </description>
+///   </item>
+///   <item>
+///     <description>
+///       Anything other than cancellation or provider disposal that
+///       escapes the loop is logged at Critical and rethrown — the
+///       background service host will see it and the user will see
+///       diagnostics instead of silence.
+///     </description>
+///   </item>
+/// </list>
+/// </para>
+/// </summary>
 public sealed class RuntimeCoordinator(
     IInputSourceFactory inputSourceFactory,
     IOutputSinkFactory outputSinkFactory,
@@ -41,6 +75,17 @@ public sealed class RuntimeCoordinator(
 
             await ActivateProvidersAsync(activeProfile, stoppingToken);
 
+            logger.LogInformation(
+                "Runtime loop starting at {Hz} Hz (tick interval {IntervalMs:F2} ms) for profile {ProfileId}.",
+                Math.Clamp(activeProfile.PollingRateHz, 30, 1000),
+                interval.TotalMilliseconds,
+                activeProfile.Id);
+
+            // Counter for transient per-tick failures. We log every failure
+            // at Warning, but throttle the secondary "still failing" line so
+            // a stuck pad can't flood the file sink.
+            var consecutiveTickFailures = 0;
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 if (!ReferenceEquals(activeProfile, profileSession.CurrentProfile))
@@ -53,7 +98,10 @@ public sealed class RuntimeCoordinator(
 
                     if (logger.IsEnabled(LogLevel.Information))
                     {
-                        logger.LogInformation("Reloaded pipeline for profile {ProfileId}.", activeProfile.Id);
+                        logger.LogInformation(
+                            "Reloaded pipeline for profile {ProfileId} at {Hz} Hz.",
+                            activeProfile.Id,
+                            Math.Clamp(activeProfile.PollingRateHz, 30, 1000));
                     }
 
                     if (!string.Equals(previousProfile.InputProvider, activeProfile.InputProvider, StringComparison.OrdinalIgnoreCase) ||
@@ -65,14 +113,66 @@ public sealed class RuntimeCoordinator(
 
                 interval = GetPollingInterval(activeProfile.PollingRateHz);
 
-                var inputSource = currentInputSource ?? throw new InvalidOperationException("Input source is not initialized.");
-                var outputSink = currentOutputSink ?? throw new InvalidOperationException("Output sink is not initialized.");
-                var now = DateTimeOffset.UtcNow;
-                var physical = await inputSource.ReadAsync(stoppingToken);
-                var result = pipeline.Process(physical, now);
+                try
+                {
+                    var inputSource = currentInputSource ?? throw new InvalidOperationException("Input source is not initialized.");
+                    var outputSink = currentOutputSink ?? throw new InvalidOperationException("Output sink is not initialized.");
+                    var now = DateTimeOffset.UtcNow;
+                    var physical = await inputSource.ReadAsync(stoppingToken);
+                    var result = pipeline.Process(physical, now);
 
-                await outputSink.WriteAsync(result.VirtualSnapshot, stoppingToken);
-                snapshotStore.Update(inputSource.DisplayName, outputSink.DisplayName, result);
+                    await outputSink.WriteAsync(result.VirtualSnapshot, stoppingToken);
+                    snapshotStore.Update(inputSource.DisplayName, outputSink.DisplayName, result);
+
+                    if (consecutiveTickFailures > 0)
+                    {
+                        logger.LogInformation(
+                            "Runtime tick recovered after {FailureCount} consecutive failure(s).",
+                            consecutiveTickFailures);
+                        consecutiveTickFailures = 0;
+                    }
+                }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    // Outer catch will handle the cancellation message.
+                    throw;
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Provider was torn down out from under us (e.g. profile
+                    // switch in flight). Outer catch logs at Debug.
+                    throw;
+                }
+                catch (Exception exception)
+                {
+                    consecutiveTickFailures++;
+
+                    // First failure after a stretch of healthy ticks gets a
+                    // full Warning with stack; repeated failures collapse to
+                    // a Debug line so the log stays readable.
+                    if (consecutiveTickFailures == 1)
+                    {
+                        logger.LogWarning(
+                            exception,
+                            "Runtime tick failed (input={InputProvider}, output={OutputProvider}). " +
+                            "Continuing with empty frame; will log recovery once ticks succeed again.",
+                            currentInputSource?.DisplayName ?? "(none)",
+                            currentOutputSink?.DisplayName ?? "(none)");
+                    }
+                    else if (consecutiveTickFailures % 100 == 0)
+                    {
+                        logger.LogWarning(
+                            "Runtime tick still failing after {FailureCount} consecutive attempts. " +
+                            "Last error: {ErrorType}: {ErrorMessage}.",
+                            consecutiveTickFailures,
+                            exception.GetType().Name,
+                            exception.Message);
+                    }
+                    else
+                    {
+                        logger.LogDebug(exception, "Runtime tick failure #{FailureCount}.", consecutiveTickFailures);
+                    }
+                }
 
                 nextTickAt += interval;
                 var delay = nextTickAt - DateTimeOffset.UtcNow;
@@ -103,6 +203,16 @@ public sealed class RuntimeCoordinator(
         catch (ObjectDisposedException exception)
         {
             logger.LogDebug(exception, "Runtime coordinator observed provider disposal during shutdown.");
+        }
+        catch (Exception exception)
+        {
+            // Anything that isn't cancellation or disposal escaping the loop
+            // means the runtime has died unrecoverably. Log loudly so it
+            // shows up in support bundles.
+            logger.LogCritical(
+                exception,
+                "Runtime coordinator exited unexpectedly. The mapping pipeline is no longer running.");
+            throw;
         }
         finally
         {

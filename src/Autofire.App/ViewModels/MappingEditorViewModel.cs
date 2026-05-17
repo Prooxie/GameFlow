@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Input;
 using Autofire.Core.Models;
+using Autofire.Infrastructure.Localization;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 
@@ -13,14 +14,19 @@ namespace Autofire.App.ViewModels;
 public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
 {
     private readonly ILogger<MappingEditorViewModel> logger;
+    private readonly ILocalizationService? localization;
     private string? preferredSelectionKey;
     private RuleKindOption? selectedNewRuleKind;
     private MappingRuleViewModel? editingRule;
 
-    public MappingEditorViewModel(ILogger<MappingEditorViewModel> logger)
+    public MappingEditorViewModel(
+        ILogger<MappingEditorViewModel> logger,
+        ILocalizationService? localization = null)
     {
         this.logger = logger;
+        this.localization = localization;
 
+        RuleKindOptions = BuildRuleKindOptions();
         selectedNewRuleKind = RuleKindOptions.Count > 0 ? RuleKindOptions[0] : null;
 
         AddRuleCommand = new RelayCommand(AddRule);
@@ -32,9 +38,81 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
         CancelEditCommand = new RelayCommand(CancelEdit);
     }
 
+    /// <summary>
+    /// Forces a culture-aware rebuild of every label exposed by this
+    /// view-model (rule kind options + their descriptions, plus the
+    /// AXAML-bound editor labels declared near the bottom of the file).
+    /// Called by the hosting ShellViewModel from its culture-change
+    /// refresh path.
+    /// </summary>
+    public void RefreshLocalizedLabels()
+    {
+        var previousKind = SelectedNewRuleKind?.Kind;
+        RuleKindOptions = BuildRuleKindOptions();
+        OnPropertyChanged(nameof(RuleKindOptions));
+
+        if (previousKind is { } kind)
+        {
+            var match = RuleKindOptions.FirstOrDefault(o => o.Kind == kind);
+            if (match is not null)
+            {
+                SelectedNewRuleKind = match;
+            }
+        }
+
+        // Editor-form labels (defined further below).
+        OnPropertyChanged(nameof(AddRuleButtonLabel));
+        OnPropertyChanged(nameof(RuleNameLabel));
+        OnPropertyChanged(nameof(RuleTypeLabel));
+        OnPropertyChanged(nameof(RuleModeLabel));
+        OnPropertyChanged(nameof(SourceButtonLabel));
+        OnPropertyChanged(nameof(TargetButtonLabel));
+        OnPropertyChanged(nameof(SuppressSourceButtonLabel));
+        OnPropertyChanged(nameof(EnabledLabel));
+        OnPropertyChanged(nameof(DeadzoneLabel));
+        OnPropertyChanged(nameof(StoreScriptLabel));
+        OnPropertyChanged(nameof(SelectRuleToEditLabel));
+        OnPropertyChanged(nameof(OrUseAddRuleLabel));
+        OnPropertyChanged(nameof(SaveButtonLabel));
+        OnPropertyChanged(nameof(CancelButtonLabel));
+        OnPropertyChanged(nameof(MappingRulesHeaderLabel));
+    }
+
+    // ─── Localised labels for AXAML bindings ──────────────────────────────────
+
+    public string AddRuleButtonLabel          => Localized("MappingEditorAddRule",          "+ Add rule");
+    public string RuleNameLabel               => Localized("MappingEditorRuleName",         "RULE NAME");
+    public string RuleTypeLabel               => Localized("MappingEditorRuleType",         "RULE TYPE");
+    public string RuleModeLabel               => Localized("MappingEditorMode",             "MODE");
+    public string SourceButtonLabel           => Localized("MappingEditorSourceButton",     "SOURCE BUTTON");
+    public string TargetButtonLabel           => Localized("MappingEditorTargetButton",     "TARGET BUTTON");
+    public string SuppressSourceButtonLabel   => Localized("MappingEditorSuppressSource",   "Suppress source button");
+    public string EnabledLabel                => Localized("MappingEditorEnabled",          "Enabled");
+    public string DeadzoneLabel               => Localized("MappingEditorDeadzoneLabel",    "Deadzone and threshold");
+    public string StoreScriptLabel            => Localized("MappingEditorStoreScript",      "Store a script for the selected control. Runtime execution is a planned step.");
+    public string SelectRuleToEditLabel       => Localized("MappingEditorSelectRuleToEdit", "Select a rule to edit");
+    public string OrUseAddRuleLabel           => Localized("MappingEditorOrUseAddRule",     "Or use 'Add rule' to create a new mapping.");
+    public string SaveButtonLabel             => Localized("MappingEditorSaveButton",       "Save");
+    public string CancelButtonLabel           => Localized("MappingEditorCancelButton",     "Cancel");
+    public string MappingRulesHeaderLabel     => Localized("MappingEditorRulesHeader",      "MAPPING RULES");
+
+    /// <summary>
+    /// Internal helper: looks up <paramref name="key"/> via the optional
+    /// localization service and falls back to <paramref name="fallback"/>
+    /// if the service is null OR the key is missing.
+    /// </summary>
+    private string Localized(string key, string fallback)
+    {
+        if (localization is null) { return fallback; }
+        var hit = localization[key];
+        return string.IsNullOrEmpty(hit) || string.Equals(hit, key, StringComparison.Ordinal)
+            ? fallback
+            : hit;
+    }
+
     public ObservableCollection<MappingRuleViewModel> Rules { get; } = [];
 
-    public IReadOnlyList<RuleKindOption> RuleKindOptions { get; } = BuildRuleKindOptions();
+    public IReadOnlyList<RuleKindOption> RuleKindOptions { get; private set; }
 
     public RuleKindOption? SelectedNewRuleKind
     {
@@ -382,16 +460,34 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
             };
     }
 
-    private static IReadOnlyList<RuleKindOption> BuildRuleKindOptions()
+    private IReadOnlyList<RuleKindOption> BuildRuleKindOptions()
     {
         return
         [
-            new RuleKindOption(RuleKind.ButtonRemap, "Button Remap", "Route one button to another.", "#4F8CFF"),
-            new RuleKindOption(RuleKind.ButtonAutofire, "Button Autofire / Turbo", "Rapid-fire a button at a configurable rate.", "#F97316"),
-            new RuleKindOption(RuleKind.StickThreshold, "Stick Threshold", "Deadzone and threshold shaping for a stick.", "#10B981"),
-            new RuleKindOption(RuleKind.StickAutofire, "Stick Autofire", "Pulse one stick output from another stick.", "#A78BFA"),
-            new RuleKindOption(RuleKind.FreezeLastDirection, "Freeze Last Direction", "Hold the last observed stick direction while a button is held.", "#00D4FF"),
-            new RuleKindOption(RuleKind.Script, "Control Script", "Store script text for a specific control.", "#FACC15")
+            new RuleKindOption(RuleKind.ButtonRemap,
+                Localized("RuleKindButtonRemapLabel",            "Button Remap"),
+                Localized("RuleKindButtonRemapDescription",      "Route one button to another."),
+                "#4F8CFF"),
+            new RuleKindOption(RuleKind.ButtonAutofire,
+                Localized("RuleKindButtonAutofireLabel",         "Button Autofire / Turbo"),
+                Localized("RuleKindButtonAutofireDescription",   "Rapid-fire a button at a configurable rate."),
+                "#F97316"),
+            new RuleKindOption(RuleKind.StickThreshold,
+                Localized("RuleKindStickThresholdLabel",         "Stick Threshold"),
+                Localized("RuleKindStickThresholdDescription",   "Deadzone and threshold shaping for a stick."),
+                "#10B981"),
+            new RuleKindOption(RuleKind.StickAutofire,
+                Localized("RuleKindStickAutofireLabel",          "Stick Autofire"),
+                Localized("RuleKindStickAutofireDescription",    "Pulse one stick output from another stick."),
+                "#A78BFA"),
+            new RuleKindOption(RuleKind.FreezeLastDirection,
+                Localized("RuleKindFreezeLastDirectionLabel",    "Freeze Last Direction"),
+                Localized("RuleKindFreezeLastDirectionDescription", "Hold the last observed stick direction while a button is held."),
+                "#00D4FF"),
+            new RuleKindOption(RuleKind.Script,
+                Localized("RuleKindScriptLabel",                 "Control Script"),
+                Localized("RuleKindScriptDescription",           "Store script text for a specific control."),
+                "#FACC15")
         ];
     }
 

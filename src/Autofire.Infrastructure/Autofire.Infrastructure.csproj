@@ -16,6 +16,13 @@
     <PackageReference Include="OrchardCore.Localization.Core" />
     <PackageReference Include="SDL3-CS.Native" />
     <PackageReference Include="Nefarius.ViGEm.Client" />
+    <!--
+      Serilog is referenced for the theme engine (ThemeBootstrap,
+      ThemeJsonLoader, ThemeRegistry) which logs progress and parse
+      failures.  The package version is centrally pinned in
+      Directory.Packages.props so no Version attribute is needed.
+    -->
+    <PackageReference Include="Serilog" />
   </ItemGroup>
 
   <!--

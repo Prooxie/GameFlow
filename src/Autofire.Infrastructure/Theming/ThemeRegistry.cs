@@ -1,0 +1,263 @@
+using Autofire.Core.Enums;
+using Autofire.Infrastructure.Configuration;
+using Autofire.Infrastructure.Theming.Models;
+using Serilog;
+
+namespace Autofire.Infrastructure.Theming;
+
+/// <summary>
+/// Catalog entry for one installed theme. Keeps the parsed
+/// <see cref="ThemeDocument"/> alongside metadata used by the picker UI
+/// and the style-to-theme resolver.
+/// </summary>
+public sealed record InstalledTheme(
+    string Id,
+    string DisplayName,
+    string DirectoryPath,
+    ThemeDocument Document,
+    ControllerVisualStyle PreferredStyle);
+
+/// <summary>
+/// Discovers and caches every VSCView-compatible theme installed under
+/// <see cref="AppPaths.ThemesDirectory"/>. A theme is "installed" when a
+/// <c>theme.json</c> file exists inside its folder.
+///
+/// <para>
+/// The registry is the single source of truth that the UI consults when
+/// it needs to know "do we have a theme for this style?" — see
+/// <see cref="GetThemeForStyle"/>. When no theme is found the UI falls
+/// back to the existing programmatic XAML art, so a fresh install with
+/// no themes still works.
+/// </para>
+///
+/// <para>
+/// Discovery rules:
+/// </para>
+/// <list type="bullet">
+/// <item><b>Folder layout</b>: <c>{ThemesDirectory}/&lt;theme-id&gt;/theme.json</c>;</item>
+/// <item><b>Theme id</b>: folder name, lowercased, hyphen-separated;</item>
+/// <item><b>Style mapping</b>: deduced from the folder name — folders
+///   containing <c>xbox</c> map to <see cref="ControllerVisualStyle.Xbox"/>,
+///   <c>dualsense</c> / <c>ps5</c> map to PlayStation5, etc. Override by
+///   adding a <c>"controllerStyle"</c> key at the root of theme.json
+///   (extension to VSCView's schema; safely ignored by upstream tools).</item>
+/// </list>
+///
+/// <para>
+/// Registry contents are cached after the first <see cref="Refresh"/>
+/// call. <see cref="Refresh"/> is cheap (a couple of directory listings
+/// plus per-theme JSON parsing) and may be called whenever the user
+/// installs new themes — typically from the settings dialog.
+/// </para>
+/// </summary>
+public sealed class ThemeRegistry
+{
+    private readonly object syncRoot = new();
+    private IReadOnlyList<InstalledTheme> themes = [];
+
+    /// <summary>Every theme discovered by the last <see cref="Refresh"/> call.</summary>
+    public IReadOnlyList<InstalledTheme> Themes
+    {
+        get
+        {
+            lock (syncRoot)
+            {
+                return themes;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Re-scans the on-disk themes directory and reloads every theme.
+    /// Idempotent: safe to call as often as you like; the heavy parsing
+    /// only happens for themes whose <c>theme.json</c> exists.
+    ///
+    /// <para>
+    /// The walk is recursive so the on-disk layout can mirror VSCView's
+    /// own <c>&lt;controller-family&gt;/&lt;theme-name&gt;/theme.json</c>
+    /// convention (e.g. <c>Xbox Wireless Controller/Default/theme.json</c>
+    /// alongside the AL2009man asset pack's directory layout) or a
+    /// simpler flat <c>&lt;theme-id&gt;/theme.json</c> arrangement.
+    /// Every <c>theme.json</c> found in any descendant directory is
+    /// loaded as a separate theme; the theme id becomes the directory
+    /// path relative to the themes root with separators replaced by
+    /// hyphens.
+    /// </para>
+    /// </summary>
+    public void Refresh()
+    {
+        var dir = AppPaths.ThemesDirectory;
+
+        var loaded = new List<InstalledTheme>();
+        if (!Directory.Exists(dir))
+        {
+            // The directory is auto-created on AppPaths access, but
+            // defend anyway against pathological filesystem state.
+            Log.Debug("Themes directory does not exist: {Dir}", dir);
+        }
+        else
+        {
+            // Walk every theme.json file found under the themes root.
+            // EnumerateFiles with AllDirectories is cheap because the
+            // tree is shallow (1-3 levels at most) and the file count
+            // is tiny relative to a normal source repository.
+            foreach (var manifest in Directory.EnumerateFiles(
+                         dir, "theme.json", SearchOption.AllDirectories))
+            {
+                var sub = Path.GetDirectoryName(manifest);
+                if (string.IsNullOrEmpty(sub))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    // Pass the registry's known themes-root explicitly.
+                    // Without this the loader assumes "one directory
+                    // above the theme.json" — which is wrong for our
+                    // nested variant layout (themes/<style>/<variant>/
+                    // theme.json or deeper).
+                    var doc = ThemeJsonLoader.LoadFromFile(manifest, explicitThemesRoot: dir);
+
+                    // Build an id from the path of the theme directory
+                    // relative to the themes root, separators replaced
+                    // with hyphens. Keeps ids unique even when two
+                    // controllers happen to ship a folder called
+                    // "default".
+                    var relative = Path.GetRelativePath(dir, sub);
+                    var id = relative
+                        .Replace(Path.DirectorySeparatorChar, '-')
+                        .Replace(Path.AltDirectorySeparatorChar, '-')
+                        .ToLowerInvariant();
+
+                    loaded.Add(new InstalledTheme(
+                        Id: id,
+                        DisplayName: string.IsNullOrWhiteSpace(doc.Name)
+                            ? Path.GetFileName(sub) ?? id
+                            : doc.Name,
+                        DirectoryPath: sub,
+                        Document: doc,
+                        PreferredStyle: GuessStyleFromFolderName(relative)));
+                    Log.Information("Loaded theme '{Name}' from {Path}.", doc.Name, manifest);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex,
+                        "Could not load theme manifest {Path}; skipping.",
+                        manifest);
+                }
+            }
+        }
+
+        lock (syncRoot)
+        {
+            themes = loaded;
+        }
+    }
+
+    /// <summary>
+    /// Returns every installed theme whose
+    /// <see cref="InstalledTheme.PreferredStyle"/> matches
+    /// <paramref name="style"/>, sorted by display name. Empty list when
+    /// no theme is installed for the family. This is the picker source
+    /// for the per-controller theme/skin dropdown in the UI.
+    /// </summary>
+    public IReadOnlyList<InstalledTheme> GetThemesForStyle(ControllerVisualStyle style)
+    {
+        if (style is ControllerVisualStyle.None or ControllerVisualStyle.Auto)
+        {
+            return [];
+        }
+
+        lock (syncRoot)
+        {
+            var result = new List<InstalledTheme>();
+            foreach (var t in themes)
+            {
+                if (t.PreferredStyle == style)
+                {
+                    result.Add(t);
+                }
+            }
+            result.Sort(static (a, b) => string.Compare(
+                a.DisplayName, b.DisplayName, StringComparison.OrdinalIgnoreCase));
+            return result;
+        }
+    }
+
+    /// <summary>
+    /// Resolves a theme by its registry id (the lower-cased,
+    /// hyphen-separated relative path used as the dictionary key).
+    /// Returns <see langword="null"/> when the id is unknown — e.g.
+    /// when a profile referenced a theme that the user has since
+    /// uninstalled. Callers should fall back to
+    /// <see cref="GetThemeForStyle"/>.
+    /// </summary>
+    public InstalledTheme? GetThemeById(string? id)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return null;
+        }
+
+        lock (syncRoot)
+        {
+            foreach (var t in themes)
+            {
+                if (string.Equals(t.Id, id, StringComparison.OrdinalIgnoreCase))
+                {
+                    return t;
+                }
+            }
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Returns the first installed theme whose <see cref="InstalledTheme.PreferredStyle"/>
+    /// matches <paramref name="style"/>, or <see langword="null"/> when no
+    /// theme is installed for that family. The caller is expected to fall
+    /// back to programmatic XAML art on a null return.
+    /// </summary>
+    public InstalledTheme? GetThemeForStyle(ControllerVisualStyle style)
+    {
+        var all = GetThemesForStyle(style);
+        return all.Count > 0 ? all[0] : null;
+    }
+
+    /// <summary>
+    /// Maps a theme folder name to its preferred controller style.
+    /// Matches are deliberately permissive — case-insensitive
+    /// substring tests cover the common naming patterns (<c>xbox-series-x</c>,
+    /// <c>ps5-default</c>, <c>dualshock-4-jet-black</c>, etc.).
+    /// </summary>
+    private static ControllerVisualStyle GuessStyleFromFolderName(string folder)
+    {
+        var name = folder.ToLowerInvariant();
+        if (name.Contains("ps5", StringComparison.Ordinal) ||
+            name.Contains("dualsense", StringComparison.Ordinal) ||
+            name.Contains("playstation5", StringComparison.Ordinal))
+        {
+            return ControllerVisualStyle.PlayStation5;
+        }
+        if (name.Contains("ps4", StringComparison.Ordinal) ||
+            name.Contains("ds4", StringComparison.Ordinal) ||
+            name.Contains("dualshock4", StringComparison.Ordinal) ||
+            name.Contains("dualshock-4", StringComparison.Ordinal) ||
+            name.Contains("playstation4", StringComparison.Ordinal))
+        {
+            return ControllerVisualStyle.PlayStation4;
+        }
+        if (name.Contains("ps3", StringComparison.Ordinal) ||
+            name.Contains("dualshock3", StringComparison.Ordinal) ||
+            name.Contains("playstation3", StringComparison.Ordinal))
+        {
+            return ControllerVisualStyle.PlayStation3;
+        }
+        if (name.Contains("xbox", StringComparison.Ordinal))
+        {
+            return ControllerVisualStyle.Xbox;
+        }
+        return ControllerVisualStyle.Auto;
+    }
+}

@@ -110,7 +110,7 @@
           </StackPanel>
         </StackPanel>
 
-        <!-- Empty right slot (refresh button removed — auto-refresh at 33 ms) -->
+        <!-- Right slot reserved for future quick-actions -->
         <Border Grid.Column="2" Width="1" />
       </Grid>
     </Border>
@@ -292,14 +292,67 @@
                             Command="{Binding ApplyDashboardPreferencesCommand}"
                             Content="{Binding ApplyDashboardSettingsButtonLabel}" />
                   </Grid>
+
+                  <!--
+                      Controller panel background picker.
+
+                      The dark default reads well against the app shell.
+                      Chroma green / chroma blue are ready-made for OBS
+                      colour-keying so streamers can mask the panel
+                      onto a webcam feed. Transparent lets the window
+                      background show through directly.
+
+                      Persisted via Apply Dashboard Preferences alongside
+                      the other Ui prefs.
+                  -->
+                  <StackPanel Orientation="Horizontal" Margin="0,8,0,0" Spacing="8">
+                    <TextBlock VerticalAlignment="Center" FontSize="11"
+                               Foreground="{DynamicResource AppForegroundDim}"
+                               Text="Controller panel background:" />
+                    <ComboBox MinWidth="200" FontSize="11"
+                              ItemsSource="{Binding PanelBackgroundOptions}"
+                              SelectedItem="{Binding SelectedPanelBackgroundOption, Mode=TwoWay}">
+                      <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                          <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Border Width="16" Height="16" CornerRadius="3"
+                                    BorderBrush="#33FFFFFF" BorderThickness="1"
+                                    Background="{Binding BrushValue}" />
+                            <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                          </StackPanel>
+                        </DataTemplate>
+                      </ComboBox.ItemTemplate>
+                    </ComboBox>
+                  </StackPanel>
                 </StackPanel>
               </Border>
 
+              <!--
+                  When emulation is off (Preview / None output), the
+                  virtual panel hides and the physical panel takes the
+                  full row width — matching design point 5 (only the
+                  source controller is meaningful when nothing's being
+                  emitted).
+
+                  Each surface is wrapped in a Border that keeps the
+                  shell's DataContext inherited; we override DataContext
+                  only on the inner ControllerSurface so IsVisible
+                  resolves against the shell while the surface's own
+                  bindings resolve against its per-panel VM.
+              -->
               <Grid ColumnDefinitions="*,*" ColumnSpacing="14">
-                <views:ControllerSurface Grid.Column="0"
-                                         DataContext="{Binding PhysicalController}" />
-                <views:ControllerSurface Grid.Column="1"
-                                         DataContext="{Binding VirtualController}" />
+                <Border Grid.Column="0" Grid.ColumnSpan="2"
+                        IsVisible="{Binding IsEmulationInactive}">
+                  <views:ControllerSurface DataContext="{Binding PhysicalController}" />
+                </Border>
+                <Border Grid.Column="0"
+                        IsVisible="{Binding IsEmulationActive}">
+                  <views:ControllerSurface DataContext="{Binding PhysicalController}" />
+                </Border>
+                <Border Grid.Column="1"
+                        IsVisible="{Binding IsEmulationActive}">
+                  <views:ControllerSurface DataContext="{Binding VirtualController}" />
+                </Border>
               </Grid>
 
             </StackPanel>
@@ -561,26 +614,56 @@
 
       </TabControl>
 
-      <!-- Sidebar footer -->
-      <Border Width="210"
-              HorizontalAlignment="Left"
-              VerticalAlignment="Bottom"
-              Padding="16,12"
-              Background="{DynamicResource AppSurface1}"
-              BorderBrush="{DynamicResource AppBorder0}"
-              BorderThickness="0,1,0,0">
-        <StackPanel Spacing="2">
-          <TextBlock Text="Made by Proxy Darkness"
-                     FontSize="10" Foreground="{DynamicResource AppForegroundDim}"
-                     HorizontalAlignment="Left" />
-          <TextBlock Text="{x:Static vm:ShellViewModel.AppVersion}"
-                     FontSize="10" Foreground="{DynamicResource AppForegroundDim}"
-                     HorizontalAlignment="Left" />
-          <TextBlock Text="Copyright © 2026"
-                     FontSize="10" Foreground="{DynamicResource AppForegroundDim}"
-                     HorizontalAlignment="Left" />
-        </StackPanel>
-      </Border>
+      <!-- Sidebar footer (Options button + credits) -->
+      <StackPanel Width="210"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Bottom"
+                  Spacing="0">
+
+        <!-- Options entry — visually a left-nav item, but invokes the
+             OpenSettings command instead of switching tabs. Matches the
+             50px height and 22px text margin of the real TabItems above
+             so it lines up with them visually. -->
+        <Button Command="{Binding OpenSettingsCommand}"
+                Width="210" Height="50"
+                HorizontalAlignment="Left"
+                HorizontalContentAlignment="Left"
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="0"
+                Cursor="Hand">
+          <Panel Width="210" Height="50">
+            <Border Width="3" HorizontalAlignment="Left"
+                    VerticalAlignment="Stretch"
+                    Background="{DynamicResource AppAccent}"
+                    Opacity="0" CornerRadius="0,3,3,0" />
+            <StackPanel Orientation="Horizontal" Spacing="14"
+                        Margin="22,0,0,0" VerticalAlignment="Center">
+              <TextBlock Text="⚙" FontSize="15" VerticalAlignment="Center" />
+              <TextBlock Text="{Binding OpenSettingsButtonLabel}"
+                         FontWeight="Medium" VerticalAlignment="Center" />
+            </StackPanel>
+          </Panel>
+        </Button>
+
+        <!-- Credits -->
+        <Border Padding="16,12"
+                Background="{DynamicResource AppSurface1}"
+                BorderBrush="{DynamicResource AppBorder0}"
+                BorderThickness="0,1,0,0">
+          <StackPanel Spacing="2">
+            <TextBlock Text="Made by Proxy Darkness"
+                       FontSize="10" Foreground="{DynamicResource AppForegroundDim}"
+                       HorizontalAlignment="Left" />
+            <TextBlock Text="{x:Static vm:ShellViewModel.AppVersion}"
+                       FontSize="10" Foreground="{DynamicResource AppForegroundDim}"
+                       HorizontalAlignment="Left" />
+            <TextBlock Text="Copyright © 2026"
+                       FontSize="10" Foreground="{DynamicResource AppForegroundDim}"
+                       HorizontalAlignment="Left" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
 
     </Grid>
   </Grid>

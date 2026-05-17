@@ -29,12 +29,31 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**\*" />
+    <AvaloniaResource Include="Assets\**\*" Exclude="Assets\**\*.md" />
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Localization\**\*.po">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
+    <!--
+      Bundled themes ship next to the executable so `ThemeBootstrap`
+      can copy them into %LocalAppData%\AutofireNext\themes on first
+      run. The Link metadata mirrors the source tree under
+      bin/<config>/<tfm>/themes/ regardless of how deep the file lives
+      in the repo, so the runtime path is stable across solution
+      layouts.
+
+      Every PNG, JSON, SVG and TXT under the repo-level `themes/`
+      folder is included. `.gitkeep` sentinels are excluded so empty
+      placeholder subfolders don't trail through to the build output.
+    -->
+    <Content Include="..\..\themes\**\*"
+             Exclude="..\..\themes\**\.gitkeep">
+      <Link>themes\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
     </Content>
   </ItemGroup>
 </Project>

@@ -5,6 +5,21 @@ namespace Autofire.Core.Models;
 public sealed record ControllerSnapshot
 {
     public string DeviceName { get; init; } = string.Empty;
+
+    /// <summary>
+    /// USB vendor id of the connected hardware (or <c>0</c> when not
+    /// applicable / not yet known). Populated by hardware-aware input
+    /// sources so the visual layer can pick a controller skin
+    /// deterministically by VID/PID rather than by parsing the
+    /// device-name string.
+    /// </summary>
+    public ushort VendorId { get; init; }
+
+    /// <summary>
+    /// USB product id. See <see cref="VendorId"/>.
+    /// </summary>
+    public ushort ProductId { get; init; }
+
     public StickVector LeftStick { get; init; } = StickVector.Zero;
     public StickVector RightStick { get; init; } = StickVector.Zero;
     public float LeftTrigger { get; init; }

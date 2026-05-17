@@ -29,7 +29,7 @@
               BorderBrush="{DynamicResource AppBorder0}" BorderThickness="1">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
           <StackPanel Spacing="4">
-            <TextBlock Text="MAPPING RULES" FontSize="10" FontWeight="Bold"
+            <TextBlock Text="{Binding MappingRulesHeaderLabel}" FontSize="10" FontWeight="Bold"
                        Foreground="{DynamicResource AppForegroundDim}" LetterSpacing="1" />
             <ComboBox ItemsSource="{Binding RuleKindOptions}"
                       SelectedItem="{Binding SelectedNewRuleKind}"
@@ -37,7 +37,7 @@
           </StackPanel>
           <Button Grid.Column="1" Classes="primary" VerticalAlignment="Bottom"
                   Padding="16,10" Command="{Binding AddRuleCommand}"
-                  Content="+ Add rule" />
+                  Content="{Binding AddRuleButtonLabel}" />
         </Grid>
       </Border>
 
@@ -116,10 +116,10 @@
         <StackPanel Spacing="12" HorizontalAlignment="Center">
           <TextBlock Text="⊞" FontSize="32" Foreground="{DynamicResource AppBorder1}"
                      HorizontalAlignment="Center" />
-          <TextBlock Text="Select a rule to edit" FontSize="14"
+          <TextBlock Text="{Binding SelectRuleToEditLabel}" FontSize="14"
                      FontWeight="SemiBold" Foreground="{DynamicResource AppForegroundDim}"
                      HorizontalAlignment="Center" />
-          <TextBlock Text="Or use 'Add rule' to create a new mapping."
+          <TextBlock Text="{Binding OrUseAddRuleLabel}"
                      FontSize="12" Foreground="{DynamicResource AppBorder1}"
                      TextWrapping="Wrap" HorizontalAlignment="Center"
                      TextAlignment="Center" MaxWidth="240" />
@@ -155,20 +155,20 @@
 
             <!-- ── Common fields ──────────────────────────────────── -->
             <StackPanel Spacing="5">
-              <TextBlock Text="RULE NAME" FontSize="10" FontWeight="SemiBold"
+              <TextBlock Text="{Binding #EditorRoot.DataContext.RuleNameLabel}" FontSize="10" FontWeight="SemiBold"
                          Foreground="{DynamicResource AppForegroundDim}" LetterSpacing="0.8" />
               <TextBox Text="{Binding Name}" />
             </StackPanel>
 
             <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="10">
               <StackPanel Grid.Column="0" Spacing="5">
-                <TextBlock Text="RULE TYPE" FontSize="10" FontWeight="SemiBold"
+                <TextBlock Text="{Binding #EditorRoot.DataContext.RuleTypeLabel}" FontSize="10" FontWeight="SemiBold"
                            Foreground="{DynamicResource AppForegroundDim}" LetterSpacing="0.8" />
                 <ComboBox ItemsSource="{Binding KindOptions}"
                           SelectedItem="{Binding SelectedKindOption}" />
               </StackPanel>
               <StackPanel Grid.Column="1" Spacing="5">
-                <TextBlock Text="MODE" FontSize="10" FontWeight="SemiBold"
+                <TextBlock Text="{Binding #EditorRoot.DataContext.RuleModeLabel}" FontSize="10" FontWeight="SemiBold"
                            Foreground="{DynamicResource AppForegroundDim}" LetterSpacing="0.8" />
                 <ComboBox ItemsSource="{Binding ModeOptions}"
                           SelectedItem="{Binding SelectedModeOption}" />
@@ -183,20 +183,20 @@
               <Border Height="1" Background="{DynamicResource AppBorder0}" />
               <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                 <StackPanel Grid.Column="0" Spacing="5">
-                  <TextBlock Text="SOURCE BUTTON" FontSize="10" FontWeight="SemiBold"
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.SourceButtonLabel}" FontSize="10" FontWeight="SemiBold"
                              Foreground="#4F8CFF" LetterSpacing="0.8" />
                   <ComboBox ItemsSource="{Binding ButtonOptions}"
                             SelectedItem="{Binding SelectedSourceButtonOption}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Spacing="5">
-                  <TextBlock Text="TARGET BUTTON" FontSize="10" FontWeight="SemiBold"
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.TargetButtonLabel}" FontSize="10" FontWeight="SemiBold"
                              Foreground="#4F8CFF" LetterSpacing="0.8" />
                   <ComboBox ItemsSource="{Binding ButtonOptions}"
                             SelectedItem="{Binding SelectedTargetButtonOption}" />
                 </StackPanel>
               </Grid>
               <CheckBox IsChecked="{Binding SuppressSourceButton}"
-                        Content="Suppress source button (block original)" />
+                        Content="{Binding #EditorRoot.DataContext.SuppressSourceButtonLabel}" />
             </StackPanel>
 
             <!-- ── Button autofire fields ──────────────────────────── -->
@@ -217,7 +217,7 @@
                 </StackPanel>
               </Grid>
               <CheckBox IsChecked="{Binding SuppressSourceButton}"
-                        Content="Suppress source button (block original)" />
+                        Content="{Binding #EditorRoot.DataContext.SuppressSourceButtonLabel}" />
             </StackPanel>
 
             <!-- ── Stick threshold fields ──────────────────────────── -->
@@ -449,13 +449,13 @@
                       HorizontalAlignment="Stretch"
                       HorizontalContentAlignment="Center"
                       Command="{Binding #EditorRoot.DataContext.SaveEditCommand, FallbackValue={x:Null}}"
-                      Content="Save rule" />
+                      Content="{Binding #EditorRoot.DataContext.SaveButtonLabel}" />
               <Button Grid.Column="1"
                       Classes="ghost"
                       Padding="16,11"
                       HorizontalContentAlignment="Center"
                       Command="{Binding #EditorRoot.DataContext.CancelEditCommand, FallbackValue={x:Null}}"
-                      Content="Cancel" />
+                      Content="{Binding #EditorRoot.DataContext.CancelButtonLabel}" />
             </Grid>
 
           </StackPanel>

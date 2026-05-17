@@ -1,4 +1,8 @@
 using Autofire.Infrastructure.Configuration;
+using Autofire.Infrastructure.Runtime.OpenXInput;
+using Autofire.Infrastructure.Runtime.Ps3;
+using Autofire.Infrastructure.Runtime.WindowsMidi;
+using Autofire.Infrastructure.Runtime.X360ce;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,12 +24,18 @@ public sealed class DefaultInputSourceFactory(
 
         return normalized switch
         {
-            "none" => ActivatorUtilities.CreateInstance<NullInputSource>(serviceProvider, "No live input", "Live input is disabled for this profile."),
-            "demo" => ActivatorUtilities.CreateInstance<DemoInputSource>(serviceProvider, "DemoInput (preview)"),
-            "xinput" => CreateXInputOrFallback(),
+            "none"        => ActivatorUtilities.CreateInstance<NullInputSource>(serviceProvider, "No live input", "Live input is disabled for this profile."),
+            "demo"        => ActivatorUtilities.CreateInstance<DemoInputSource>(serviceProvider, "DemoInput (preview)"),
+            "xinput"      => CreateXInputOrFallback(),
             "sdl" or "sdlgamepad" or "sdl3" or "sdl-unified" or "sdl-unified-gamepad" => CreateSdlOrFallback(),
-            "gameinput" => CreateGameInputOrFallback(),
-            _ => ActivatorUtilities.CreateInstance<NullInputSource>(serviceProvider, "No live input", $"Unknown input provider '{normalized}'.")
+            "gameinput"   => CreateGameInputOrFallback(),
+            // ─── Step 6 scaffolds — see ScaffoldedInputSourceBase ─────
+            "x360ce"      => ActivatorUtilities.CreateInstance<X360ceInputSource>(serviceProvider),
+            "openxinput"  => ActivatorUtilities.CreateInstance<OpenXInputInputSource>(serviceProvider),
+            "ps3" or "dualshock3" => ActivatorUtilities.CreateInstance<Ps3InputSource>(serviceProvider),
+            "windows-midi" or "winmidi" or "midi" => ActivatorUtilities.CreateInstance<WindowsMidiInputSource>(serviceProvider),
+            // ──────────────────────────────────────────────────────────
+            _             => ActivatorUtilities.CreateInstance<NullInputSource>(serviceProvider, "No live input", $"Unknown input provider '{normalized}'.")
         };
     }
 

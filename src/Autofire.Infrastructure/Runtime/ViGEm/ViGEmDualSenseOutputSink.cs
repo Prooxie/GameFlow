@@ -41,11 +41,23 @@ public sealed class ViGEmDualSenseOutputSink : IOutputSink
     public string DisplayName => "ViGEm DualSense";
 
     /// <summary>
-    /// VID/PID of the Sony DualSense (PS5) controller, which is what ViGEm
-    /// Bus advertises this virtual device as. Used by the runtime to hide
-    /// this sink from the input source dropdown while it is active.
+    /// VID/PID of the device that ViGEm Bus actually emits when this sink
+    /// is active. ViGEm has no native DualSense target, so under the hood
+    /// the sink creates a DualShock 4 controller (Sony VID 0x054C,
+    /// PID 0x09CC) and Windows enumerates the virtual device as a DS4 —
+    /// not a DS5. The catalog filter that hides the active output device
+    /// from the input source dropdown matches on this signature, so it
+    /// must reflect what's actually on the bus, not the DS5 hardware
+    /// that the sink is conceptually emulating.
     /// </summary>
-    public (ushort Vid, ushort Pid)? OwnedHardwareSignature => (0x054C, 0x0CE6);
+    /// <remarks>
+    /// Was previously set to (0x054C, 0x0CE6), the real DualSense PID,
+    /// which never matched the emitted device — that is what caused the
+    /// "DS5 output appears as a usable input source" / recursive-loop
+    /// bug. When a future Nefarius.ViGEm.Client release ships a native
+    /// DualSense target, switch this back to (0x054C, 0x0CE6).
+    /// </remarks>
+    public (ushort Vid, ushort Pid)? OwnedHardwareSignature => (0x054C, 0x09CC);
 
     public ValueTask WriteAsync(ControllerSnapshot snapshot, CancellationToken cancellationToken)
     {

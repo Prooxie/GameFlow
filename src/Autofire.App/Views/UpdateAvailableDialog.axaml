@@ -1,0 +1,111 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Autofire.App.Views.UpdateAvailableDialog"
+        Width="600"
+        SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#050B12"
+        Title="Update available">
+
+  <Border Margin="0"
+          ClipToBounds="True"
+          Background="#07101D"
+          BorderBrush="#0F2035"
+          BorderThickness="1">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="24,20,24,20" RowSpacing="14">
+
+      <!-- Header -->
+      <StackPanel Grid.Row="0" Spacing="6">
+        <TextBlock Text="A new version of Autofire Next is available"
+                   FontSize="18"
+                   FontWeight="Bold"
+                   Foreground="White" />
+        <TextBlock Name="VersionLine"
+                   FontSize="12.5"
+                   Foreground="#94A3B8"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+
+      <!-- Release name (often the tag, sometimes a friendly title) -->
+      <Border Grid.Row="1"
+              Padding="14,12"
+              Background="#0A1628"
+              BorderBrush="#1E3A5A"
+              BorderThickness="1"
+              CornerRadius="6">
+        <TextBlock Name="ReleaseName"
+                   FontSize="13"
+                   FontWeight="SemiBold"
+                   Foreground="#22DEFF"
+                   TextWrapping="Wrap" />
+      </Border>
+
+      <!-- Release notes link -->
+      <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="6">
+        <TextBlock Text="Read the release notes:"
+                   FontSize="12"
+                   Foreground="#94A3B8"
+                   VerticalAlignment="Center" />
+        <TextBlock Name="ReleaseNotesLinkText"
+                   Text="open in browser"
+                   FontSize="12"
+                   Foreground="#22DEFF"
+                   TextDecorations="Underline"
+                   Cursor="Hand"
+                   VerticalAlignment="Center"
+                   PointerPressed="OnReleaseNotesClick" />
+      </StackPanel>
+
+      <!-- Optional progress bar shown during download -->
+      <StackPanel Grid.Row="3"
+                  Name="ProgressArea"
+                  IsVisible="False"
+                  Spacing="6">
+        <TextBlock Name="ProgressLine"
+                   FontSize="11.5"
+                   Foreground="#94A3B8" />
+        <ProgressBar Name="DownloadProgress"
+                     Minimum="0"
+                     Maximum="1"
+                     Height="6"
+                     Background="#0A1828"
+                     CornerRadius="3" />
+      </StackPanel>
+
+      <!-- Footer buttons -->
+      <Grid Grid.Row="4" ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="10">
+        <Button Grid.Column="0"
+                Content="Skip this update"
+                Click="OnSkipClick"
+                Padding="14,8"
+                Background="#0A1628"
+                Foreground="White"
+                BorderBrush="#1E3A5A"
+                BorderThickness="1" />
+
+        <Button Grid.Column="1"
+                Content="Don't ask again"
+                Click="OnDontAskClick"
+                Padding="14,8"
+                Background="#0A1628"
+                Foreground="White"
+                BorderBrush="#1E3A5A"
+                BorderThickness="1" />
+
+        <Button Grid.Column="3"
+                Name="InstallButton"
+                Content="Download &amp; install"
+                IsDefault="True"
+                Click="OnInstallClick"
+                Padding="16,8"
+                Background="#00D4FF"
+                Foreground="#040C16"
+                BorderThickness="0"
+                FontWeight="SemiBold" />
+      </Grid>
+
+    </Grid>
+  </Border>
+</Window>

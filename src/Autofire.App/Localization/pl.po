@@ -326,3 +326,364 @@ msgstr "Edytuj regułę: {0}"
 
 msgid "MappingEditorRuleFallbackName"
 msgstr "Nienazwana reguła"
+
+msgid "DeleteProfileButton"
+msgstr "Usuń profil"
+
+msgid "DeleteProfileBlockedLastOne"
+msgstr "Nie można usunąć: to jedyny profil."
+
+msgid "ProfileDeletedStatus"
+msgstr "Profil {0} usunięty."
+
+
+msgid "ThemeLabel"
+msgstr "Motyw"
+
+msgid "OpenSettingsButtonLabel"
+msgstr "Opcje"
+
+msgid "SettingsDialogTitle"
+msgstr "Opcje"
+
+msgid "SettingsDialogDiagnosticsHeader"
+msgstr "Diagnostyka"
+
+msgid "SettingsDialogLogLevelLabel"
+msgstr "Poziom rejestrowania"
+
+msgid "SettingsDialogLogLevelHint"
+msgstr "Poziomy Trace i Debug są bardzo szczegółowe; używaj ich tylko podczas diagnozowania problemu."
+
+msgid "SettingsDialogWindowHeader"
+msgstr "Okno"
+
+msgid "SettingsDialogRememberWindowSizeLabel"
+msgstr "Zapamiętaj rozmiar okna między uruchomieniami"
+
+msgid "SettingsDialogWindowWidthLabel"
+msgstr "Szerokość"
+
+msgid "SettingsDialogWindowHeightLabel"
+msgstr "Wysokość"
+
+msgid "SettingsDialogPollingHeader"
+msgstr "Częstotliwość odpytywania"
+
+msgid "SettingsDialogDashboardRefreshLabel"
+msgstr "Odświeżanie pulpitu"
+
+msgid "SettingsDialogPollingRateLabel"
+msgstr "Częstotliwość odpytywania"
+
+msgid "SettingsDialogPollingHint"
+msgstr "Pozostaw puste, aby użyć wartości domyślnych profilu. Zakres: 30–1000 Hz."
+
+msgid "SettingsDialogPathsHeader"
+msgstr "Ścieżki przechowywania"
+
+msgid "SettingsDialogProfilesDirectoryLabel"
+msgstr "Katalog profili"
+
+msgid "SettingsDialogLogsDirectoryLabel"
+msgstr "Katalog dzienników"
+
+msgid "SettingsDialogLogsPathHint"
+msgstr "Zmiana katalogu dzienników zostanie zastosowana po następnym uruchomieniu."
+
+msgid "SettingsDialogBrowseButton"
+msgstr "Przeglądaj…"
+
+msgid "SettingsDialogStartupHeader"
+msgstr "Uruchamianie"
+
+msgid "SettingsDialogCheckUpdatesLabel"
+msgstr "Sprawdzaj aktualizacje przy uruchomieniu"
+
+msgid "SettingsDialogCheckRequirementsLabel"
+msgstr "Sprawdzaj wymagania (ViGEm Bus itp.) przy uruchomieniu"
+
+msgid "SettingsDialogApplyButton"
+msgstr "Zapisz"
+
+msgid "SettingsDialogCancelButton"
+msgstr "Anuluj"
+
+msgid "SettingsDialogRestoreDefaultsButton"
+msgstr "Przywróć domyślne"
+
+msgid "SettingsDialogAppliedStatus"
+msgstr "Ustawienia zapisane."
+
+msgid "SettingsDialogRestoredStatus"
+msgstr "Przywrócono domyślne — kliknij Zapisz, aby zastosować."
+
+msgid "SettingsDialogApplyFailedStatus"
+msgstr "Nie można zapisać ustawień: {0}"
+
+
+msgid "ThemeNameCyberBlue"
+msgstr "Cybernetyczny niebieski"
+
+msgid "ThemeNameMidnightPurple"
+msgstr "Północny fiolet"
+
+msgid "ThemeNameNeonGreen"
+msgstr "Neonowa zieleń"
+
+msgid "ThemeNameSolarRed"
+msgstr "Słoneczna czerwień"
+
+msgid "ThemeNameLight"
+msgstr "Jasny"
+
+msgid "InputProviderXInputLabel"
+msgstr "XInput"
+
+msgid "InputProviderXInputDescription"
+msgstr "Natywny sterownik XInput Windows. Wykrywa do 4 kontrolerów zgodnych z Xbox."
+
+msgid "InputProviderSdlLabel"
+msgstr "Wejście uniwersalne SDL3"
+
+msgid "InputProviderSdlDescription"
+msgstr "Wieloplatformowe mapowanie gamepada SDL3 z zapasowym trybem joysticka."
+
+msgid "InputProviderDemoLabel"
+msgstr "Podgląd demo"
+
+msgid "InputProviderDemoDescription"
+msgstr "Animowane źródło podglądu do testowania UI — bez sprzętu."
+
+msgid "InputProviderNoneLabel"
+msgstr "Brak wejścia"
+
+msgid "InputProviderNoneDescription"
+msgstr "Wyłącza wejście na żywo i pozostawia panel w spoczynku."
+
+msgid "OutputProviderViGEmXbox360Label"
+msgstr "ViGEm Xbox 360"
+
+msgid "OutputProviderViGEmXbox360Description"
+msgstr "Wirtualny kontroler Xbox 360 przez ViGEm Bus. Wymaga sterownika ViGEm Bus."
+
+msgid "OutputProviderViGEmDs4Label"
+msgstr "ViGEm DualShock 4"
+
+msgid "OutputProviderViGEmDs4Description"
+msgstr "Wirtualny kontroler DualShock 4 przez ViGEm Bus. Wymaga sterownika ViGEm Bus."
+
+msgid "OutputProviderViGEmDs5Label"
+msgstr "ViGEm DualSense (DS5)"
+
+msgid "OutputProviderViGEmDs5Description"
+msgstr "Wirtualny kontroler DualSense przez ViGEm Bus. Wymaga ViGEm Bus v1.22+."
+
+msgid "OutputProviderPreviewLabel"
+msgstr "Tylko podgląd"
+
+msgid "OutputProviderPreviewDescription"
+msgstr "Wyświetla przetworzone wyjście w panelu bez tworzenia wirtualnego urządzenia."
+
+msgid "ControllerStyleAuto"
+msgstr "Auto"
+
+msgid "ControllerStyleXbox"
+msgstr "Xbox"
+
+msgid "ControllerStylePlayStation4"
+msgstr "PlayStation 4"
+
+msgid "ControllerStylePlayStation5"
+msgstr "PlayStation 5"
+
+msgid "ControllerStyleMinimal"
+msgstr "Minimalny"
+
+
+msgid "StyleLabelXbox"
+msgstr "Układ Xbox"
+
+msgid "StyleLabelPlayStation4"
+msgstr "Układ DualShock 4"
+
+msgid "StyleLabelPlayStation5"
+msgstr "Układ DualSense"
+
+msgid "StyleLabelMinimal"
+msgstr "Minimalna obudowa"
+
+msgid "StyleLabelAuto"
+msgstr "Układ automatyczny"
+
+msgid "DiagLogsLabel"
+msgstr "Dzienniki"
+
+msgid "DiagLastInputFrameLabel"
+msgstr "Ostatnia ramka wejścia"
+
+msgid "DiagNoDataYetLabel"
+msgstr "brak danych"
+
+msgid "DiagDashboardRefreshLabel"
+msgstr "Odświeżanie panelu"
+
+msgid "DiagHzTargetFormat"
+msgstr "cel {0} Hz"
+
+msgid "DiagInputProviderRequestedLabel"
+msgstr "Dostawca wejścia (żądany)"
+
+msgid "DiagInputProviderEffectiveLabel"
+msgstr "Dostawca wejścia (efektywny)"
+
+msgid "DiagOutputProviderLabel"
+msgstr "Dostawca wyjścia"
+
+msgid "DiagViGEmEnabledLabel"
+msgstr "ViGEm włączony"
+
+msgid "DiagControllersDetectedLabel"
+msgstr "Wykryte kontrolery"
+
+msgid "DiagProviderStatusLabel"
+msgstr "Stan dostawcy"
+
+msgid "DiagExperimentalGameInputLabel"
+msgstr "Eksperymentalny GameInput"
+
+msgid "RuntimeNoteDemoActive"
+msgstr "Aktywny podgląd demo. Panel animuje bez sprzętu."
+
+msgid "RuntimeNoteXInputActive"
+msgstr "XInput aktywny. Wykrywane są tylko kontrolery zgodne z XInput (klasa Xbox)."
+
+msgid "RuntimeNoteSdlActive"
+msgstr "SDL3 uniwersalne wejście aktywne. Używa standardowych mapowań gamepada z zapasowym trybem joysticka."
+
+msgid "RuntimeNoteLiveInputDisabled"
+msgstr "Wejście na żywo wyłączone dla tego profilu."
+
+msgid "RuleKindButtonRemapLabel"
+msgstr "Przemapowanie przycisku"
+
+msgid "RuleKindButtonRemapDescription"
+msgstr "Przekierowanie jednego przycisku na inny."
+
+msgid "RuleKindButtonAutofireLabel"
+msgstr "Autofire / Turbo przycisku"
+
+msgid "RuleKindButtonAutofireDescription"
+msgstr "Szybki ogień przycisku z konfigurowalną częstotliwością."
+
+msgid "RuleKindStickThresholdLabel"
+msgstr "Próg gałki"
+
+msgid "RuleKindStickThresholdDescription"
+msgstr "Kształtowanie martwej strefy i progu dla gałki."
+
+msgid "RuleKindStickAutofireLabel"
+msgstr "Autofire gałki"
+
+msgid "RuleKindStickAutofireDescription"
+msgstr "Pulsacja wyjścia jednej gałki z drugiej."
+
+msgid "RuleKindFreezeLastDirectionLabel"
+msgstr "Zamroź ostatni kierunek"
+
+msgid "RuleKindFreezeLastDirectionDescription"
+msgstr "Trzyma ostatni obserwowany kierunek gałki, gdy przycisk jest wciśnięty."
+
+msgid "RuleKindScriptLabel"
+msgstr "Skrypt sterowania"
+
+msgid "RuleKindScriptDescription"
+msgstr "Przechowywanie tekstu skryptu dla konkretnej kontroli."
+
+msgid "MappingEditorAddRule"
+msgstr "+ Dodaj regułę"
+
+msgid "MappingEditorRuleName"
+msgstr "NAZWA REGUŁY"
+
+msgid "MappingEditorRuleType"
+msgstr "TYP REGUŁY"
+
+msgid "MappingEditorMode"
+msgstr "TRYB"
+
+msgid "MappingEditorSourceButton"
+msgstr "PRZYCISK ŹRÓDŁOWY"
+
+msgid "MappingEditorTargetButton"
+msgstr "PRZYCISK DOCELOWY"
+
+msgid "MappingEditorSuppressSource"
+msgstr "Tłumić przycisk źródłowy (blokować oryginał)"
+
+msgid "MappingEditorEnabled"
+msgstr "Włączone"
+
+msgid "MappingEditorDeadzoneLabel"
+msgstr "Martwa strefa i próg"
+
+msgid "MappingEditorStoreScript"
+msgstr "Zapisz skrypt dla wybranej kontroli. Wykonanie w czasie pracy jest planowane."
+
+msgid "MappingEditorSelectRuleToEdit"
+msgstr "Wybierz regułę do edycji"
+
+msgid "MappingEditorOrUseAddRule"
+msgstr "Lub użyj „Dodaj regułę", aby utworzyć nowe mapowanie."
+
+msgid "MappingEditorSaveButton"
+msgstr "Zapisz regułę"
+
+msgid "MappingEditorCancelButton"
+msgstr "Anuluj"
+
+msgid "MappingEditorRulesHeader"
+msgstr "REGUŁY MAPOWANIA"
+
+
+msgid "InputProviderOpenXInputLabel"
+msgstr "OpenXInput"
+
+msgid "InputProviderOpenXInputDescription"
+msgstr "Zamiennik XInput obsługujący więcej niż 4 kontrolery. Szkielet — wymaga OpenXinput1_4.dll obok aplikacji."
+
+msgid "InputProviderX360ceLabel"
+msgstr "x360ce"
+
+msgid "InputProviderX360ceDescription"
+msgstr "Tłumacz DirectInput na XInput dla starszych / nie-XInput padów. Szkielet — wymaga biblioteki uruchomieniowej x360ce."
+
+msgid "InputProviderPs3Label"
+msgstr "DualShock 3 (PS3)"
+
+msgid "InputProviderPs3Description"
+msgstr "Odczytuje sparowany DualShock 3 przez DsHidMini lub libusb. Szkielet — wymaga sterownika DsHidMini."
+
+msgid "InputProviderWindowsMidiLabel"
+msgstr "Wejście MIDI Windows"
+
+msgid "InputProviderWindowsMidiDescription"
+msgstr "Mapuje przychodzące zdarzenia MIDI na wejścia wirtualnego gamepada. Szkielet — wymaga Windows MIDI Services i mapowania w profilu."
+
+msgid "OutputProviderVJoyLabel"
+msgstr "Wirtualny joystick vJoy"
+
+msgid "OutputProviderVJoyDescription"
+msgstr "Ogólny wirtualny joystick (do 8 osi / 128 przycisków). Szkielet — wymaga sterownika vJoy."
+
+msgid "OutputProviderHidMaestroLabel"
+msgstr "Wirtualne HID HidMaestro"
+
+msgid "OutputProviderHidMaestroDescription"
+msgstr "Niestandardowa emulacja urządzenia HID z dowolnymi deskryptorami. Szkielet — wymaga sterownika HidMaestro."
+
+msgid "OutputProviderWindowsMidiOutLabel"
+msgstr "Wyjście MIDI Windows"
+
+msgid "OutputProviderWindowsMidiOutDescription"
+msgstr "Emituje zdarzenia MIDI z aktywności gamepada. Szkielet — wymaga Windows MIDI Services i mapowania w profilu."

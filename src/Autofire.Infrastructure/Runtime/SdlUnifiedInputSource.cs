@@ -199,6 +199,8 @@ public sealed class SdlUnifiedInputSource : IInputSource
         return new ControllerSnapshot
         {
             DeviceName = device.DisplayName,
+            VendorId   = SdlInterop.GetGamepadVendor(device.Handle),
+            ProductId  = SdlInterop.GetGamepadProduct(device.Handle),
             LeftStick = new StickVector(
                 NormalizeSignedAxis(SdlInterop.GetGamepadAxis(device.Handle, SdlInterop.GamepadAxis.LeftX)),
                 -NormalizeSignedAxis(SdlInterop.GetGamepadAxis(device.Handle, SdlInterop.GamepadAxis.LeftY))).Clamp(),
@@ -304,6 +306,8 @@ public sealed class SdlUnifiedInputSource : IInputSource
         return new ControllerSnapshot
         {
             DeviceName = device.DisplayName,
+            VendorId   = SdlInterop.GetJoystickVendor(device.Handle),
+            ProductId  = SdlInterop.GetJoystickProduct(device.Handle),
             LeftStick = new StickVector(
                 axisCount > 0 ? NormalizeSignedAxis(SdlInterop.GetJoystickAxis(device.Handle, 0)) : 0f,
                 axisCount > 1 ? -NormalizeSignedAxis(SdlInterop.GetJoystickAxis(device.Handle, 1)) : 0f).Clamp(),

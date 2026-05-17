@@ -93,10 +93,18 @@ public static class AppThemeService
         ["AppPrimaryBtn"]   = "#FFFFFF"
     };
 
+    /// <summary>
+    /// Applies the supplied theme to the running Avalonia app: toggles the
+    /// requested theme variant (Dark / Light) and overwrites the accent
+    /// colour entries in the merged resource dictionary.
+    /// </summary>
+    /// <param name="kind">The theme to apply. Unknown values fall back to
+    /// <see cref="AppThemeKind.CyberBlue"/>.</param>
     public static void Apply(AppThemeKind kind)
     {
         if (Application.Current is null)
         {
+            Serilog.Log.Debug("AppThemeService.Apply called with no active Application — ignoring.");
             return;
         }
 
@@ -115,12 +123,34 @@ public static class AppThemeService
             : ThemeVariant.Dark;
 
         // Inject our accent colors into the application resource dictionary
+        var applied = 0;
+        var skipped = 0;
         foreach (var (key, hex) in palette)
         {
             if (Color.TryParse(hex, out var color))
             {
                 Application.Current.Resources[key] = new SolidColorBrush(color);
+                applied++;
+            }
+            else
+            {
+                // A bad hex string in the palette table is a developer error,
+                // not a runtime one — surface it at Debug so it shows up in
+                // verbose logs but doesn't pollute Information.
+                Serilog.Log.Debug(
+                    "Skipping unparseable colour {ColourValue} for resource key {ResourceKey} in theme {Theme}.",
+                    hex,
+                    key,
+                    kind);
+                skipped++;
             }
         }
+
+        Serilog.Log.Information(
+            "Applied theme {Theme} ({Applied}/{Total} colours; {Skipped} skipped).",
+            kind,
+            applied,
+            palette.Count,
+            skipped);
     }
 }

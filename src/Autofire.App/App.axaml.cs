@@ -1,6 +1,8 @@
 using Autofire.App.Bootstrap;
+using Autofire.App.Startup;
 using Autofire.App.ViewModels;
 using Autofire.App.Views;
+using Autofire.Infrastructure.Configuration;
 using Autofire.Infrastructure.Localization;
 using Autofire.Infrastructure.Profiles;
 using Avalonia;
@@ -47,6 +49,38 @@ public partial class App : Application
             host = HostBuilderFactory.Create(Environment.GetCommandLineArgs()).Build();
             await host.StartAsync();
 
+            // Load persisted user settings BEFORE ProfileSession initialises:
+            // the loaded settings push path overrides into AppPathOverrides,
+            // and ProfileSession reads AppPaths.ProfilesDirectory on its
+            // first call. They must be in the right order or the first-run
+            // profile lands in the wrong directory.
+            var userSettings = host.Services.GetRequiredService<IUserSettingsService>();
+            await userSettings.InitializeAsync();
+
+            // First-run / repair: mirror the bundled themes folder from the
+            // build output into the user-writable %LocalAppData%\AutofireNext\themes
+            // location. Runs every launch; ThemeBootstrap skips style folders
+            // that already exist, so manual edits survive. Without this call
+            // a user who deletes their themes folder ends up with the empty
+            // "no theme installed for this style" message because the
+            // registry has nothing to scan.
+            try
+            {
+                var installed = Autofire.Infrastructure.Theming.ThemeBootstrap
+                    .EnsureBundledThemesInstalled();
+                if (installed > 0)
+                {
+                    Serilog.Log.Information(
+                        "ThemeBootstrap installed {Count} bundled theme(s) into LocalAppData.",
+                        installed);
+                }
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Warning(ex,
+                    "ThemeBootstrap failed to install bundled themes; the controller surface may render empty.");
+            }
+
             var profileSession   = host.Services.GetRequiredService<ProfileSession>();
             await profileSession.EnsureInitializedAsync();
 
@@ -68,6 +102,72 @@ public partial class App : Application
                 splashWindow.Close();
 
                 desktop.Exit += DesktopOnExit;
+            });
+
+            // Fire startup checks (requirements + updates) AFTER the shell
+            // window is fully realised, on a background task.
+            //
+            // Why the wait: if the task races and reaches `desktop.MainWindow`
+            // before the shell window has finished loading, the dialogs we
+            // spawn parent against a not-yet-ready window. That manifests as
+            // "[Control] PlatformImpl is null, couldn't handle input." spam
+            // and an exit code of 0xFFFFFFFF (-1) when the window then closes
+            // out from under the still-pending dialog.
+            //
+            // We hook the Loaded event on the UI thread, complete a TCS from
+            // it, and have the background task await that TCS before
+            // dispatching anything dialog-shaped to the UI thread.
+            var shellLoaded = new TaskCompletionSource();
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (desktop.MainWindow is { } shell)
+                {
+                    if (shell.IsLoaded)
+                    {
+                        shellLoaded.TrySetResult();
+                    }
+                    else
+                    {
+                        shell.Loaded += (_, _) => shellLoaded.TrySetResult();
+                    }
+                }
+                else
+                {
+                    // No main window at all (extremely unusual): mark loaded
+                    // anyway so the background task can fall through and the
+                    // ownerWindow null-check below kicks in.
+                    shellLoaded.TrySetResult();
+                }
+            });
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await shellLoaded.Task.ConfigureAwait(false);
+
+                    var coordinator = host!.Services.GetRequiredService<StartupChecksCoordinator>();
+                    var ownerWindow = await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        // Re-check on UI thread — the user may have closed the
+                        // window in the gap between Loaded firing and us
+                        // getting back here.
+                        var w = desktop.MainWindow;
+                        return (w is null || !w.IsVisible) ? null : w;
+                    });
+
+                    if (ownerWindow is null)
+                    {
+                        Log.Debug("Startup checks skipped: main window is no longer available.");
+                        return;
+                    }
+
+                    await coordinator.RunAsync(ownerWindow);
+                }
+                catch (Exception exception)
+                {
+                    Log.Warning(exception, "Startup checks task failed.");
+                }
             });
         }
         catch (OperationCanceledException)
@@ -145,6 +245,16 @@ public partial class App : Application
 
             // Flush Serilog after everything else is torn down.
             Log.CloseAndFlush();
+
+            // Some input/output providers (SDL, XInput, ViGEm wrappers)
+            // park foreground threads we can't reach from managed code,
+            // and they're notorious for keeping the process alive after
+            // the UI has closed. Now that cleanup is done — host stopped,
+            // host disposed, logs flushed — force a hard exit so the
+            // user doesn't need to kill the process from a terminal.
+            // Environment.Exit terminates the process regardless of any
+            // remaining non-background threads.
+            Environment.Exit(0);
         }
     }
 }

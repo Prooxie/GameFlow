@@ -326,3 +326,364 @@ msgstr "Modifica regola: {0}"
 
 msgid "MappingEditorRuleFallbackName"
 msgstr "Regola senza nome"
+
+msgid "DeleteProfileButton"
+msgstr "Elimina profilo"
+
+msgid "DeleteProfileBlockedLastOne"
+msgstr "Impossibile eliminare: è l'unico profilo."
+
+msgid "ProfileDeletedStatus"
+msgstr "Profilo {0} eliminato."
+
+
+msgid "ThemeLabel"
+msgstr "Tema"
+
+msgid "OpenSettingsButtonLabel"
+msgstr "Opzioni"
+
+msgid "SettingsDialogTitle"
+msgstr "Opzioni"
+
+msgid "SettingsDialogDiagnosticsHeader"
+msgstr "Diagnostica"
+
+msgid "SettingsDialogLogLevelLabel"
+msgstr "Livello di registrazione"
+
+msgid "SettingsDialogLogLevelHint"
+msgstr "I livelli Trace e Debug sono molto dettagliati; usali solo per indagare un problema."
+
+msgid "SettingsDialogWindowHeader"
+msgstr "Finestra"
+
+msgid "SettingsDialogRememberWindowSizeLabel"
+msgstr "Ricorda dimensione della finestra tra le sessioni"
+
+msgid "SettingsDialogWindowWidthLabel"
+msgstr "Larghezza"
+
+msgid "SettingsDialogWindowHeightLabel"
+msgstr "Altezza"
+
+msgid "SettingsDialogPollingHeader"
+msgstr "Frequenza di polling"
+
+msgid "SettingsDialogDashboardRefreshLabel"
+msgstr "Aggiornamento dashboard"
+
+msgid "SettingsDialogPollingRateLabel"
+msgstr "Frequenza polling"
+
+msgid "SettingsDialogPollingHint"
+msgstr "Lasciare vuoto per usare i valori predefiniti del profilo. Intervallo valido: 30–1000 Hz."
+
+msgid "SettingsDialogPathsHeader"
+msgstr "Percorsi di archiviazione"
+
+msgid "SettingsDialogProfilesDirectoryLabel"
+msgstr "Cartella dei profili"
+
+msgid "SettingsDialogLogsDirectoryLabel"
+msgstr "Cartella dei log"
+
+msgid "SettingsDialogLogsPathHint"
+msgstr "La modifica della cartella dei log ha effetto al prossimo avvio."
+
+msgid "SettingsDialogBrowseButton"
+msgstr "Sfoglia…"
+
+msgid "SettingsDialogStartupHeader"
+msgstr "Avvio"
+
+msgid "SettingsDialogCheckUpdatesLabel"
+msgstr "Verifica aggiornamenti all'avvio"
+
+msgid "SettingsDialogCheckRequirementsLabel"
+msgstr "Verifica requisiti (ViGEm Bus, ecc.) all'avvio"
+
+msgid "SettingsDialogApplyButton"
+msgstr "Salva"
+
+msgid "SettingsDialogCancelButton"
+msgstr "Annulla"
+
+msgid "SettingsDialogRestoreDefaultsButton"
+msgstr "Ripristina valori predefiniti"
+
+msgid "SettingsDialogAppliedStatus"
+msgstr "Impostazioni salvate."
+
+msgid "SettingsDialogRestoredStatus"
+msgstr "Valori predefiniti ripristinati — clicca Salva per applicare."
+
+msgid "SettingsDialogApplyFailedStatus"
+msgstr "Impossibile salvare le impostazioni: {0}"
+
+
+msgid "ThemeNameCyberBlue"
+msgstr "Blu cibernetico"
+
+msgid "ThemeNameMidnightPurple"
+msgstr "Viola notte"
+
+msgid "ThemeNameNeonGreen"
+msgstr "Verde neon"
+
+msgid "ThemeNameSolarRed"
+msgstr "Rosso solare"
+
+msgid "ThemeNameLight"
+msgstr "Chiaro"
+
+msgid "InputProviderXInputLabel"
+msgstr "XInput"
+
+msgid "InputProviderXInputDescription"
+msgstr "Driver XInput nativo di Windows. Rileva fino a 4 controller compatibili Xbox."
+
+msgid "InputProviderSdlLabel"
+msgstr "Input unificato SDL3"
+
+msgid "InputProviderSdlDescription"
+msgstr "Mappatura gamepad SDL3 multipiattaforma con fallback joystick."
+
+msgid "InputProviderDemoLabel"
+msgstr "Anteprima demo"
+
+msgid "InputProviderDemoDescription"
+msgstr "Sorgente di anteprima animata per testare l'UI — non serve hardware."
+
+msgid "InputProviderNoneLabel"
+msgstr "Nessun input live"
+
+msgid "InputProviderNoneDescription"
+msgstr "Disattiva l'input live e lascia la dashboard inattiva."
+
+msgid "OutputProviderViGEmXbox360Label"
+msgstr "ViGEm Xbox 360"
+
+msgid "OutputProviderViGEmXbox360Description"
+msgstr "Controller Xbox 360 virtuale tramite ViGEm Bus. Richiede il driver ViGEm Bus."
+
+msgid "OutputProviderViGEmDs4Label"
+msgstr "ViGEm DualShock 4"
+
+msgid "OutputProviderViGEmDs4Description"
+msgstr "Controller DualShock 4 virtuale tramite ViGEm Bus. Richiede il driver ViGEm Bus."
+
+msgid "OutputProviderViGEmDs5Label"
+msgstr "ViGEm DualSense (DS5)"
+
+msgid "OutputProviderViGEmDs5Description"
+msgstr "Controller DualSense virtuale tramite ViGEm Bus. Richiede ViGEm Bus v1.22+."
+
+msgid "OutputProviderPreviewLabel"
+msgstr "Solo anteprima"
+
+msgid "OutputProviderPreviewDescription"
+msgstr "Mostra l'output trasformato nella dashboard senza creare un dispositivo virtuale."
+
+msgid "ControllerStyleAuto"
+msgstr "Automatico"
+
+msgid "ControllerStyleXbox"
+msgstr "Xbox"
+
+msgid "ControllerStylePlayStation4"
+msgstr "PlayStation 4"
+
+msgid "ControllerStylePlayStation5"
+msgstr "PlayStation 5"
+
+msgid "ControllerStyleMinimal"
+msgstr "Minimale"
+
+
+msgid "StyleLabelXbox"
+msgstr "Layout Xbox"
+
+msgid "StyleLabelPlayStation4"
+msgstr "Layout DualShock 4"
+
+msgid "StyleLabelPlayStation5"
+msgstr "Layout DualSense"
+
+msgid "StyleLabelMinimal"
+msgstr "Scocca minimale"
+
+msgid "StyleLabelAuto"
+msgstr "Layout automatico"
+
+msgid "DiagLogsLabel"
+msgstr "Log"
+
+msgid "DiagLastInputFrameLabel"
+msgstr "Ultimo frame di input"
+
+msgid "DiagNoDataYetLabel"
+msgstr "nessun dato ancora"
+
+msgid "DiagDashboardRefreshLabel"
+msgstr "Aggiornamento dashboard"
+
+msgid "DiagHzTargetFormat"
+msgstr "{0} Hz target"
+
+msgid "DiagInputProviderRequestedLabel"
+msgstr "Provider di input (richiesto)"
+
+msgid "DiagInputProviderEffectiveLabel"
+msgstr "Provider di input (effettivo)"
+
+msgid "DiagOutputProviderLabel"
+msgstr "Provider di output"
+
+msgid "DiagViGEmEnabledLabel"
+msgstr "ViGEm abilitato"
+
+msgid "DiagControllersDetectedLabel"
+msgstr "Controller rilevati"
+
+msgid "DiagProviderStatusLabel"
+msgstr "Stato del provider"
+
+msgid "DiagExperimentalGameInputLabel"
+msgstr "GameInput sperimentale"
+
+msgid "RuntimeNoteDemoActive"
+msgstr "L'anteprima demo è attiva. La dashboard si anima senza hardware."
+
+msgid "RuntimeNoteXInputActive"
+msgstr "XInput è attivo. Vengono rilevati solo i controller compatibili XInput (classe Xbox)."
+
+msgid "RuntimeNoteSdlActive"
+msgstr "L'input unificato SDL3 è attivo. Usa mappature gamepad standard con fallback joystick."
+
+msgid "RuntimeNoteLiveInputDisabled"
+msgstr "L'input live è disabilitato per questo profilo."
+
+msgid "RuleKindButtonRemapLabel"
+msgstr "Rimappatura tasto"
+
+msgid "RuleKindButtonRemapDescription"
+msgstr "Reindirizzare un tasto a un altro."
+
+msgid "RuleKindButtonAutofireLabel"
+msgstr "Autofire / Turbo tasto"
+
+msgid "RuleKindButtonAutofireDescription"
+msgstr "Fuoco rapido di un tasto a una velocità configurabile."
+
+msgid "RuleKindStickThresholdLabel"
+msgstr "Soglia stick"
+
+msgid "RuleKindStickThresholdDescription"
+msgstr "Modellazione della zona morta e della soglia per uno stick."
+
+msgid "RuleKindStickAutofireLabel"
+msgstr "Autofire stick"
+
+msgid "RuleKindStickAutofireDescription"
+msgstr "Pulsare l'output di uno stick da un altro stick."
+
+msgid "RuleKindFreezeLastDirectionLabel"
+msgstr "Congela ultima direzione"
+
+msgid "RuleKindFreezeLastDirectionDescription"
+msgstr "Mantiene l'ultima direzione dello stick osservata mentre un tasto è premuto."
+
+msgid "RuleKindScriptLabel"
+msgstr "Script di controllo"
+
+msgid "RuleKindScriptDescription"
+msgstr "Memorizza il testo dello script per un controllo specifico."
+
+msgid "MappingEditorAddRule"
+msgstr "+ Aggiungi regola"
+
+msgid "MappingEditorRuleName"
+msgstr "NOME REGOLA"
+
+msgid "MappingEditorRuleType"
+msgstr "TIPO DI REGOLA"
+
+msgid "MappingEditorMode"
+msgstr "MODALITÀ"
+
+msgid "MappingEditorSourceButton"
+msgstr "TASTO SORGENTE"
+
+msgid "MappingEditorTargetButton"
+msgstr "TASTO DESTINAZIONE"
+
+msgid "MappingEditorSuppressSource"
+msgstr "Sopprimi tasto sorgente (blocca originale)"
+
+msgid "MappingEditorEnabled"
+msgstr "Abilitato"
+
+msgid "MappingEditorDeadzoneLabel"
+msgstr "Zona morta e soglia"
+
+msgid "MappingEditorStoreScript"
+msgstr "Memorizza uno script per il controllo selezionato. L'esecuzione runtime è pianificata."
+
+msgid "MappingEditorSelectRuleToEdit"
+msgstr "Seleziona una regola da modificare"
+
+msgid "MappingEditorOrUseAddRule"
+msgstr "Oppure usa 'Aggiungi regola' per creare una nuova associazione."
+
+msgid "MappingEditorSaveButton"
+msgstr "Salva regola"
+
+msgid "MappingEditorCancelButton"
+msgstr "Annulla"
+
+msgid "MappingEditorRulesHeader"
+msgstr "REGOLE DI MAPPATURA"
+
+
+msgid "InputProviderOpenXInputLabel"
+msgstr "OpenXInput"
+
+msgid "InputProviderOpenXInputDescription"
+msgstr "Sostituzione di XInput con supporto per più di 4 controller. Bozza — richiede OpenXinput1_4.dll accanto all'applicazione."
+
+msgid "InputProviderX360ceLabel"
+msgstr "x360ce"
+
+msgid "InputProviderX360ceDescription"
+msgstr "Traduttore da DirectInput a XInput per controller obsoleti / non-XInput. Bozza — richiede DLL runtime x360ce."
+
+msgid "InputProviderPs3Label"
+msgstr "DualShock 3 (PS3)"
+
+msgid "InputProviderPs3Description"
+msgstr "Legge un DualShock 3 accoppiato tramite DsHidMini o libusb. Bozza — richiede driver DsHidMini."
+
+msgid "InputProviderWindowsMidiLabel"
+msgstr "Ingresso MIDI Windows"
+
+msgid "InputProviderWindowsMidiDescription"
+msgstr "Mappa gli eventi MIDI in arrivo su input di gamepad virtuale. Bozza — richiede Windows MIDI Services e una mappatura del profilo."
+
+msgid "OutputProviderVJoyLabel"
+msgstr "Joystick virtuale vJoy"
+
+msgid "OutputProviderVJoyDescription"
+msgstr "Joystick virtuale generico (fino a 8 assi / 128 pulsanti). Bozza — richiede driver vJoy."
+
+msgid "OutputProviderHidMaestroLabel"
+msgstr "HID virtuale HidMaestro"
+
+msgid "OutputProviderHidMaestroDescription"
+msgstr "Emulazione HID personalizzata con descrittori arbitrari. Bozza — richiede driver HidMaestro."
+
+msgid "OutputProviderWindowsMidiOutLabel"
+msgstr "Uscita MIDI Windows"
+
+msgid "OutputProviderWindowsMidiOutDescription"
+msgstr "Emette eventi MIDI dall'attività del gamepad. Bozza — richiede Windows MIDI Services e una mappatura del profilo."
