@@ -34,6 +34,14 @@ public sealed partial class SettingsDialogViewModel : ObservableObject
     private readonly ILocalizationService localization;
     private readonly ILogger<SettingsDialogViewModel> logger;
 
+    /// <summary>
+    /// Optional back-reference to the <see cref="ShellViewModel"/> so the
+    /// Settings dialog can reuse the shell's existing Language + Theme
+    /// bindings (no duplication of apply/persist logic). Set by
+    /// <c>OpenSettingsAsync</c> just before <c>ShowDialog</c>.
+    /// </summary>
+    public ShellViewModel? Shell { get; set; }
+
     /// <summary>Log levels offered by the dialog dropdown, in order.</summary>
     public IReadOnlyList<LogLevel> AvailableLogLevels { get; } =
     [
@@ -125,7 +133,68 @@ public sealed partial class SettingsDialogViewModel : ObservableObject
         this.localization = localization ?? throw new ArgumentNullException(nameof(localization));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
+        // Subscribe to culture changes so the dialog's labels follow
+        // the user's language pick while the dialog is open. Every
+        // localized label here is a computed-on-demand property
+        // (=> localization["..."]), so we re-fire OnPropertyChanged
+        // for each one when the culture changes — that's the signal
+        // Avalonia's bindings need to re-call the getter and pick up
+        // the new culture's translation.
+        this.localization.CultureChanged += OnCultureChanged;
+
+        // Diagnostic: capture the ambient UI culture and a sample
+        // resolved label at construction time. If the user reports the
+        // dialog is "stuck in the startup language", this single line
+        // tells us which half of the system to blame:
+        //   • culture == new + label == translated  → binding/render bug
+        //   • culture == new + label == English      → PO lookup / fallback
+        //   • culture == startup                     → SetCulture isn't
+        //     reaching this thread's ambient culture before construction
+        logger.LogInformation(
+            "SettingsDialog VM constructed. CurrentUICulture={Culture}, ILocalizationService.CurrentCulture={SvcCulture}, sample TitleLabel='{Title}'.",
+            System.Globalization.CultureInfo.CurrentUICulture.Name,
+            localization.CurrentCulture,
+            localization["SettingsDialogTitle"]);
+
         Reload();
+    }
+
+    private void OnCultureChanged(object? sender, EventArgs e)
+    {
+        OnPropertyChanged(nameof(TitleLabel));
+        OnPropertyChanged(nameof(DiagnosticsHeaderLabel));
+        OnPropertyChanged(nameof(LogLevelLabel));
+        OnPropertyChanged(nameof(LogLevelHintLabel));
+        OnPropertyChanged(nameof(WindowHeaderLabel));
+        OnPropertyChanged(nameof(RememberWindowSizeLabel));
+        OnPropertyChanged(nameof(WindowWidthLabel));
+        OnPropertyChanged(nameof(WindowHeightLabel));
+        OnPropertyChanged(nameof(PollingHeaderLabel));
+        OnPropertyChanged(nameof(DashboardRefreshLabel));
+        OnPropertyChanged(nameof(PollingRateLabel));
+        OnPropertyChanged(nameof(PollingHintLabel));
+        OnPropertyChanged(nameof(PathsHeaderLabel));
+        OnPropertyChanged(nameof(ProfilesDirectoryLabel));
+        OnPropertyChanged(nameof(LogsDirectoryLabel));
+        OnPropertyChanged(nameof(LogsPathHintLabel));
+        OnPropertyChanged(nameof(BrowseButtonLabel));
+        OnPropertyChanged(nameof(StartupHeaderLabel));
+        OnPropertyChanged(nameof(CheckUpdatesLabel));
+        OnPropertyChanged(nameof(CheckRequirementsLabel));
+        OnPropertyChanged(nameof(ApplyButtonLabel));
+        OnPropertyChanged(nameof(CancelButtonLabel));
+        OnPropertyChanged(nameof(RestoreDefaultsButtonLabel));
+    }
+
+    /// <summary>
+    /// Unsubscribes from <see cref="ILocalizationService.CultureChanged"/>.
+    /// Called by the dialog's <c>Closed</c> handler so a long-lived
+    /// localization service doesn't hold this short-lived view-model
+    /// alive via the event handler.
+    /// </summary>
+    public void Dispose()
+    {
+        localization.CultureChanged -= OnCultureChanged;
     }
 
     /// <summary>

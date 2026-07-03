@@ -170,13 +170,29 @@
 
   <!-- Button.danger -->
   <Style Selector="Button.danger">
-    <Setter Property="Background" Value="#170808" />
-    <Setter Property="Foreground" Value="#FCA5A5" />
-    <Setter Property="BorderBrush" Value="#7F1D1D" />
+    <Setter Property="Background" Value="{DynamicResource Semantic.DangerSoft}" />
+    <Setter Property="Foreground" Value="{DynamicResource Semantic.Danger}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Semantic.Danger}" />
   </Style>
   <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
-    <Setter Property="Background" Value="#200E0E" />
-    <Setter Property="BorderBrush" Value="#991B1B" />
+    <Setter Property="Background" Value="{DynamicResource Semantic.DangerSoft}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Semantic.Danger}" />
+  </Style>
+
+  <!-- ── List selection follows the app accent (theme-swapped) ─────── -->
+  <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppAccentSoft}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AppAccent}" />
+    <Setter Property="BorderThickness" Value="0,0,0,0" />
+  </Style>
+  <Style Selector="ListBoxItem:selected:focus /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppAccentSoft}" />
+  </Style>
+  <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppAccentSoft}" />
+  </Style>
+  <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppSurface2}" />
   </Style>
 
   <!-- ── TabControl ───────────────────────────────────────────────── -->

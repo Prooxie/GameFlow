@@ -70,6 +70,47 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(SuppressSourceButtonLabel));
         OnPropertyChanged(nameof(EnabledLabel));
         OnPropertyChanged(nameof(DeadzoneLabel));
+        OnPropertyChanged(nameof(SectionTriggerButtonLabel));
+        OnPropertyChanged(nameof(SectionTriggerButtonHoldLabel));
+        OnPropertyChanged(nameof(SectionOutputButtonLabel));
+        OnPropertyChanged(nameof(SectionSourceStickLabel));
+        OnPropertyChanged(nameof(SectionTargetStickLabel));
+        OnPropertyChanged(nameof(SectionCaptureStickLabel));
+        OnPropertyChanged(nameof(SectionOutputStickLabel));
+        OnPropertyChanged(nameof(SectionDeadzoneLabel));
+        OnPropertyChanged(nameof(SectionFullAtLabel));
+        OnPropertyChanged(nameof(SectionActivationDeadzoneLabel));
+        OnPropertyChanged(nameof(SectionActivationFullAtLabel));
+        OnPropertyChanged(nameof(SectionActivationButtonLabel));
+        OnPropertyChanged(nameof(SectionBlendModeLabel));
+        OnPropertyChanged(nameof(SectionSequenceStepsLabel));
+        OnPropertyChanged(nameof(SectionStepTargetLabel));
+        OnPropertyChanged(nameof(SectionScriptLabel));
+        OnPropertyChanged(nameof(SectionTargetControlKeyLabel));
+        OnPropertyChanged(nameof(SuppressRawAfterShapingLabel));
+        OnPropertyChanged(nameof(SuppressSourceStickOutputLabel));
+        OnPropertyChanged(nameof(SuppressSourceInputStoredLabel));
+        OnPropertyChanged(nameof(SuppressActivationWhileFreezingLabel));
+        OnPropertyChanged(nameof(SuppressCapturedWhileFrozenLabel));
+        OnPropertyChanged(nameof(PulseWhileFrozenLabel));
+        OnPropertyChanged(nameof(EditButtonLabel));
+        OnPropertyChanged(nameof(DeleteButtonLabel));
+        OnPropertyChanged(nameof(AddStepLabel));
+        OnPropertyChanged(nameof(NoStepsYetLabel));
+        OnPropertyChanged(nameof(HintDeadzoneLabel));
+        OnPropertyChanged(nameof(HintFullAtLabel));
+        OnPropertyChanged(nameof(HoldMsLabel));
+        OnPropertyChanged(nameof(ReleaseMsLabel));
+        OnPropertyChanged(nameof(DelayMsLabel));
+        OnPropertyChanged(nameof(SectionTriggerButtonToggleLabel));
+        OnPropertyChanged(nameof(SectionRulesToToggleLabel));
+        OnPropertyChanged(nameof(ToggleHintLabel));
+        OnPropertyChanged(nameof(NoOtherRulesLabel));
+        OnPropertyChanged(nameof(SectionTimingLabel));
+        OnPropertyChanged(nameof(TimingHoldLabel));
+        OnPropertyChanged(nameof(TimingReleaseLabel));
+        OnPropertyChanged(nameof(HintHoldLabel));
+        OnPropertyChanged(nameof(HintReleaseLabel));
         OnPropertyChanged(nameof(StoreScriptLabel));
         OnPropertyChanged(nameof(SelectRuleToEditLabel));
         OnPropertyChanged(nameof(OrUseAddRuleLabel));
@@ -95,6 +136,49 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
     public string SaveButtonLabel             => Localized("MappingEditorSaveButton",       "Save");
     public string CancelButtonLabel           => Localized("MappingEditorCancelButton",     "Cancel");
     public string MappingRulesHeaderLabel     => Localized("MappingEditorRulesHeader",      "MAPPING RULES");
+
+    // ── Section / checkbox labels for the rule editors ──
+    public string SectionTriggerButtonLabel => Localized("MEV_SectionTriggerButton", "TRIGGER BUTTON");
+    public string SectionTriggerButtonHoldLabel => Localized("MEV_SectionTriggerButtonHold", "TRIGGER BUTTON (hold to loop)");
+    public string SectionOutputButtonLabel => Localized("MEV_SectionOutputButton", "OUTPUT BUTTON");
+    public string SectionSourceStickLabel => Localized("MEV_SectionSourceStick", "SOURCE STICK");
+    public string SectionTargetStickLabel => Localized("MEV_SectionTargetStick", "TARGET STICK");
+    public string SectionCaptureStickLabel => Localized("MEV_SectionCaptureStick", "CAPTURE STICK");
+    public string SectionOutputStickLabel => Localized("MEV_SectionOutputStick", "OUTPUT STICK");
+    public string SectionDeadzoneLabel => Localized("MEV_SectionDeadzone", "DEADZONE");
+    public string SectionFullAtLabel => Localized("MEV_SectionFullAt", "FULL AT (saturation)");
+    public string SectionActivationDeadzoneLabel => Localized("MEV_SectionActivationDeadzone", "ACTIVATION DEADZONE");
+    public string SectionActivationFullAtLabel => Localized("MEV_SectionActivationFullAt", "ACTIVATION FULL AT");
+    public string SectionActivationButtonLabel => Localized("MEV_SectionActivationButton", "ACTIVATION BUTTON (hold to freeze)");
+    public string SectionBlendModeLabel => Localized("MEV_SectionBlendMode", "BLEND MODE");
+    public string SectionSequenceStepsLabel => Localized("MEV_SectionSequenceSteps", "SEQUENCE STEPS (loop while held)");
+    public string SectionStepTargetLabel => Localized("MEV_SectionStepTarget", "TARGET");
+    public string SectionScriptLabel => Localized("MEV_SectionScript", "SCRIPT");
+    public string SectionTargetControlKeyLabel => Localized("MEV_SectionTargetControlKey", "TARGET CONTROL KEY");
+    public string SuppressRawAfterShapingLabel => Localized("MEV_SuppressRawAfterShaping", "Suppress raw source stick after shaping");
+    public string SuppressSourceStickOutputLabel => Localized("MEV_SuppressSourceStickOutput", "Suppress source stick output");
+    public string SuppressSourceInputStoredLabel => Localized("MEV_SuppressSourceInputStored", "Suppress source input (stored for future runtime)");
+    public string SuppressActivationWhileFreezingLabel => Localized("MEV_SuppressActivationWhileFreezing", "Suppress activation button while freezing");
+    public string SuppressCapturedWhileFrozenLabel => Localized("MEV_SuppressCapturedWhileFrozen", "Suppress captured stick output while frozen");
+    public string PulseWhileFrozenLabel => Localized("MEV_PulseWhileFrozen", "Pulse while frozen (autofire while held)");
+    public string EditButtonLabel => Localized("MEV_EditButton", "Edit");
+    public string DeleteButtonLabel => Localized("MEV_DeleteButton", "Delete");
+    public string AddStepLabel => Localized("MEV_AddStep", "+ Add step");
+    public string NoStepsYetLabel => Localized("MEV_NoStepsYet", "No steps yet — add at least one for the loop to do anything.");
+    public string HintDeadzoneLabel => Localized("MEV_HintDeadzone", "Ignore stick movement below this threshold.");
+    public string HintFullAtLabel => Localized("MEV_HintFullAt", "Reach 100% output at this raw stick magnitude.");
+    public string HoldMsLabel => Localized("MEV_HoldMs", "HOLD ms");
+    public string ReleaseMsLabel => Localized("MEV_ReleaseMs", "RELEASE ms");
+    public string DelayMsLabel => Localized("MEV_DelayMs", "DELAY ms");
+    public string SectionTriggerButtonToggleLabel => Localized("MEV_SectionTriggerButtonToggle", "TRIGGER BUTTON (press to toggle)");
+    public string SectionRulesToToggleLabel => Localized("MEV_SectionRulesToToggle", "RULES TO TOGGLE");
+    public string ToggleHintLabel => Localized("MEV_ToggleHint", "Each press of the trigger flips the enabled state of the checked rules.");
+    public string NoOtherRulesLabel => Localized("MEV_NoOtherRules", "No other rules exist yet to target.");
+    public string SectionTimingLabel => Localized("MEV_SectionTiming", "TIMING");
+    public string TimingHoldLabel => Localized("MEV_TimingHold", "HOLD");
+    public string TimingReleaseLabel => Localized("MEV_TimingRelease", "RELEASE");
+    public string HintHoldLabel => Localized("MEV_HintHold", "How long the virtual button is held (pressed phase).");
+    public string HintReleaseLabel => Localized("MEV_HintRelease", "How long the virtual button is released between pulses.");
 
     /// <summary>
     /// Internal helper: looks up <paramref name="key"/> via the optional
@@ -138,6 +222,13 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
             if (SetProperty(ref editingRule, value) && editingRule is not null)
             {
                 editingRule.PropertyChanged += OnEditingRulePropertyChanged;
+
+                // Populate the RuleToggle multi-select with the current
+                // sibling rules (name + id), pre-checking any already
+                // targeted. Excludes the editing rule itself inside
+                // PopulateToggleTargets. Harmless for non-toggle rules.
+                editingRule.PopulateToggleTargets(
+                    Rules.Select(r => (r.Id, string.IsNullOrWhiteSpace(r.Name) ? r.Id : r.Name)));
             }
 
             OnPropertyChanged(nameof(EditPanelTitle));
@@ -217,7 +308,8 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
 
     private void AddRule()
     {
-        var kind = SelectedNewRuleKind?.Kind ?? RuleKind.ButtonRemap;
+        var kind = SelectedNewRuleKind?.Kind
+                   ?? (RuleKindOptions.Count > 0 ? RuleKindOptions[0].Kind : RuleKind.ButtonAutofire);
         EditingRule = string.IsNullOrWhiteSpace(preferredSelectionKey)
             ? MappingRuleViewModel.CreateDefault(kind)
             : CreatePreFilledRule(preferredSelectionKey, kind);
@@ -397,6 +489,20 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
                     viewModel.Name = $"Freeze via {ControlRuleMatcher.FormatButtonLabel(button)}";
                     break;
 
+                case RuleKind.MultiButtonAutofire:
+                    viewModel.SourceButton = button;
+                    viewModel.Name = $"Multi-fire via {ControlRuleMatcher.FormatButtonLabel(button)}";
+                    if (viewModel.Steps.Count == 0)
+                    {
+                        viewModel.Steps.Add(new MultiButtonStepViewModel { TargetButton = button });
+                    }
+                    break;
+
+                case RuleKind.RuleToggle:
+                    viewModel.SourceButton = button;
+                    viewModel.Name = $"Toggle via {ControlRuleMatcher.FormatButtonLabel(button)}";
+                    break;
+
                 case RuleKind.Script:
                     viewModel.ControlKey = normalizedKey;
                     viewModel.Name = $"Script {ControlRuleMatcher.GetTitle(normalizedKey)}";
@@ -450,13 +556,13 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
         var normalizedKey = ControlRuleMatcher.NormalizeSelectionKey(selectionKey);
 
         return ControlRuleMatcher.TryResolveButtonId(normalizedKey, out _)
-            ? RuleKind.ButtonRemap
+            ? RuleKind.ButtonAutofire
             : ControlRuleMatcher.TryResolveStickId(normalizedKey, out _)
             ? RuleKind.StickThreshold
             : normalizedKey switch
             {
                 "LeftTrigger.Analog" or "RightTrigger.Analog" => RuleKind.Script,
-                _ => RuleKind.ButtonRemap
+                _ => RuleKind.ButtonAutofire
             };
     }
 
@@ -464,10 +570,6 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
     {
         return
         [
-            new RuleKindOption(RuleKind.ButtonRemap,
-                Localized("RuleKindButtonRemapLabel",            "Button Remap"),
-                Localized("RuleKindButtonRemapDescription",      "Route one button to another."),
-                "#4F8CFF"),
             new RuleKindOption(RuleKind.ButtonAutofire,
                 Localized("RuleKindButtonAutofireLabel",         "Button Autofire / Turbo"),
                 Localized("RuleKindButtonAutofireDescription",   "Rapid-fire a button at a configurable rate."),
@@ -484,6 +586,14 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
                 Localized("RuleKindFreezeLastDirectionLabel",    "Freeze Last Direction"),
                 Localized("RuleKindFreezeLastDirectionDescription", "Hold the last observed stick direction while a button is held."),
                 "#00D4FF"),
+            new RuleKindOption(RuleKind.MultiButtonAutofire,
+                Localized("RuleKindMultiButtonAutofireLabel",    "Multi-Button Autofire"),
+                Localized("RuleKindMultiButtonAutofireDescription", "Loop a sequence of button presses with per-step timing while held."),
+                "#FB7185"),
+            new RuleKindOption(RuleKind.RuleToggle,
+                Localized("RuleKindRuleToggleLabel",             "Rule Toggle"),
+                Localized("RuleKindRuleToggleDescription",       "Press a button to enable or disable one or more other rules."),
+                "#34D399"),
             new RuleKindOption(RuleKind.Script,
                 Localized("RuleKindScriptLabel",                 "Control Script"),
                 Localized("RuleKindScriptDescription",           "Store script text for a specific control."),

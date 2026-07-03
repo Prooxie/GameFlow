@@ -10,7 +10,7 @@
         MinWidth="1120"
         MinHeight="760"
         WindowStartupLocation="CenterOwner"
-        Background="#050B12"
+        Background="{DynamicResource AppSurface0}"
         Title="Control mapping">
 
   <Grid RowDefinitions="132,*" RowSpacing="0">
@@ -19,18 +19,18 @@
             MaxHeight="132"
             ClipToBounds="True"
             Padding="24,18"
-            Background="#060E1C"
-            BorderBrush="#0F2035"
+            Background="{DynamicResource AppSurface1}"
+            BorderBrush="{DynamicResource AppBorder0}"
             BorderThickness="0,0,0,1">
       <StackPanel Spacing="6">
         <TextBlock Text="{Binding SelectionTitle}"
                    FontSize="22"
                    FontWeight="Bold"
-                   Foreground="White"
+                   Foreground="{DynamicResource AppForeground}"
                    TextTrimming="CharacterEllipsis" />
         <TextBlock Text="{Binding SelectionHint}"
                    FontSize="12.5"
-                   Foreground="#64748B"
+                   Foreground="{DynamicResource AppForegroundDim}"
                    TextWrapping="Wrap"
                    MaxHeight="38" />
       </StackPanel>

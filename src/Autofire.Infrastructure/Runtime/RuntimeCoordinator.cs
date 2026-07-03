@@ -45,24 +45,35 @@ public sealed class RuntimeCoordinator(
     IOutputSinkFactory outputSinkFactory,
     RuntimeSnapshotStore snapshotStore,
     ProfileSession profileSession,
+    IProfileRepository profileRepository,
     InputDeviceCatalog inputDeviceCatalog,
+    Slots.SlotRegistry slotRegistry,
+    Slots.SlotSnapshotStore slotSnapshotStore,
     ILogger<RuntimeCoordinator> logger) : BackgroundService
 {
     private readonly IInputSourceFactory inputSourceFactory = inputSourceFactory;
     private readonly IOutputSinkFactory outputSinkFactory = outputSinkFactory;
     private readonly RuntimeSnapshotStore snapshotStore = snapshotStore;
     private readonly ProfileSession profileSession = profileSession;
+    private readonly IProfileRepository profileRepository = profileRepository;
     private readonly InputDeviceCatalog inputDeviceCatalog = inputDeviceCatalog;
+    private readonly Slots.SlotRegistry slotRegistry = slotRegistry;
+    private readonly Slots.SlotSnapshotStore slotSnapshotStore = slotSnapshotStore;
     private readonly ILogger<RuntimeCoordinator> logger = logger;
     private readonly SemaphoreSlim providerGate = new(1, 1);
 
     private IInputSource? currentInputSource;
     private IOutputSink? currentOutputSink;
+    private Slots.SlotRuntime? slotRuntime;
+    private ProfileDocument? slotRuntimeProfile;
+    private volatile bool slotsDirty;
     private int disposeStarted;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using var highResolutionTimerLease = new WindowsHighResolutionTimerLease(logger);
+
+        slotRegistry.SlotsChanged += OnSlotsChanged;
 
         try
         {
@@ -115,14 +126,18 @@ public sealed class RuntimeCoordinator(
 
                 try
                 {
-                    var inputSource = currentInputSource ?? throw new InvalidOperationException("Input source is not initialized.");
-                    var outputSink = currentOutputSink ?? throw new InvalidOperationException("Output sink is not initialized.");
                     var now = DateTimeOffset.UtcNow;
-                    var physical = await inputSource.ReadAsync(stoppingToken);
-                    var result = pipeline.Process(physical, now);
 
-                    await outputSink.WriteAsync(result.VirtualSnapshot, stoppingToken);
-                    snapshotStore.Update(inputSource.DisplayName, outputSink.DisplayName, result);
+                    if (!await TryTickSlotsAsync(activeProfile, now, stoppingToken))
+                    {
+                        var inputSource = currentInputSource ?? throw new InvalidOperationException("Input source is not initialized.");
+                        var outputSink = currentOutputSink ?? throw new InvalidOperationException("Output sink is not initialized.");
+                        var physical = await inputSource.ReadAsync(stoppingToken);
+                        var result = pipeline.Process(physical, now);
+
+                        await outputSink.WriteAsync(result.VirtualSnapshot, stoppingToken);
+                        snapshotStore.Update(inputSource.DisplayName, outputSink.DisplayName, result);
+                    }
 
                     if (consecutiveTickFailures > 0)
                     {
@@ -216,6 +231,12 @@ public sealed class RuntimeCoordinator(
         }
         finally
         {
+            slotRegistry.SlotsChanged -= OnSlotsChanged;
+            if (slotRuntime is not null)
+            {
+                await slotRuntime.DisposeAsync();
+                slotRuntime = null;
+            }
             await DisposeProvidersAsync();
         }
     }
@@ -350,6 +371,43 @@ public sealed class RuntimeCoordinator(
             _ = Interlocked.Exchange(ref disposeStarted, 0);
         }
     }
+
+    /// <summary>
+    /// When the input source supports per-device reads and at least one
+    /// slot is enabled, runs the multi-slot tick and returns true. Returns
+    /// false to let the caller run the original single pipeline. Rebuilds
+    /// slot pipelines on profile change or when slots were edited.
+    /// </summary>
+    private async ValueTask<bool> TryTickSlotsAsync(ProfileDocument activeProfile, DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        if (currentInputSource is not Slots.IMultiDeviceInputSource multiInput)
+        {
+            return false;
+        }
+
+        slotRuntime ??= new Slots.SlotRuntime(slotRegistry, outputSinkFactory, slotSnapshotStore, profileRepository, logger);
+
+        if (!slotRuntime.HasEnabledSlots)
+        {
+            return false;
+        }
+
+        if (slotsDirty || !ReferenceEquals(slotRuntimeProfile, activeProfile))
+        {
+            await slotRuntime.RebuildAsync(activeProfile, activeProfile.OutputProvider);
+            slotRuntimeProfile = activeProfile;
+            slotsDirty = false;
+        }
+
+        var representative = await slotRuntime.TickAsync(multiInput, now, cancellationToken);
+        if (representative is { } r)
+        {
+            snapshotStore.Update(r.Input, r.Output, r.Result);
+        }
+        return true;
+    }
+
+    private void OnSlotsChanged(object? sender, EventArgs e) => slotsDirty = true;
 
     private static TimeSpan GetPollingInterval(int pollingRateHz)
     {

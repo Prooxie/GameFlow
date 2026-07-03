@@ -1,0 +1,108 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    ── TYPOGRAPHY ──────────────────────────────────────────────────────
+    Semantic classes for TextBlock. Apply via Classes="..." — e.g.
+    <TextBlock Classes="title" Text="..." />. Each class paints the
+    foreground from a Text.* token so light/dark theme swaps are
+    automatic.
+
+    The hierarchy:
+      display   — hero text, splash screens, key numbers
+      title     — page/dialog titles
+      heading   — section headings inside a page
+      body      — primary body text (default)
+      secondary — body text, less emphasis
+      caption   — small annotations, hints, footnotes
+      label     — tiny meta labels above fields/sections
+      mono      — code, hex IDs, device strings
+
+    Modifier classes (combine, e.g. Classes="caption muted"):
+      muted     — drop foreground to Text.Tertiary
+      strong    — bump weight to Bold
+      tabular   — tabular-nums alignment (when supported)
+  -->
+
+  <Style Selector="TextBlock.display">
+    <Setter Property="FontSize" Value="{DynamicResource Text.Display.Size}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+    <Setter Property="LineHeight" Value="38" />
+  </Style>
+
+  <Style Selector="TextBlock.title">
+    <Setter Property="FontSize" Value="{DynamicResource Text.Title.Size}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+    <Setter Property="LineHeight" Value="26" />
+  </Style>
+
+  <Style Selector="TextBlock.heading">
+    <Setter Property="FontSize" Value="{DynamicResource Text.Heading.Size}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+    <Setter Property="LineHeight" Value="22" />
+  </Style>
+
+  <Style Selector="TextBlock.body">
+    <Setter Property="FontSize" Value="{DynamicResource Text.Body.Size}" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+    <Setter Property="LineHeight" Value="19" />
+  </Style>
+
+  <Style Selector="TextBlock.secondary">
+    <Setter Property="FontSize" Value="{DynamicResource Text.Body.Size}" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+    <Setter Property="LineHeight" Value="19" />
+  </Style>
+
+  <Style Selector="TextBlock.caption">
+    <Setter Property="FontSize" Value="{DynamicResource Text.Caption.Size}" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+    <Setter Property="LineHeight" Value="16" />
+  </Style>
+
+  <Style Selector="TextBlock.label">
+    <Setter Property="FontSize" Value="{DynamicResource Text.Label.Size}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource Text.Tertiary}" />
+    <Setter Property="LineHeight" Value="14" />
+  </Style>
+
+  <Style Selector="TextBlock.mono">
+    <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+    <Setter Property="FontSize" Value="{DynamicResource Text.Caption.Size}" />
+    <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+  </Style>
+
+  <!-- ── MODIFIERS — combine with any of the above ──────────────────── -->
+
+  <Style Selector="TextBlock.muted">
+    <Setter Property="Foreground" Value="{DynamicResource Text.Tertiary}" />
+  </Style>
+
+  <Style Selector="TextBlock.subtle">
+    <Setter Property="Foreground" Value="{DynamicResource Text.Disabled}" />
+  </Style>
+
+  <Style Selector="TextBlock.strong">
+    <Setter Property="FontWeight" Value="Bold" />
+  </Style>
+
+  <Style Selector="TextBlock.success">
+    <Setter Property="Foreground" Value="{DynamicResource Semantic.Success}" />
+  </Style>
+
+  <Style Selector="TextBlock.warning">
+    <Setter Property="Foreground" Value="{DynamicResource Semantic.Warning}" />
+  </Style>
+
+  <Style Selector="TextBlock.danger">
+    <Setter Property="Foreground" Value="{DynamicResource Semantic.Danger}" />
+  </Style>
+
+</Styles>

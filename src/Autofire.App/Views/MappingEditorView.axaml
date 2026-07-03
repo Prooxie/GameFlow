@@ -79,7 +79,7 @@
                     <Button Classes="ghost" Padding="10,6" FontSize="12"
                             Command="{Binding #EditorRoot.DataContext.EditRuleCommand}"
                             CommandParameter="{Binding}"
-                            Content="Edit" />
+                            Content="{Binding #EditorRoot.DataContext.EditButtonLabel}" />
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="4">
                       <Button Grid.Column="0" Classes="ghost" Padding="6,5" FontSize="11"
                               Command="{Binding #EditorRoot.DataContext.MoveUpCommand}"
@@ -93,7 +93,7 @@
                     <Button Classes="danger" Padding="10,5" FontSize="11"
                             Command="{Binding #EditorRoot.DataContext.DeleteRuleCommand}"
                             CommandParameter="{Binding}"
-                            Content="Delete" />
+                            Content="{Binding #EditorRoot.DataContext.DeleteButtonLabel}" />
                   </StackPanel>
                 </Grid>
               </Border>
@@ -174,7 +174,7 @@
                           SelectedItem="{Binding SelectedModeOption}" />
               </StackPanel>
               <StackPanel Grid.Column="2" Spacing="5" VerticalAlignment="Bottom">
-                <CheckBox IsChecked="{Binding Enabled}" Content="Enabled" />
+                <CheckBox IsChecked="{Binding Enabled}" Content="{Binding #EditorRoot.DataContext.EnabledLabel}" />
               </StackPanel>
             </Grid>
 
@@ -204,13 +204,13 @@
               <Border Height="1" Background="{DynamicResource AppBorder0}" />
               <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                 <StackPanel Grid.Column="0" Spacing="5">
-                  <TextBlock Text="TRIGGER BUTTON" FontSize="10" FontWeight="SemiBold"
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.SectionTriggerButtonLabel}" FontSize="10" FontWeight="SemiBold"
                              Foreground="#F97316" LetterSpacing="0.8" />
                   <ComboBox ItemsSource="{Binding ButtonOptions}"
                             SelectedItem="{Binding SelectedSourceButtonOption}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Spacing="5">
-                  <TextBlock Text="OUTPUT BUTTON" FontSize="10" FontWeight="SemiBold"
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.SectionOutputButtonLabel}" FontSize="10" FontWeight="SemiBold"
                              Foreground="#F97316" LetterSpacing="0.8" />
                   <ComboBox ItemsSource="{Binding ButtonOptions}"
                             SelectedItem="{Binding SelectedTargetButtonOption}" />
@@ -224,16 +224,16 @@
             <StackPanel Spacing="12" IsVisible="{Binding IsStickThreshold}">
               <Border Height="1" Background="{DynamicResource AppBorder0}" />
               <StackPanel Spacing="5">
-                <TextBlock Text="TARGET STICK" FontSize="10" FontWeight="SemiBold"
+                <TextBlock Text="{Binding #EditorRoot.DataContext.SectionTargetStickLabel}" FontSize="10" FontWeight="SemiBold"
                            Foreground="#10B981" LetterSpacing="0.8" />
                 <ComboBox ItemsSource="{Binding StickOptions}"
                           SelectedItem="{Binding SelectedTargetStickOption}" />
               </StackPanel>
               <CheckBox IsChecked="{Binding SuppressThresholdSourceStick}"
-                        Content="Suppress raw source stick after shaping" />
+                        Content="{Binding #EditorRoot.DataContext.SuppressRawAfterShapingLabel}" />
               <StackPanel Spacing="5">
                 <Grid ColumnDefinitions="*,Auto">
-                  <TextBlock Text="DEADZONE" FontSize="10" FontWeight="SemiBold"
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.SectionDeadzoneLabel}" FontSize="10" FontWeight="SemiBold"
                              Foreground="#10B981" LetterSpacing="0.8" />
                   <TextBlock Grid.Column="1" Text="{Binding DeadzoneText}"
                              FontSize="12" Foreground="{DynamicResource AppAccent}"
@@ -246,12 +246,12 @@
                            Text="{Binding DeadzoneInput, UpdateSourceTrigger=LostFocus}"
                            HorizontalContentAlignment="Center" />
                 </Grid>
-                <TextBlock Text="Ignore stick movement below this threshold."
+                <TextBlock Text="{Binding #EditorRoot.DataContext.HintDeadzoneLabel}"
                            FontSize="11" Foreground="{DynamicResource AppForegroundDim}" />
               </StackPanel>
               <StackPanel Spacing="5">
                 <Grid ColumnDefinitions="*,Auto">
-                  <TextBlock Text="FULL AT (saturation)" FontSize="10" FontWeight="SemiBold"
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.SectionFullAtLabel}" FontSize="10" FontWeight="SemiBold"
                              Foreground="#10B981" LetterSpacing="0.8" />
                   <TextBlock Grid.Column="1" Text="{Binding FullAtText}"
                              FontSize="12" Foreground="{DynamicResource AppAccent}"
@@ -264,7 +264,7 @@
                            Text="{Binding FullAtInput, UpdateSourceTrigger=LostFocus}"
                            HorizontalContentAlignment="Center" />
                 </Grid>
-                <TextBlock Text="Reach 100% output at this raw stick magnitude."
+                <TextBlock Text="{Binding #EditorRoot.DataContext.HintFullAtLabel}"
                            FontSize="11" Foreground="{DynamicResource AppForegroundDim}" />
               </StackPanel>
             </StackPanel>
@@ -274,29 +274,29 @@
               <Border Height="1" Background="{DynamicResource AppBorder0}" />
               <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                 <StackPanel Grid.Column="0" Spacing="5">
-                  <TextBlock Text="SOURCE STICK" FontSize="10" FontWeight="SemiBold"
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.SectionSourceStickLabel}" FontSize="10" FontWeight="SemiBold"
                              Foreground="#A78BFA" LetterSpacing="0.8" />
                   <ComboBox ItemsSource="{Binding StickOptions}"
                             SelectedItem="{Binding SelectedSourceStickOption}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Spacing="5">
-                  <TextBlock Text="TARGET STICK" FontSize="10" FontWeight="SemiBold"
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.SectionTargetStickLabel}" FontSize="10" FontWeight="SemiBold"
                              Foreground="#A78BFA" LetterSpacing="0.8" />
                   <ComboBox ItemsSource="{Binding StickOptions}"
                             SelectedItem="{Binding SelectedTargetStickOption}" />
                 </StackPanel>
               </Grid>
               <StackPanel Spacing="5">
-                <TextBlock Text="BLEND MODE" FontSize="10" FontWeight="SemiBold"
+                <TextBlock Text="{Binding #EditorRoot.DataContext.SectionBlendModeLabel}" FontSize="10" FontWeight="SemiBold"
                            Foreground="#A78BFA" LetterSpacing="0.8" />
                 <ComboBox ItemsSource="{Binding BlendModeOptions}"
                           SelectedItem="{Binding SelectedBlendModeOption}" />
               </StackPanel>
               <CheckBox IsChecked="{Binding SuppressSourceStick}"
-                        Content="Suppress source stick output" />
+                        Content="{Binding #EditorRoot.DataContext.SuppressSourceStickOutputLabel}" />
               <StackPanel Spacing="5">
                 <Grid ColumnDefinitions="*,Auto">
-                  <TextBlock Text="ACTIVATION DEADZONE" FontSize="10" FontWeight="SemiBold"
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.SectionActivationDeadzoneLabel}" FontSize="10" FontWeight="SemiBold"
                              Foreground="#A78BFA" LetterSpacing="0.8" />
                   <TextBlock Grid.Column="1" Text="{Binding DeadzoneText}"
                              FontSize="12" Foreground="{DynamicResource AppAccent}"
@@ -312,7 +312,7 @@
               </StackPanel>
               <StackPanel Spacing="5">
                 <Grid ColumnDefinitions="*,Auto">
-                  <TextBlock Text="ACTIVATION FULL AT" FontSize="10" FontWeight="SemiBold"
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.SectionActivationFullAtLabel}" FontSize="10" FontWeight="SemiBold"
                              Foreground="#A78BFA" LetterSpacing="0.8" />
                   <TextBlock Grid.Column="1" Text="{Binding FullAtText}"
                              FontSize="12" Foreground="{DynamicResource AppAccent}"
@@ -332,19 +332,19 @@
             <StackPanel Spacing="12" IsVisible="{Binding IsScriptRule}">
               <Border Height="1" Background="{DynamicResource AppBorder0}" />
               <StackPanel Spacing="5">
-                <TextBlock Text="TARGET CONTROL KEY" FontSize="10" FontWeight="SemiBold"
+                <TextBlock Text="{Binding #EditorRoot.DataContext.SectionTargetControlKeyLabel}" FontSize="10" FontWeight="SemiBold"
                            Foreground="#FACC15" LetterSpacing="0.8" />
                 <TextBox Text="{Binding ControlKey}"
-                         Watermark="South / LeftStick / RightTrigger.Analog" />
+                         PlaceholderText="South / LeftStick / RightTrigger.Analog" />
                 <CheckBox IsChecked="{Binding SuppressScriptSourceInput}"
-                          Content="Suppress source input (stored for future runtime)" />
-                <TextBlock Text="Store a script for the selected control. Runtime execution is a planned step."
+                          Content="{Binding #EditorRoot.DataContext.SuppressSourceInputStoredLabel}" />
+                <TextBlock Text="{Binding #EditorRoot.DataContext.StoreScriptLabel}"
                            FontSize="11" Foreground="{DynamicResource AppForegroundDim}"
                            TextWrapping="Wrap" />
               </StackPanel>
               <StackPanel Spacing="5">
                 <Grid ColumnDefinitions="*,Auto">
-                  <TextBlock Text="SCRIPT" FontSize="10" FontWeight="SemiBold"
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.SectionScriptLabel}" FontSize="10" FontWeight="SemiBold"
                              Foreground="#FACC15" LetterSpacing="0.8" />
                   <TextBlock Grid.Column="1" Text="{Binding ScriptPreviewText}"
                              FontSize="11" Foreground="{DynamicResource AppForegroundDim}"
@@ -363,7 +363,7 @@
             <StackPanel Spacing="12" IsVisible="{Binding IsFreeze}">
               <Border Height="1" Background="{DynamicResource AppBorder0}" />
               <StackPanel Spacing="5">
-                <TextBlock Text="ACTIVATION BUTTON (hold to freeze)" FontSize="10"
+                <TextBlock Text="{Binding #EditorRoot.DataContext.SectionActivationButtonLabel}" FontSize="10"
                            FontWeight="SemiBold" Foreground="{DynamicResource AppAccent}"
                            LetterSpacing="0.8" />
                 <ComboBox ItemsSource="{Binding ButtonOptions}"
@@ -371,40 +371,139 @@
               </StackPanel>
               <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                 <StackPanel Grid.Column="0" Spacing="5">
-                  <TextBlock Text="CAPTURE STICK" FontSize="10" FontWeight="SemiBold"
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.SectionCaptureStickLabel}" FontSize="10" FontWeight="SemiBold"
                              Foreground="{DynamicResource AppAccent}" LetterSpacing="0.8" />
                   <ComboBox ItemsSource="{Binding StickOptions}"
                             SelectedItem="{Binding SelectedCaptureStickOption}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Spacing="5">
-                  <TextBlock Text="OUTPUT STICK" FontSize="10" FontWeight="SemiBold"
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.SectionOutputStickLabel}" FontSize="10" FontWeight="SemiBold"
                              Foreground="{DynamicResource AppAccent}" LetterSpacing="0.8" />
                   <ComboBox ItemsSource="{Binding StickOptions}"
                             SelectedItem="{Binding SelectedTargetStickOption}" />
                 </StackPanel>
               </Grid>
               <StackPanel Spacing="5">
-                <TextBlock Text="BLEND MODE" FontSize="10" FontWeight="SemiBold"
+                <TextBlock Text="{Binding #EditorRoot.DataContext.SectionBlendModeLabel}" FontSize="10" FontWeight="SemiBold"
                            Foreground="{DynamicResource AppAccent}" LetterSpacing="0.8" />
                 <ComboBox ItemsSource="{Binding BlendModeOptions}"
                           SelectedItem="{Binding SelectedBlendModeOption}" />
               </StackPanel>
               <CheckBox IsChecked="{Binding SuppressActivationButton}"
-                        Content="Suppress activation button while freezing" />
+                        Content="{Binding #EditorRoot.DataContext.SuppressActivationWhileFreezingLabel}" />
               <CheckBox IsChecked="{Binding SuppressCaptureStick}"
-                        Content="Suppress captured stick output while frozen" />
+                        Content="{Binding #EditorRoot.DataContext.SuppressCapturedWhileFrozenLabel}" />
               <CheckBox IsChecked="{Binding PulseEnabled}"
-                        Content="Pulse while frozen (autofire while held)" />
+                        Content="{Binding #EditorRoot.DataContext.PulseWhileFrozenLabel}" />
+            </StackPanel>
+
+            <!-- ── Multi-button autofire fields ───────────────────── -->
+            <StackPanel Spacing="12" IsVisible="{Binding IsMultiButtonAutofire}">
+              <Border Height="1" Background="{DynamicResource AppBorder0}" />
+              <StackPanel Spacing="5">
+                <TextBlock Text="{Binding #EditorRoot.DataContext.SectionTriggerButtonHoldLabel}" FontSize="10" FontWeight="SemiBold"
+                           Foreground="#FB7185" LetterSpacing="0.8" />
+                <ComboBox ItemsSource="{Binding ButtonOptions}"
+                          SelectedItem="{Binding SelectedSourceButtonOption}"
+                          HorizontalAlignment="Stretch" />
+              </StackPanel>
+              <CheckBox IsChecked="{Binding SuppressSourceButton}"
+                        Content="{Binding #EditorRoot.DataContext.SuppressSourceButtonLabel}" />
+
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="{Binding #EditorRoot.DataContext.SectionSequenceStepsLabel}" FontSize="10" FontWeight="SemiBold"
+                           Foreground="#FB7185" LetterSpacing="0.8" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="{Binding #EditorRoot.DataContext.AddStepLabel}"
+                        Command="{Binding AddStepCommand}"
+                        Padding="8,3" FontSize="11" />
+              </Grid>
+
+              <TextBlock Text="{Binding #EditorRoot.DataContext.NoStepsYetLabel}"
+                         FontSize="11" Foreground="{DynamicResource AppForegroundDim}"
+                         TextWrapping="Wrap" IsVisible="{Binding !HasSteps}" />
+
+              <ItemsControl ItemsSource="{Binding Steps}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Background="{DynamicResource AppSurface1}" CornerRadius="6"
+                            Padding="8" Margin="0,0,0,6">
+                      <StackPanel Spacing="6">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <StackPanel Grid.Column="0" Spacing="3">
+                            <TextBlock Text="{Binding #EditorRoot.DataContext.SectionStepTargetLabel}" FontSize="9" FontWeight="SemiBold"
+                                       Foreground="#FB7185" LetterSpacing="0.8" />
+                            <ComboBox ItemsSource="{Binding ButtonOptions}"
+                                      SelectedItem="{Binding SelectedTargetButtonOption}"
+                                      HorizontalAlignment="Stretch" />
+                          </StackPanel>
+                          <Button Grid.Column="1" Content="✕"
+                                  VerticalAlignment="Bottom" Margin="6,0,0,0" Padding="8,4"
+                                  Command="{Binding #EditorRoot.DataContext.EditingRule.RemoveStepCommand}"
+                                  CommandParameter="{Binding}" />
+                        </Grid>
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
+                          <StackPanel Grid.Column="0" Spacing="3">
+                            <TextBlock Text="{Binding #EditorRoot.DataContext.HoldMsLabel}" FontSize="9" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource AppForegroundDim}" />
+                            <TextBox Text="{Binding HoldMsInput}" />
+                          </StackPanel>
+                          <StackPanel Grid.Column="1" Spacing="3">
+                            <TextBlock Text="{Binding #EditorRoot.DataContext.ReleaseMsLabel}" FontSize="9" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource AppForegroundDim}" />
+                            <TextBox Text="{Binding ReleaseMsInput}" />
+                          </StackPanel>
+                          <StackPanel Grid.Column="2" Spacing="3">
+                            <TextBlock Text="{Binding #EditorRoot.DataContext.DelayMsLabel}" FontSize="9" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource AppForegroundDim}" />
+                            <TextBox Text="{Binding DelayAfterMsInput}" />
+                          </StackPanel>
+                        </Grid>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+
+            <!-- ── Rule toggle fields ─────────────────────────────── -->
+            <StackPanel Spacing="12" IsVisible="{Binding IsRuleToggle}">
+              <Border Height="1" Background="{DynamicResource AppBorder0}" />
+              <StackPanel Spacing="5">
+                <TextBlock Text="{Binding #EditorRoot.DataContext.SectionTriggerButtonToggleLabel}" FontSize="10" FontWeight="SemiBold"
+                           Foreground="#34D399" LetterSpacing="0.8" />
+                <ComboBox ItemsSource="{Binding ButtonOptions}"
+                          SelectedItem="{Binding SelectedSourceButtonOption}"
+                          HorizontalAlignment="Stretch" />
+              </StackPanel>
+              <CheckBox IsChecked="{Binding SuppressSourceButton}"
+                        Content="{Binding #EditorRoot.DataContext.SuppressSourceButtonLabel}" />
+
+              <TextBlock Text="{Binding #EditorRoot.DataContext.SectionRulesToToggleLabel}" FontSize="10" FontWeight="SemiBold"
+                         Foreground="#34D399" LetterSpacing="0.8" />
+              <TextBlock Text="{Binding #EditorRoot.DataContext.ToggleHintLabel}"
+                         FontSize="11" Foreground="{DynamicResource AppForegroundDim}"
+                         TextWrapping="Wrap" />
+              <TextBlock Text="{Binding #EditorRoot.DataContext.NoOtherRulesLabel}"
+                         FontSize="11" Foreground="{DynamicResource AppForegroundDim}"
+                         TextWrapping="Wrap" IsVisible="{Binding !HasToggleTargets}" />
+              <ItemsControl ItemsSource="{Binding ToggleTargets}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <CheckBox IsChecked="{Binding IsSelected}"
+                              Content="{Binding RuleName}" Margin="0,1" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
             </StackPanel>
 
             <!-- ── Timing fields ──────────────────────────────────── -->
             <StackPanel Spacing="12" IsVisible="{Binding ShowPulseTiming}">
               <Border Height="1" Background="{DynamicResource AppBorder0}" />
-              <TextBlock Text="TIMING" FontSize="10" FontWeight="SemiBold"
+              <TextBlock Text="{Binding #EditorRoot.DataContext.SectionTimingLabel}" FontSize="10" FontWeight="SemiBold"
                          Foreground="{DynamicResource AppForegroundDim}" LetterSpacing="0.8" />
               <StackPanel Spacing="5">
                 <Grid ColumnDefinitions="*,Auto">
-                  <TextBlock Text="HOLD" FontSize="10" FontWeight="SemiBold"
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.TimingHoldLabel}" FontSize="10" FontWeight="SemiBold"
                              Foreground="{DynamicResource AppForegroundDim}" LetterSpacing="0.8" />
                   <TextBlock Grid.Column="1" Text="{Binding HoldMsText}"
                              FontSize="12" Foreground="{DynamicResource AppAccent}"
@@ -417,12 +516,12 @@
                            Text="{Binding HoldMsInput, UpdateSourceTrigger=LostFocus}"
                            HorizontalContentAlignment="Center" />
                 </Grid>
-                <TextBlock Text="How long the virtual button is held (pressed phase)."
+                <TextBlock Text="{Binding #EditorRoot.DataContext.HintHoldLabel}"
                            FontSize="11" Foreground="{DynamicResource AppForegroundDim}" />
               </StackPanel>
               <StackPanel Spacing="5">
                 <Grid ColumnDefinitions="*,Auto">
-                  <TextBlock Text="RELEASE" FontSize="10" FontWeight="SemiBold"
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.TimingReleaseLabel}" FontSize="10" FontWeight="SemiBold"
                              Foreground="{DynamicResource AppForegroundDim}" LetterSpacing="0.8" />
                   <TextBlock Grid.Column="1" Text="{Binding ReleaseMsText}"
                              FontSize="12" Foreground="{DynamicResource AppAccent}"
@@ -435,7 +534,7 @@
                            Text="{Binding ReleaseMsInput, UpdateSourceTrigger=LostFocus}"
                            HorizontalContentAlignment="Center" />
                 </Grid>
-                <TextBlock Text="How long the virtual button is released between pulses."
+                <TextBlock Text="{Binding #EditorRoot.DataContext.HintReleaseLabel}"
                            FontSize="11" Foreground="{DynamicResource AppForegroundDim}" />
               </StackPanel>
             </StackPanel>

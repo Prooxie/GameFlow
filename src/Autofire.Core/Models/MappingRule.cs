@@ -10,6 +10,9 @@ namespace Autofire.Core.Models;
 [JsonDerivedType(typeof(FreezeLastDirectionRule), "freeze-last-direction")]
 [JsonDerivedType(typeof(ButtonRemapRule), "button-remap")]
 [JsonDerivedType(typeof(ButtonAutofireRule), "button-autofire")]
+[JsonDerivedType(typeof(ButtonComboRule), "button-combo")]
+[JsonDerivedType(typeof(MultiButtonAutofireRule), "multi-button-autofire")]
+[JsonDerivedType(typeof(RuleToggleRule), "rule-toggle")]
 [JsonDerivedType(typeof(ControlScriptRule), "control-script")]
 public abstract record MappingRule
 {

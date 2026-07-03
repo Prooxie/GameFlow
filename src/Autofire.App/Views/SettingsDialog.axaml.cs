@@ -27,18 +27,32 @@ public partial class SettingsDialog : Window
 {
     /// <summary>
     /// XAML loader entry point. The dialog expects its
-    /// <see cref="Window.DataContext"/> to be populated with a
+    /// <see cref="Avalonia.StyledElement.DataContext"/> to be populated with a
     /// <see cref="SettingsDialogViewModel"/> by the caller before
     /// <see cref="Window.ShowDialog"/>.
     /// </summary>
     public SettingsDialog()
     {
         InitializeComponent();
+        Closed += OnClosed;
     }
 
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
+    }
+
+    /// <summary>
+    /// Detach the VM's <c>CultureChanged</c> subscription when the
+    /// dialog closes so the long-lived localization service doesn't
+    /// hold this short-lived view-model alive via the event handler.
+    /// </summary>
+    private void OnClosed(object? sender, EventArgs e)
+    {
+        if (DataContext is SettingsDialogViewModel vm)
+        {
+            vm.Dispose();
+        }
     }
 
     /// <summary>

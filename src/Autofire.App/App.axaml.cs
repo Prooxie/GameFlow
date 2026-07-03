@@ -133,9 +133,6 @@ public partial class App : Application
                 }
                 else
                 {
-                    // No main window at all (extremely unusual): mark loaded
-                    // anyway so the background task can fall through and the
-                    // ownerWindow null-check below kicks in.
                     shellLoaded.TrySetResult();
                 }
             });
@@ -196,9 +193,37 @@ public partial class App : Application
             return;
         }
 
+        // Watchdog: spawn a *background* thread that waits a few
+        // seconds and then force-kills the process if any of the
+        // cleanup steps below have hung. Background = doesn't itself
+        // prevent process exit, so when the polite shutdown finishes
+        // promptly the watchdog is harmless. When it doesn't — typically
+        // a native provider's foreground thread we can't reach from
+        // managed code — Process.Kill() reclaims everything.
+        new Thread(() =>
+        {
+            Thread.Sleep(TimeSpan.FromSeconds(4));
+            try
+            {
+                System.Diagnostics.Process.GetCurrentProcess().Kill();
+            }
+            catch
+            {
+                // Nothing useful to do if Kill itself faults.
+            }
+        })
+        {
+            IsBackground = true,
+            Name         = "Autofire-Exit-Watchdog",
+        }.Start();
+
         var currentHost = Interlocked.Exchange(ref host, null);
         if (currentHost is null)
         {
+            // Still force-exit so a foreground thread doesn't keep
+            // the process alive after the main window has closed.
+            Log.CloseAndFlush();
+            Environment.Exit(0);
             return;
         }
 

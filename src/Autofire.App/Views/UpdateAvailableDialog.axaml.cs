@@ -159,7 +159,7 @@ public partial class UpdateAvailableDialog : Window
     /// returns the choice. The coordinator (not this dialog) is
     /// responsible for actually running the installer; we only signal
     /// intent. The dialog stays open until the coordinator closes it
-    /// via <see cref="ReportProgress"/> + <see cref="Close"/>.
+    /// via <see cref="ReportProgress"/> + <see cref="Avalonia.Controls.Window.Close()"/>.
     /// </summary>
     private void OnInstallClick(object? sender, RoutedEventArgs e)
     {

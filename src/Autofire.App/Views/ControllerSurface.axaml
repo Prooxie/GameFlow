@@ -11,15 +11,23 @@
         the panel between solid (default "#09111B") and "Transparent"
         for the see-through effect described in design point 6.
     -->
-    <Border Padding="18,14" CornerRadius="14"
-            Background="{Binding PanelBackgroundBrush}"
-            BorderBrush="{Binding PanelBorderBrush}" BorderThickness="1">
+    <!--
+        Chrome follows the app theme live (DynamicResource); the user's
+        background preset paints an overlay layer above it. A null overlay
+        (the "Theme default" preset) lets the themed base show through, so
+        switching the app theme recolours the panel immediately.
+    -->
+    <Border CornerRadius="14"
+            Background="{DynamicResource AppSurface1}"
+            BorderBrush="{DynamicResource AppBorder0}" BorderThickness="1">
+      <Border Padding="18,14" CornerRadius="14"
+              Background="{Binding PanelOverlayBrush}">
         <Grid RowDefinitions="Auto,Auto,*,Auto" MinHeight="260">
 
             <!-- Title row -->
             <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
                 <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold"
-                           Foreground="#E5E7EB" />
+                           Foreground="{DynamicResource AppForeground}" />
                 <TextBlock Grid.Column="1" Text="{Binding ConnectionLabel}"
                            FontSize="10" Foreground="{Binding ConnectionBrush}"
                            FontWeight="SemiBold" LetterSpacing="1" />
@@ -63,5 +71,6 @@
             <TextBlock Grid.Row="3" Text="{Binding PressedButtonsText}"
                        Margin="0,8,0,0" FontSize="11" Foreground="#94A3B8" />
         </Grid>
+    </Border>
     </Border>
 </UserControl>

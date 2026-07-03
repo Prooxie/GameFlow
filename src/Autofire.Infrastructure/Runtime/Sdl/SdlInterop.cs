@@ -148,6 +148,15 @@ internal static partial class SdlInterop
     [LibraryImport("SDL3", EntryPoint = "SDL_UpdateGamepads")]
     internal static partial void UpdateGamepads();
 
+    // NOTE: the SDL LED/rumble effect imports (SDL_SetGamepadLED,
+    // SDL_RumbleGamepad, SDL_SetJoystickLED, SDL_RumbleJoystick) were
+    // removed on purpose: those calls hold SDL's joystick lock through a
+    // blocking Bluetooth HID write on DualSense pads, which froze the
+    // runtime. Rumble passthrough will return on a dedicated effects
+    // thread (see IRumbleFeedbackSource).
+    [LibraryImport("SDL3", EntryPoint = "SDL_GetGamepadJoystick")]
+    internal static partial IntPtr GetGamepadJoystick(IntPtr gamepad);
+
     [LibraryImport("SDL3", EntryPoint = "SDL_OpenJoystick")]
     internal static partial IntPtr OpenJoystick(uint instanceId);
 

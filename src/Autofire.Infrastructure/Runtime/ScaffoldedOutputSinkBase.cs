@@ -21,7 +21,7 @@ public abstract class ScaffoldedOutputSinkBase : IOutputSink
 
     /// <summary>
     /// Constructs the scaffold. See
-    /// <see cref="ScaffoldedInputSourceBase"/> for parameter semantics.
+    /// the non-SDK HIDMaestro build for the one remaining use.
     /// </summary>
     protected ScaffoldedOutputSinkBase(
         ILogger logger,

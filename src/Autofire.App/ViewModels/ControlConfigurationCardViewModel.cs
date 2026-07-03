@@ -6,12 +6,5 @@ public sealed record ControlConfigurationCardViewModel(
     string SelectionKey,
     string Title,
     string Subtitle,
-    IReadOnlyList<ControlConfigurationEntryViewModel> Entries)
-{
-    public string RuleCountText => Entries.Count switch
-    {
-        0 => "No rules",
-        1 => "1 rule",
-        _ => $"{Entries.Count} rules"
-    };
-}
+    string RuleCountText,
+    IReadOnlyList<ControlConfigurationEntryViewModel> Entries);

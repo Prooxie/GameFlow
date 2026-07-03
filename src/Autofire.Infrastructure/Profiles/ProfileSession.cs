@@ -284,14 +284,21 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
     private static string NormalizeInputProvider(string? inputProvider)
     {
         return string.IsNullOrWhiteSpace(inputProvider)
-            ? "xinput"
+            ? "sdl"
             : inputProvider.Trim().ToLowerInvariant() switch
             {
                 "sdlgamepad" => "sdl",
                 "sdl3" => "sdl",
                 "sdl-unified" => "sdl",
                 "sdl-unified-gamepad" => "sdl",
-                "gameinput" => "xinput",   // GameInput was experimental — map to xinput
+                // Retired providers — profiles that referenced them keep
+                // working by migrating to the SDL3 unified source.
+                "xinput" => "sdl",
+                "openxinput" => "sdl",
+                "x360ce" => "sdl",
+                "ps3" or "dualshock3" => "sdl",
+                "gameinput" => "sdl",
+                "windows-midi" or "winmidi" or "midi" => "sdl",
                 _ => inputProvider.Trim().ToLowerInvariant()
             };
     }
