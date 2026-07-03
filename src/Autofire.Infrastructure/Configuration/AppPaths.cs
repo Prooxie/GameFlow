@@ -61,20 +61,26 @@ public static class AppPaths
     /// Directory the user can drop controller-overlay PNGs into so the
     /// dashboard renders them in place of the programmatic art. Falls
     /// back to <c>{BaseDirectory}/controller-overlays</c> when no
-    /// override is set. The folder is created on first access so users
-    /// see a real destination when they open the parent folder.
+    /// override is set.
     ///
     /// <para>
-    /// Expected file names (case-insensitive, .png or .svg):
-    /// <c>xbox</c>, <c>playstation4</c>, <c>playstation5</c>,
-    /// <c>playstation3</c>, <c>switch</c>, <c>steamdeck</c>,
-    /// <c>steamcontroller</c>, <c>arcade</c>. The full canonical list
-    /// lives in <c>ControllerOverlayAssetLoader</c>.
+    /// NOTE: this is the legacy PNG-overlay path. The theme system
+    /// (ThemeRegistry + ThemeSurface) supersedes it, so for most users this
+    /// folder stays empty. We therefore return the path WITHOUT creating
+    /// the folder — there's no point littering %LocalAppData% with an empty
+    /// directory on every launch. The folder is created on demand only if
+    /// something actually writes an overlay (see EnsureOverlaysDirectory).
     /// </para>
     /// </summary>
     public static string ControllerOverlaysDirectory =>
-        Ensure(AppPathOverrides.ControllerOverlaysDirectory
-               ?? Path.Combine(BaseDirectory, "controller-overlays"));
+        AppPathOverrides.ControllerOverlaysDirectory
+        ?? Path.Combine(BaseDirectory, "controller-overlays");
+
+    /// <summary>
+    /// Same path as <see cref="ControllerOverlaysDirectory"/> but creates
+    /// the folder. Call this only when about to write an overlay file.
+    /// </summary>
+    public static string EnsureOverlaysDirectory() => Ensure(ControllerOverlaysDirectory);
 
     /// <summary>
     /// Directory containing every installed VSCView-compatible controller
@@ -102,6 +108,23 @@ public static class AppPaths
     /// configuration has been loaded.
     /// </summary>
     public static string SettingsFile => Path.Combine(BaseDirectory, "settings.json");
+
+    /// <summary>
+    /// Absolute path of the JSON file storing per-device output templates
+    /// (virtual-controller kind, lighting, rumble, FFB, adaptive triggers)
+    /// keyed by device id. Inside <see cref="BaseDirectory"/>.
+    /// </summary>
+    public static string DeviceTemplatesFile => Path.Combine(BaseDirectory, "device-templates.json");
+
+    /// <summary>Per-device button remaps (canonical button → raw index).</summary>
+    public static string ButtonMapsFile => Path.Combine(BaseDirectory, "device-button-maps.json");
+
+    /// <summary>
+    /// Absolute path of the JSON file storing controller-slot definitions
+    /// (each slot = assigned input device(s) + an output template driving
+    /// one virtual controller). Inside <see cref="BaseDirectory"/>.
+    /// </summary>
+    public static string SlotsFile => Path.Combine(BaseDirectory, "controller-slots.json");
 
     /// <summary>
     /// Returns the absolute path of the JSON file backing a given profile id.

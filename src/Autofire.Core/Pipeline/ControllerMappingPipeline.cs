@@ -12,13 +12,80 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile)
     private readonly Dictionary<string, BinaryPulseScheduler> buttonAutofireSchedulers = [];
     private readonly Dictionary<string, FreezeLatch> freezeLatches = [];
 
+    /// <summary>
+    /// Per-rule executor for looping multi-button autofire. Keyed by
+    /// rule id so swapping a rule in/out of the profile rebuilds the
+    /// state for that rule only — and never bleeds timeline state
+    /// between two rules with the same trigger.
+    /// </summary>
+    private readonly Dictionary<string, MultiButtonAutofireExecutor> multiButtonExecutors = [];
+
+    /// <summary>
+    /// Runtime "is this rule currently muted" overlay maintained by
+    /// <see cref="RuleToggleRule"/> executions. Targets that appear
+    /// here are skipped by every <c>.Where(IsActive)</c> filter below.
+    /// Resets to empty on each app launch (not persisted) — the
+    /// profile JSON's Enabled flag stays the source of truth across
+    /// restarts.
+    /// </summary>
+    private readonly HashSet<string> runtimeDisabledIds = [];
+
+    /// <summary>
+    /// Last-frame state of each rule-toggle's source button, used for
+    /// rising-edge detection. Keyed by rule id (not button id) so two
+    /// toggle rules sharing the same trigger don't fight over the
+    /// edge.
+    /// </summary>
+    private readonly Dictionary<string, bool> toggleSourceWasPressed = [];
+
     // Issue #12: Track previous button states for rising-edge detection on freeze rules.
     private readonly Dictionary<ButtonId, bool> previousButtonStates = [];
+
+    /// <summary>
+    /// Helper that combines a rule's authored Enabled flag with the
+    /// runtime-disabled overlay maintained by <see cref="RuleToggleRule"/>
+    /// executions. Used in every <c>.Where(...)</c> below so toggle
+    /// state actually mutes downstream rule processing.
+    /// </summary>
+    private bool IsActive(MappingRule rule) =>
+        rule.Enabled && !runtimeDisabledIds.Contains(rule.Id);
 
     public ControllerFrameResult Process(ControllerSnapshot physical, DateTimeOffset now)
     {
         var notes = new List<string>();
         var buttons = ButtonState.Clone(physical.Buttons);
+
+        // RuleToggleRule pass — must run before any rule whose Enabled
+        // state it might flip. On the rising edge of the toggle's
+        // source button, every target id is flipped in/out of the
+        // runtime-disabled set, which the IsActive helper consults
+        // below.
+        foreach (var rule in profile.Rules.OfType<RuleToggleRule>().Where(rule => rule.Enabled))
+        {
+            if (rule.SourceButton == ButtonId.None) { continue; }
+
+            var pressed = physical.IsPressed(rule.SourceButton);
+            toggleSourceWasPressed.TryGetValue(rule.Id, out var wasPressed);
+
+            if (pressed && !wasPressed)
+            {
+                foreach (var targetId in rule.TargetRuleIds)
+                {
+                    if (string.IsNullOrWhiteSpace(targetId)) { continue; }
+                    if (!runtimeDisabledIds.Remove(targetId))
+                    {
+                        runtimeDisabledIds.Add(targetId);
+                    }
+                }
+                notes.Add($"Toggled {rule.TargetRuleIds.Count} rule(s) via {rule.SourceButton}.");
+            }
+            toggleSourceWasPressed[rule.Id] = pressed;
+
+            if (rule.SuppressSourceButton)
+            {
+                buttons[rule.SourceButton] = false;
+            }
+        }
 
         // Issue #10: Use the threshold-adjusted map as the baseline for the output sticks.
         // Previously leftStick/rightStick were seeded from physical.LeftStick/RightStick,
@@ -28,7 +95,7 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile)
         var leftStick = transformedSticks[StickId.Left];
         var rightStick = transformedSticks[StickId.Right];
 
-        foreach (var rule in profile.Rules.OfType<ButtonRemapRule>().Where(rule => rule.Enabled))
+        foreach (var rule in profile.Rules.OfType<ButtonRemapRule>().Where(IsActive))
         {
             if (rule.Mode == RuleMode.Passthrough)
             {
@@ -56,7 +123,7 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile)
             notes.Add($"Remapped {rule.SourceButton} -> {rule.TargetButton}.");
         }
 
-        foreach (var rule in profile.Rules.OfType<ButtonAutofireRule>().Where(rule => rule.Enabled))
+        foreach (var rule in profile.Rules.OfType<ButtonAutofireRule>().Where(IsActive))
         {
             var scheduler = GetOrCreateBinaryScheduler(rule);
             scheduler.SetDesired(physical.IsPressed(rule.SourceButton), now);
@@ -84,7 +151,30 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile)
             }
         }
 
-        foreach (var rule in profile.Rules.OfType<StickAutofireRule>().Where(rule => rule.Enabled))
+        foreach (var rule in profile.Rules.OfType<MultiButtonAutofireRule>().Where(IsActive))
+        {
+            if (rule.Mode == RuleMode.Passthrough)
+            {
+                continue;
+            }
+            if (rule.Mode == RuleMode.DoNothing)
+            {
+                if (rule.SourceButton != ButtonId.None)
+                {
+                    buttons[rule.SourceButton] = false;
+                }
+                continue;
+            }
+
+            if (!multiButtonExecutors.TryGetValue(rule.Id, out var executor))
+            {
+                executor = new MultiButtonAutofireExecutor(rule);
+                multiButtonExecutors[rule.Id] = executor;
+            }
+            executor.Apply(physical, buttons, now);
+        }
+
+        foreach (var rule in profile.Rules.OfType<StickAutofireRule>().Where(IsActive))
         {
             if (rule.Mode == RuleMode.Passthrough)
             {
@@ -114,7 +204,7 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile)
             }
         }
 
-        foreach (var rule in profile.Rules.OfType<FreezeLastDirectionRule>().Where(rule => rule.Enabled))
+        foreach (var rule in profile.Rules.OfType<FreezeLastDirectionRule>().Where(IsActive))
         {
             if (rule.Mode == RuleMode.Passthrough)
             {
@@ -206,7 +296,7 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile)
             [StickId.Right] = snapshot.RightStick
         };
 
-        foreach (var rule in profile.Rules.OfType<StickThresholdRule>().Where(rule => rule.Enabled && rule.Mode != RuleMode.Passthrough))
+        foreach (var rule in profile.Rules.OfType<StickThresholdRule>().Where(rule => IsActive(rule) && rule.Mode != RuleMode.Passthrough))
         {
             if (rule.Mode == RuleMode.DoNothing)
             {

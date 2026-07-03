@@ -10,8 +10,8 @@ public static class ProfileDefaults
     {
         return new()
         {
-            Id = "speedrunner-default",
-            Name = "Speedrunner Default",
+            Id = "default-profile",
+            Name = "Default Profile",
             Version = 4,
             PollingRateHz = 250,
             InputProvider = "sdl",

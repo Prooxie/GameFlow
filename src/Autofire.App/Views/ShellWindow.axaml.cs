@@ -9,6 +9,8 @@ namespace Autofire.App.Views;
 public partial class ShellWindow : Window
 {
     private readonly DispatcherTimer refreshTimer;
+    private DateTime lastTickUtc = DateTime.UtcNow;
+    private DateTime lastTickGapWarnUtc;
     private ShellViewModel? shellViewModel;
     private bool isRefreshing;
     private bool isClosing;
@@ -70,6 +72,20 @@ public partial class ShellWindow : Window
         {
             refreshTimer.Start();
         }
+        // Attach the Raw Input reader to this window's HWND so the keyboard
+        // + mouse subsystem starts receiving WM_INPUT. No-op off Windows.
+        try
+        {
+            var handle = TryGetPlatformHandle();
+            if (handle is not null && shellViewModel is not null)
+            {
+                shellViewModel.AttachRawInput(handle.Handle);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.ForContext<ShellWindow>().Warning(ex, "Raw Input attach failed.");
+        }
     }
 
     private void OnClosing(object? sender, WindowClosingEventArgs e)
@@ -96,6 +112,20 @@ public partial class ShellWindow : Window
 
     private async void RefreshTimerOnTick(object? sender, EventArgs e)
     {
+        // UI-saturation telemetry: this timer wants 33 ms ticks; if the gap
+        // between ticks balloons, something (a repaint, a handler) is eating
+        // the dispatcher and every interaction lags behind it.
+        var nowUtc = DateTime.UtcNow;
+        var gap = nowUtc - lastTickUtc;
+        lastTickUtc = nowUtc;
+        if (gap.TotalMilliseconds > 120 && (nowUtc - lastTickGapWarnUtc).TotalSeconds >= 5)
+        {
+            lastTickGapWarnUtc = nowUtc;
+            Log.Warning(
+                "UI thread saturated: {GapMs:F0} ms between 33 ms dashboard ticks — a repaint or event handler is hogging the dispatcher.",
+                gap.TotalMilliseconds);
+        }
+
         if (isClosing || isRefreshing || DataContext is not ShellViewModel viewModel)
         {
             return;

@@ -1,8 +1,6 @@
 using Autofire.Infrastructure.Configuration;
 using Autofire.Infrastructure.Runtime.HidMaestro;
 using Autofire.Infrastructure.Runtime.ViGEm;
-using Autofire.Infrastructure.Runtime.VJoy;
-using Autofire.Infrastructure.Runtime.WindowsMidi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -28,13 +26,28 @@ public sealed class DefaultOutputSinkFactory(
             "vigem-xbox360" or "vigem-xbox"     => CreateViGEmXbox360OrFallback(),
             "vigem-ds4" or "vigem-dualshock4"   => CreateViGEmDs4OrFallback(),
             "vigem-ds5" or "vigem-dualsense"    => CreateViGEmDs5OrFallback(),
-            // ─── Step 6 scaffolds — see ScaffoldedOutputSinkBase ─────
-            "vjoy"                              => ActivatorUtilities.CreateInstance<VJoyOutputSink>(serviceProvider),
-            "hidmaestro"                        => ActivatorUtilities.CreateInstance<HidMaestroOutputSink>(serviceProvider),
-            "windows-midi-out" or "winmidi-out" or "midi-out" => ActivatorUtilities.CreateInstance<WindowsMidiOutputSink>(serviceProvider),
-            // ─────────────────────────────────────────────────────────
+            "hidmaestro"                        => CreateHidMaestroOrFallback(),
             _                                   => CreateUnknownFallback(normalized),
         };
+    }
+
+    private IOutputSink CreateHidMaestroOrFallback()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return CreateFallback("hidmaestro", "HIDMaestro is only available on Windows.");
+        }
+
+        try
+        {
+            return ActivatorUtilities.CreateInstance<HidMaestroOutputSink>(serviceProvider);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "HIDMaestro virtual controller could not be created.");
+            return CreateFallback("hidmaestro",
+                $"HIDMaestro failed to initialize: {exception.Message}");
+        }
     }
 
     private IOutputSink CreateViGEmXbox360OrFallback()

@@ -144,6 +144,14 @@ public partial class ControllerSurface : UserControl
         var vm = boundViewModel;
         if (vm is null || surface is null) { return; }
 
+        // Skip everything when this surface isn't actually on screen.
+        // Hidden panels (e.g. the virtual panel while emulation is off)
+        // and collapsed surfaces still receive timer ticks because they
+        // remain attached to the visual tree; pushing state to a surface
+        // that won't render is pure waste and 30x/sec adds up when
+        // several surfaces are alive at once.
+        if (!IsEffectivelyVisible) { return; }
+
         // The VM has already resolved its visual style and theme via
         // RefreshActiveTheme(); we just need to push the result.
         surface.ActiveTheme    = vm.ActiveTheme;

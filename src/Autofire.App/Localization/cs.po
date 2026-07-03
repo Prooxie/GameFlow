@@ -154,7 +154,7 @@ msgid "MappingOverviewSubtitle"
 msgstr "Každá karta shrnuje jeden nakonfigurovaný ovládací prvek včetně remapů, thresholdů, deadzon, turbo pravidel a uložených skriptů."
 
 msgid "OpenControlEditorButton"
-msgstr "Nastavit"
+msgstr "Konfigurovat"
 
 msgid "NoMappingCardsText"
 msgstr "V tomto profilu zatím nejsou uložená žádná mapování konkrétních ovládacích prvků. Klikni na prvek fyzického ovladače nebo přidej pravidlo v editoru."
@@ -564,41 +564,35 @@ msgstr "SDL3 univerzální vstup je aktivní. Používá standardní mapování 
 msgid "RuntimeNoteLiveInputDisabled"
 msgstr "Živý vstup je pro tento profil zakázán."
 
-msgid "RuleKindButtonRemapLabel"
-msgstr "Přemapování tlačítka"
-
-msgid "RuleKindButtonRemapDescription"
-msgstr "Přesměrovat jedno tlačítko na druhé."
-
 msgid "RuleKindButtonAutofireLabel"
 msgstr "Autofire / Turbo tlačítka"
 
 msgid "RuleKindButtonAutofireDescription"
-msgstr "Rychlá střelba tlačítka s nastavitelnou frekvencí."
+msgstr "Opakovaně stiská tlačítko nastavitelnou rychlostí."
 
 msgid "RuleKindStickThresholdLabel"
 msgstr "Práh páčky"
 
 msgid "RuleKindStickThresholdDescription"
-msgstr "Tvarování mrtvé zóny a prahu pro páčku."
+msgstr "Mrtvá zóna a tvarování prahu pro páčku."
 
 msgid "RuleKindStickAutofireLabel"
 msgstr "Autofire páčky"
 
 msgid "RuleKindStickAutofireDescription"
-msgstr "Pulzování výstupu jedné páčky podle druhé."
+msgstr "Pulzuje výstup jedné páčky podle jiné páčky."
 
 msgid "RuleKindFreezeLastDirectionLabel"
 msgstr "Zmrazit poslední směr"
 
 msgid "RuleKindFreezeLastDirectionDescription"
-msgstr "Drží poslední pozorovaný směr páčky, dokud je tlačítko stisknuté."
+msgstr "Drží poslední zaznamenaný směr páčky, dokud je tlačítko drženo."
 
 msgid "RuleKindScriptLabel"
-msgstr "Skript ovladače"
+msgstr "Skript ovládání"
 
 msgid "RuleKindScriptDescription"
-msgstr "Uložit text skriptu pro konkrétní prvek."
+msgstr "Uloží text skriptu pro konkrétní ovládání."
 
 msgid "MappingEditorAddRule"
 msgstr "+ Přidat pravidlo"
@@ -619,7 +613,7 @@ msgid "MappingEditorTargetButton"
 msgstr "CÍLOVÉ TLAČÍTKO"
 
 msgid "MappingEditorSuppressSource"
-msgstr "Potlačit zdrojové tlačítko (blokovat originál)"
+msgstr "Potlačit zdrojové tlačítko"
 
 msgid "MappingEditorEnabled"
 msgstr "Povoleno"
@@ -628,22 +622,22 @@ msgid "MappingEditorDeadzoneLabel"
 msgstr "Mrtvá zóna a práh"
 
 msgid "MappingEditorStoreScript"
-msgstr "Uložte skript pro vybraný prvek. Spuštění za běhu je plánovaný krok."
+msgstr "Uloží skript pro vybrané ovládání. Spouštění za běhu je plánovaný krok."
 
 msgid "MappingEditorSelectRuleToEdit"
 msgstr "Vyberte pravidlo k úpravě"
 
 msgid "MappingEditorOrUseAddRule"
-msgstr "Nebo použijte „Přidat pravidlo" pro vytvoření nového mapování."
+msgstr "Nebo použijte „Přidat pravidlo“ k vytvoření nového mapování." pro vytvoření nového mapování."
 
 msgid "MappingEditorSaveButton"
-msgstr "Uložit pravidlo"
+msgstr "Uložit"
 
 msgid "MappingEditorCancelButton"
 msgstr "Zrušit"
 
 msgid "MappingEditorRulesHeader"
-msgstr "MAPOVACÍ PRAVIDLA"
+msgstr "PRAVIDLA MAPOVÁNÍ"
 
 
 msgid "InputProviderOpenXInputLabel"
@@ -687,3 +681,352 @@ msgstr "Výstup Windows MIDI"
 
 msgid "OutputProviderWindowsMidiOutDescription"
 msgstr "Vysílá MIDI události z aktivity gamepadu. Stub — vyžaduje Windows MIDI Services a mapování v profilu."
+
+msgid "RuleKindMultiButtonAutofireLabel"
+msgstr "Vícetlačítkový autofire"
+
+msgid "RuleKindMultiButtonAutofireDescription"
+msgstr "Během držení opakuje sekvenci stisků s časováním pro každý krok."
+
+msgid "RuleKindRuleToggleLabel"
+msgstr "Přepínač pravidel"
+
+msgid "RuleKindRuleToggleDescription"
+msgstr "Stiskem tlačítka zapne nebo vypne jiná pravidla."
+
+msgid "DevicesTab"
+msgstr "Zařízení"
+
+msgid "DevicesTitle"
+msgstr "Vstupní zařízení"
+
+msgid "CommonRefresh"
+msgstr "Obnovit"
+
+msgid "DevicesOnlineTotal"
+msgstr " online z "
+
+msgid "DevicesTotal"
+msgstr " celkem"
+
+msgid "DevicesProduct"
+msgstr "Produkt: "
+
+msgid "DevicesVIDPID"
+msgstr "VID:PID "
+
+msgid "DevicesHardwareId"
+msgstr "Hardwarové ID"
+
+msgid "DevicesActiveDevice"
+msgstr "Aktivní zařízení"
+
+msgid "DevicesNoSelection"
+msgstr "Vyberte zařízení pro zobrazení podrobností."
+
+msgid "DevicesEmptyList"
+msgstr "Nebyla nalezena žádná vstupní zařízení. Připojte ovladač a klikněte na Obnovit."
+
+# ── UI/UX localization pass (auto-added) ──
+
+msgid "DashboardBackgroundLabel"
+msgstr "Pozadí"
+
+msgid "DevicesInputLiveLabel"
+msgstr "Vstup (živě):"
+
+msgid "DevicesKeyboardHint"
+msgstr "Přiřaďte tuto klávesnici ke slotu a její klávesy budou generovat vstup gamepadu. Rozložení níže se při psaní rozsvěcí v reálném čase."
+
+msgid "DevicesKeysDownLabel"
+msgstr "Stisknuté klávesy (živě):"
+
+msgid "DevicesMouseHint"
+msgstr "Pohyb ovládá pravou páčku (míření); levé tlačítko = pravá spoušť (střelba), pravé tlačítko = levá spoušť (míření), prostřední = R3, boční tlačítka = ramena (LB/RB). Pro použití přiřaďte tuto myš ke slotu."
+
+msgid "MappedControlsRuleCountMany"
+msgstr "Pravidel: {0}"
+
+msgid "MappedControlsRuleCountOne"
+msgstr "1 pravidlo"
+
+msgid "MappedControlsRuleCountZero"
+msgstr "Žádná pravidla"
+
+msgid "PanelBackgroundChromaBlue"
+msgstr "Chroma modrá"
+
+msgid "PanelBackgroundChromaGreen"
+msgstr "Chroma zelená"
+
+msgid "PanelBackgroundPureBlack"
+msgstr "Čistě černá"
+
+msgid "PanelBackgroundThemeDefault"
+msgstr "Podle motivu"
+
+msgid "ProviderStatus_DemoActive"
+msgstr "Aktivní ukázkový náhled — animovaný zdroj, bez hardwaru"
+
+msgid "ProviderStatus_NoActiveProvider"
+msgstr "Není aktivní žádný zdroj vstupu"
+
+msgid "ProviderStatus_SdlActive"
+msgstr "Vstup SDL3 aktivní — nalezeno zařízení: {0}"
+
+msgid "StyleLabelArcade"
+msgstr "Arcade layout"
+
+msgid "StyleLabelNintendoSwitch"
+msgstr "Switch layout"
+
+msgid "StyleLabelPlayStation3"
+msgstr "DualShock 3 layout"
+
+msgid "StyleLabelSimpleGamepad"
+msgstr "Simple gamepad layout"
+
+msgid "StyleLabelSteamController"
+msgstr "Steam Controller layout"
+
+msgid "StyleLabelSteamDeck"
+msgstr "Steam Deck layout"
+
+msgid "StyleLabelXbox360"
+msgstr "Xbox 360 layout"
+
+msgid "StyleLabelXboxOne"
+msgstr "Xbox One layout"
+
+msgid "StyleLabelXboxSeries"
+msgstr "Xbox Series layout"
+
+msgid "TemplateEmitLabel"
+msgstr "Vytvořit virtuální ovladač pro toto zařízení"
+
+msgid "TemplateEmitTooltip"
+msgstr "Pokud je zapnuto, tento slot vytváří zvolený virtuální ovladač (přes ViGEm nebo HIDMaestro), kdykoli jsou jeho přiřazená zařízení aktivní. Po vypnutí zůstane slot pasivní — vstup se dál zobrazuje v náhledu, ale žádné virtuální zařízení se nevytvoří."
+
+msgid "TemplateOutputDeviceLabel"
+msgstr "Výstupní zařízení"
+
+msgid "ProviderStatus_SdlNoGamepads"
+msgstr "SDL3 aktivní — nenalezeny žádné gamepady"
+
+msgid "ProviderStatus_NoControllerSelected"
+msgstr "Není vybrán žádný ovladač. Automatický výběr použije první nalezené zařízení."
+
+# ── Mapping editor localization pass ──
+
+msgid "MEV_SectionTriggerButton"
+msgstr "SPOUŠTĚCÍ TLAČÍTKO"
+
+msgid "MEV_SectionTriggerButtonHold"
+msgstr "SPOUŠTĚCÍ TLAČÍTKO (držením opakuje)"
+
+msgid "MEV_SectionOutputButton"
+msgstr "VÝSTUPNÍ TLAČÍTKO"
+
+msgid "MEV_SectionSourceStick"
+msgstr "ZDROJOVÁ PÁČKA"
+
+msgid "MEV_SectionTargetStick"
+msgstr "CÍLOVÁ PÁČKA"
+
+msgid "MEV_SectionCaptureStick"
+msgstr "SNÍMANÁ PÁČKA"
+
+msgid "MEV_SectionOutputStick"
+msgstr "VÝSTUPNÍ PÁČKA"
+
+msgid "MEV_SectionDeadzone"
+msgstr "MRTVÁ ZÓNA"
+
+msgid "MEV_SectionFullAt"
+msgstr "PLNÝ VÝKON PŘI (saturace)"
+
+msgid "MEV_SectionActivationDeadzone"
+msgstr "AKTIVAČNÍ MRTVÁ ZÓNA"
+
+msgid "MEV_SectionActivationFullAt"
+msgstr "AKTIVAČNÍ PLNÝ VÝKON"
+
+msgid "MEV_SectionActivationButton"
+msgstr "AKTIVAČNÍ TLAČÍTKO (držením zmrazí)"
+
+msgid "MEV_SectionBlendMode"
+msgstr "REŽIM PROLNUTÍ"
+
+msgid "MEV_SectionSequenceSteps"
+msgstr "KROKY SEKVENCE (opakuje se při držení)"
+
+msgid "MEV_SectionStepTarget"
+msgstr "CÍL"
+
+msgid "MEV_SectionScript"
+msgstr "SKRIPT"
+
+msgid "MEV_SectionTargetControlKey"
+msgstr "KLÍČ CÍLOVÉHO OVLÁDÁNÍ"
+
+msgid "MEV_SuppressRawAfterShaping"
+msgstr "Po tvarování potlačit surový vstup páčky"
+
+msgid "MEV_SuppressSourceStickOutput"
+msgstr "Potlačit výstup zdrojové páčky"
+
+msgid "MEV_SuppressSourceInputStored"
+msgstr "Potlačit zdrojový vstup (uloženo pro budoucí běh)"
+
+msgid "MEV_SuppressActivationWhileFreezing"
+msgstr "Během zmrazení potlačit aktivační tlačítko"
+
+msgid "MEV_SuppressCapturedWhileFrozen"
+msgstr "Během zmrazení potlačit výstup snímané páčky"
+
+msgid "MEV_PulseWhileFrozen"
+msgstr "Pulzovat během zmrazení (autofire při držení)"
+
+msgid "MEV_EditButton"
+msgstr "Upravit"
+
+msgid "MEV_DeleteButton"
+msgstr "Smazat"
+
+msgid "MEV_AddStep"
+msgstr "+ Přidat krok"
+
+msgid "MEV_NoStepsYet"
+msgstr "Zatím žádné kroky — přidejte alespoň jeden, aby smyčka něco dělala."
+
+msgid "MEV_HintDeadzone"
+msgstr "Ignorovat pohyb páčky pod tímto prahem."
+
+msgid "MEV_HintFullAt"
+msgstr "Dosáhnout 100 % výstupu při této surové výchylce páčky."
+
+msgid "SidebarPhysicalHeader"
+msgstr "FYZICKÁ ZAŘÍZENÍ"
+
+msgid "SidebarVirtualHeader"
+msgstr "VIRTUÁLNÍ OVLADAČE"
+
+msgid "DevicesPhysicalTabHeader"
+msgstr "Fyzická zařízení"
+
+msgid "DevicesVirtualTabHeader"
+msgstr "Virtuální ovladače"
+
+msgid "SlotsAddControllerLabel"
+msgstr "Přidat ovladač"
+
+msgid "SlotsEnabledLabel"
+msgstr "Povoleno"
+
+msgid "SlotsDeleteLabel"
+msgstr "Smazat"
+
+msgid "MappedControlRemapTitle"
+msgstr "Přemapování"
+
+msgid "MappedControlAutofireTitle"
+msgstr "Autofire"
+
+msgid "MappedControlStickThresholdTitle"
+msgstr "Mrtvá zóna / práh"
+
+msgid "MappedControlStickAutofireTitle"
+msgstr "Autofire páčky"
+
+msgid "MappedControlFreezeDirectionTitle"
+msgstr "Zmrazení směru"
+
+msgid "MappedControlScriptTitle"
+msgstr "Skript"
+
+msgid "MappedControlGenericTitle"
+msgstr "Pravidlo"
+
+msgid "RuleModeModify"
+msgstr "úprava"
+
+msgid "RuleModePassthrough"
+msgstr "průchod"
+
+msgid "RuleModeIgnore"
+msgstr "ignorovat"
+
+msgid "MappedControlDeadzoneWord"
+msgstr "mrtvá zóna"
+
+msgid "MappedControlFullWord"
+msgstr "plný"
+
+msgid "MappedControlCaptureWord"
+msgstr "snímání"
+
+msgid "MappedControlSuppressSource"
+msgstr "potlačit zdroj"
+
+msgid "MappedControlSuppressRaw"
+msgstr "potlačit surový"
+
+msgid "MappedControlSuppressButton"
+msgstr "potlačit tlačítko"
+
+msgid "MappedControlSuppressStick"
+msgstr "potlačit páčku"
+
+msgid "MappedControlScriptPlaceholder"
+msgstr "Zástupný skript"
+
+msgid "StickLeftLabel"
+msgstr "Levá páčka"
+
+msgid "StickRightLabel"
+msgstr "Pravá páčka"
+
+msgid "MappedControlHintStickClick"
+msgstr "Kliknutí páčky: průchod, ignorovat, přemapovat, autofire, skript."
+
+msgid "MappedControlHintAnalogTrigger"
+msgstr "Analogová spoušť: průchod, ignorovat, skript, budoucí analogové přemapování."
+
+msgid "MappedControlHintButton"
+msgstr "Tlačítko: průchod, ignorovat, přemapovat, autofire, skript."
+
+msgid "MEV_HoldMs"
+msgstr "DRŽET ms"
+
+msgid "MEV_ReleaseMs"
+msgstr "UVOLNIT ms"
+
+msgid "MEV_DelayMs"
+msgstr "PRODLEVA ms"
+
+msgid "MEV_SectionTriggerButtonToggle"
+msgstr "SPOUŠTĚCÍ TLAČÍTKO (stiskem přepíná)"
+
+msgid "MEV_SectionRulesToToggle"
+msgstr "PŘEPÍNANÁ PRAVIDLA"
+
+msgid "MEV_ToggleHint"
+msgstr "Každý stisk spouště přepne stav zapnutí zaškrtnutých pravidel."
+
+msgid "MEV_NoOtherRules"
+msgstr "Zatím neexistují žádná jiná pravidla k cílení."
+
+msgid "MEV_SectionTiming"
+msgstr "ČASOVÁNÍ"
+
+msgid "MEV_TimingHold"
+msgstr "DRŽENÍ"
+
+msgid "MEV_TimingRelease"
+msgstr "UVOLNĚNÍ"
+
+msgid "MEV_HintHold"
+msgstr "Jak dlouho je virtuální tlačítko drženo (fáze stisku)."
+
+msgid "MEV_HintRelease"
+msgstr "Jak dlouho je virtuální tlačítko uvolněno mezi pulzy."

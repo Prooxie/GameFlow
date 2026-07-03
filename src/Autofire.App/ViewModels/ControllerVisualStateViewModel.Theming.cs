@@ -4,6 +4,7 @@ using Autofire.Core.Models;
 using Autofire.Infrastructure.Theming;
 using Autofire.Infrastructure.Theming.Models;
 using CommunityToolkit.Mvvm.Input;
+using Serilog;
 
 namespace Autofire.App.ViewModels;
 
@@ -21,7 +22,7 @@ namespace Autofire.App.ViewModels;
 /// <item><see cref="AvailableThemeVariants"/> — every theme installed for the current style;</item>
 /// <item><see cref="SelectedThemeVariant"/> — the user's pick (drives <see cref="ActiveTheme"/>);</item>
 /// <item><see cref="IsPhysicalView"/> — when true, only the base layer renders (no active overlays);</item>
-/// <item><see cref="PanelBackgroundBrush"/> — the surface's outer background, settable to "Transparent" for the see-through effect;</item>
+/// <item><see cref="PanelBackgroundBrush"/> — user background preset; empty follows the app theme (see <see cref="PanelOverlayBrush"/>);</item>
 /// <item><see cref="ClickAtCommand"/> — emits a logical-coordinate click for the host's click-to-map path.</item>
 /// </list>
 /// </summary>
@@ -117,6 +118,12 @@ public sealed partial class ControllerVisualStateViewModel
         set
         {
             if (ReferenceEquals(selectedThemeVariant, value)) { return; }
+            Log.Information(
+                "SelectedThemeVariant changed on {Panel}: '{Old}' -> '{New}' (user pick via ComboBox).",
+                IsPhysicalView ? "physical" : "virtual",
+                selectedThemeVariant?.DisplayName ?? "(none)",
+                value?.DisplayName ?? "(none)");
+
             selectedThemeVariant = value;
             OnPropertyChanged(nameof(SelectedThemeVariant));
 
@@ -174,14 +181,38 @@ public sealed partial class ControllerVisualStateViewModel
     /// <see cref="Autofire.Infrastructure.Configuration.IUserSettingsService"/>.
     /// </summary>
     private string panelBackgroundBrush = "#09111B";
+    /// <summary>
+    /// Brush painted OVER the theme-following panel base. Null (the
+    /// "Theme default" preset, the legacy "#09111B" default, or
+    /// "Transparent") lets the themed base show through so app-theme
+    /// switches recolour the panel live; any other value is a forced
+    /// colour (chroma green/blue, pure black, custom hex).
+    /// </summary>
+    public Avalonia.Media.IBrush? PanelOverlayBrush
+    {
+        get
+        {
+            var value = panelBackgroundBrush;
+            if (string.IsNullOrWhiteSpace(value)
+                || string.Equals(value, "#09111B", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(value, "Transparent", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+            try { return Avalonia.Media.Brush.Parse(value); }
+            catch { return null; }
+        }
+    }
+
     public string PanelBackgroundBrush
     {
         get => panelBackgroundBrush;
         set
         {
             if (panelBackgroundBrush == value) { return; }
-            panelBackgroundBrush = value ?? "#09111B";
+            panelBackgroundBrush = value ?? "";
             OnPropertyChanged(nameof(PanelBackgroundBrush));
+            OnPropertyChanged(nameof(PanelOverlayBrush));
         }
     }
 

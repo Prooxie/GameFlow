@@ -1,0 +1,134 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+  <!--
+    ── DESIGN TOKENS ─────────────────────────────────────────────────────
+    Single source of truth for surface colours, borders, text, accents,
+    spacing, radii and elevation. New AXAML should reference these tokens
+    via DynamicResource; existing AppSurface*/AppBorder*/AppAccent stay
+    in place and are migrated incrementally.
+
+    Naming: <Family>.<Role>[.<Variant>] — Surface.Card, Text.Secondary,
+    Accent.BrandSoft. Dots are legal characters in resource keys.
+  -->
+
+  <!-- ════════ SURFACES ════════════════════════════════════════════════ -->
+
+  <SolidColorBrush x:Key="Surface.AppBackground" Color="#0A0F18" />
+  <SolidColorBrush x:Key="Surface.Base"          Color="#0D1421" />
+  <SolidColorBrush x:Key="Surface.Card"          Color="#131A29" />
+  <SolidColorBrush x:Key="Surface.Raised"        Color="#1A2334" />
+  <SolidColorBrush x:Key="Surface.Sunken"        Color="#06080D" />
+  <SolidColorBrush x:Key="Surface.Overlay"       Color="#1F2A3D" />
+
+  <!-- Subtle hover/pressed overlays — apply on top of any surface -->
+  <SolidColorBrush x:Key="Surface.Hover"   Color="#FFFFFF" Opacity="0.04" />
+  <SolidColorBrush x:Key="Surface.Pressed" Color="#FFFFFF" Opacity="0.08" />
+
+  <!-- ════════ BORDERS ════════════════════════════════════════════════ -->
+
+  <SolidColorBrush x:Key="Border.Subtle"   Color="#1E2738" />
+  <SolidColorBrush x:Key="Border.Default"  Color="#2C3548" />
+  <SolidColorBrush x:Key="Border.Strong"   Color="#3F4A60" />
+  <SolidColorBrush x:Key="Border.Focus"    Color="#4F8CFF" />
+
+  <!-- ════════ TEXT ═══════════════════════════════════════════════════ -->
+
+  <SolidColorBrush x:Key="Text.Primary"    Color="#E8ECF3" />
+  <SolidColorBrush x:Key="Text.Secondary"  Color="#9BA4B5" />
+  <SolidColorBrush x:Key="Text.Tertiary"   Color="#6B7588" />
+  <SolidColorBrush x:Key="Text.Disabled"   Color="#3A4252" />
+  <SolidColorBrush x:Key="Text.Inverse"    Color="#0D1421" />
+  <SolidColorBrush x:Key="Text.Link"       Color="#7BAEFF" />
+
+  <!-- ════════ BRAND ACCENT ═══════════════════════════════════════════ -->
+
+  <SolidColorBrush x:Key="Accent.Brand"      Color="#00E5FF" />
+  <SolidColorBrush x:Key="Accent.BrandSoft"  Color="#0F2530" />
+  <SolidColorBrush x:Key="Accent.BrandDeep"  Color="#003943" />
+  <SolidColorBrush x:Key="Accent.OnBrand"    Color="#00141A" />
+
+  <!-- ════════ SEMANTIC ═══════════════════════════════════════════════ -->
+
+  <SolidColorBrush x:Key="Semantic.Success"     Color="#22C55E" />
+  <SolidColorBrush x:Key="Semantic.SuccessSoft" Color="#123722" />
+  <SolidColorBrush x:Key="Semantic.Warning"     Color="#F59E0B" />
+  <SolidColorBrush x:Key="Semantic.WarningSoft" Color="#3D2A0C" />
+  <SolidColorBrush x:Key="Semantic.Danger"      Color="#EF4444" />
+  <SolidColorBrush x:Key="Semantic.DangerSoft"  Color="#3D1414" />
+  <SolidColorBrush x:Key="Semantic.Info"        Color="#3B82F6" />
+  <SolidColorBrush x:Key="Semantic.InfoSoft"    Color="#0E1D3D" />
+
+  <!-- ════════ SPACING (4-pt scale) ═══════════════════════════════════ -->
+  <!--
+    Use for StackPanel.Spacing, Grid.ColumnSpacing/RowSpacing —
+    properties that take double. For Padding/Margin use the matching
+    Thickness.* below.
+  -->
+
+  <sys:Double x:Key="Space.XS">4</sys:Double>
+  <sys:Double x:Key="Space.SM">8</sys:Double>
+  <sys:Double x:Key="Space.MD">12</sys:Double>
+  <sys:Double x:Key="Space.LG">16</sys:Double>
+  <sys:Double x:Key="Space.XL">24</sys:Double>
+  <sys:Double x:Key="Space.2XL">32</sys:Double>
+  <sys:Double x:Key="Space.3XL">48</sys:Double>
+
+  <!-- Uniform-thickness presets for Padding/Margin -->
+  <Thickness x:Key="Thickness.XS">4</Thickness>
+  <Thickness x:Key="Thickness.SM">8</Thickness>
+  <Thickness x:Key="Thickness.MD">12</Thickness>
+  <Thickness x:Key="Thickness.LG">16</Thickness>
+  <Thickness x:Key="Thickness.XL">24</Thickness>
+
+  <!-- Common asymmetric paddings used in cards/sections -->
+  <Thickness x:Key="Thickness.CardPadding">16,14</Thickness>
+  <Thickness x:Key="Thickness.SectionPadding">20,16</Thickness>
+  <Thickness x:Key="Thickness.RowPadding">12,8</Thickness>
+  <Thickness x:Key="Thickness.InlinePadding">8,4</Thickness>
+
+  <!-- ════════ RADIUS ═════════════════════════════════════════════════ -->
+
+  <CornerRadius x:Key="Radius.None">0</CornerRadius>
+  <CornerRadius x:Key="Radius.XS">4</CornerRadius>
+  <CornerRadius x:Key="Radius.SM">6</CornerRadius>
+  <CornerRadius x:Key="Radius.MD">10</CornerRadius>
+  <CornerRadius x:Key="Radius.LG">14</CornerRadius>
+  <CornerRadius x:Key="Radius.XL">20</CornerRadius>
+  <CornerRadius x:Key="Radius.Pill">9999</CornerRadius>
+
+  <!-- ════════ TYPE — sizes & weights ═════════════════════════════════ -->
+  <!--
+    Raw values; the Styles in Typography.axaml apply them through
+    semantic classes (display, title, heading, body, caption, label,
+    mono). Use the classes; only reach into raw values for edge cases.
+  -->
+
+  <sys:Double x:Key="Text.Display.Size">32</sys:Double>
+  <sys:Double x:Key="Text.Title.Size">20</sys:Double>
+  <sys:Double x:Key="Text.Heading.Size">16</sys:Double>
+  <sys:Double x:Key="Text.Body.Size">13</sys:Double>
+  <sys:Double x:Key="Text.Caption.Size">11</sys:Double>
+  <sys:Double x:Key="Text.Label.Size">10</sys:Double>
+
+  <FontFamily x:Key="Font.Sans">avares://Autofire.App/#Inter, Segoe UI, ui-sans-serif, system-ui</FontFamily>
+  <FontFamily x:Key="Font.Mono">Cascadia Mono, Consolas, ui-monospace, monospace</FontFamily>
+
+  <!-- ════════ FOCUS / OUTLINE ════════════════════════════════════════ -->
+
+  <sys:Double x:Key="Focus.RingThickness">2</sys:Double>
+  <sys:Double x:Key="Focus.RingOffset">2</sys:Double>
+
+  <!-- ════════ ANIMATION / MOTION TIMINGS ═════════════════════════════ -->
+  <!--
+    Used by Pass 3. Define here so other passes can already reference
+    them when they need a transition.
+  -->
+
+  <sys:TimeSpan x:Key="Motion.Instant">0:0:0.08</sys:TimeSpan>
+  <sys:TimeSpan x:Key="Motion.Fast">0:0:0.15</sys:TimeSpan>
+  <sys:TimeSpan x:Key="Motion.Default">0:0:0.20</sys:TimeSpan>
+  <sys:TimeSpan x:Key="Motion.Slow">0:0:0.30</sys:TimeSpan>
+
+</ResourceDictionary>

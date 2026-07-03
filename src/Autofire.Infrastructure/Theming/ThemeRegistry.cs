@@ -254,9 +254,56 @@ public sealed class ThemeRegistry
         {
             return ControllerVisualStyle.PlayStation3;
         }
+        // Xbox generations — keep specific matches above the generic
+        // "xbox" fallback so e.g. "xbox-series-x" doesn't bucket into
+        // the legacy Xbox style.
+        if (name.Contains("series", StringComparison.Ordinal) ||
+            name.Contains("xbsx", StringComparison.Ordinal))
+        {
+            return ControllerVisualStyle.XboxSeries;
+        }
+        if (name.Contains("xbox-one", StringComparison.Ordinal) ||
+            name.Contains("xboxone", StringComparison.Ordinal) ||
+            name.Contains("xbone", StringComparison.Ordinal))
+        {
+            return ControllerVisualStyle.XboxOne;
+        }
+        if (name.Contains("360", StringComparison.Ordinal))
+        {
+            return ControllerVisualStyle.Xbox360;
+        }
         if (name.Contains("xbox", StringComparison.Ordinal))
         {
             return ControllerVisualStyle.Xbox;
+        }
+        if (name.Contains("switch", StringComparison.Ordinal) ||
+            name.Contains("joycon", StringComparison.Ordinal) ||
+            name.Contains("joy-con", StringComparison.Ordinal) ||
+            name.Contains("nintendo", StringComparison.Ordinal))
+        {
+            return ControllerVisualStyle.NintendoSwitch;
+        }
+        if (name.Contains("steam-deck", StringComparison.Ordinal) ||
+            name.Contains("steamdeck", StringComparison.Ordinal) ||
+            name.Contains("deck", StringComparison.Ordinal))
+        {
+            return ControllerVisualStyle.SteamDeck;
+        }
+        if (name.Contains("steam", StringComparison.Ordinal) ||
+            name.Contains("valve", StringComparison.Ordinal))
+        {
+            return ControllerVisualStyle.SteamController;
+        }
+        if (name.Contains("arcade", StringComparison.Ordinal) ||
+            name.Contains("hitbox", StringComparison.Ordinal) ||
+            name.Contains("fightstick", StringComparison.Ordinal))
+        {
+            return ControllerVisualStyle.Arcade;
+        }
+        if (name.Contains("simple", StringComparison.Ordinal) ||
+            name.Contains("generic", StringComparison.Ordinal))
+        {
+            return ControllerVisualStyle.SimpleGamepad;
         }
         return ControllerVisualStyle.Auto;
     }

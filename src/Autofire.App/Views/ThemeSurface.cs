@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Autofire.App.ViewModels;
 using Autofire.Core.Models;
+using Autofire.Core.Enums;
 using Autofire.Infrastructure.Theming;
 using Autofire.Infrastructure.Theming.Flee;
 using Autofire.Infrastructure.Theming.Models;
@@ -46,11 +47,15 @@ public sealed class ThemeSurface : Control
 
     private InstalledTheme? activeTheme;
     private ControllerSnapshot snapshot = ControllerSnapshot.Empty();
+    // The snapshot we last actually painted. UpdateState compares incoming
+    // frames against THIS (not merely the previous frame) so slow continuous
+    // movement still repaints once it accumulates past the threshold, while a
+    // stream of visually-identical frames is dropped.
+    private ControllerSnapshot? lastRenderedSnapshot;
 
-    // One-shot diagnostic log so we can see (in the Serilog file)
-    // whether a theme was ever loaded for this control.
-    private bool firstThemeLogged;
-    private bool firstNullLogged;
+    // One-shot diagnostic guard so the first live button press
+    // reaching the surface gets a single Info-level log line —
+    // useful for diagnosing "no feedback" reports.
     private bool firstButtonPressLogged;
 
     // Throttled feedback-diagnostic state. Once per second per surface
@@ -73,6 +78,7 @@ public sealed class ThemeSurface : Control
         // event would close the popup before the user could select an
         // item. Click-to-map works fine without focus.
         Focusable = false;
+
         // Control doesn't expose a Background styled property like
         // Panel/Border do — but we still need the full bounds to
         // catch pointer-pressed for click-to-map. The Render method
@@ -92,34 +98,102 @@ public sealed class ThemeSurface : Control
         set
         {
             if (ReferenceEquals(activeTheme, value)) { return; }
+            var previous = activeTheme;
             activeTheme = value;
 
-            if (value is not null && !firstThemeLogged)
+            // Log every theme change — not just the first. Useful for
+            // diagnosing "I picked a different skin and nothing
+            // changed" reports: if this line appears in the log with
+            // the new theme name, the surface IS receiving the new
+            // theme and the bug is downstream (render path). If it
+            // doesn't appear, the variant ComboBox isn't propagating
+            // its change up through SelectedThemeVariant and the bug
+            // is upstream.
+            if (value is not null)
             {
-                firstThemeLogged = true;
                 Log.Information(
-                    "ThemeSurface received theme '{Name}' from {Dir} ({Children} root child(ren), canvas {W}x{H}).",
+                    "ThemeSurface theme {Verb}: '{Name}' from {Dir} ({Children} root child(ren), canvas {W}x{H}).",
+                    previous is null ? "loaded" : "swapped",
                     value.Document.Name, value.Document.BaseDirectory,
                     value.Document.Children.Count,
                     value.Document.Width, value.Document.Height);
             }
-            else if (value is null && !firstNullLogged)
+            else
             {
-                firstNullLogged = true;
-                Log.Information("ThemeSurface received null theme.");
+                Log.Information("ThemeSurface theme cleared.");
             }
             InvalidateVisual();
         }
     }
 
-    /// <summary>Pushes a new snapshot and schedules a redraw.</summary>
+    /// <summary>
+    /// Pushes a new snapshot and schedules a redraw — but only when
+    /// the snapshot reference actually differs. The poll timer in
+    /// <see cref="Autofire.App.Views.ControllerSurface"/> calls this
+    /// every 33 ms; the upstream VM, however, only re-assigns its
+    /// <c>snapshot</c> field when there's a real input change (its
+    /// own dirty-check short-circuits idle ticks). So this ref-equality
+    /// guard collapses idle ticks into no-ops, which keeps the surface
+    /// from forcing a window-wide re-composite every 33 ms — that
+    /// re-composite was interfering with the variant-picker ComboBox's
+    /// popup hover state ("flickering over the choice").
+    /// </summary>
     public void UpdateState(ControllerSnapshot newSnapshot)
     {
+        if (ReferenceEquals(snapshot, newSnapshot)) { return; }
         snapshot = newSnapshot;
-        if (activeTheme is not null)
+        if (activeTheme is null) { return; }
+
+        // Value-based dirty check. The runtime hands us a fresh snapshot
+        // object every tick (new Timestamp) even when the pad is at rest, and
+        // a connected controller streams continuously — so without this we'd
+        // repaint the entire theme tree 30x/sec for visually identical state,
+        // which is what made the whole UI sluggish whenever a controller was
+        // attached. Only repaint when something the art can actually show has
+        // changed; otherwise keep the latest snapshot but skip the paint.
+        if (lastRenderedSnapshot is not null
+            && VisuallyEquivalent(lastRenderedSnapshot, newSnapshot))
         {
-            InvalidateVisual();
+            return;
         }
+
+        lastRenderedSnapshot = newSnapshot;
+        InvalidateVisual();
+    }
+
+    /// <summary>
+    /// True when two snapshots would draw identical controller art: same
+    /// pressed-button set, and sticks/triggers/touch equal within a
+    /// sub-pixel threshold. Timestamp and device identity are ignored —
+    /// they change every tick but never change a pixel.
+    /// </summary>
+    private static bool VisuallyEquivalent(ControllerSnapshot a, ControllerSnapshot b)
+    {
+        const float Epsilon = 1f / 256f;   // finer than any visible deflection
+        if (a.TouchContactCount != b.TouchContactCount) { return false; }
+        if (MathF.Abs(a.LeftTrigger  - b.LeftTrigger)  > Epsilon) { return false; }
+        if (MathF.Abs(a.RightTrigger - b.RightTrigger) > Epsilon) { return false; }
+        if (MathF.Abs(a.LeftStick.X  - b.LeftStick.X)  > Epsilon) { return false; }
+        if (MathF.Abs(a.LeftStick.Y  - b.LeftStick.Y)  > Epsilon) { return false; }
+        if (MathF.Abs(a.RightStick.X - b.RightStick.X) > Epsilon) { return false; }
+        if (MathF.Abs(a.RightStick.Y - b.RightStick.Y) > Epsilon) { return false; }
+        return PressedButtonsEqual(a.Buttons, b.Buttons);
+    }
+
+    private static bool PressedButtonsEqual(
+        IReadOnlyDictionary<ButtonId, bool> a,
+        IReadOnlyDictionary<ButtonId, bool> b)
+    {
+        if (ReferenceEquals(a, b)) { return true; }
+        foreach (var kv in a)
+        {
+            if (kv.Value && !(b.TryGetValue(kv.Key, out var bv) && bv)) { return false; }
+        }
+        foreach (var kv in b)
+        {
+            if (kv.Value && !(a.TryGetValue(kv.Key, out var av) && av)) { return false; }
+        }
+        return true;
     }
 
     /// <summary>
@@ -218,8 +292,17 @@ public sealed class ThemeSurface : Control
     }
 
     /// <inheritdoc/>
+    // Render-cost telemetry: averages paint duration and reports every 5 s,
+    // warning when repaints are expensive enough to throttle the UI thread.
+    private double renderCostAccumMs;
+    private int renderCostSamples;
+    private DateTime lastRenderCostReportUtc = DateTime.UtcNow;
+
     public override void Render(DrawingContext context)
     {
+        var renderTimer = System.Diagnostics.Stopwatch.StartNew();
+        try
+        {
         base.Render(context);
 
         // Transparent fill: gives the control a hit-test surface so
@@ -237,14 +320,18 @@ public sealed class ThemeSurface : Control
         // "no feedback" reports — if this never fires while the user
         // is actively pressing buttons, the bug is upstream in the
         // input pipeline / VM update chain, NOT in the theme engine.
-        if (!firstButtonPressLogged && snapshot.Buttons.Count(kv => kv.Value) > 0)
+        if (!firstButtonPressLogged)
         {
-            firstButtonPressLogged = true;
-            Log.Information(
-                "ThemeSurface[{Mode}] first live button press: device={Device} pressed={Pressed}",
-                isPhysicalView ? "physical" : "virtual",
-                snapshot.DeviceName,
-                snapshot.Buttons.Count(kv => kv.Value));
+            var pressedNow = snapshot.Buttons.Count(kv => kv.Value);
+            if (pressedNow > 0)
+            {
+                firstButtonPressLogged = true;
+                Log.Information(
+                    "ThemeSurface[{Mode}] first live button press: device={Device} pressed={Pressed}",
+                    isPhysicalView ? "physical" : "virtual",
+                    snapshot.DeviceName,
+                    pressedNow);
+            }
         }
 
         // Throttled feedback diagnostic: once per second per surface,
@@ -344,6 +431,33 @@ public sealed class ThemeSurface : Control
                 // ephemeral. No fill, so the underlying button glyph
                 // stays visible.
                 context.DrawRectangle(null, HighlightHoverPen, hoveredHit.Bounds);
+            }
+        }
+        }
+        finally
+        {
+            renderTimer.Stop();
+            renderCostAccumMs += renderTimer.Elapsed.TotalMilliseconds;
+            renderCostSamples++;
+            var nowUtc = DateTime.UtcNow;
+            if ((nowUtc - lastRenderCostReportUtc).TotalSeconds >= 5.0 && renderCostSamples > 0)
+            {
+                var avgMs = renderCostAccumMs / renderCostSamples;
+                if (avgMs > 15.0)
+                {
+                    Log.Warning(
+                        "ThemeSurface[{Mode}] repaint averaging {AvgMs:F1} ms over {Frames} frames — paint cost is throttling the UI (software rendering / large theme bitmaps).",
+                        isPhysicalView ? "physical" : "virtual", avgMs, renderCostSamples);
+                }
+                else
+                {
+                    Log.Debug(
+                        "ThemeSurface[{Mode}] repaint avg {AvgMs:F2} ms over {Frames} frames.",
+                        isPhysicalView ? "physical" : "virtual", avgMs, renderCostSamples);
+                }
+                renderCostAccumMs = 0;
+                renderCostSamples = 0;
+                lastRenderCostReportUtc = nowUtc;
             }
         }
     }

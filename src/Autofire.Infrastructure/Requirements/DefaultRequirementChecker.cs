@@ -6,7 +6,7 @@ namespace Autofire.Infrastructure.Requirements;
 /// Default <see cref="IRequirementChecker"/>. Today it knows about a
 /// single requirement (the ViGEm Bus driver, Windows-only); add new
 /// requirements here as the input/output sink list grows in step 5 of
-/// the roadmap (vJoy, HIDMaestro, MIDI services, etc.).
+/// they land (HIDMaestro driver presence is the next candidate).
 ///
 /// <para>
 /// The checker always returns one entry per known requirement, even on

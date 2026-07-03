@@ -59,11 +59,35 @@ internal static class ViGEmBusDetection
         try
         {
             // The ViGEmClient constructor opens a handle to the bus
-            // device; if the driver isn't installed it throws. Disposing
-            // immediately afterwards is the standard pattern (the real
-            // sinks hold their client for the lifetime of the sink, but a
-            // probe doesn't need to).
-            using var client = new ViGEmClient();
+            // device; if the driver isn't installed it throws. On some
+            // machines / driver states the handle open can block for
+            // *tens of seconds* before succeeding or failing. We've seen
+            // 11 s in the field, which stalls the startup requirement
+            // check. Bound it: run the probe on the thread pool and cap
+            // the wait. A timeout is reported as Unknown (inconclusive)
+            // rather than Missing, so we don't nag a user whose driver is
+            // merely slow to answer.
+            var probe = Task.Run(() =>
+            {
+                using var client = new ViGEmClient();
+            });
+
+            if (!probe.Wait(TimeSpan.FromSeconds(2)))
+            {
+                logger.LogWarning(
+                    "ViGEm Bus probe did not complete within 2 s; treating as inconclusive. " +
+                    "The driver may be present but slow to respond on this machine.");
+                return Detection.Unknown;
+            }
+
+            if (probe.IsFaulted)
+            {
+                logger.LogDebug(
+                    probe.Exception?.GetBaseException(),
+                    "ViGEm Bus probe threw; treating as missing.");
+                return Detection.Missing;
+            }
+
             return Detection.Installed;
         }
         catch (Exception exception)

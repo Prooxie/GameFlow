@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -45,12 +46,23 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     private bool ruleSummaryDirty = true;
     private bool aboutTextDirty   = true;
-    private bool jsonDirty        = true;
 
     private readonly ProfileSession profileSession;
     private readonly RuntimeSnapshotStore runtimeSnapshotStore;
     private readonly ILocalizationService localizationService;
     private readonly InputDeviceCatalog inputDeviceCatalog;
+    private int rebuildQueued;
+    private readonly Autofire.Infrastructure.Runtime.Input.IRawInputAttacher rawInputAttacher;
+
+    /// <summary>
+    /// Called by <see cref="Views.ShellWindow"/> once on Opened to hand
+    /// the main-window HWND to the Raw Input reader (so it can subclass
+    /// the WndProc and start receiving <c>WM_INPUT</c>). No-op off Windows.
+    /// </summary>
+    public void AttachRawInput(IntPtr mainWindowHwnd) =>
+        rawInputAttacher.AttachToHwnd(mainWindowHwnd);
+    private readonly Autofire.Infrastructure.Runtime.Slots.SlotRegistry slotRegistry;
+    private readonly Autofire.Infrastructure.Runtime.Slots.SlotSnapshotStore slotSnapshotStore;
     private readonly IProfileFileDialogService profileFileDialogService;
     private readonly ILoggerFactory loggerFactory;
     private readonly ILogger<ShellViewModel> logger;
@@ -105,6 +117,13 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         RuntimeSnapshotStore runtimeSnapshotStore,
         ILocalizationService localizationService,
         InputDeviceCatalog inputDeviceCatalog,
+        Autofire.Infrastructure.Runtime.Templates.DeviceTemplateStore deviceTemplateStore,
+        Autofire.Infrastructure.Runtime.Input.ButtonMapStore buttonMapStore,
+        Autofire.Infrastructure.Runtime.Input.IKeyboardStateSource keyboardStateSource,
+        Autofire.Infrastructure.Runtime.Input.IMouseStateSource mouseStateSource,
+        Autofire.Infrastructure.Runtime.Input.IRawInputAttacher rawInputAttacher,
+        Autofire.Infrastructure.Runtime.Slots.SlotRegistry slotRegistry,
+        Autofire.Infrastructure.Runtime.Slots.SlotSnapshotStore slotSnapshotStore,
         IProfileFileDialogService profileFileDialogService,
         IOptions<AppRuntimeOptions> runtimeOptions,
         ILoggerFactory loggerFactory,
@@ -115,6 +134,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         this.runtimeSnapshotStore = runtimeSnapshotStore;
         this.localizationService = localizationService;
         this.inputDeviceCatalog = inputDeviceCatalog;
+        this.rawInputAttacher = rawInputAttacher;
         this.profileFileDialogService = profileFileDialogService;
         this.runtimeOptions = runtimeOptions.Value;
         this.loggerFactory = loggerFactory;
@@ -140,6 +160,35 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         ControllerStyleOptions = CreateControllerStyleOptions();
         MappingEditor          = new MappingEditorViewModel(loggerFactory.CreateLogger<MappingEditorViewModel>(), localizationService);
         MappingEditor.RulesChanged += OnMappingRulesChanged;
+        DevicesPanel           = new DevicesViewModel(inputDeviceCatalog, localizationService, deviceTemplateStore, buttonMapStore, keyboardStateSource, mouseStateSource);
+        SlotsPanel             = new SlotsViewModel(slotRegistry, inputDeviceCatalog, deviceTemplateStore, profileSession, localizationService);
+
+        this.slotRegistry = slotRegistry;
+        this.slotSnapshotStore = slotSnapshotStore;
+        RebuildControllerPanels();
+        RebuildMenuColumn();
+        slotRegistry.SlotsChanged += (_, _) =>
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => { RebuildControllerPanels(); RebuildMenuColumn(); });
+        ControlRuleMatcher.UseLocalizer(localizationService);
+
+        inputDeviceCatalog.Updated += (_, _) =>
+        {
+            // Coalesce rebuilds: if one is already queued on the UI thread,
+            // don't pile on another. A device (re)connect can fire several
+            // catalog updates in quick succession; without this gate each one
+            // posts a full panel+menu rebuild and the burst can saturate the
+            // dispatcher and leave the window "not responding".
+            if (System.Threading.Interlocked.Exchange(ref rebuildQueued, 1) == 1)
+            {
+                return;
+            }
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                System.Threading.Volatile.Write(ref rebuildQueued, 0);
+                RebuildControllerPanels();
+                RebuildMenuColumn();
+            });
+        };
 
         selectedLanguage = SupportedLanguages
             .FirstOrDefault(l => l.Code == localizationService.CurrentCulture)
@@ -242,8 +291,148 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     } = [];
 
     public MappingEditorViewModel MappingEditor { get; }
+
+    /// <summary>View-model backing the Devices tab (device discovery surface).</summary>
+    public DevicesViewModel DevicesPanel { get; }
+
+    public SlotsViewModel SlotsPanel { get; }
     public ControllerVisualStateViewModel PhysicalController { get; }
     public ControllerVisualStateViewModel VirtualController  { get; }
+
+    /// <summary>Per-slot live controller panels shown on the dashboard.</summary>
+    public System.Collections.ObjectModel.ObservableCollection<DashboardControllerPanelViewModel> ControllerPanels { get; } = [];
+
+    public bool HasControllerPanels => ControllerPanels.Count > 0;
+
+    // ─── PadForge-style menu column ─────────────────────────────────────────
+
+    /// <summary>Index of the active outer tab (0=Dashboard, 1=Profiles, 2=Devices).</summary>
+    private int outerNavSelectedIndex;
+    public int OuterNavSelectedIndex
+    {
+        get => outerNavSelectedIndex;
+        set => SetProperty(ref outerNavSelectedIndex, value);
+    }
+
+    /// <summary>Index of the Devices inner sub-tab (0=Physical, 1=Virtual).</summary>
+    private int devicesSubTabIndex;
+    public int DevicesSubTabIndex
+    {
+        get => devicesSubTabIndex;
+        set => SetProperty(ref devicesSubTabIndex, value);
+    }
+
+    /// <summary>Physical devices currently in the catalog (sidebar rows).</summary>
+    public ObservableCollection<MenuColumnItemViewModel> PhysicalMenuItems { get; } = [];
+
+    /// <summary>Configured virtual-controller slots (sidebar rows).</summary>
+    public ObservableCollection<MenuColumnItemViewModel> VirtualMenuItems { get; } = [];
+
+    private void RebuildMenuColumn()
+    {
+        PhysicalMenuItems.Clear();
+        foreach (var device in inputDeviceCatalog.Devices)
+        {
+            var icon = device.Category switch
+            {
+                DeviceCategory.Gamepad  => "🎮",
+                DeviceCategory.Joystick => "🕹",
+                DeviceCategory.Keyboard => "⌨",
+                DeviceCategory.Mouse    => "🖱",
+                _                       => "■",
+            };
+            var capturedId = device.Id;
+            PhysicalMenuItems.Add(new MenuColumnItemViewModel(
+                device.Id, device.DisplayName, icon, isConnected: true,
+                onSelect: () => SelectPhysicalMenuItem(capturedId)));
+        }
+
+        VirtualMenuItems.Clear();
+        foreach (var slot in slotRegistry.GetSlots())
+        {
+            var name = string.IsNullOrWhiteSpace(slot.Name) ? "(unnamed)" : slot.Name;
+            var capturedId = slot.Id;
+            VirtualMenuItems.Add(new MenuColumnItemViewModel(
+                slot.Id, name, "▣", isConnected: slot.Enabled,
+                onSelect: () => SelectVirtualMenuItem(capturedId)));
+        }
+    }
+
+    private void SelectPhysicalMenuItem(string deviceId)
+    {
+        OuterNavSelectedIndex = 2; // Devices tab
+        DevicesSubTabIndex = 0;    // Physical sub-tab
+        var row = DevicesPanel.Devices.FirstOrDefault(d => string.Equals(d.Id, deviceId, StringComparison.Ordinal));
+        if (row is not null)
+        {
+            DevicesPanel.SelectedDevice = row;
+        }
+    }
+
+    private void SelectVirtualMenuItem(string slotId)
+    {
+        OuterNavSelectedIndex = 2; // Devices tab
+        DevicesSubTabIndex = 1;    // Virtual sub-tab
+        var row = SlotsPanel.Slots.FirstOrDefault(s => string.Equals(s.Id, slotId, StringComparison.Ordinal));
+        if (row is not null)
+        {
+            SlotsPanel.SelectedSlot = row;
+        }
+    }
+
+    private void RebuildControllerPanels()
+    {
+        var connected = inputDeviceCatalog.Devices.Select(d => d.Id).ToHashSet(StringComparer.Ordinal);
+        var slots = slotRegistry.GetSlots()
+            .Where(s => s.Enabled && s.InputDeviceIds.Any(connected.Contains))
+            .ToList();
+
+        // Remove panels whose slot vanished or was disabled.
+        for (int i = ControllerPanels.Count - 1; i >= 0; i--)
+        {
+            if (slots.All(s => s.Id != ControllerPanels[i].SlotId))
+            {
+                ControllerPanels.RemoveAt(i);
+            }
+        }
+
+        // Add/update in slot order.
+        for (int idx = 0; idx < slots.Count; idx++)
+        {
+            var slot = slots[idx];
+            var existing = ControllerPanels.FirstOrDefault(p => p.SlotId == slot.Id);
+            if (existing is null)
+            {
+                var visual = new ControllerVisualStateViewModel(OnControllerElementSelected, localizationService);
+                visual.SetPanelKind(isPhysical: false);
+                var panel = new DashboardControllerPanelViewModel(slot.Id, slot.Name, visual)
+                {
+                    LightColor = LightColorForSlot(slot),
+                };
+                ControllerPanels.Insert(Math.Min(idx, ControllerPanels.Count), panel);
+            }
+            else
+            {
+                existing.Title = slot.Name;
+                existing.LightColor = LightColorForSlot(slot);
+                int cur = ControllerPanels.IndexOf(existing);
+                if (cur != idx && idx < ControllerPanels.Count)
+                {
+                    ControllerPanels.Move(cur, idx);
+                }
+            }
+        }
+
+        OnPropertyChanged(nameof(HasControllerPanels));
+    }
+
+    private static string LightColorForSlot(Autofire.Infrastructure.Runtime.Slots.ControllerSlot slot)
+    {
+        var t = slot.OutputTemplate;
+        return t.LightingEnabled
+            ? $"#FF{t.LightR:X2}{t.LightG:X2}{t.LightB:X2}"
+            : "#00000000";
+    }
 
     // ─── Observable properties ────────────────────────────────────────────────
 
@@ -271,11 +460,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     {
         get; set => SetProperty(ref field, value);
     } = "{}";
-
-    public string DiagnosticsText
-    {
-        get; private set => SetProperty(ref field, value);
-    } = string.Empty;
 
     public string AboutText
     {
@@ -337,6 +521,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     public string DashboardTabLabel              => localizationService["DashboardTab"];
     public string ProfilesTabLabel               => localizationService["ProfilesTab"];
+    public string DevicesTabLabel                => localizationService["DevicesTab"];
     public string DiagnosticsTabLabel            => localizationService["DiagnosticsTab"];
     public string LanguageLabel                  => localizationService["LanguageLabel"];
     public string ThemeLabel                     => localizationService["ThemeLabel"];
@@ -455,13 +640,53 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             // self-persist contract via the localization service.
             var profile = profileSession.CurrentProfile;
             var newKind = value.Kind.ToString();
-            if (!string.Equals(profile.Ui.Theme, newKind, StringComparison.OrdinalIgnoreCase))
+
+            // CRITICAL: fold in any pending variant picks too. This save
+            // fires ProfileChanged → OnProfileChanged → SyncDashboard →
+            // ApplyVariantPreferenceForStyle, which re-reads the per-style
+            // variant ids straight out of profile.Ui. The user's most
+            // recent skin pick lives only in the pending* fields until the
+            // next full Apply, so if we write Theme alone the round-trip
+            // restores the OLD variant id and the skin appears to "revert"
+            // the instant you change the app colour theme. Merging the
+            // pending picks into the same write keeps the skin stable.
+            var mergedUi = profile.Ui with { Theme = newKind };
+            if (SelectedPhysicalStyle is not null)
             {
-                var updated = profile with { Ui = profile.Ui with { Theme = newKind } };
+                mergedUi = MergeVariantPick(mergedUi, SelectedPhysicalStyle.Style, pendingPhysicalVariantPick);
+            }
+            if (SelectedVirtualStyle is not null)
+            {
+                mergedUi = MergeVariantPick(mergedUi, SelectedVirtualStyle.Style, pendingVirtualVariantPick);
+            }
+
+            var themeChanged   = !string.Equals(profile.Ui.Theme, newKind, StringComparison.OrdinalIgnoreCase);
+            var variantChanged = !ReferenceEquals(mergedUi, profile.Ui) && !UiVariantsEqual(mergedUi, profile.Ui);
+
+            if (themeChanged || variantChanged)
+            {
+                var updated = profile with { Ui = mergedUi };
                 _ = profileSession.SaveCurrentProfileAsync(updated);
+
+                // Picks are now committed; clear the pending slots so a
+                // later partial save doesn't re-stamp a stale value.
+                pendingPhysicalVariantPick = null;
+                pendingVirtualVariantPick  = null;
             }
         }
     }
+
+    /// <summary>
+    /// Compares only the per-style variant id fields of two
+    /// <see cref="UiPreferences"/> records, so the <see cref="SelectedTheme"/>
+    /// setter can tell whether a merge actually changed a variant id
+    /// (and therefore whether a save is warranted).
+    /// </summary>
+    private static bool UiVariantsEqual(UiPreferences a, UiPreferences b) =>
+        string.Equals(a.DualSenseVariantId,  b.DualSenseVariantId,  StringComparison.Ordinal) &&
+        string.Equals(a.DualShock4VariantId, b.DualShock4VariantId, StringComparison.Ordinal) &&
+        string.Equals(a.DualShock3VariantId, b.DualShock3VariantId, StringComparison.Ordinal) &&
+        string.Equals(a.XboxVariantId,       b.XboxVariantId,       StringComparison.Ordinal);
 
     public InputProviderOption? SelectedInputProvider
     {
@@ -496,6 +721,14 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     /// option carries both the human-readable label and the
     /// Avalonia-parseable brush string the panel actually applies.
     /// </summary>
+    /// <summary>Header for the dashboard background preset picker.</summary>
+    public string DashboardBackgroundLabel => Localized("DashboardBackgroundLabel", "Background");
+
+    public string SidebarPhysicalHeader     => Localized("SidebarPhysicalHeader",     "PHYSICAL DEVICES");
+    public string SidebarVirtualHeader      => Localized("SidebarVirtualHeader",      "VIRTUAL CONTROLLERS");
+    public string DevicesPhysicalTabHeader  => Localized("DevicesPhysicalTabHeader",  "Physical devices");
+    public string DevicesVirtualTabHeader   => Localized("DevicesVirtualTabHeader",   "Virtual controllers");
+
     public sealed record PanelBackgroundOption(string Label, string BrushValue);
 
     /// <summary>
@@ -505,14 +738,24 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     /// lets streamers mask the controller panel onto a webcam feed
     /// without picking colours by hand.
     /// </summary>
-    public IReadOnlyList<PanelBackgroundOption> PanelBackgroundOptions { get; } =
+    public IReadOnlyList<PanelBackgroundOption> PanelBackgroundOptions =>
     [
-        new("Dark (default)", "#09111B"),
-        new("Chroma green",   "#00B140"),
-        new("Chroma blue",    "#0047BB"),
-        new("Pure black",     "#000000"),
-        new("Transparent",    "Transparent"),
+        new(Localized("PanelBackgroundThemeDefault", "Theme default"), ""),
+        new(Localized("PanelBackgroundChromaGreen",  "Chroma green"),  "#00B140"),
+        new(Localized("PanelBackgroundChromaBlue",   "Chroma blue"),   "#0047BB"),
+        new(Localized("PanelBackgroundPureBlack",    "Pure black"),    "#000000"),
     ];
+
+    /// <summary>
+    /// True for stored brush values that mean "follow the app theme":
+    /// empty (the new default), the legacy fixed default "#09111B", and
+    /// the retired "Transparent" preset.
+    /// </summary>
+    private static bool IsThemeDefaultBrushValue(string? value) =>
+        string.IsNullOrWhiteSpace(value)
+        || string.Equals(value, "#09111B", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(value, "Transparent", StringComparison.OrdinalIgnoreCase);
+
 
     /// <summary>
     /// The active preset. Setter writes the chosen brush into both
@@ -530,6 +773,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             // yet) fall through to the default preset for display
             // purposes; the underlying brush is untouched.
             var current = PhysicalController.PanelBackgroundBrush;
+            if (IsThemeDefaultBrushValue(current)) { current = ""; }
             foreach (var opt in PanelBackgroundOptions)
             {
                 if (string.Equals(opt.BrushValue, current, StringComparison.OrdinalIgnoreCase))
@@ -551,6 +795,30 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             PhysicalController.PanelBackgroundBrush = target;
             VirtualController.PanelBackgroundBrush  = target;
             OnPropertyChanged(nameof(SelectedPanelBackgroundOption));
+
+            // Persist immediately. Previously the pick only reached the
+            // profile on Apply, so any profile sync in between reverted the
+            // panels to the stored value ("blank" right after selecting) —
+            // and a later sync resurrected a previously-applied chroma
+            // ("green screen" after switching the app theme).
+            _ = PersistPanelBackgroundAsync(target);
+        }
+    }
+
+    private async Task PersistPanelBackgroundAsync(string brushValue)
+    {
+        try
+        {
+            var current = profileSession.CurrentProfile;
+            var updated = current with
+            {
+                Ui = current.Ui with { ControllerPanelBackground = brushValue },
+            };
+            await profileSession.SaveCurrentProfileAsync(updated);
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(exception, "Persisting controller panel background failed.");
         }
     }
 
@@ -671,7 +939,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         aboutTextDirty = false;
 
         ProfileJson = profileSession.SerializeCurrentProfile();
-        jsonDirty = false;
 
         ProfileName = profileSession.CurrentProfile.Name;
 
@@ -706,17 +973,37 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             virtualStyle = InferVirtualStyleFromProvider(snapshot.OutputProvider) ?? virtualStyle;
         }
 
+        // Physical "Auto" with no concrete detection yields an EMPTY theme
+        // variant list — which left the physical preview blank and unable
+        // to keep a skin the user picked (every refresh re-cleared it). Fall
+        // back to the resolved virtual style so the physical surface renders
+        // a controller and its Skin picker actually has options. Proper
+        // per-device physical detection (VID/PID → style) is a later pass.
+        if (physicalStyle == ControllerVisualStyle.Auto)
+        {
+            physicalStyle = virtualStyle == ControllerVisualStyle.Auto
+                ? ControllerVisualStyle.PlayStation5
+                : virtualStyle;
+        }
+
         // ── Fast path: always ─────────────────────────────────────────────────
         PhysicalController.Update("physical", PhysicalInputLabel, snapshot.PhysicalSnapshot, physicalStyle);
         VirtualController.Update("virtual",   VirtualOutputLabel,  snapshot.VirtualSnapshot,  virtualStyle);
 
-        StatusText =
-            $"{localizationService["StatusPrefix"]} {snapshot.InputProvider} → {snapshot.OutputProvider}  ·  " +
-            $"{localizationService["ActiveProfilePrefix"]} {profile.Name}";
+        // Per-slot dashboard panels (live state for each running controller).
+        foreach (var panel in ControllerPanels)
+        {
+            panel.Visual.Update(panel.SlotId, panel.Title,
+                slotSnapshotStore.Get(panel.SlotId), ControllerVisualStyle.Auto);
+        }
 
-        // Diagnostics update on every tick (fast path) — the build is cheap
-        // (one StringBuilder pass with no I/O) so it does not cause performance issues.
-        DiagnosticsText = BuildDiagnostics(snapshot);
+        // Header subtitle intentionally left to transient command/error
+        // messages only (Apply/Save/errors set StatusText directly). The
+        // old per-tick "Runtime SDL3 → Preview Output · Active profile"
+        // summary was removed: provider/output is implied per-controller
+        // now, so an always-on global line just added noise.
+
+        // Diagnostics tab removed: no per-tick string build on the UI thread.
 
         if (!string.IsNullOrWhiteSpace(selectedControlKey))
         {
@@ -732,15 +1019,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             RuntimeNotesText = BuildRuntimeNotes(snapshot);
         }
 
-        // ── Slow path: ~3 s ───────────────────────────────────────────────────
-        if (refreshTick % SlowPathEvery == 0 || jsonDirty)
-        {
-            PhysicalStateJson = JsonSerializer.Serialize(
-                snapshot.PhysicalSnapshot, ProfileJsonOptions.Default);
-            VirtualStateJson  = JsonSerializer.Serialize(
-                snapshot.VirtualSnapshot, ProfileJsonOptions.Default);
-            jsonDirty = false;
-        }
+        // Diagnostics tab removed: no raw physical/virtual JSON serialization.
 
         // ── Dirty-flag paths ──────────────────────────────────────────────────
         if (ruleSummaryDirty)
@@ -809,7 +1088,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             pendingVirtualVariantPick  = null;
 
             ProfileJson      = profileSession.SerializeCurrentProfile();
-            jsonDirty        = false;
             ruleSummaryDirty = true;
             await RefreshRuntimeAsync();
         }
@@ -822,13 +1100,42 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     // ─── Save / reset / duplicate / rename helpers ────────────────────────────
 
+    /// <summary>
+    /// Returns <paramref name="desired"/> if no existing profile uses that
+    /// name; otherwise appends " (2)", " (3)", … until unique. Case-
+    /// insensitive. If <paramref name="excludeProfileId"/> is supplied,
+    /// that profile is ignored (so renaming to the same name is allowed).
+    /// </summary>
+    private async Task<string> MakeUniqueProfileNameAsync(string desired, string? excludeProfileId = null)
+    {
+        var trimmed = string.IsNullOrWhiteSpace(desired) ? "Profile" : desired.Trim();
+        var summaries = await profileSession.ListProfilesAsync();
+        var taken = summaries
+            .Where(p => excludeProfileId is null || !string.Equals(p.Id, excludeProfileId, StringComparison.Ordinal))
+            .Select(p => p.Name ?? string.Empty)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (!taken.Contains(trimmed))
+        {
+            return trimmed;
+        }
+        for (int n = 2; n < 1000; n++)
+        {
+            var candidate = $"{trimmed} ({n})";
+            if (!taken.Contains(candidate))
+            {
+                return candidate;
+            }
+        }
+        return $"{trimmed} ({Guid.NewGuid().ToString("N")[..6]})";
+    }
+
     private async Task SaveProfileAsync()
     {
         try
         {
             await profileSession.SaveCurrentProfileAsync(profileSession.CurrentProfile);
             ProfileJson      = profileSession.SerializeCurrentProfile();
-            jsonDirty        = false;
             ruleSummaryDirty = true;
             if (logger.IsEnabled(LogLevel.Information))
             {
@@ -855,7 +1162,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             SyncDashboardSelectionsFromProfile();
             RefreshControllerInventory();
             ProfileJson      = profileSession.SerializeCurrentProfile();
-            jsonDirty        = false;
             ruleSummaryDirty = true;
             ProfileName      = profileSession.CurrentProfile.Name;
             await RefreshRuntimeAsync();
@@ -876,7 +1182,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         isSwitchingProfile = true;
         try
         {
-            var profile = await profileSession.CreateNewProfileAsync($"Profile {DateTime.Now:HHmmss}");
+            var desired = $"Profile {DateTime.Now:HHmmss}";
+            var unique = await MakeUniqueProfileNameAsync(desired);
+            var profile = await profileSession.CreateNewProfileAsync(unique);
             await RefreshAvailableProfilesAsync();
             ProfileName = profile.Name;
             var target = AvailableProfiles.FirstOrDefault(o => o.Id == profile.Id);
@@ -903,7 +1211,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         isSwitchingProfile = true;
         try
         {
-            var copy = await profileSession.DuplicateCurrentProfileAsync($"{profileSession.CurrentProfile.Name} Copy");
+            var desired = $"{profileSession.CurrentProfile.Name} Copy";
+            var unique = await MakeUniqueProfileNameAsync(desired);
+            var copy = await profileSession.DuplicateCurrentProfileAsync(unique);
             await RefreshAvailableProfilesAsync();
             ProfileName = copy.Name;
             var target = AvailableProfiles.FirstOrDefault(o => o.Id == copy.Id);
@@ -941,7 +1251,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                 await profileSession.ImportProfileAsync(json);
                 await RefreshAvailableProfilesAsync();
                 ProfileJson      = profileSession.SerializeCurrentProfile();
-                jsonDirty        = false;
                 ruleSummaryDirty = true;
                 RebuildControlConfigurationCards();
                 ProfileName = profileSession.CurrentProfile.Name;
@@ -986,10 +1295,11 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         isSwitchingProfile = true;
         try
         {
-            var profile = profileSession.CurrentProfile with { Name = newName };
+            var unique = await MakeUniqueProfileNameAsync(newName, profileSession.CurrentProfile.Id);
+            var profile = profileSession.CurrentProfile with { Name = unique };
             await profileSession.SaveCurrentProfileAsync(profile);
+            ProfileName      = unique;
             ProfileJson      = profileSession.SerializeCurrentProfile();
-            jsonDirty        = false;
             ruleSummaryDirty = true;
             await RefreshAvailableProfilesAsync();
             var target = AvailableProfiles.FirstOrDefault(o => o.Id == profile.Id);
@@ -1116,6 +1426,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         try
         {
             var dialogViewModel = serviceProvider.GetRequiredService<SettingsDialogViewModel>();
+            dialogViewModel.Shell = this;
             var dialog = new SettingsDialog
             {
                 DataContext = dialogViewModel,
@@ -1136,8 +1447,17 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     {
         var profile = profileSession.CurrentProfile;
 
+        // Phase 1 input simplification: input is no longer user-selectable.
+        // We always resolve to the platform's unified input provider (SDL3
+        // on every OS for now) regardless of what the profile saved, and the
+        // picker ComboBox is hidden in ShellWindow.axaml. The saved
+        // profile.InputProvider is preserved on disk but ignored here, so
+        // re-enabling the picker later (or adding a Windows-specific RawInput
+        // path for keyboard/mouse) is a localized change.
+        var defaultInputKey = ResolveDefaultInputProviderKey();
         SelectedInputProvider = InputProviderOptions
-            .FirstOrDefault(o => o.Key == profile.InputProvider)
+            .FirstOrDefault(o => o.Key == defaultInputKey)
+            ?? InputProviderOptions.FirstOrDefault(o => o.Key == "sdl")
             ?? InputProviderOptions.FirstOrDefault();
 
         SelectedOutputProvider = OutputProviderOptions
@@ -1259,7 +1579,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             MappingEditor.LoadFromProfile(profileSession.CurrentProfile);
             RebuildControlConfigurationCards();
             ProfileJson      = profileSession.SerializeCurrentProfile();
-            jsonDirty        = false;
             ruleSummaryDirty = true;
             ProfileName      = profileSession.CurrentProfile.Name;
             await RefreshRuntimeAsync();
@@ -1333,6 +1652,16 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         ProviderStatusText = inputDeviceCatalog.ProviderStatus;
     }
 
+    private string RuleCountText(int count) => count switch
+    {
+        0 => Localized("MappedControlsRuleCountZero", "No rules"),
+        1 => Localized("MappedControlsRuleCountOne",  "1 rule"),
+        _ => string.Format(
+            System.Globalization.CultureInfo.CurrentCulture,
+            Localized("MappedControlsRuleCountMany", "{0} rules"),
+            count),
+    };
+
     private void RebuildControlConfigurationCards()
     {
         var grouped = profileSession.CurrentProfile.Rules
@@ -1342,6 +1671,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                 g.Key,
                 ControlRuleMatcher.GetTitle(g.Key),
                 ControlRuleMatcher.GetHint(g.Key),
+                RuleCountText(g.Count()),
                 [.. g.Select(ControlRuleMatcher.CreateEntry)]))
             .ToArray();
 
@@ -1387,7 +1717,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             var profile = profileSession.CurrentProfile with { Rules = [.. rules] };
             await profileSession.SaveCurrentProfileAsync(profile);
             ProfileJson      = profileSession.SerializeCurrentProfile();
-            jsonDirty        = false;
             ruleSummaryDirty = true;
             RebuildControlConfigurationCards();
         }
@@ -1403,23 +1732,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     }
 
     // ─── Text builders ────────────────────────────────────────────────────────
-
-    private string BuildDiagnostics(RuntimeSnapshot snapshot)
-    {
-        var sb = new StringBuilder();
-        _ = sb.AppendLine($"--- {localizationService["DiagnosticsLabel"]}  [{DateTimeOffset.Now:HH:mm:ss.fff}] ---");
-        _ = sb.AppendLine($"- {localizationService["DiagLogsLabel"]}: {AppPaths.LogsDirectory}");
-        _ = sb.AppendLine($"- {localizationService["DiagLastInputFrameLabel"]}: {(snapshot.LastUpdated == default ? localizationService["DiagNoDataYetLabel"] : snapshot.LastUpdated.LocalDateTime.ToString("HH:mm:ss.fff"))}");
-        _ = sb.AppendLine($"- {localizationService["DiagDashboardRefreshLabel"]}: " + string.Format(localizationService["DiagHzTargetFormat"], runtimeOptions.DashboardRefreshHz));
-        _ = sb.AppendLine($"- {localizationService["DiagInputProviderRequestedLabel"]}: {profileSession.CurrentProfile.InputProvider}");
-        _ = sb.AppendLine($"- {localizationService["DiagInputProviderEffectiveLabel"]}: {snapshot.InputProvider}");
-        _ = sb.AppendLine($"- {localizationService["DiagOutputProviderLabel"]}: {snapshot.OutputProvider}");
-        _ = sb.AppendLine($"- {localizationService["DiagViGEmEnabledLabel"]}: {runtimeOptions.EnableViGEm}");
-        _ = sb.AppendLine($"- {localizationService["DiagControllersDetectedLabel"]}: {inputDeviceCatalog.Devices.Count}");
-        _ = sb.AppendLine($"- {localizationService["DiagProviderStatusLabel"]}: {inputDeviceCatalog.ProviderStatus}");
-        _ = sb.AppendLine($"- {localizationService["DiagExperimentalGameInputLabel"]}: {runtimeOptions.EnableExperimentalGameInput}");
-        return sb.ToString();
-    }
 
     private string BuildAboutText()
     {
@@ -1446,11 +1758,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         if (inputProvider.Equals("demo", StringComparison.OrdinalIgnoreCase))
         {
             lines.Add($"- {localizationService["RuntimeNoteDemoActive"]}");
-        }
-
-        if (inputProvider.Equals("xinput", StringComparison.OrdinalIgnoreCase))
-        {
-            lines.Add($"- {localizationService["RuntimeNoteXInputActive"]}");
         }
 
         if (IsSdlProvider(inputProvider))
@@ -1581,6 +1888,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(DashboardTabLabel));
         OnPropertyChanged(nameof(ProfilesTabLabel));
         OnPropertyChanged(nameof(DiagnosticsTabLabel));
+        OnPropertyChanged(nameof(DevicesTabLabel));
         OnPropertyChanged(nameof(LanguageLabel));
         OnPropertyChanged(nameof(ThemeLabel));
         OnPropertyChanged(nameof(OpenSettingsButtonLabel));
@@ -1624,6 +1932,20 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(SelectedProfileSummary));
         OnPropertyChanged(nameof(HasControlConfigurationCards));
         OnPropertyChanged(nameof(HasNoControlConfigurationCards));
+        OnPropertyChanged(nameof(DashboardBackgroundLabel));
+        OnPropertyChanged(nameof(SidebarPhysicalHeader));
+        OnPropertyChanged(nameof(SidebarVirtualHeader));
+        OnPropertyChanged(nameof(DevicesPhysicalTabHeader));
+        OnPropertyChanged(nameof(DevicesVirtualTabHeader));
+        OnPropertyChanged(nameof(PanelBackgroundOptions));
+        OnPropertyChanged(nameof(SelectedPanelBackgroundOption));
+
+        // Rebuild the mapping cards with the new culture: their rule-count
+        // text is baked at construction, and regenerating the items also
+        // forces detached tab content (Profiles not currently visible) to
+        // re-evaluate its bindings when it next attaches — fixing labels
+        // that otherwise kept the startup language.
+        RebuildControlConfigurationCards();
 
         RefreshControllerInventory();
     }
@@ -1650,7 +1972,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             RefreshControllerInventory();
             _ = RefreshAvailableProfilesAsync();
             ProfileJson      = profileSession.SerializeCurrentProfile();
-            jsonDirty        = false;
             ruleSummaryDirty = true;
             ProfileName      = profileSession.CurrentProfile.Name;
             OnPropertyChanged(nameof(SelectedProfileSummary));
@@ -1701,28 +2022,23 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         ];
     }
 
+    /// <summary>
+    /// Resolves the single input provider the app uses on this platform.
+    /// Phase 1: SDL3 everywhere — it's the unified cross-platform path
+    /// (gamepads, joysticks, wheels) on Windows, Linux, and macOS. The
+    /// input picker is hidden, so this is the only input source. When a
+    /// Windows RawInput keyboard/mouse provider is added later, branch
+    /// here on <see cref="OperatingSystem"/>.
+    /// </summary>
+    private static string ResolveDefaultInputProviderKey() => "sdl";
+
     private IReadOnlyList<InputProviderOption> CreateInputProviderOptions()
     {
         return
         [
-            new InputProviderOption("xinput",
-                Localized("InputProviderXInputLabel",       "XInput"),
-                Localized("InputProviderXInputDescription", "Windows native XInput driver. Enumerates up to 4 Xbox-compatible controllers.")),
             new InputProviderOption("sdl",
                 Localized("InputProviderSdlLabel",          "SDL3 unified input"),
-                Localized("InputProviderSdlDescription",    "Cross-platform SDL3 gamepad mapping plus joystick fallback.")),
-            new InputProviderOption("openxinput",
-                Localized("InputProviderOpenXInputLabel",       "OpenXInput"),
-                Localized("InputProviderOpenXInputDescription", "Drop-in XInput replacement supporting more than 4 controllers. Scaffold — requires OpenXinput1_4.dll alongside the application.")),
-            new InputProviderOption("x360ce",
-                Localized("InputProviderX360ceLabel",       "x360ce"),
-                Localized("InputProviderX360ceDescription", "DirectInput-to-XInput translator for legacy / non-XInput pads. Scaffold — requires x360ce runtime DLL.")),
-            new InputProviderOption("ps3",
-                Localized("InputProviderPs3Label",          "DualShock 3 (PS3)"),
-                Localized("InputProviderPs3Description",    "Reads a paired DualShock 3 via DsHidMini or libusb. Scaffold — requires DsHidMini driver.")),
-            new InputProviderOption("windows-midi",
-                Localized("InputProviderWindowsMidiLabel",       "Windows MIDI input"),
-                Localized("InputProviderWindowsMidiDescription", "Maps incoming MIDI events to virtual gamepad inputs. Scaffold — requires Windows MIDI Services and a profile-defined mapping.")),
+                Localized("InputProviderSdlDescription",    "Cross-platform SDL3 gamepad mapping plus Raw Input keyboard/mouse synthesis.")),
             new InputProviderOption("demo",
                 Localized("InputProviderDemoLabel",         "Demo preview"),
                 Localized("InputProviderDemoDescription",   "Animated preview source for UI testing — no hardware required.")),
@@ -1745,15 +2061,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             new OutputProviderOption("vigem-ds5",
                 Localized("OutputProviderViGEmDs5Label",           "ViGEm DualSense (DS5)"),
                 Localized("OutputProviderViGEmDs5Description",     "Virtual DualSense controller via ViGEm Bus. Requires ViGEm Bus driver v1.22+.")),
-            new OutputProviderOption("vjoy",
-                Localized("OutputProviderVJoyLabel",               "vJoy virtual joystick"),
-                Localized("OutputProviderVJoyDescription",         "Generic virtual joystick (up to 8 axes / 128 buttons). Scaffold — requires vJoy device driver.")),
             new OutputProviderOption("hidmaestro",
-                Localized("OutputProviderHidMaestroLabel",         "HidMaestro virtual HID"),
-                Localized("OutputProviderHidMaestroDescription",   "Custom HID device emulation with arbitrary report descriptors. Scaffold — requires HidMaestro driver.")),
-            new OutputProviderOption("windows-midi-out",
-                Localized("OutputProviderWindowsMidiOutLabel",       "Windows MIDI output"),
-                Localized("OutputProviderWindowsMidiOutDescription", "Emits MIDI events from gamepad activity. Scaffold — requires Windows MIDI Services and a profile-defined mapping.")),
+                Localized("OutputProviderHidMaestroLabel",         "HIDMaestro virtual controller"),
+                Localized("OutputProviderHidMaestroDescription",   "User-mode virtual controller platform — no kernel driver or reboot. Presents as real hardware to XInput, DirectInput, SDL3 and WGI. Windows only; active in builds compiled with the HIDMaestro SDK.")),
             new OutputProviderOption("preview",
                 Localized("OutputProviderPreviewLabel",            "Preview only"),
                 Localized("OutputProviderPreviewDescription",      "Shows the transformed output in the dashboard without creating a virtual device.")),
@@ -1969,6 +2279,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         profileSession.Changed             -= OnProfileChanged;
         MappingEditor.RulesChanged         -= OnMappingRulesChanged;
         MappingEditor.Dispose();
+        DevicesPanel.Dispose();
         rulesSaveGate.Dispose();
     }
 

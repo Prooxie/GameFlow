@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Autofire.App.Views.SplashWindow"
+        Title="Autofire Next"
         Width="720"
         Height="400"
         CanResize="False"

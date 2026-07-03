@@ -36,7 +36,7 @@ namespace Autofire.Infrastructure.Theming.Flee;
 /// What's intentionally <b>not</b> supported: assignments, indexers,
 /// string literals, member access other than the <c>math.</c> namespace,
 /// and the legacy Flee escape-percent operator. Any of those parse to
-/// <see cref="ParseException"/> so we fail loudly at theme load rather
+/// <see cref="FleeParseException"/> so we fail loudly at theme load rather
 /// than silently miscompute at render time.
 /// </para>
 /// </summary>

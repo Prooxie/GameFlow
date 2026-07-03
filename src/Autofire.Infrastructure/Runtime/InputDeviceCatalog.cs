@@ -3,24 +3,11 @@ using Autofire.Infrastructure.Localization;
 namespace Autofire.Infrastructure.Runtime;
 
 /// <summary>
-/// Catalog of input devices currently visible to the active provider.
-///
-/// History note: this type was originally built around the 3-field
-/// <see cref="DetectedInputDevice"/> record and a localization-key-based
-/// status string. The input source layer has since standardised on the
-/// richer <see cref="InputDeviceInfo"/> record (which carries connected /
-/// selected flags and VID/PID identifiers) and on literal-string status
-/// text. The catalog has been migrated to that newer model. The legacy
-/// <see cref="DetectedInputDevice"/> record is intentionally kept on disk
-/// because the work-in-progress IInputProvider files (currently excluded
-/// from compilation) still reference it.
-///
-/// Localization regression: provider-status strings used to be resource
-/// keys resolved through <see cref="ILocalizationService"/>. The input
-/// sources are now passing English literals directly. We preserve the
-/// "ProviderStatus_NoActiveProvider" default-state localization, but
-/// status strings produced at runtime are surfaced verbatim. Re-localizing
-/// these is on the future-work list.
+/// Catalog of input devices currently visible to the active providers.
+/// Multiple sources (SDL3 gamepads, Raw Input keyboards/mice) publish
+/// device lists under a source key; the catalog merges them, applies the
+/// ignore filters, and raises <see cref="Updated"/> only when the merged
+/// view actually changes. Lookups by id are O(1) via <see cref="TryGetById"/>.
 /// </summary>
 public sealed class InputDeviceCatalog
 {
@@ -28,9 +15,13 @@ public sealed class InputDeviceCatalog
     private readonly Lock gate = new();
 
     private IReadOnlyList<InputDeviceInfo> devices = [];
+    private Dictionary<string, InputDeviceInfo> devicesById = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, IReadOnlyList<InputDeviceInfo>> devicesBySource = new(StringComparer.Ordinal);
     private IReadOnlySet<string> ignoredDeviceIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     private IReadOnlyList<(ushort Vid, ushort Pid)> ignoredHardwareSignatures = [];
     private string? selectedDeviceId;
+    private string? rawInspectionTargetId;
+    private RawDeviceSnapshot? rawInspection;
 
     /// <summary>
     /// Provider-status localization key (or English literal — the localizer
@@ -64,6 +55,14 @@ public sealed class InputDeviceCatalog
 
     /// <summary>Raised whenever the catalog's device list, status, or selection changes.</summary>
     public event EventHandler? Updated;
+
+    /// <summary>
+    /// Raised when a fresh raw-inspection snapshot is published for the
+    /// device the Devices view is watching. Fires at the input loop's
+    /// cadence while a target is set, so handlers must be cheap and
+    /// marshal to the UI thread themselves.
+    /// </summary>
+    public event EventHandler? RawInspectionUpdated;
 
     /// <summary>Snapshot of the currently visible input devices, with ignored ids filtered out.</summary>
     public IReadOnlyList<InputDeviceInfo> Devices
@@ -122,37 +121,147 @@ public sealed class InputDeviceCatalog
     }
 
     /// <summary>
-    /// Replaces the catalog's known device list. Devices whose ids are in the
-    /// current ignore list are filtered out. Duplicates by id are coalesced
-    /// (case-insensitive). Does NOT affect <see cref="ProviderStatus"/>.
+    /// Id of the device the Devices view wants raw per-frame state for,
+    /// or null when nothing is being inspected. Read by the SDL source
+    /// each input tick. Setting it does not raise <see cref="Updated"/>
+    /// (it must not trigger a device-list rebuild).
     /// </summary>
-    /// <param name="nextDevices">The new device list. May be null or empty.</param>
-    public void ReplaceDevices(IReadOnlyList<InputDeviceInfo>? nextDevices)
+    public string? RawInspectionTargetId
     {
+        get
+        {
+            lock (gate)
+            {
+                return rawInspectionTargetId;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Sets (or clears, with null) the device the SDL source should poll
+    /// for raw inspection. When cleared, the last published snapshot is
+    /// dropped so stale state can't linger in the UI.
+    /// </summary>
+    public void SetRawInspectionTarget(string? deviceId)
+    {
+        var normalized = string.IsNullOrWhiteSpace(deviceId) ? null : deviceId;
+        bool cleared;
+
+        lock (gate)
+        {
+            if (string.Equals(rawInspectionTargetId, normalized, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            rawInspectionTargetId = normalized;
+            cleared = normalized is null && rawInspection is not null;
+            if (cleared)
+            {
+                rawInspection = null;
+            }
+        }
+
+        if (cleared)
+        {
+            RawInspectionUpdated?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    /// <summary>Latest raw-inspection snapshot, or null when none is available.</summary>
+    public RawDeviceSnapshot? RawInspection
+    {
+        get
+        {
+            lock (gate)
+            {
+                return rawInspection;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Publishes a fresh raw-inspection snapshot from the SDL source and
+    /// notifies listeners. A snapshot whose id no longer matches the
+    /// current target is ignored (the view moved on).
+    /// </summary>
+    public void PublishRawInspection(RawDeviceSnapshot? snapshot)
+    {
+        lock (gate)
+        {
+            if (snapshot is not null
+                && !string.Equals(rawInspectionTargetId, snapshot.DeviceId, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            rawInspection = snapshot;
+        }
+
+        RawInspectionUpdated?.Invoke(this, EventArgs.Empty);
+    }
+    /// <param name="nextDevices">The new device list. May be null or empty.</param>
+    /// <remarks>Back-compat overload — attributes the devices to the "default" source.</remarks>
+    public void ReplaceDevices(IReadOnlyList<InputDeviceInfo>? nextDevices)
+        => ReplaceDevices("default", nextDevices);
+
+    /// <summary>
+    /// Replaces the devices contributed by a single enumeration source
+    /// (e.g. <c>"sdl"</c> for controllers, <c>"rawinput"</c> for
+    /// keyboard/mouse). Other sources' devices are preserved, so multiple
+    /// backends can populate the catalog without clobbering each other.
+    /// The merged list is filtered against the ignore lists and deduped by
+    /// id (first source wins). <see cref="Updated"/> fires only when the
+    /// merged result actually changes.
+    /// </summary>
+    /// <param name="source">Stable key identifying the enumeration backend.</param>
+    /// <param name="nextDevices">That source's current devices. Null/empty clears the source.</param>
+    public void ReplaceDevices(string source, IReadOnlyList<InputDeviceInfo>? nextDevices)
+    {
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            source = "default";
+        }
+
         lock (gate)
         {
             if (nextDevices is null || nextDevices.Count == 0)
             {
-                if (devices.Count == 0)
-                {
-                    return;
-                }
-                devices = [];
+                devicesBySource.Remove(source);
             }
             else
             {
-                devices =
-                [
-                    .. nextDevices
-                        .Where(d => !ignoredDeviceIds.Contains(d.Id))
-                        .Where(d => !MatchesIgnoredHardwareSignature(d))
-                        .GroupBy(d => d.Id, StringComparer.OrdinalIgnoreCase)
-                        .Select(g => g.First())
-                ];
+                devicesBySource[source] = [.. nextDevices];
             }
+
+            var merged = MergeSources();
+
+            // No-op if the resulting set is identical (value equality on the
+            // record covers every field). Prevents per-tick churn/flicker.
+            if (devices.SequenceEqual(merged))
+            {
+                return;
+            }
+
+            devices = merged;
+            RebuildIndex();
         }
 
         RaiseUpdated();
+    }
+
+    /// <summary>Flattens all source slices into one filtered, deduped list (caller holds <see cref="gate"/>).</summary>
+    private IReadOnlyList<InputDeviceInfo> MergeSources()
+    {
+        return
+        [
+            .. devicesBySource.Values
+                .SelectMany(list => list)
+                .Where(d => !ignoredDeviceIds.Contains(d.Id))
+                .Where(d => !MatchesIgnoredHardwareSignature(d))
+                .GroupBy(d => d.Id, StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.First())
+        ];
     }
 
     /// <summary>
@@ -217,6 +326,7 @@ public sealed class InputDeviceCatalog
             {
                 // Re-apply the filter to the existing list.
                 devices = [.. devices.Where(d => !ignoredDeviceIds.Contains(d.Id))];
+                RebuildIndex();
             }
         }
 
@@ -254,6 +364,7 @@ public sealed class InputDeviceCatalog
             {
                 // Re-apply the filter to the existing list.
                 devices = [.. devices.Where(d => !MatchesIgnoredHardwareSignature(d))];
+                RebuildIndex();
             }
         }
 
@@ -280,6 +391,7 @@ public sealed class InputDeviceCatalog
         lock (gate)
         {
             devices    = [];
+            RebuildIndex();
             statusKey  = normalisedKey;
             statusArgs = normalisedArgs;
         }
@@ -372,16 +484,34 @@ public sealed class InputDeviceCatalog
     }
 
     /// <summary>Fires the <see cref="Updated"/> event.</summary>
+    /// <summary>O(1) lookup of a visible device by catalog id (case-insensitive). Returns false when the id is unknown or filtered out.</summary>
+    public bool TryGetById(string deviceId, out InputDeviceInfo? device)
+    {
+        lock (gate)
+        {
+            if (!string.IsNullOrEmpty(deviceId) && devicesById.TryGetValue(deviceId, out var found))
+            {
+                device = found;
+                return true;
+            }
+        }
+        device = null;
+        return false;
+    }
+
+    /// <summary>Rebuilds the by-id index. Callers must hold <see cref="gate"/>.</summary>
+    private void RebuildIndex()
+    {
+        var index = new Dictionary<string, InputDeviceInfo>(devices.Count, StringComparer.OrdinalIgnoreCase);
+        foreach (var device in devices)
+        {
+            index[device.Id] = device;
+        }
+        devicesById = index;
+    }
+
     private void RaiseUpdated()
     {
         Updated?.Invoke(this, EventArgs.Empty);
     }
 }
-
-/// <summary>
-/// Legacy 3-field input device record. Retained for source-compatibility with
-/// the work-in-progress Runtime/Providers/* files that are currently
-/// excluded from compilation. New code should use <see cref="InputDeviceInfo"/>.
-/// </summary>
-[Obsolete("Use InputDeviceInfo. Retained only so the excluded WIP provider files remain on-disk-valid.")]
-public sealed record DetectedInputDevice(string Id, string DisplayName, string? HardwareId);

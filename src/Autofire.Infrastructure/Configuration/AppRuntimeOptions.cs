@@ -34,13 +34,7 @@ public sealed class AppRuntimeOptions
     public string DefaultCulture { get; set; } = "en";
 
     /// <summary>
-    /// Opt-in to the experimental Microsoft.GameInput input source.
-    /// Off by default until the interop layer ships out-of-process.
-    /// </summary>
-    public bool EnableExperimentalGameInput { get; set; } = false;
-
-    /// <summary>
-    /// Enables the ViGEm Bus virtual controller output providers (vigem-xbox360, vigem-ds4).
+    /// Enables the ViGEm Bus virtual controller output providers (vigem-xbox360, vigem-ds4, vigem-ds5).
     /// Requires the ViGEm Bus driver to be installed: https://github.com/nefarius/ViGEmBus/releases
     /// </summary>
     public bool EnableViGEm { get; set; } = true;

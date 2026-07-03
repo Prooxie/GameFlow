@@ -52,7 +52,132 @@ public enum RuleKind
     StickThreshold,
     StickAutofire,
     FreezeLastDirection,
+    MultiButtonAutofire,
+    RuleToggle,
     Script
+}
+
+/// <summary>
+/// One row in a <see cref="RuleKind.MultiButtonAutofire"/> editor —
+/// a target button plus its hold / release / delay timings. Mirrors
+/// <see cref="Autofire.Core.Models.Rules.MultiButtonAutofireStep"/>
+/// but as a mutable, bindable view-model.
+/// </summary>
+public sealed class MultiButtonStepViewModel : ViewModelBase
+{
+    private ButtonId targetButton = ButtonId.South;
+    private double holdMs = 50;
+    private double releaseMs = 30;
+    private double delayAfterMs;
+
+    public IReadOnlyList<ButtonIdOption> ButtonOptions { get; } =
+        [.. Enum.GetValues<ButtonId>().Select(b => new ButtonIdOption(b, ControlRuleMatcher.FormatButtonLabel(b)))];
+
+    public ButtonId TargetButton
+    {
+        get => targetButton;
+        set
+        {
+            if (targetButton == value) { return; }
+            targetButton = value;
+            OnPropertyChanged(nameof(TargetButton));
+            OnPropertyChanged(nameof(SelectedTargetButtonOption));
+        }
+    }
+
+    public ButtonIdOption? SelectedTargetButtonOption
+    {
+        get => ButtonOptions.FirstOrDefault(o => o.Button == TargetButton);
+        set { if (value is not null) { TargetButton = value.Button; } }
+    }
+
+    public double HoldMs
+    {
+        get => holdMs;
+        set
+        {
+            var clamped = Math.Clamp(Math.Round(value), 0, 5000);
+            if (Math.Abs(holdMs - clamped) < 0.5) { return; }
+            holdMs = clamped;
+            OnPropertyChanged(nameof(HoldMs));
+            OnPropertyChanged(nameof(HoldMsInput));
+        }
+    }
+
+    public double ReleaseMs
+    {
+        get => releaseMs;
+        set
+        {
+            var clamped = Math.Clamp(Math.Round(value), 0, 5000);
+            if (Math.Abs(releaseMs - clamped) < 0.5) { return; }
+            releaseMs = clamped;
+            OnPropertyChanged(nameof(ReleaseMs));
+            OnPropertyChanged(nameof(ReleaseMsInput));
+        }
+    }
+
+    public double DelayAfterMs
+    {
+        get => delayAfterMs;
+        set
+        {
+            var clamped = Math.Clamp(Math.Round(value), 0, 5000);
+            if (Math.Abs(delayAfterMs - clamped) < 0.5) { return; }
+            delayAfterMs = clamped;
+            OnPropertyChanged(nameof(DelayAfterMs));
+            OnPropertyChanged(nameof(DelayAfterMsInput));
+        }
+    }
+
+    public string HoldMsInput
+    {
+        get => HoldMs.ToString("0", CultureInfo.InvariantCulture);
+        set { if (TryParseDoubleShared(value, out var p)) { HoldMs = p; } }
+    }
+
+    public string ReleaseMsInput
+    {
+        get => ReleaseMs.ToString("0", CultureInfo.InvariantCulture);
+        set { if (TryParseDoubleShared(value, out var p)) { ReleaseMs = p; } }
+    }
+
+    public string DelayAfterMsInput
+    {
+        get => DelayAfterMs.ToString("0", CultureInfo.InvariantCulture);
+        set { if (TryParseDoubleShared(value, out var p)) { DelayAfterMs = p; } }
+    }
+
+    private static bool TryParseDoubleShared(string? value, out double parsed)
+    {
+        var normalized = value?.Trim().Replace(',', '.') ?? string.Empty;
+        return double.TryParse(normalized, NumberStyles.Float, CultureInfo.InvariantCulture, out parsed);
+    }
+}
+
+/// <summary>
+/// One selectable sibling rule in a <see cref="RuleKind.RuleToggle"/>
+/// editor. <see cref="IsSelected"/> mirrors membership in the rule's
+/// TargetRuleIds list.
+/// </summary>
+public sealed class RuleToggleTargetOption : ViewModelBase
+{
+    private bool isSelected;
+
+    public RuleToggleTargetOption(string ruleId, string ruleName)
+    {
+        RuleId = ruleId;
+        RuleName = ruleName;
+    }
+
+    public string RuleId { get; }
+    public string RuleName { get; }
+
+    public bool IsSelected
+    {
+        get => isSelected;
+        set => SetProperty(ref isSelected, value);
+    }
 }
 
 public sealed class MappingRuleViewModel : ViewModelBase
@@ -88,6 +213,77 @@ public sealed class MappingRuleViewModel : ViewModelBase
     private string scriptCode = string.Empty;
     private bool suppressScriptSourceInput;
 
+    /// <summary>Editable timeline for a MultiButtonAutofire rule.</summary>
+    public System.Collections.ObjectModel.ObservableCollection<MultiButtonStepViewModel> Steps { get; } = [];
+
+    /// <summary>Selectable sibling rules for a RuleToggle rule.</summary>
+    public System.Collections.ObjectModel.ObservableCollection<RuleToggleTargetOption> ToggleTargets { get; } = [];
+
+    public MappingRuleViewModel()
+    {
+        AddStepCommand = new CommunityToolkit.Mvvm.Input.RelayCommand(() =>
+        {
+            Steps.Add(new MultiButtonStepViewModel());
+            OnPropertyChanged(nameof(SummaryText));
+            OnPropertyChanged(nameof(HasSteps));
+        });
+        RemoveStepCommand = new CommunityToolkit.Mvvm.Input.RelayCommand<MultiButtonStepViewModel>(step =>
+        {
+            if (step is not null)
+            {
+                _ = Steps.Remove(step);
+                OnPropertyChanged(nameof(SummaryText));
+                OnPropertyChanged(nameof(HasSteps));
+            }
+        });
+    }
+
+    /// <summary>Adds a new empty step to a MultiButtonAutofire rule.</summary>
+    public System.Windows.Input.ICommand AddStepCommand { get; }
+
+    /// <summary>Removes the passed step from a MultiButtonAutofire rule.</summary>
+    public System.Windows.Input.ICommand RemoveStepCommand { get; }
+
+    public bool HasSteps => Steps.Count > 0;
+
+    /// <summary>
+    /// Ids stashed by <see cref="FromRule"/> for a RuleToggle rule
+    /// before sibling-rule names are known. The editor VM consumes
+    /// these in <see cref="PopulateToggleTargets"/>.
+    /// </summary>
+    public IReadOnlyList<string> PendingToggleTargetIds { get; set; } = [];
+
+    /// <summary>
+    /// Rebuilds <see cref="ToggleTargets"/> from the supplied sibling
+    /// rules (id + display name), pre-selecting any whose id is in the
+    /// rule's current target set (either the live ToggleTargets
+    /// selection or the pending ids loaded from disk). The rule's own
+    /// id is excluded so a toggle can't target itself.
+    /// </summary>
+    public void PopulateToggleTargets(IEnumerable<(string Id, string Name)> siblings)
+    {
+        var alreadySelected = new HashSet<string>(
+            ToggleTargets.Where(t => t.IsSelected).Select(t => t.RuleId),
+            StringComparer.Ordinal);
+        foreach (var id in PendingToggleTargetIds)
+        {
+            _ = alreadySelected.Add(id);
+        }
+
+        ToggleTargets.Clear();
+        foreach (var (id, name) in siblings)
+        {
+            if (string.Equals(id, Id, StringComparison.Ordinal)) { continue; }
+            ToggleTargets.Add(new RuleToggleTargetOption(id, name)
+            {
+                IsSelected = alreadySelected.Contains(id)
+            });
+        }
+        OnPropertyChanged(nameof(HasToggleTargets));
+    }
+
+    public bool HasToggleTargets => ToggleTargets.Count > 0;
+
     public string Id { get; private set; } = Guid.NewGuid().ToString("N");
 
     public IReadOnlyList<ButtonIdOption> ButtonOptions => ButtonOptionsSource;
@@ -114,6 +310,8 @@ public sealed class MappingRuleViewModel : ViewModelBase
             OnPropertyChanged(nameof(IsStickThreshold));
             OnPropertyChanged(nameof(IsStickAutofire));
             OnPropertyChanged(nameof(IsFreeze));
+            OnPropertyChanged(nameof(IsMultiButtonAutofire));
+            OnPropertyChanged(nameof(IsRuleToggle));
             OnPropertyChanged(nameof(IsScriptRule));
             OnPropertyChanged(nameof(HasTiming));
             OnPropertyChanged(nameof(ShowPulseTiming));
@@ -474,6 +672,8 @@ public sealed class MappingRuleViewModel : ViewModelBase
     public bool IsStickThreshold => Kind == RuleKind.StickThreshold;
     public bool IsStickAutofire => Kind == RuleKind.StickAutofire;
     public bool IsFreeze => Kind == RuleKind.FreezeLastDirection;
+    public bool IsMultiButtonAutofire => Kind == RuleKind.MultiButtonAutofire;
+    public bool IsRuleToggle => Kind == RuleKind.RuleToggle;
     public bool IsScriptRule => Kind == RuleKind.Script;
     public bool HasTiming => Kind is RuleKind.ButtonAutofire or RuleKind.StickAutofire or RuleKind.FreezeLastDirection;
     public bool ShowPulseTiming => HasTiming && (Kind != RuleKind.FreezeLastDirection || PulseEnabled);
@@ -539,6 +739,8 @@ public sealed class MappingRuleViewModel : ViewModelBase
         RuleKind.StickThreshold => "Stick Threshold",
         RuleKind.StickAutofire => "Stick Autofire",
         RuleKind.FreezeLastDirection => "Freeze Last Direction",
+        RuleKind.MultiButtonAutofire => "Multi-Button Autofire",
+        RuleKind.RuleToggle => "Rule Toggle",
         RuleKind.Script => "Control Script",
         _ => "Rule"
     };
@@ -550,6 +752,8 @@ public sealed class MappingRuleViewModel : ViewModelBase
         RuleKind.StickThreshold => "#10B981",
         RuleKind.StickAutofire => "#A78BFA",
         RuleKind.FreezeLastDirection => "#00D4FF",
+        RuleKind.MultiButtonAutofire => "#FB7185",
+        RuleKind.RuleToggle => "#34D399",
         RuleKind.Script => "#FACC15",
         _ => "#64748B"
     };
@@ -566,6 +770,10 @@ public sealed class MappingRuleViewModel : ViewModelBase
             $"{ControlRuleMatcher.FormatStickLabel(SourceStick)} → {ControlRuleMatcher.FormatStickLabel(TargetStick)} · dz {Deadzone:0.00} · full {FullAt:0.00} · {HoldMs:0}/{ReleaseMs:0} ms · {FormatMode(Mode)}{FormatSuffix(SuppressSourceStick, "suppress src")}",
         RuleKind.FreezeLastDirection =>
             $"{ControlRuleMatcher.FormatButtonLabel(ActivationButton)} → freeze {ControlRuleMatcher.FormatStickLabel(CaptureStick)} into {ControlRuleMatcher.FormatStickLabel(TargetStick)} · {FormatMode(Mode)}{FormatSuffix(SuppressActivationButton, "suppress btn")}{FormatSuffix(SuppressCaptureStick, "suppress stick")}",
+        RuleKind.MultiButtonAutofire =>
+            $"{ControlRuleMatcher.FormatButtonLabel(SourceButton)} → loop {Steps.Count} step(s) · {FormatMode(Mode)}{FormatSuffix(SuppressSourceButton, "suppress src")}",
+        RuleKind.RuleToggle =>
+            $"{ControlRuleMatcher.FormatButtonLabel(SourceButton)} → toggle {ToggleTargets.Count(t => t.IsSelected)} rule(s){FormatSuffix(SuppressSourceButton, "suppress src")}",
         RuleKind.Script =>
             $"{(string.IsNullOrWhiteSpace(ControlKey) ? "No control selected" : ControlRuleMatcher.GetTitle(ControlKey))} · script{FormatSuffix(SuppressScriptSourceInput, "suppress src")}",
         _ => string.Empty
@@ -756,6 +964,39 @@ public sealed class MappingRuleViewModel : ViewModelBase
                     ReleaseMs = (int)ReleaseMs
                 }
             },
+            RuleKind.MultiButtonAutofire => new MultiButtonAutofireRule
+            {
+                Id = Id,
+                Name = Name,
+                Enabled = Enabled,
+                Mode = Mode,
+                SourceButton = SourceButton,
+                SuppressSourceButton = SuppressSourceButton,
+                Steps = [.. Steps.Select(s => new MultiButtonAutofireStep
+                {
+                    TargetButton = s.TargetButton,
+                    HoldMs = (int)s.HoldMs,
+                    ReleaseMs = (int)s.ReleaseMs,
+                    DelayAfterMs = (int)s.DelayAfterMs
+                })]
+            },
+            RuleKind.RuleToggle => new RuleToggleRule
+            {
+                Id = Id,
+                Name = Name,
+                Enabled = Enabled,
+                Mode = Mode,
+                SourceButton = SourceButton,
+                SuppressSourceButton = SuppressSourceButton,
+                // When the editor has populated ToggleTargets, the live
+                // checkbox selection is authoritative. Otherwise (rule
+                // is sitting in the list, never opened for edit) fall
+                // back to the ids loaded from disk so Clone()/CommitRules
+                // don't silently drop the targets.
+                TargetRuleIds = ToggleTargets.Count > 0
+                    ? [.. ToggleTargets.Where(t => t.IsSelected).Select(t => t.RuleId)]
+                    : [.. PendingToggleTargetIds]
+            },
             RuleKind.Script => new ControlScriptRule
             {
                 Id = Id,
@@ -836,6 +1077,31 @@ public sealed class MappingRuleViewModel : ViewModelBase
                 viewModel.releaseMs = typedRule.Timing.ReleaseMs;
                 break;
 
+            case MultiButtonAutofireRule typedRule:
+                viewModel.kind = RuleKind.MultiButtonAutofire;
+                viewModel.sourceButton = typedRule.SourceButton;
+                viewModel.suppressSourceButton = typedRule.SuppressSourceButton;
+                foreach (var step in typedRule.Steps)
+                {
+                    viewModel.Steps.Add(new MultiButtonStepViewModel
+                    {
+                        TargetButton = step.TargetButton,
+                        HoldMs = step.HoldMs,
+                        ReleaseMs = step.ReleaseMs,
+                        DelayAfterMs = step.DelayAfterMs
+                    });
+                }
+                break;
+
+            case RuleToggleRule typedRule:
+                viewModel.kind = RuleKind.RuleToggle;
+                viewModel.sourceButton = typedRule.SourceButton;
+                viewModel.suppressSourceButton = typedRule.SuppressSourceButton;
+                // Stash the selected ids; the editor resolves them to
+                // named ToggleTargets options once it has the sibling list.
+                viewModel.PendingToggleTargetIds = [.. typedRule.TargetRuleIds];
+                break;
+
             case ControlScriptRule typedRule:
                 viewModel.kind = RuleKind.Script;
                 viewModel.controlKey = typedRule.ControlKey;
@@ -859,6 +1125,8 @@ public sealed class MappingRuleViewModel : ViewModelBase
                 RuleKind.StickThreshold => "Stick Threshold",
                 RuleKind.StickAutofire => "Stick Autofire",
                 RuleKind.FreezeLastDirection => "Freeze Last Direction",
+                RuleKind.MultiButtonAutofire => "Multi-Button Autofire",
+                RuleKind.RuleToggle => "Rule Toggle",
                 RuleKind.Script => "Control Script",
                 _ => "Rule"
             },
@@ -908,6 +1176,8 @@ public sealed class MappingRuleViewModel : ViewModelBase
             new RuleKindOption(RuleKind.StickThreshold, "Stick Threshold", "Deadzone and threshold shaping for a stick.", "#10B981"),
             new RuleKindOption(RuleKind.StickAutofire, "Stick Autofire", "Pulse one stick output from another stick.", "#A78BFA"),
             new RuleKindOption(RuleKind.FreezeLastDirection, "Freeze Last Direction", "Hold the last observed stick direction while a button is held.", "#00D4FF"),
+            new RuleKindOption(RuleKind.MultiButtonAutofire, "Multi-Button Autofire", "Loop a sequence of button presses with per-step timing while held.", "#FB7185"),
+            new RuleKindOption(RuleKind.RuleToggle, "Rule Toggle", "Press a button to enable/disable one or more other rules.", "#34D399"),
             new RuleKindOption(RuleKind.Script, "Control Script", "Store script text for a specific control.", "#FACC15")
         ];
     }

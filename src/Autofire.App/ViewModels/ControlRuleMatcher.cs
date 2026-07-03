@@ -6,6 +6,22 @@ namespace Autofire.App.ViewModels;
 
 public static class ControlRuleMatcher
 {
+    // Ambient localizer (set once at startup by the shell). Card text is
+    // rebuilt on every culture change, so a static hookup is sufficient —
+    // and it keeps these formatting helpers static/pure to call.
+    private static Autofire.Infrastructure.Localization.ILocalizationService? localizer;
+
+    public static void UseLocalizer(Autofire.Infrastructure.Localization.ILocalizationService service) =>
+        localizer = service;
+
+    private static string L(string key, string fallback)
+    {
+        var value = localizer?[key];
+        return string.IsNullOrEmpty(value) || string.Equals(value, key, StringComparison.Ordinal)
+            ? fallback
+            : value!;
+    }
+
     public static string NormalizeSelectionKey(string selectionKey)
     {
         var index = selectionKey.IndexOf(':');
@@ -43,14 +59,14 @@ public static class ControlRuleMatcher
 
         return key.Equals("LeftStick.Button", StringComparison.OrdinalIgnoreCase) ||
             key.Equals("RightStick.Button", StringComparison.OrdinalIgnoreCase)
-            ? "Stick click: passthrough, ignore, remap, autofire, script."
+            ? L("MappedControlHintStickClick", "Stick click: passthrough, ignore, remap, autofire, script.")
             : IsLeftStickAnalog(key) || IsRightStickAnalog(key)
             ? "Stick axes: deadzone, threshold, autofire, freeze-last-direction, script."
             : key switch
             {
-                "LeftTrigger.Analog" or "RightTrigger.Analog" => "Analog trigger: passthrough, ignore, script, future analog remap.",
+                "LeftTrigger.Analog" or "RightTrigger.Analog" => L("MappedControlHintAnalogTrigger", "Analog trigger: passthrough, ignore, script, future analog remap."),
                 "Touchpad" => "Touchpad: click / touch behaviour / script.",
-                _ => "Button: passthrough, ignore, remap, autofire, script."
+                _ => L("MappedControlHintButton", "Button: passthrough, ignore, remap, autofire, script.")
             };
     }
 
@@ -102,32 +118,32 @@ public static class ControlRuleMatcher
         return rule switch
         {
             ButtonRemapRule r => new ControlConfigurationEntryViewModel(
-                "Remap",
-                $"{FormatButtonLabel(r.SourceButton)} → {FormatButtonLabel(r.TargetButton)} · {FormatMode(r.Mode)}{FormatSuffix(r.SuppressSourceButton, "suppress src")}",
+                L("MappedControlRemapTitle", "Remap"),
+                $"{FormatButtonLabel(r.SourceButton)} → {FormatButtonLabel(r.TargetButton)} · {FormatMode(r.Mode)}{FormatSuffix(r.SuppressSourceButton, L("MappedControlSuppressSource", "suppress src"))}",
                 "#4F8CFF"),
             ButtonAutofireRule r => new ControlConfigurationEntryViewModel(
-                "Autofire",
-                $"{FormatButtonLabel(r.SourceButton)} → {FormatButtonLabel(r.TargetButton)} · {r.Timing.HoldMs}/{r.Timing.ReleaseMs} ms · {FormatMode(r.Mode)}{FormatSuffix(r.SuppressSourceButton, "suppress src")}",
+                L("MappedControlAutofireTitle", "Autofire"),
+                $"{FormatButtonLabel(r.SourceButton)} → {FormatButtonLabel(r.TargetButton)} · {r.Timing.HoldMs}/{r.Timing.ReleaseMs} ms · {FormatMode(r.Mode)}{FormatSuffix(r.SuppressSourceButton, L("MappedControlSuppressSource", "suppress src"))}",
                 "#F97316"),
             StickThresholdRule r => new ControlConfigurationEntryViewModel(
-                "Deadzone / Threshold",
-                $"{FormatStickLabel(r.TargetStick)} · deadzone {r.Deadzone:0.00} · full {r.FullAt:0.00} · {FormatMode(r.Mode)}{FormatSuffix(r.SuppressSourceStick, "suppress raw")}",
+                L("MappedControlStickThresholdTitle", "Deadzone / Threshold"),
+                $"{FormatStickLabel(r.TargetStick)} · {L("MappedControlDeadzoneWord", "deadzone")} {r.Deadzone:0.00} · {L("MappedControlFullWord", "full")} {r.FullAt:0.00} · {FormatMode(r.Mode)}{FormatSuffix(r.SuppressSourceStick, L("MappedControlSuppressRaw", "suppress raw"))}",
                 "#10B981"),
             StickAutofireRule r => new ControlConfigurationEntryViewModel(
-                "Stick autofire",
-                $"{FormatStickLabel(r.SourceStick)} → {FormatStickLabel(r.TargetStick)} · {r.Timing.HoldMs}/{r.Timing.ReleaseMs} ms · {FormatMode(r.Mode)}{FormatSuffix(r.SuppressSourceStick, "suppress src")}",
+                L("MappedControlStickAutofireTitle", "Stick autofire"),
+                $"{FormatStickLabel(r.SourceStick)} → {FormatStickLabel(r.TargetStick)} · {r.Timing.HoldMs}/{r.Timing.ReleaseMs} ms · {FormatMode(r.Mode)}{FormatSuffix(r.SuppressSourceStick, L("MappedControlSuppressSource", "suppress src"))}",
                 "#A78BFA"),
             FreezeLastDirectionRule r => new ControlConfigurationEntryViewModel(
-                "Freeze direction",
-                $"{FormatButtonLabel(r.ActivationButton)} · capture {FormatStickLabel(r.CaptureStick)} → {FormatStickLabel(r.TargetStick)} · {FormatMode(r.Mode)}{FormatSuffix(r.SuppressActivationButton, "suppress btn")}{FormatSuffix(r.SuppressCaptureStick, "suppress stick")}",
+                L("MappedControlFreezeDirectionTitle", "Freeze direction"),
+                $"{FormatButtonLabel(r.ActivationButton)} · {L("MappedControlCaptureWord", "capture")} {FormatStickLabel(r.CaptureStick)} → {FormatStickLabel(r.TargetStick)} · {FormatMode(r.Mode)}{FormatSuffix(r.SuppressActivationButton, L("MappedControlSuppressButton", "suppress btn"))}{FormatSuffix(r.SuppressCaptureStick, L("MappedControlSuppressStick", "suppress stick"))}",
                 "#00D4FF"),
             ControlScriptRule r => new ControlConfigurationEntryViewModel(
-                "Script",
+                L("MappedControlScriptTitle", "Script"),
                 string.IsNullOrWhiteSpace(r.ScriptCode)
-                    ? $"Script placeholder{FormatSuffix(r.SuppressSourceInput, "suppress src")}"
-                    : $"{Shorten(r.ScriptCode)}{FormatSuffix(r.SuppressSourceInput, "suppress src")}",
+                    ? $"{L("MappedControlScriptPlaceholder", "Script placeholder")}{FormatSuffix(r.SuppressSourceInput, L("MappedControlSuppressSource", "suppress src"))}"
+                    : $"{Shorten(r.ScriptCode)}{FormatSuffix(r.SuppressSourceInput, L("MappedControlSuppressSource", "suppress src"))}",
                 "#FACC15"),
-            _ => new ControlConfigurationEntryViewModel("Rule", rule.Name, "#64748B")
+            _ => new ControlConfigurationEntryViewModel(L("MappedControlGenericTitle", "Rule"), rule.Name, "#64748B")
         };
     }
 
@@ -241,9 +257,9 @@ public static class ControlRuleMatcher
     {
         return mode switch
         {
-            RuleMode.Modify => "modify",
-            RuleMode.Passthrough => "passthrough",
-            RuleMode.DoNothing => "ignore",
+            RuleMode.Modify => L("RuleModeModify", "modify"),
+            RuleMode.Passthrough => L("RuleModePassthrough", "passthrough"),
+            RuleMode.DoNothing => L("RuleModeIgnore", "ignore"),
             _ => mode.ToString()
         };
     }

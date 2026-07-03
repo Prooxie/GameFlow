@@ -687,3 +687,352 @@ msgstr "Sortie MIDI Windows"
 
 msgid "OutputProviderWindowsMidiOutDescription"
 msgstr "Émet des événements MIDI depuis l'activité de la manette. Ébauche — nécessite Windows MIDI Services et un mappage de profil."
+
+# ── UI/UX localization pass (auto-added) ──
+
+msgid "CommonRefresh"
+msgstr "Refresh"
+
+msgid "DashboardBackgroundLabel"
+msgstr "Arrière-plan"
+
+msgid "DevicesActiveDevice"
+msgstr "Active device"
+
+msgid "DevicesEmptyList"
+msgstr "No input devices detected. Connect a controller and click Refresh."
+
+msgid "DevicesHardwareId"
+msgstr "Hardware ID"
+
+msgid "DevicesInputLiveLabel"
+msgstr "Entrée (en direct) :"
+
+msgid "DevicesKeyboardHint"
+msgstr "Assignez ce clavier à un emplacement : ses touches produiront des entrées manette. La disposition ci-dessous s'illumine en direct pendant la frappe."
+
+msgid "DevicesKeysDownLabel"
+msgstr "Touches enfoncées (en direct) :"
+
+msgid "DevicesMouseHint"
+msgstr "Le mouvement pilote le stick droit (visée) ; bouton gauche = gâchette droite (tir), bouton droit = gâchette gauche (visée), molette cliquée = R3, boutons latéraux = LB/RB. Assignez cette souris à un emplacement pour l'utiliser."
+
+msgid "DevicesNoSelection"
+msgstr "Select a device to see its details."
+
+msgid "DevicesOnlineTotal"
+msgstr " online of "
+
+msgid "DevicesProduct"
+msgstr "Product: "
+
+msgid "DevicesTab"
+msgstr "Devices"
+
+msgid "DevicesTitle"
+msgstr "Input Devices"
+
+msgid "DevicesTotal"
+msgstr " total"
+
+msgid "DevicesVIDPID"
+msgstr "VID:PID "
+
+msgid "MappedControlsRuleCountMany"
+msgstr "{0} règles"
+
+msgid "MappedControlsRuleCountOne"
+msgstr "1 règle"
+
+msgid "MappedControlsRuleCountZero"
+msgstr "Aucune règle"
+
+msgid "PanelBackgroundChromaBlue"
+msgstr "Bleu chroma"
+
+msgid "PanelBackgroundChromaGreen"
+msgstr "Vert chroma"
+
+msgid "PanelBackgroundPureBlack"
+msgstr "Noir pur"
+
+msgid "PanelBackgroundThemeDefault"
+msgstr "Selon le thème"
+
+msgid "ProviderStatus_DemoActive"
+msgstr "Aperçu démo actif — source animée, sans matériel"
+
+msgid "ProviderStatus_NoActiveProvider"
+msgstr "Aucune source d'entrée active"
+
+msgid "ProviderStatus_SdlActive"
+msgstr "Entrée SDL3 active — {0} périphérique(s) détecté(s)"
+
+msgid "RuleKindMultiButtonAutofireDescription"
+msgstr "Loop a sequence of button presses with per-step timing while held."
+
+msgid "RuleKindMultiButtonAutofireLabel"
+msgstr "Multi-Button Autofire"
+
+msgid "RuleKindRuleToggleDescription"
+msgstr "Press a button to enable or disable one or more other rules."
+
+msgid "RuleKindRuleToggleLabel"
+msgstr "Rule Toggle"
+
+msgid "StyleLabelArcade"
+msgstr "Arcade layout"
+
+msgid "StyleLabelNintendoSwitch"
+msgstr "Switch layout"
+
+msgid "StyleLabelPlayStation3"
+msgstr "DualShock 3 layout"
+
+msgid "StyleLabelSimpleGamepad"
+msgstr "Simple gamepad layout"
+
+msgid "StyleLabelSteamController"
+msgstr "Steam Controller layout"
+
+msgid "StyleLabelSteamDeck"
+msgstr "Steam Deck layout"
+
+msgid "StyleLabelXbox360"
+msgstr "Xbox 360 layout"
+
+msgid "StyleLabelXboxOne"
+msgstr "Xbox One layout"
+
+msgid "StyleLabelXboxSeries"
+msgstr "Xbox Series layout"
+
+msgid "TemplateEmitLabel"
+msgstr "Créer une manette virtuelle pour cet appareil"
+
+msgid "TemplateEmitTooltip"
+msgstr "Si activé, cet emplacement émet la manette virtuelle sélectionnée (via ViGEm ou HIDMaestro) dès que ses appareils assignés sont actifs. Désactivez-le pour garder l'emplacement passif : l'entrée reste visible dans l'aperçu, mais aucun périphérique virtuel n'est créé."
+
+msgid "TemplateOutputDeviceLabel"
+msgstr "Périphérique de sortie"
+
+msgid "ProviderStatus_SdlNoGamepads"
+msgstr "SDL3 actif — aucune manette détectée"
+
+msgid "ProviderStatus_NoControllerSelected"
+msgstr "Aucune manette sélectionnée. La sélection automatique utilisera le premier périphérique détecté."
+
+# ── Mapping editor localization pass ──
+
+msgid "MEV_SectionTriggerButton"
+msgstr "TRIGGER BUTTON"
+
+msgid "MEV_SectionTriggerButtonHold"
+msgstr "TRIGGER BUTTON (hold to loop)"
+
+msgid "MEV_SectionOutputButton"
+msgstr "OUTPUT BUTTON"
+
+msgid "MEV_SectionSourceStick"
+msgstr "SOURCE STICK"
+
+msgid "MEV_SectionTargetStick"
+msgstr "TARGET STICK"
+
+msgid "MEV_SectionCaptureStick"
+msgstr "CAPTURE STICK"
+
+msgid "MEV_SectionOutputStick"
+msgstr "OUTPUT STICK"
+
+msgid "MEV_SectionDeadzone"
+msgstr "DEADZONE"
+
+msgid "MEV_SectionFullAt"
+msgstr "FULL AT (saturation)"
+
+msgid "MEV_SectionActivationDeadzone"
+msgstr "ACTIVATION DEADZONE"
+
+msgid "MEV_SectionActivationFullAt"
+msgstr "ACTIVATION FULL AT"
+
+msgid "MEV_SectionActivationButton"
+msgstr "ACTIVATION BUTTON (hold to freeze)"
+
+msgid "MEV_SectionBlendMode"
+msgstr "BLEND MODE"
+
+msgid "MEV_SectionSequenceSteps"
+msgstr "SEQUENCE STEPS (loop while held)"
+
+msgid "MEV_SectionStepTarget"
+msgstr "TARGET"
+
+msgid "MEV_SectionScript"
+msgstr "SCRIPT"
+
+msgid "MEV_SectionTargetControlKey"
+msgstr "TARGET CONTROL KEY"
+
+msgid "MEV_SuppressRawAfterShaping"
+msgstr "Suppress raw source stick after shaping"
+
+msgid "MEV_SuppressSourceStickOutput"
+msgstr "Suppress source stick output"
+
+msgid "MEV_SuppressSourceInputStored"
+msgstr "Suppress source input (stored for future runtime)"
+
+msgid "MEV_SuppressActivationWhileFreezing"
+msgstr "Suppress activation button while freezing"
+
+msgid "MEV_SuppressCapturedWhileFrozen"
+msgstr "Suppress captured stick output while frozen"
+
+msgid "MEV_PulseWhileFrozen"
+msgstr "Pulse while frozen (autofire while held)"
+
+msgid "MEV_EditButton"
+msgstr "Edit"
+
+msgid "MEV_DeleteButton"
+msgstr "Delete"
+
+msgid "MEV_AddStep"
+msgstr "+ Add step"
+
+msgid "MEV_NoStepsYet"
+msgstr "No steps yet — add at least one for the loop to do anything."
+
+msgid "MEV_HintDeadzone"
+msgstr "Ignore stick movement below this threshold."
+
+msgid "MEV_HintFullAt"
+msgstr "Reach 100% output at this raw stick magnitude."
+
+msgid "SidebarPhysicalHeader"
+msgstr "PHYSICAL DEVICES"
+
+msgid "SidebarVirtualHeader"
+msgstr "VIRTUAL CONTROLLERS"
+
+msgid "DevicesPhysicalTabHeader"
+msgstr "Physical devices"
+
+msgid "DevicesVirtualTabHeader"
+msgstr "Virtual controllers"
+
+msgid "SlotsAddControllerLabel"
+msgstr "Add controller"
+
+msgid "SlotsEnabledLabel"
+msgstr "Enabled"
+
+msgid "SlotsDeleteLabel"
+msgstr "Delete"
+
+msgid "MappedControlRemapTitle"
+msgstr "Remap"
+
+msgid "MappedControlAutofireTitle"
+msgstr "Autofire"
+
+msgid "MappedControlStickThresholdTitle"
+msgstr "Deadzone / Threshold"
+
+msgid "MappedControlStickAutofireTitle"
+msgstr "Stick autofire"
+
+msgid "MappedControlFreezeDirectionTitle"
+msgstr "Freeze direction"
+
+msgid "MappedControlScriptTitle"
+msgstr "Script"
+
+msgid "MappedControlGenericTitle"
+msgstr "Rule"
+
+msgid "RuleModeModify"
+msgstr "modify"
+
+msgid "RuleModePassthrough"
+msgstr "passthrough"
+
+msgid "RuleModeIgnore"
+msgstr "ignore"
+
+msgid "MappedControlDeadzoneWord"
+msgstr "deadzone"
+
+msgid "MappedControlFullWord"
+msgstr "full"
+
+msgid "MappedControlCaptureWord"
+msgstr "capture"
+
+msgid "MappedControlSuppressSource"
+msgstr "suppress src"
+
+msgid "MappedControlSuppressRaw"
+msgstr "suppress raw"
+
+msgid "MappedControlSuppressButton"
+msgstr "suppress btn"
+
+msgid "MappedControlSuppressStick"
+msgstr "suppress stick"
+
+msgid "MappedControlScriptPlaceholder"
+msgstr "Script placeholder"
+
+msgid "StickLeftLabel"
+msgstr "Left stick"
+
+msgid "StickRightLabel"
+msgstr "Right stick"
+
+msgid "MappedControlHintStickClick"
+msgstr "Stick click: passthrough, ignore, remap, autofire, script."
+
+msgid "MappedControlHintAnalogTrigger"
+msgstr "Analog trigger: passthrough, ignore, script, future analog remap."
+
+msgid "MappedControlHintButton"
+msgstr "Button: passthrough, ignore, remap, autofire, script."
+
+msgid "MEV_HoldMs"
+msgstr "HOLD ms"
+
+msgid "MEV_ReleaseMs"
+msgstr "RELEASE ms"
+
+msgid "MEV_DelayMs"
+msgstr "DELAY ms"
+
+msgid "MEV_SectionTriggerButtonToggle"
+msgstr "TRIGGER BUTTON (press to toggle)"
+
+msgid "MEV_SectionRulesToToggle"
+msgstr "RULES TO TOGGLE"
+
+msgid "MEV_ToggleHint"
+msgstr "Each press of the trigger flips the enabled state of the checked rules."
+
+msgid "MEV_NoOtherRules"
+msgstr "No other rules exist yet to target."
+
+msgid "MEV_SectionTiming"
+msgstr "TIMING"
+
+msgid "MEV_TimingHold"
+msgstr "HOLD"
+
+msgid "MEV_TimingRelease"
+msgstr "RELEASE"
+
+msgid "MEV_HintHold"
+msgstr "How long the virtual button is held (pressed phase)."
+
+msgid "MEV_HintRelease"
+msgstr "How long the virtual button is released between pulses."

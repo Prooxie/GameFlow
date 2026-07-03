@@ -325,43 +325,88 @@ public sealed partial class ControllerVisualStateViewModel : ViewModelBase
 
     public string AccentBrush => visualStyle switch
     {
-        ControllerVisualStyle.Xbox => "#22C55E",
-        ControllerVisualStyle.PlayStation4 => "#00B7FF",
-        ControllerVisualStyle.PlayStation5 => "#4F8CFF",
+        ControllerVisualStyle.Xbox            => "#22C55E",
+        ControllerVisualStyle.Xbox360         => "#22C55E",
+        ControllerVisualStyle.XboxOne         => "#22C55E",
+        ControllerVisualStyle.XboxSeries      => "#22C55E",
+        ControllerVisualStyle.PlayStation3    => "#0A6BCB",
+        ControllerVisualStyle.PlayStation4    => "#00B7FF",
+        ControllerVisualStyle.PlayStation5    => "#4F8CFF",
+        ControllerVisualStyle.NintendoSwitch  => "#E60012",
+        ControllerVisualStyle.SteamController => "#D75500",
+        ControllerVisualStyle.SteamDeck       => "#1A9FFF",
+        ControllerVisualStyle.Arcade          => "#FF3B30",
+        ControllerVisualStyle.SimpleGamepad   => "#9CA3AF",
         _ => "#00E5FF"
     };
 
     public string AccentSoftBrush => visualStyle switch
     {
-        ControllerVisualStyle.Xbox => "#123722",
-        ControllerVisualStyle.PlayStation4 => "#0E2C46",
-        ControllerVisualStyle.PlayStation5 => "#142742",
+        ControllerVisualStyle.Xbox            => "#123722",
+        ControllerVisualStyle.Xbox360         => "#123722",
+        ControllerVisualStyle.XboxOne         => "#123722",
+        ControllerVisualStyle.XboxSeries      => "#123722",
+        ControllerVisualStyle.PlayStation3    => "#0A1E36",
+        ControllerVisualStyle.PlayStation4    => "#0E2C46",
+        ControllerVisualStyle.PlayStation5    => "#142742",
+        ControllerVisualStyle.NintendoSwitch  => "#3B0708",
+        ControllerVisualStyle.SteamController => "#3B1C00",
+        ControllerVisualStyle.SteamDeck       => "#0B2740",
+        ControllerVisualStyle.Arcade          => "#3B0F0C",
+        ControllerVisualStyle.SimpleGamepad   => "#1F2937",
         _ => "#0F2530"
     };
 
     public string ShellBrush => visualStyle switch
     {
-        ControllerVisualStyle.Xbox => "#101B17",
-        ControllerVisualStyle.PlayStation4 => "#101A2B",
-        ControllerVisualStyle.PlayStation5 => "#0F172A",
+        ControllerVisualStyle.Xbox            => "#101B17",
+        ControllerVisualStyle.Xbox360         => "#101B17",
+        ControllerVisualStyle.XboxOne         => "#101B17",
+        ControllerVisualStyle.XboxSeries      => "#101B17",
+        ControllerVisualStyle.PlayStation3    => "#0C1422",
+        ControllerVisualStyle.PlayStation4    => "#101A2B",
+        ControllerVisualStyle.PlayStation5    => "#0F172A",
+        ControllerVisualStyle.NintendoSwitch  => "#1A0E10",
+        ControllerVisualStyle.SteamController => "#1A1208",
+        ControllerVisualStyle.SteamDeck       => "#0D1A28",
+        ControllerVisualStyle.Arcade          => "#1A0F0E",
+        ControllerVisualStyle.SimpleGamepad   => "#0F1620",
         _ => "#0D1522"
     };
 
     public string ShellHighlightBrush => visualStyle switch
     {
-        ControllerVisualStyle.Xbox => "#16241E",
-        ControllerVisualStyle.PlayStation4 => "#14253D",
-        ControllerVisualStyle.PlayStation5 => "#152132",
+        ControllerVisualStyle.Xbox            => "#16241E",
+        ControllerVisualStyle.Xbox360         => "#16241E",
+        ControllerVisualStyle.XboxOne         => "#16241E",
+        ControllerVisualStyle.XboxSeries      => "#16241E",
+        ControllerVisualStyle.PlayStation3    => "#0F1B30",
+        ControllerVisualStyle.PlayStation4    => "#14253D",
+        ControllerVisualStyle.PlayStation5    => "#152132",
+        ControllerVisualStyle.NintendoSwitch  => "#22171A",
+        ControllerVisualStyle.SteamController => "#221A10",
+        ControllerVisualStyle.SteamDeck       => "#13243A",
+        ControllerVisualStyle.Arcade          => "#221513",
+        ControllerVisualStyle.SimpleGamepad   => "#161E2A",
         _ => "#131D2B"
     };
 
     public string StyleLabel => visualStyle switch
     {
-        ControllerVisualStyle.Xbox         => Localized("StyleLabelXbox",         "Xbox layout"),
-        ControllerVisualStyle.PlayStation4 => Localized("StyleLabelPlayStation4", "DualShock 4 layout"),
-        ControllerVisualStyle.PlayStation5 => Localized("StyleLabelPlayStation5", "DualSense layout"),
-        ControllerVisualStyle.None         => Localized("StyleLabelMinimal",      "Minimal shell"),
-        _                                  => Localized("StyleLabelAuto",         "Auto layout"),
+        ControllerVisualStyle.Xbox            => Localized("StyleLabelXbox",            "Xbox layout"),
+        ControllerVisualStyle.Xbox360         => Localized("StyleLabelXbox360",         "Xbox 360 layout"),
+        ControllerVisualStyle.XboxOne         => Localized("StyleLabelXboxOne",         "Xbox One layout"),
+        ControllerVisualStyle.XboxSeries      => Localized("StyleLabelXboxSeries",      "Xbox Series layout"),
+        ControllerVisualStyle.PlayStation3    => Localized("StyleLabelPlayStation3",    "DualShock 3 layout"),
+        ControllerVisualStyle.PlayStation4    => Localized("StyleLabelPlayStation4",    "DualShock 4 layout"),
+        ControllerVisualStyle.PlayStation5    => Localized("StyleLabelPlayStation5",    "DualSense layout"),
+        ControllerVisualStyle.NintendoSwitch  => Localized("StyleLabelNintendoSwitch",  "Switch layout"),
+        ControllerVisualStyle.SteamController => Localized("StyleLabelSteamController", "Steam Controller layout"),
+        ControllerVisualStyle.SteamDeck       => Localized("StyleLabelSteamDeck",       "Steam Deck layout"),
+        ControllerVisualStyle.Arcade          => Localized("StyleLabelArcade",          "Arcade layout"),
+        ControllerVisualStyle.SimpleGamepad   => Localized("StyleLabelSimpleGamepad",   "Simple gamepad layout"),
+        ControllerVisualStyle.None            => Localized("StyleLabelMinimal",         "Minimal shell"),
+        _                                     => Localized("StyleLabelAuto",            "Auto layout"),
     };
 
     /// <summary>
@@ -665,7 +710,7 @@ public sealed partial class ControllerVisualStateViewModel : ViewModelBase
         }
 
         // Step 1: hardware-id lookup
-        var byHardware = ControllerHardwareCatalog.Resolve(snapshot.VendorId, snapshot.ProductId);
+        var byHardware = Autofire.Core.Models.ControllerHardwareCatalog.Resolve(snapshot.VendorId, snapshot.ProductId);
         if (byHardware != ControllerVisualStyle.Auto)
         {
             return byHardware;
