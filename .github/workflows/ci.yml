@@ -83,7 +83,7 @@ jobs:
           - { rid: win-x64,   os: windows-latest, ext: zip    }
           - { rid: linux-x64, os: ubuntu-latest,  ext: tar.gz }
           - { rid: osx-arm64, os: macos-latest,   ext: tar.gz }
-          - { rid: osx-x64,   os: macos-13,       ext: tar.gz }
+          - { rid: osx-x64,   os: macos-15-intel, ext: tar.gz }
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
