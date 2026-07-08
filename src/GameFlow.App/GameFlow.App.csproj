@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>GameFlow.App</RootNamespace>
+    <AssemblyName>GameFlow.App</AssemblyName>
+    <UseWindowsForms>false</UseWindowsForms>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GameFlow.Core\GameFlow.Core.csproj" />
+    <ProjectReference Include="..\GameFlow.Infrastructure\GameFlow.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="SDL3-CS.Native" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Extensions.Hosting" />
+    <PackageReference Include="Serilog.Settings.Configuration" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.File" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**\*" Exclude="Assets\**\*.md" />
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Localization\**\*.po">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
+    <!--
+      Bundled themes ship next to the executable so `ThemeBootstrap`
+      can copy them into %LocalAppData%\GAMEFLOW\themes on first
+      run. The Link metadata mirrors the source tree under
+      bin/<config>/<tfm>/themes/ regardless of how deep the file lives
+      in the repo, so the runtime path is stable across solution
+      layouts.
+
+      Every PNG, JSON, SVG and TXT under the repo-level `themes/`
+      folder is included. `.gitkeep` sentinels are excluded so empty
+      placeholder subfolders don't trail through to the build output.
+    -->
+    <Content Include="..\..\themes\**\*"
+             Exclude="..\..\themes\**\.gitkeep">
+      <Link>themes\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+  </ItemGroup>
+</Project>

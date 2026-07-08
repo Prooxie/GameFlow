@@ -54,13 +54,13 @@ jobs:
             nuget-${{ runner.os }}-
 
       - name: Restore
-        run: dotnet restore Autofire.Next.sln --locked-mode || dotnet restore Autofire.Next.sln
+        run: dotnet restore GameFlow.sln --locked-mode || dotnet restore GameFlow.sln
 
       - name: Build
-        run: dotnet build Autofire.Next.sln --configuration Release --no-restore
+        run: dotnet build GameFlow.sln --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test Autofire.Next.sln --configuration Release --no-build --logger "trx" --logger "console;verbosity=normal" --results-directory TestResults
+        run: dotnet test GameFlow.sln --configuration Release --no-build --logger "trx" --logger "console;verbosity=normal" --results-directory TestResults
 
       - name: Upload test results
         if: always()
@@ -96,7 +96,7 @@ jobs:
       - name: Publish
         shell: bash
         run: |
-          dotnet publish src/Autofire.App/Autofire.App.csproj \
+          dotnet publish src/GameFlow.App/GameFlow.App.csproj \
             --configuration Release \
             --runtime ${{ matrix.rid }} \
             --self-contained true \
@@ -111,20 +111,20 @@ jobs:
         shell: bash
         run: |
           cd publish/${{ matrix.rid }}
-          7z a -tzip "../../Autofire-Next-${GITHUB_REF_NAME}-${{ matrix.rid }}.zip" *
+          7z a -tzip "../../GameFlow-${GITHUB_REF_NAME}-${{ matrix.rid }}.zip" *
 
       - name: Package tar.gz
         if: matrix.ext == 'tar.gz'
         shell: bash
         run: |
           cd publish/${{ matrix.rid }}
-          tar -czf "../../Autofire-Next-${GITHUB_REF_NAME}-${{ matrix.rid }}.tar.gz" *
+          tar -czf "../../GameFlow-${GITHUB_REF_NAME}-${{ matrix.rid }}.tar.gz" *
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Autofire-Next-${{ matrix.rid }}
-          path: Autofire-Next-*-${{ matrix.rid }}.${{ matrix.ext }}
+          name: GameFlow-${{ matrix.rid }}
+          path: GameFlow-*-${{ matrix.rid }}.${{ matrix.ext }}
 
   release:
     name: Create GitHub release
