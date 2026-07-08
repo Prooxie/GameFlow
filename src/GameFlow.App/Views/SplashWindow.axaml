@@ -1,0 +1,95 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="GameFlow.App.Views.SplashWindow"
+        Title="GameFlow"
+        Width="720"
+        Height="400"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="False"
+        Background="#050B12"
+        WindowDecorations="Full">
+
+  <Border Margin="0"
+          CornerRadius="18"
+          ClipToBounds="True"
+          Background="#07101D"
+          BorderBrush="#0F2035"
+          BorderThickness="1">
+    <Grid RowDefinitions="*,Auto">
+
+      <!-- Background art layer -->
+      <Grid Grid.Row="0">
+        <Image Source="avares://GameFlow.App/Assets/SplashArt.png"
+               Stretch="UniformToFill"
+               Opacity="0.55" />
+
+        <!-- Gradient vignette -->
+        <Border>
+          <Border.Background>
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+              <GradientStop Color="#00050B12" Offset="0.0" />
+              <GradientStop Color="#CC050B12" Offset="0.5" />
+              <GradientStop Color="#FF050B12" Offset="1.0" />
+            </LinearGradientBrush>
+          </Border.Background>
+        </Border>
+
+        <!-- Horizontal accent glow strip -->
+        <Border VerticalAlignment="Bottom" Height="1" Margin="0,0,0,100">
+          <Border.Background>
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+              <GradientStop Color="#00050B12" Offset="0.0" />
+              <GradientStop Color="#6600D4FF" Offset="0.4" />
+              <GradientStop Color="#6600D4FF" Offset="0.6" />
+              <GradientStop Color="#00050B12" Offset="1.0" />
+            </LinearGradientBrush>
+          </Border.Background>
+        </Border>
+
+        <!-- Wordmark -->
+        <StackPanel Margin="40,0,40,32"
+                    VerticalAlignment="Bottom"
+                    Spacing="8">
+          <StackPanel Orientation="Horizontal" Spacing="14">
+            <Border Width="42" Height="42" CornerRadius="10"
+                    Background="#001B26" BorderBrush="#00D4FF" BorderThickness="1.5"
+                    VerticalAlignment="Center">
+              <TextBlock Text="⊕" FontSize="22" FontWeight="Black"
+                         Foreground="#00D4FF"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <!-- Single-line two-tone wordmark — see ShellWindow.axaml for why this replaced stacked two-line text. -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="0">
+              <TextBlock Text="GAME" FontSize="30" FontWeight="Black"
+                         Foreground="White" VerticalAlignment="Center" LetterSpacing="1" />
+              <TextBlock Text="FLOW" FontSize="30" FontWeight="Black"
+                         Foreground="#00D4FF" VerticalAlignment="Center" LetterSpacing="1" />
+            </StackPanel>
+          </StackPanel>
+          <TextBlock Text="Cross-platform controller remapping, autofire &amp; speedrun tooling"
+                     FontSize="13.5"
+                     Foreground="#64748B"
+                     TextWrapping="Wrap"
+                     Margin="56,0,0,0" />
+        </StackPanel>
+      </Grid>
+
+      <!-- Loading footer -->
+      <Border Grid.Row="1"
+              Padding="40,18,40,24"
+              Background="#04080F"
+              BorderBrush="#0F2035"
+              BorderThickness="0,1,0,0">
+        <StackPanel Spacing="10">
+          <ProgressBar IsIndeterminate="True" Height="2"
+                       Background="#0A1828" CornerRadius="1" />
+          <TextBlock Text="Bootstrapping host, runtime pipeline, profile store and translations…"
+                     FontSize="12"
+                     Foreground="#334155" />
+        </StackPanel>
+      </Border>
+
+    </Grid>
+  </Border>
+</Window>

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>GameFlow.Core</RootNamespace>
+    <AssemblyName>GameFlow.Core</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Core only depends on logging abstractions and the pure-managed Lua interpreter.
+      Keeping the dependency surface small here is intentional: the Core project is
+      meant to be reusable by future automation/CLI surfaces without dragging in DI,
+      Avalonia, or platform interop.
+    -->
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="MoonSharp" />
+  </ItemGroup>
+</Project>

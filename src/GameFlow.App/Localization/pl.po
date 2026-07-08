@@ -1,0 +1,1056 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: pl\n"
+
+msgid "WindowTitle"
+msgstr "GameFlow"
+
+msgid "DashboardTab"
+msgstr "Panel"
+
+msgid "ProfilesTab"
+msgstr "Profile"
+
+msgid "DiagnosticsTab"
+msgstr "Diagnostyka"
+
+msgid "AboutTab"
+msgstr "O programie"
+
+msgid "LanguageLabel"
+msgstr "Język"
+
+msgid "RefreshButton"
+msgstr "Odśwież"
+
+msgid "SaveProfileButton"
+msgstr "Zapisz profil"
+
+msgid "ResetProfileButton"
+msgstr "Przywróć domyślne"
+
+msgid "PhysicalInputLabel"
+msgstr "Wejście fizyczne"
+
+msgid "VirtualOutputLabel"
+msgstr "Wyjście wirtualne"
+
+msgid "RuleSummaryLabel"
+msgstr "Zapisane reguły"
+
+msgid "ProfileEditorLabel"
+msgstr "Edytor profilu"
+
+msgid "DiagnosticsLabel"
+msgstr "Diagnostyka"
+
+msgid "AboutLabel"
+msgstr "O tej wersji"
+
+msgid "StatusPrefix"
+msgstr "Działanie"
+
+msgid "ActiveProfilePrefix"
+msgstr "Profil"
+
+msgid "ProviderPlanHeading"
+msgstr "Mapa drogowa dostawców"
+
+msgid "DashboardSettingsLabel"
+msgstr "Ustawienia panelu"
+
+msgid "DashboardSubtitle"
+msgstr "Wybierz backend kontrolera, urządzenie do odczytu, dostosuj częstotliwość pollingu i zachowaj konfigurację w oknie głównym."
+
+msgid "InputProviderLabel"
+msgstr "Dostawca wejścia"
+
+msgid "OutputProviderLabel"
+msgstr "Dostawca wyjścia"
+
+msgid "ControllerLabel"
+msgstr "Kontroler"
+
+msgid "ControllerInventoryLabel"
+msgstr "Wykryte kontrolery"
+
+msgid "ProviderStatusLabel"
+msgstr "Status dostawcy"
+
+msgid "PollingRateLabel"
+msgstr "Częstotliwość pollingu"
+
+msgid "PhysicalStyleLabel"
+msgstr "Wygląd fizycznego kontrolera"
+
+msgid "VirtualStyleLabel"
+msgstr "Wygląd wirtualnego kontrolera"
+
+msgid "ApplyDashboardSettingsButtonLabel"
+msgstr "Zastosuj ustawienia"
+
+msgid "SelectedControlLabel"
+msgstr "Wybrany element sterowania"
+
+msgid "RuntimeNotesLabel"
+msgstr "Notatki środowiska"
+
+msgid "RawPhysicalLabel"
+msgstr "Surowy snapshot fizyczny"
+
+msgid "RawVirtualLabel"
+msgstr "Surowy snapshot wirtualny"
+
+msgid "AutomaticControllerSelection"
+msgstr "Automatyczny wybór"
+
+msgid "AutomaticControllerSelectionDescription"
+msgstr "Użyj domyślnego zachowania dostawcy. Jeśli podłączone jest tylko jedno zgodne urządzenie wejściowe, zostanie wybrane automatycznie."
+
+msgid "NoControllersDetected"
+msgstr "Nie wykryto urządzeń wejściowych."
+
+msgid "ControllersDetectedSingle"
+msgstr "Wykryto 1 urządzenie wejściowe: {0}"
+
+msgid "ControllersDetectedMultiple"
+msgstr "Wykryto {0} urządzeń wejściowych."
+
+msgid "AboutBodyLine1"
+msgstr "GameFlow to przepisane w .NET 10 i Avalonia narzędzie speedrunningowe dla kontrolerów, oparte na oryginalnej wersji w Pythonie."
+
+msgid "AboutBodyLine2"
+msgstr "Ta wersja koncentruje się na panelu sterowania kontrolerem, zunifikowanym wykrywaniu urządzeń, trwałości profili, logowaniu, tłumaczeniach i silniku mapowania."
+
+msgid "AboutBodyLine3"
+msgstr "Natywni dostawcy kontrolerów są odizolowani za interfejsami, aby Windows, Linux i macOS mogły rozwijać się niezależnie."
+
+msgid "AboutBodyLine4"
+msgstr "Kolejny krok edytora powinien zastąpić przepływ pracy z surowym JSON dedykowanym edytorem dla przycisków, drążków, wyzwalaczy, touchpada, klawiszy i skryptów."
+
+msgid "ProfileComboLabel"
+msgstr "Profil konfiguracyjny"
+
+msgid "ProfileToolbarSubtitle"
+msgstr "Przełączaj, importuj, eksportuj, duplikuj, zmieniaj nazwy i edytuj pełne profile bez dotykania surowego JSON."
+
+msgid "ProfileNameLabel"
+msgstr "Nazwa profilu"
+
+msgid "ProfileNameHint"
+msgstr "Wybierz krótką, opisową nazwę dla tego profilu."
+
+msgid "ProfileNameWatermark"
+msgstr "Profil speedrun / preset gry"
+
+msgid "RenameProfileButton"
+msgstr "Zmień nazwę"
+
+msgid "CreateProfileButton"
+msgstr "Nowy profil"
+
+msgid "DuplicateProfileButton"
+msgstr "Duplikuj"
+
+msgid "ImportProfileButton"
+msgstr "Importuj"
+
+msgid "ExportProfileButton"
+msgstr "Eksportuj"
+
+msgid "MappingOverviewLabel"
+msgstr "Przegląd mapowania sterowania"
+
+msgid "MappingOverviewSubtitle"
+msgstr "Każda karta podsumowuje jeden skonfigurowany element sterowania, w tym przemapowania, progi, martwe strefy, reguły turbo i zapisane skrypty."
+
+msgid "OpenControlEditorButton"
+msgstr "Konfiguruj"
+
+msgid "NoMappingCardsText"
+msgstr "W tym profilu nie ma jeszcze mapowań. Kliknij element na fizycznym kontrolerze lub dodaj regułę w edytorze."
+
+msgid "AboutBrandSubtitle"
+msgstr "Wieloplatformowe narzędzia kontrolerów"
+
+msgid "ControlMappingWindowTitle"
+msgstr "Konfiguruj element sterowania"
+
+msgid "ImportProfileDialogTitle"
+msgstr "Importuj profil"
+
+msgid "ExportProfileDialogTitle"
+msgstr "Eksportuj profil"
+
+msgid "JsonProfileFileTypeLabel"
+msgstr "Profil JSON"
+
+msgid "MappingEditorMappingRulesLabel"
+msgstr "Reguły mapowania"
+
+msgid "MappingEditorAddRuleButton"
+msgstr "Dodaj regułę"
+
+msgid "MappingEditorEditButton"
+msgstr "Edytuj"
+
+msgid "MappingEditorDeleteButton"
+msgstr "Usuń"
+
+msgid "MappingEditorSelectRuleTitle"
+msgstr "Wybierz regułę do edycji"
+
+msgid "MappingEditorSelectRuleHint"
+msgstr "Wybierz istniejącą regułę z listy lub dodaj nową dla wybranego elementu sterowania."
+
+msgid "MappingEditorRuleNameLabel"
+msgstr "Nazwa reguły"
+
+msgid "MappingEditorRuleTypeLabel"
+msgstr "Typ reguły"
+
+msgid "MappingEditorModeLabel"
+msgstr "Tryb"
+
+msgid "MappingEditorEnabledLabel"
+msgstr "Włączone"
+
+msgid "MappingEditorSourceButtonLabel"
+msgstr "Przycisk źródłowy"
+
+msgid "MappingEditorTargetButtonLabel"
+msgstr "Przycisk docelowy"
+
+msgid "MappingEditorTriggerButtonLabel"
+msgstr "Przycisk wyzwalający"
+
+msgid "MappingEditorOutputButtonLabel"
+msgstr "Przycisk wyjściowy"
+
+msgid "MappingEditorSuppressSourceButton"
+msgstr "Tłum przycisk źródłowy (blokuj oryginał)"
+
+msgid "MappingEditorTargetStickLabel"
+msgstr "Docelowy drążek"
+
+msgid "MappingEditorSuppressRawStick"
+msgstr "Tłum surowy drążek po kształtowaniu"
+
+msgid "MappingEditorDeadzoneLabel"
+msgstr "Martwa strefa"
+
+msgid "MappingEditorDeadzoneHint"
+msgstr "Wartości w martwej strefie są wymuszane na zero."
+
+msgid "MappingEditorFullAtLabel"
+msgstr "Pełny zakres od"
+
+msgid "MappingEditorFullAtHint"
+msgstr "Wartości powyżej tego progu są wzmacniane do maksimum."
+
+msgid "MappingEditorSourceStickLabel"
+msgstr "Źródłowy drążek"
+
+msgid "MappingEditorBlendModeLabel"
+msgstr "Tryb mieszania"
+
+msgid "MappingEditorSuppressSourceStick"
+msgstr "Tłum wyjście źródłowego drążka"
+
+msgid "MappingEditorActivationDeadzoneLabel"
+msgstr "Martwa strefa aktywacji"
+
+msgid "MappingEditorActivationFullAtLabel"
+msgstr "Pełna aktywacja od"
+
+msgid "MappingEditorTargetControlKeyLabel"
+msgstr "Klucz docelowego elementu sterowania"
+
+msgid "MappingEditorControlKeyWatermark"
+msgstr "LeftStick / South / Touchpad …"
+
+msgid "MappingEditorSuppressSourceInput"
+msgstr "Tłum wejście źródłowe"
+
+msgid "MappingEditorScriptStoredHint"
+msgstr "Kod skryptu jest zapisany w profilu i zostanie przetworzony przez przyszłe środowisko uruchomieniowe."
+
+msgid "MappingEditorScriptLabel"
+msgstr "Kod skryptu"
+
+msgid "MappingEditorActivationButtonLabel"
+msgstr "Przycisk aktywacji"
+
+msgid "MappingEditorCaptureStickLabel"
+msgstr "Przechwytywany drążek"
+
+msgid "MappingEditorOutputStickLabel"
+msgstr "Wyjściowy drążek"
+
+msgid "MappingEditorSuppressActivationButton"
+msgstr "Tłum przycisk aktywacji podczas zamrożenia"
+
+msgid "MappingEditorSuppressCaptureStick"
+msgstr "Tłum przechwycony drążek podczas zamrożenia"
+
+msgid "MappingEditorPulseWhileFrozenLabel"
+msgstr "Pulsuj podczas zamrożenia (autofire przy przytrzymaniu)"
+
+msgid "MappingEditorTimingLabel"
+msgstr "Taktowanie"
+
+msgid "MappingEditorHoldLabel"
+msgstr "Przytrzymanie"
+
+msgid "MappingEditorHoldHint"
+msgstr "Jak długo aktywna faza pozostaje wciśnięta."
+
+msgid "MappingEditorReleaseLabel"
+msgstr "Zwolnienie"
+
+msgid "MappingEditorReleaseHint"
+msgstr "Jak długo nieaktywna faza pozostaje zwolniona."
+
+msgid "MappingEditorSaveRuleButton"
+msgstr "Zapisz regułę"
+
+msgid "MappingEditorCancelButton"
+msgstr "Anuluj"
+
+msgid "MappingEditorAddNewRuleTitle"
+msgstr "Dodaj nową regułę"
+
+msgid "MappingEditorEditRuleTitle"
+msgstr "Edytuj regułę: {0}"
+
+msgid "MappingEditorRuleFallbackName"
+msgstr "Nienazwana reguła"
+
+msgid "DeleteProfileButton"
+msgstr "Usuń profil"
+
+msgid "DeleteProfileBlockedLastOne"
+msgstr "Nie można usunąć: to jedyny profil."
+
+msgid "ProfileDeletedStatus"
+msgstr "Profil {0} usunięty."
+
+
+msgid "ThemeLabel"
+msgstr "Motyw"
+
+msgid "OpenSettingsButtonLabel"
+msgstr "Opcje"
+
+msgid "SettingsDialogTitle"
+msgstr "Opcje"
+
+msgid "SettingsDialogDiagnosticsHeader"
+msgstr "Diagnostyka"
+
+msgid "SettingsDialogLogLevelLabel"
+msgstr "Poziom rejestrowania"
+
+msgid "SettingsDialogLogLevelHint"
+msgstr "Poziomy Trace i Debug są bardzo szczegółowe; używaj ich tylko podczas diagnozowania problemu."
+
+msgid "SettingsDialogWindowHeader"
+msgstr "Okno"
+
+msgid "SettingsDialogRememberWindowSizeLabel"
+msgstr "Zapamiętaj rozmiar okna między uruchomieniami"
+
+msgid "SettingsDialogWindowWidthLabel"
+msgstr "Szerokość"
+
+msgid "SettingsDialogWindowHeightLabel"
+msgstr "Wysokość"
+
+msgid "SettingsDialogPollingHeader"
+msgstr "Częstotliwość odpytywania"
+
+msgid "SettingsDialogDashboardRefreshLabel"
+msgstr "Odświeżanie pulpitu"
+
+msgid "SettingsDialogPollingRateLabel"
+msgstr "Częstotliwość odpytywania"
+
+msgid "SettingsDialogPollingHint"
+msgstr "Pozostaw puste, aby użyć wartości domyślnych profilu. Zakres: 30–1000 Hz."
+
+msgid "SettingsDialogPathsHeader"
+msgstr "Ścieżki przechowywania"
+
+msgid "SettingsDialogProfilesDirectoryLabel"
+msgstr "Katalog profili"
+
+msgid "SettingsDialogLogsDirectoryLabel"
+msgstr "Katalog dzienników"
+
+msgid "SettingsDialogLogsPathHint"
+msgstr "Zmiana katalogu dzienników zostanie zastosowana po następnym uruchomieniu."
+
+msgid "SettingsDialogBrowseButton"
+msgstr "Przeglądaj…"
+
+msgid "SettingsDialogStartupHeader"
+msgstr "Uruchamianie"
+
+msgid "SettingsDialogCheckUpdatesLabel"
+msgstr "Sprawdzaj aktualizacje przy uruchomieniu"
+
+msgid "SettingsDialogCheckRequirementsLabel"
+msgstr "Sprawdzaj wymagania (ViGEm Bus itp.) przy uruchomieniu"
+
+msgid "SettingsDialogApplyButton"
+msgstr "Zapisz"
+
+msgid "SettingsDialogCancelButton"
+msgstr "Anuluj"
+
+msgid "SettingsDialogRestoreDefaultsButton"
+msgstr "Przywróć domyślne"
+
+msgid "SettingsDialogAppliedStatus"
+msgstr "Ustawienia zapisane."
+
+msgid "SettingsDialogRestoredStatus"
+msgstr "Przywrócono domyślne — kliknij Zapisz, aby zastosować."
+
+msgid "SettingsDialogApplyFailedStatus"
+msgstr "Nie można zapisać ustawień: {0}"
+
+
+msgid "ThemeNameCyberBlue"
+msgstr "Cybernetyczny niebieski"
+
+msgid "ThemeNameMidnightPurple"
+msgstr "Północny fiolet"
+
+msgid "ThemeNameNeonGreen"
+msgstr "Neonowa zieleń"
+
+msgid "ThemeNameSolarRed"
+msgstr "Słoneczna czerwień"
+
+msgid "ThemeNameLight"
+msgstr "Jasny"
+
+msgid "InputProviderXInputLabel"
+msgstr "XInput"
+
+msgid "InputProviderXInputDescription"
+msgstr "Natywny sterownik XInput Windows. Wykrywa do 4 kontrolerów zgodnych z Xbox."
+
+msgid "InputProviderSdlLabel"
+msgstr "Wejście uniwersalne SDL3"
+
+msgid "InputProviderSdlDescription"
+msgstr "Wieloplatformowe mapowanie gamepada SDL3 z zapasowym trybem joysticka."
+
+msgid "InputProviderDemoLabel"
+msgstr "Podgląd demo"
+
+msgid "InputProviderDemoDescription"
+msgstr "Animowane źródło podglądu do testowania UI — bez sprzętu."
+
+msgid "InputProviderNoneLabel"
+msgstr "Brak wejścia"
+
+msgid "InputProviderNoneDescription"
+msgstr "Wyłącza wejście na żywo i pozostawia panel w spoczynku."
+
+msgid "OutputProviderViGEmXbox360Label"
+msgstr "ViGEm Xbox 360"
+
+msgid "OutputProviderViGEmXbox360Description"
+msgstr "Wirtualny kontroler Xbox 360 przez ViGEm Bus. Wymaga sterownika ViGEm Bus."
+
+msgid "OutputProviderViGEmDs4Label"
+msgstr "ViGEm DualShock 4"
+
+msgid "OutputProviderViGEmDs4Description"
+msgstr "Wirtualny kontroler DualShock 4 przez ViGEm Bus. Wymaga sterownika ViGEm Bus."
+
+msgid "OutputProviderViGEmDs5Label"
+msgstr "ViGEm DualSense (DS5)"
+
+msgid "OutputProviderViGEmDs5Description"
+msgstr "Wirtualny kontroler DualSense przez ViGEm Bus. Wymaga ViGEm Bus v1.22+."
+
+msgid "OutputProviderPreviewLabel"
+msgstr "Tylko podgląd"
+
+msgid "OutputProviderPreviewDescription"
+msgstr "Wyświetla przetworzone wyjście w panelu bez tworzenia wirtualnego urządzenia."
+
+msgid "ControllerStyleAuto"
+msgstr "Auto"
+
+msgid "ControllerStyleXbox"
+msgstr "Xbox"
+
+msgid "ControllerStylePlayStation4"
+msgstr "PlayStation 4"
+
+msgid "ControllerStylePlayStation5"
+msgstr "PlayStation 5"
+
+msgid "ControllerStyleMinimal"
+msgstr "Minimalny"
+
+
+msgid "StyleLabelXbox"
+msgstr "Układ Xbox"
+
+msgid "StyleLabelPlayStation4"
+msgstr "Układ DualShock 4"
+
+msgid "StyleLabelPlayStation5"
+msgstr "Układ DualSense"
+
+msgid "StyleLabelMinimal"
+msgstr "Minimalna obudowa"
+
+msgid "StyleLabelAuto"
+msgstr "Układ automatyczny"
+
+msgid "DiagLogsLabel"
+msgstr "Dzienniki"
+
+msgid "DiagLastInputFrameLabel"
+msgstr "Ostatnia ramka wejścia"
+
+msgid "DiagNoDataYetLabel"
+msgstr "brak danych"
+
+msgid "DiagDashboardRefreshLabel"
+msgstr "Odświeżanie panelu"
+
+msgid "DiagHzTargetFormat"
+msgstr "cel {0} Hz"
+
+msgid "DiagInputProviderRequestedLabel"
+msgstr "Dostawca wejścia (żądany)"
+
+msgid "DiagInputProviderEffectiveLabel"
+msgstr "Dostawca wejścia (efektywny)"
+
+msgid "DiagOutputProviderLabel"
+msgstr "Dostawca wyjścia"
+
+msgid "DiagViGEmEnabledLabel"
+msgstr "ViGEm włączony"
+
+msgid "DiagControllersDetectedLabel"
+msgstr "Wykryte kontrolery"
+
+msgid "DiagProviderStatusLabel"
+msgstr "Stan dostawcy"
+
+msgid "DiagExperimentalGameInputLabel"
+msgstr "Eksperymentalny GameInput"
+
+msgid "RuntimeNoteDemoActive"
+msgstr "Aktywny podgląd demo. Panel animuje bez sprzętu."
+
+msgid "RuntimeNoteXInputActive"
+msgstr "XInput aktywny. Wykrywane są tylko kontrolery zgodne z XInput (klasa Xbox)."
+
+msgid "RuntimeNoteSdlActive"
+msgstr "SDL3 uniwersalne wejście aktywne. Używa standardowych mapowań gamepada z zapasowym trybem joysticka."
+
+msgid "RuntimeNoteLiveInputDisabled"
+msgstr "Wejście na żywo wyłączone dla tego profilu."
+
+msgid "RuleKindButtonRemapLabel"
+msgstr "Przemapowanie przycisku"
+
+msgid "RuleKindButtonRemapDescription"
+msgstr "Przekierowanie jednego przycisku na inny."
+
+msgid "RuleKindButtonAutofireLabel"
+msgstr "Autofire / Turbo przycisku"
+
+msgid "RuleKindButtonAutofireDescription"
+msgstr "Szybki ogień przycisku z konfigurowalną częstotliwością."
+
+msgid "RuleKindStickThresholdLabel"
+msgstr "Próg gałki"
+
+msgid "RuleKindStickThresholdDescription"
+msgstr "Kształtowanie martwej strefy i progu dla gałki."
+
+msgid "RuleKindStickAutofireLabel"
+msgstr "Autofire gałki"
+
+msgid "RuleKindStickAutofireDescription"
+msgstr "Pulsacja wyjścia jednej gałki z drugiej."
+
+msgid "RuleKindFreezeLastDirectionLabel"
+msgstr "Zamroź ostatni kierunek"
+
+msgid "RuleKindFreezeLastDirectionDescription"
+msgstr "Trzyma ostatni obserwowany kierunek gałki, gdy przycisk jest wciśnięty."
+
+msgid "RuleKindScriptLabel"
+msgstr "Skrypt sterowania"
+
+msgid "RuleKindScriptDescription"
+msgstr "Przechowywanie tekstu skryptu dla konkretnej kontroli."
+
+msgid "MappingEditorAddRule"
+msgstr "+ Dodaj regułę"
+
+msgid "MappingEditorRuleName"
+msgstr "NAZWA REGUŁY"
+
+msgid "MappingEditorRuleType"
+msgstr "TYP REGUŁY"
+
+msgid "MappingEditorMode"
+msgstr "TRYB"
+
+msgid "MappingEditorSourceButton"
+msgstr "PRZYCISK ŹRÓDŁOWY"
+
+msgid "MappingEditorTargetButton"
+msgstr "PRZYCISK DOCELOWY"
+
+msgid "MappingEditorSuppressSource"
+msgstr "Tłumić przycisk źródłowy (blokować oryginał)"
+
+msgid "MappingEditorEnabled"
+msgstr "Włączone"
+
+msgid "MappingEditorDeadzoneLabel"
+msgstr "Martwa strefa i próg"
+
+msgid "MappingEditorStoreScript"
+msgstr "Zapisz skrypt dla wybranej kontroli. Wykonanie w czasie pracy jest planowane."
+
+msgid "MappingEditorSelectRuleToEdit"
+msgstr "Wybierz regułę do edycji"
+
+msgid "MappingEditorOrUseAddRule"
+msgstr "Lub użyj „Dodaj regułę", aby utworzyć nowe mapowanie."
+
+msgid "MappingEditorSaveButton"
+msgstr "Zapisz regułę"
+
+msgid "MappingEditorCancelButton"
+msgstr "Anuluj"
+
+msgid "MappingEditorRulesHeader"
+msgstr "REGUŁY MAPOWANIA"
+
+
+msgid "InputProviderOpenXInputLabel"
+msgstr "OpenXInput"
+
+msgid "InputProviderOpenXInputDescription"
+msgstr "Zamiennik XInput obsługujący więcej niż 4 kontrolery. Szkielet — wymaga OpenXinput1_4.dll obok aplikacji."
+
+msgid "InputProviderX360ceLabel"
+msgstr "x360ce"
+
+msgid "InputProviderX360ceDescription"
+msgstr "Tłumacz DirectInput na XInput dla starszych / nie-XInput padów. Szkielet — wymaga biblioteki uruchomieniowej x360ce."
+
+msgid "InputProviderPs3Label"
+msgstr "DualShock 3 (PS3)"
+
+msgid "InputProviderPs3Description"
+msgstr "Odczytuje sparowany DualShock 3 przez DsHidMini lub libusb. Szkielet — wymaga sterownika DsHidMini."
+
+msgid "InputProviderWindowsMidiLabel"
+msgstr "Wejście MIDI Windows"
+
+msgid "InputProviderWindowsMidiDescription"
+msgstr "Mapuje przychodzące zdarzenia MIDI na wejścia wirtualnego gamepada. Szkielet — wymaga Windows MIDI Services i mapowania w profilu."
+
+msgid "OutputProviderVJoyLabel"
+msgstr "Wirtualny joystick vJoy"
+
+msgid "OutputProviderVJoyDescription"
+msgstr "Ogólny wirtualny joystick (do 8 osi / 128 przycisków). Szkielet — wymaga sterownika vJoy."
+
+msgid "OutputProviderHidMaestroLabel"
+msgstr "Wirtualne HID HidMaestro"
+
+msgid "OutputProviderHidMaestroDescription"
+msgstr "User-mode virtual controller platform — no kernel driver or reboot. Presents as real hardware to XInput, DirectInput, SDL3 and WGI. Windows only. Activates automatically when HIDMaestro.Core.dll is present next to the executable. Does not fall back to ViGEm — if it can't activate, this slot has no output."
+
+msgid "OutputProviderWindowsMidiOutLabel"
+msgstr "Wyjście MIDI Windows"
+
+msgid "OutputProviderWindowsMidiOutDescription"
+msgstr "Emituje zdarzenia MIDI z aktywności gamepada. Szkielet — wymaga Windows MIDI Services i mapowania w profilu."
+
+# ── UI/UX localization pass (auto-added) ──
+
+msgid "CommonRefresh"
+msgstr "Refresh"
+
+msgid "DashboardBackgroundLabel"
+msgstr "Tło"
+
+msgid "DevicesActiveDevice"
+msgstr "Active device"
+
+msgid "DevicesEmptyList"
+msgstr "No input devices detected. Connect a controller and click Refresh."
+
+msgid "DevicesHardwareId"
+msgstr "Hardware ID"
+
+msgid "DevicesInputLiveLabel"
+msgstr "Wejście (na żywo):"
+
+msgid "DevicesKeyboardHint"
+msgstr "Przypisz tę klawiaturę do slotu, a jej klawisze będą generować wejście pada. Poniższy układ podświetla się na żywo podczas pisania."
+
+msgid "DevicesKeysDownLabel"
+msgstr "Wciśnięte klawisze (na żywo):"
+
+msgid "DevicesMouseHint"
+msgstr "Ruch steruje prawą gałką (celowanie); lewy przycisk = prawy spust (strzał), prawy przycisk = lewy spust (celowanie), środkowy = R3, boczne = LB/RB. Aby użyć, przypisz tę mysz do slotu."
+
+msgid "DevicesNoSelection"
+msgstr "Select a device to see its details."
+
+msgid "DevicesOnlineTotal"
+msgstr " online of "
+
+msgid "DevicesProduct"
+msgstr "Product: "
+
+msgid "DevicesTab"
+msgstr "Devices"
+
+msgid "DevicesTitle"
+msgstr "Input Devices"
+
+msgid "DevicesTotal"
+msgstr " total"
+
+msgid "DevicesVIDPID"
+msgstr "VID:PID "
+
+msgid "MappedControlsRuleCountMany"
+msgstr "Reguł: {0}"
+
+msgid "MappedControlsRuleCountOne"
+msgstr "1 reguła"
+
+msgid "MappedControlsRuleCountZero"
+msgstr "Brak reguł"
+
+msgid "PanelBackgroundChromaBlue"
+msgstr "Błękit chroma"
+
+msgid "PanelBackgroundChromaGreen"
+msgstr "Zieleń chroma"
+
+msgid "PanelBackgroundPureBlack"
+msgstr "Czysta czerń"
+
+msgid "PanelBackgroundThemeDefault"
+msgstr "Zgodnie z motywem"
+
+msgid "ProviderStatus_DemoActive"
+msgstr "Podgląd demo aktywny — animowane źródło, bez sprzętu"
+
+msgid "ProviderStatus_NoActiveProvider"
+msgstr "Brak aktywnego źródła wejścia"
+
+msgid "ProviderStatus_SdlActive"
+msgstr "Wejście SDL3 aktywne — wykryto urządzeń: {0}"
+
+msgid "RuleKindMultiButtonAutofireDescription"
+msgstr "Loop a sequence of button presses with per-step timing while held."
+
+msgid "RuleKindMultiButtonAutofireLabel"
+msgstr "Multi-Button Autofire"
+
+msgid "RuleKindRuleToggleDescription"
+msgstr "Press a button to enable or disable one or more other rules."
+
+msgid "RuleKindRuleToggleLabel"
+msgstr "Rule Toggle"
+
+msgid "StyleLabelArcade"
+msgstr "Arcade layout"
+
+msgid "StyleLabelNintendoSwitch"
+msgstr "Switch layout"
+
+msgid "StyleLabelPlayStation3"
+msgstr "DualShock 3 layout"
+
+msgid "StyleLabelSimpleGamepad"
+msgstr "Simple gamepad layout"
+
+msgid "StyleLabelSteamController"
+msgstr "Steam Controller layout"
+
+msgid "StyleLabelSteamDeck"
+msgstr "Steam Deck layout"
+
+msgid "StyleLabelXbox360"
+msgstr "Xbox 360 layout"
+
+msgid "StyleLabelXboxOne"
+msgstr "Xbox One layout"
+
+msgid "StyleLabelXboxSeries"
+msgstr "Xbox Series layout"
+
+msgid "TemplateEmitLabel"
+msgstr "Utwórz wirtualny kontroler dla tego urządzenia"
+
+msgid "TemplateEmitTooltip"
+msgstr "Gdy włączone, ten slot emituje wybrany wirtualny kontroler (przez ViGEm lub HIDMaestro), gdy przypisane urządzenia są aktywne. Wyłącz, aby slot pozostał pasywny — wejście nadal widać w podglądzie, ale wirtualne urządzenie nie powstaje."
+
+msgid "TemplateOutputDeviceLabel"
+msgstr "Urządzenie wyjściowe"
+
+msgid "ProviderStatus_SdlNoGamepads"
+msgstr "SDL3 aktywne — nie wykryto padów"
+
+msgid "ProviderStatus_NoControllerSelected"
+msgstr "Nie wybrano kontrolera. Wybór automatyczny użyje pierwszego wykrytego urządzenia."
+
+# ── Mapping editor localization pass ──
+
+msgid "MEV_SectionTriggerButton"
+msgstr "TRIGGER BUTTON"
+
+msgid "MEV_SectionTriggerButtonHold"
+msgstr "TRIGGER BUTTON (hold to loop)"
+
+msgid "MEV_SectionOutputButton"
+msgstr "OUTPUT BUTTON"
+
+msgid "MEV_SectionSourceStick"
+msgstr "SOURCE STICK"
+
+msgid "MEV_SectionTargetStick"
+msgstr "TARGET STICK"
+
+msgid "MEV_SectionCaptureStick"
+msgstr "CAPTURE STICK"
+
+msgid "MEV_SectionOutputStick"
+msgstr "OUTPUT STICK"
+
+msgid "MEV_SectionDeadzone"
+msgstr "DEADZONE"
+
+msgid "MEV_SectionFullAt"
+msgstr "FULL AT (saturation)"
+
+msgid "MEV_SectionActivationDeadzone"
+msgstr "ACTIVATION DEADZONE"
+
+msgid "MEV_SectionActivationFullAt"
+msgstr "ACTIVATION FULL AT"
+
+msgid "MEV_SectionActivationButton"
+msgstr "ACTIVATION BUTTON (hold to freeze)"
+
+msgid "MEV_SectionBlendMode"
+msgstr "BLEND MODE"
+
+msgid "MEV_SectionSequenceSteps"
+msgstr "SEQUENCE STEPS (loop while held)"
+
+msgid "MEV_SectionStepTarget"
+msgstr "TARGET"
+
+msgid "MEV_SectionScript"
+msgstr "SCRIPT"
+
+msgid "MEV_SectionTargetControlKey"
+msgstr "TARGET CONTROL KEY"
+
+msgid "MEV_SuppressRawAfterShaping"
+msgstr "Suppress raw source stick after shaping"
+
+msgid "MEV_SuppressSourceStickOutput"
+msgstr "Suppress source stick output"
+
+msgid "MEV_SuppressSourceInputStored"
+msgstr "Suppress source input (stored for future runtime)"
+
+msgid "MEV_SuppressActivationWhileFreezing"
+msgstr "Suppress activation button while freezing"
+
+msgid "MEV_SuppressCapturedWhileFrozen"
+msgstr "Suppress captured stick output while frozen"
+
+msgid "MEV_PulseWhileFrozen"
+msgstr "Pulse while frozen (autofire while held)"
+
+msgid "MEV_EditButton"
+msgstr "Edit"
+
+msgid "MEV_DeleteButton"
+msgstr "Delete"
+
+msgid "MEV_AddStep"
+msgstr "+ Add step"
+
+msgid "MEV_NoStepsYet"
+msgstr "No steps yet — add at least one for the loop to do anything."
+
+msgid "MEV_HintDeadzone"
+msgstr "Ignore stick movement below this threshold."
+
+msgid "MEV_HintFullAt"
+msgstr "Reach 100% output at this raw stick magnitude."
+
+msgid "SidebarPhysicalHeader"
+msgstr "PHYSICAL DEVICES"
+
+msgid "SidebarVirtualHeader"
+msgstr "VIRTUAL CONTROLLERS"
+
+msgid "DevicesPhysicalTabHeader"
+msgstr "Physical devices"
+
+msgid "DevicesVirtualTabHeader"
+msgstr "Virtual controllers"
+
+msgid "SlotsAddControllerLabel"
+msgstr "Add controller"
+
+msgid "SlotsEnabledLabel"
+msgstr "Enabled"
+
+msgid "SlotsDeleteLabel"
+msgstr "Delete"
+
+msgid "MappedControlRemapTitle"
+msgstr "Remap"
+
+msgid "MappedControlAutofireTitle"
+msgstr "Autofire"
+
+msgid "MappedControlStickThresholdTitle"
+msgstr "Deadzone / Threshold"
+
+msgid "MappedControlStickAutofireTitle"
+msgstr "Stick autofire"
+
+msgid "MappedControlFreezeDirectionTitle"
+msgstr "Freeze direction"
+
+msgid "MappedControlScriptTitle"
+msgstr "Script"
+
+msgid "MappedControlGenericTitle"
+msgstr "Rule"
+
+msgid "RuleModeModify"
+msgstr "modify"
+
+msgid "RuleModePassthrough"
+msgstr "passthrough"
+
+msgid "RuleModeIgnore"
+msgstr "ignore"
+
+msgid "MappedControlDeadzoneWord"
+msgstr "deadzone"
+
+msgid "MappedControlFullWord"
+msgstr "full"
+
+msgid "MappedControlCaptureWord"
+msgstr "capture"
+
+msgid "MappedControlSuppressSource"
+msgstr "suppress src"
+
+msgid "MappedControlSuppressRaw"
+msgstr "suppress raw"
+
+msgid "MappedControlSuppressButton"
+msgstr "suppress btn"
+
+msgid "MappedControlSuppressStick"
+msgstr "suppress stick"
+
+msgid "MappedControlScriptPlaceholder"
+msgstr "Script placeholder"
+
+msgid "StickLeftLabel"
+msgstr "Left stick"
+
+msgid "StickRightLabel"
+msgstr "Right stick"
+
+msgid "MappedControlHintStickClick"
+msgstr "Stick click: passthrough, ignore, remap, autofire, script."
+
+msgid "MappedControlHintAnalogTrigger"
+msgstr "Analog trigger: passthrough, ignore, script, future analog remap."
+
+msgid "MappedControlHintButton"
+msgstr "Button: passthrough, ignore, remap, autofire, script."
+
+msgid "MEV_HoldMs"
+msgstr "HOLD ms"
+
+msgid "MEV_ReleaseMs"
+msgstr "RELEASE ms"
+
+msgid "MEV_DelayMs"
+msgstr "DELAY ms"
+
+msgid "MEV_SectionTriggerButtonToggle"
+msgstr "TRIGGER BUTTON (press to toggle)"
+
+msgid "MEV_SectionRulesToToggle"
+msgstr "RULES TO TOGGLE"
+
+msgid "MEV_ToggleHint"
+msgstr "Each press of the trigger flips the enabled state of the checked rules."
+
+msgid "MEV_NoOtherRules"
+msgstr "No other rules exist yet to target."
+
+msgid "MEV_SectionTiming"
+msgstr "TIMING"
+
+msgid "MEV_TimingHold"
+msgstr "HOLD"
+
+msgid "MEV_TimingRelease"
+msgstr "RELEASE"
+
+msgid "MEV_HintHold"
+msgstr "How long the virtual button is held (pressed phase)."
+
+msgid "MEV_HintRelease"
+msgstr "How long the virtual button is released between pulses."
+
+msgid "TemplateOutputProviderLabel"
+msgstr "Dostawca wyjścia"
+
+msgid "TemplateOutputProviderTooltip"
+msgstr "Który backend wykorzystuje ten slot (HIDMaestro, konkretne urządzenie ViGEm lub tylko podgląd). Pozostawienie na „(dziedziczone z profilu)” używa globalnego dostawcy wyjścia profilu, który domyślnie to podgląd — brak rzeczywistego urządzenia — dopóki nie zostanie to zmienione tutaj."
+
+msgid "DashboardVirtualBadgeLabel"
+msgstr "WIRTUALNY"
+
+msgid "SlotsDuplicateLabel"
+msgstr "Duplikuj"
+
+msgid "SlotsSaveLabel"
+msgstr "Zapisz"
+
+msgid "DashboardNoControllerConnected"
+msgstr "Brak podłączonego kontrolera"
