@@ -204,6 +204,9 @@ public static class AppPaths
     /// <summary>Per-device button remaps (canonical button → raw index).</summary>
     public static string ButtonMapsFile => Path.Combine(BaseDirectory, "device-button-maps.json");
 
+    /// <summary>Per-device category overrides — see <see cref="Runtime.DeviceCategoryOverrideStore"/>.</summary>
+    public static string DeviceCategoryOverridesFile => Path.Combine(BaseDirectory, "device-category-overrides.json");
+
     /// <summary>
     /// Absolute path of the JSON file storing controller-slot definitions
     /// (each slot = assigned input device(s) + an output template driving

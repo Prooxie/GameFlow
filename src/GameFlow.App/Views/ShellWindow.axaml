@@ -20,13 +20,6 @@
       </StackPanel>
     </DataTemplate>
 
-    <DataTemplate x:Key="OutputProviderTemplate">
-      <StackPanel Margin="0,4" Spacing="3">
-        <TextBlock Text="{Binding Label}" FontWeight="SemiBold" Foreground="{DynamicResource AppForeground}" />
-        <TextBlock Text="{Binding Description}" FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource AppForegroundDim}" />
-      </StackPanel>
-    </DataTemplate>
-
     <DataTemplate x:Key="ControllerStyleTemplate">
       <TextBlock Text="{Binding Label}" Foreground="{DynamicResource AppForeground}" />
     </DataTemplate>
@@ -67,16 +60,18 @@
             BorderThickness="0,0,0,1">
       <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16">
 
-        <!-- Wordmark + status -->
-        <StackPanel Grid.Column="0" Spacing="1"
-                    HorizontalAlignment="Left">
-          <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-            <Border Width="22" Height="22" CornerRadius="6"
+        <!-- Wordmark + status — LEFT-aligned, vertically centered in
+             the header band, sized up from the original tiny variant. -->
+        <StackPanel Grid.Column="0" Spacing="2"
+                    HorizontalAlignment="Left" VerticalAlignment="Center">
+          <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center"
+                      HorizontalAlignment="Left">
+            <Border Width="30" Height="30" CornerRadius="8"
                     Background="{DynamicResource AppAccentSoft}"
                     BorderBrush="{DynamicResource AppAccent}"
                     BorderThickness="1"
                     VerticalAlignment="Center">
-              <TextBlock Text="⊕" FontSize="11" FontWeight="Bold"
+              <TextBlock Text="⊕" FontSize="15" FontWeight="Bold"
                          Foreground="{DynamicResource AppAccent}"
                          HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Border>
@@ -88,14 +83,14 @@
                 average out.
             -->
             <StackPanel Orientation="Horizontal" Spacing="0" VerticalAlignment="Center">
-              <TextBlock Text="GAME" FontSize="14" FontWeight="Black"
+              <TextBlock Text="GAME" FontSize="20" FontWeight="Black"
                          Foreground="{DynamicResource AppForeground}"
                          VerticalAlignment="Center"
-                         LetterSpacing="0.5" />
-              <TextBlock Text="FLOW" FontSize="14" FontWeight="Black"
+                         LetterSpacing="0.8" />
+              <TextBlock Text="FLOW" FontSize="20" FontWeight="Black"
                          Foreground="{DynamicResource AppAccent}"
                          VerticalAlignment="Center"
-                         LetterSpacing="0.5" />
+                         LetterSpacing="0.8" />
             </StackPanel>
           </StackPanel>
           <!--
@@ -104,7 +99,8 @@
               below the logo, not offset under the title.
           -->
           <TextBlock Text="{x:Static vm:ShellViewModel.AppFooterText}"
-                     FontSize="9"
+                     FontSize="10.5"
+                     HorizontalAlignment="Left"
                      Foreground="{DynamicResource AppForegroundDim}" />
           <TextBlock Text="{Binding StatusText}" FontSize="10"
                      Foreground="{DynamicResource AppForegroundDim}"
@@ -123,14 +119,61 @@
     <!-- ── Sidebar + content ──────────────────────────────────────── -->
     <Grid Grid.Row="1" ColumnDefinitions="240,*" ColumnSpacing="0">
 
-      <!-- PadForge-style device + slot menu column -->
+      <!-- Single unified navigation column: the section nav (Dashboard /
+           Profiles / Devices) sits at the top, the PadForge-style device
+           + slot lists fill the middle, and Options is pinned at the
+           bottom. This used to be TWO side-by-side columns — this 240px
+           sidebar PLUS the TabControl's own 210px left tab strip — which
+           burned 450px of width on navigation; the tab strip is now
+           hidden (see the TabControl styles below) and this ListBox
+           drives the same OuterNavSelectedIndex. -->
       <Border Grid.Column="0"
               Background="{DynamicResource AppSurface1}"
               BorderBrush="{DynamicResource AppBorder0}"
               BorderThickness="0,0,1,0">
-        <ScrollViewer VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled">
-          <StackPanel Margin="10,14" Spacing="6">
+        <Grid RowDefinitions="Auto,*,Auto">
+
+          <!-- Section navigation -->
+          <StackPanel Grid.Row="0" Margin="10,14,10,0" Spacing="6">
+            <ListBox SelectedIndex="{Binding OuterNavSelectedIndex, Mode=TwoWay}"
+                     Background="Transparent" BorderThickness="0" Padding="0">
+              <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                  <Setter Property="Padding" Value="8,8" />
+                  <Setter Property="Margin" Value="0,1" />
+                  <Setter Property="CornerRadius" Value="6" />
+                </Style>
+              </ListBox.Styles>
+              <ListBoxItem>
+                <Grid ColumnDefinitions="24,*" ColumnSpacing="6">
+                  <TextBlock Grid.Column="0" Text="▣" FontSize="14" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="{Binding DashboardTabLabel}"
+                             FontSize="12" FontWeight="Medium" VerticalAlignment="Center" />
+                </Grid>
+              </ListBoxItem>
+              <ListBoxItem>
+                <Grid ColumnDefinitions="24,*" ColumnSpacing="6">
+                  <TextBlock Grid.Column="0" Text="≡" FontSize="15" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="{Binding ProfilesTabLabel}"
+                             FontSize="12" FontWeight="Medium" VerticalAlignment="Center" />
+                </Grid>
+              </ListBoxItem>
+              <ListBoxItem>
+                <Grid ColumnDefinitions="24,*" ColumnSpacing="6">
+                  <TextBlock Grid.Column="0" Text="⊟" FontSize="14" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="{Binding DevicesTabLabel}"
+                             FontSize="12" FontWeight="Medium" VerticalAlignment="Center" />
+                </Grid>
+              </ListBoxItem>
+            </ListBox>
+            <Border Height="1" Background="{DynamicResource AppBorder0}" Margin="0,6,0,0" />
+          </StackPanel>
+
+          <!-- Device + slot lists -->
+          <ScrollViewer Grid.Row="1"
+                        VerticalScrollBarVisibility="Auto"
+                        HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Margin="10,10" Spacing="6">
             <TextBlock Text="{Binding SidebarPhysicalHeader}" FontSize="10" FontWeight="SemiBold"
                        Opacity="0.5" LetterSpacing="0.8" Margin="8,4,0,4" />
             <ItemsControl ItemsSource="{Binding PhysicalMenuItems}">
@@ -140,12 +183,21 @@
                           Padding="8,7" Margin="0,1" Background="Transparent"
                           BorderThickness="0" CornerRadius="6"
                           Command="{Binding SelectCommand}">
-                    <Grid ColumnDefinitions="24,*" ColumnSpacing="6">
+                    <Grid ColumnDefinitions="24,*,Auto" ColumnSpacing="6">
                       <TextBlock Grid.Column="0" Text="{Binding IconText}"
                                  FontSize="14" VerticalAlignment="Center" />
                       <TextBlock Grid.Column="1" Text="{Binding Name}"
                                  VerticalAlignment="Center" FontSize="12"
                                  TextTrimming="CharacterEllipsis" />
+                      <!-- Pin toggle: shows this device's LAYOUT on the
+                           dashboard — connections + live input, no
+                           virtual controller required. -->
+                      <Button Grid.Column="2" IsVisible="{Binding CanPin}"
+                              Command="{Binding PinCommand}"
+                              ToolTip.Tip="{Binding PinTooltip}"
+                              Content="{Binding PinIcon}" FontSize="12"
+                              Padding="4,0" Background="Transparent"
+                              BorderThickness="0" Cursor="Hand" />
                     </Grid>
                   </Button>
                 </DataTemplate>
@@ -176,45 +228,72 @@
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <TextBlock Text="(none)" Opacity="0.4" FontSize="11" Margin="14,2"
-                       IsVisible="{Binding !VirtualMenuItems.Count}" />
+            <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                    Padding="8,7" Margin="0,1" Background="Transparent"
+                    BorderThickness="0" CornerRadius="6" Cursor="Hand"
+                    Command="{Binding AddVirtualControllerCommand}">
+              <Grid ColumnDefinitions="24,*" ColumnSpacing="6">
+                <TextBlock Grid.Column="0" Text="＋" FontSize="14" VerticalAlignment="Center" Opacity="0.7" />
+                <TextBlock Grid.Column="1" Text="{Binding SidebarAddControllerLabel}"
+                           VerticalAlignment="Center" FontSize="12" Opacity="0.85" />
+              </Grid>
+            </Button>
           </StackPanel>
         </ScrollViewer>
+
+          <!-- Options — pinned at the bottom of the unified sidebar
+               (moved here from the old overlay over the now-hidden tab
+               strip). -->
+          <StackPanel Grid.Row="2" Margin="10,0,10,10" Spacing="6">
+            <Border Height="1" Background="{DynamicResource AppBorder0}" Margin="0,0,0,4" />
+            <Button Command="{Binding OpenSettingsCommand}"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                    Padding="8,8" Background="Transparent"
+                    BorderThickness="0" CornerRadius="6"
+                    Cursor="Hand">
+              <Grid ColumnDefinitions="24,*" ColumnSpacing="6">
+                <TextBlock Grid.Column="0" Text="⚙" FontSize="14" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{Binding OpenSettingsButtonLabel}"
+                           FontSize="12" FontWeight="Medium" VerticalAlignment="Center" />
+              </Grid>
+            </Button>
+          </StackPanel>
+        </Grid>
       </Border>
 
-      <TabControl Grid.Column="1" TabStripPlacement="Left"
+      <TabControl Grid.Column="1" Name="OuterNavTabs" TabStripPlacement="Left"
                   SelectedIndex="{Binding OuterNavSelectedIndex, Mode=TwoWay}">
 
         <TabControl.Styles>
-          <Style Selector="TabControl /template/ TabStrip">
-            <Setter Property="Width" Value="210" />
-            <Setter Property="Margin" Value="0" />
+          <!-- Section navigation lives in the unified sidebar (left
+               column); this TabControl only hosts the CONTENT, so its
+               own header strip is hidden. Avalonia's TabControl template
+               has no "TabStrip" part — the headers are laid out by an
+               ItemsPresenter named PART_ItemsPresenter (which is why an
+               earlier attempt that styled "TabStrip" changed nothing).
+               Both rules are scoped to #OuterNavTabs so the inner
+               Physical/Virtual sub-tabs on the Devices page keep their
+               headers. Selection is still driven through
+               OuterNavSelectedIndex, which the sidebar's nav ListBox
+               binds two-way. -->
+          <Style Selector="TabControl#OuterNavTabs /template/ ItemsPresenter#PART_ItemsPresenter">
+            <Setter Property="IsVisible" Value="False" />
           </Style>
-          <Style Selector="TabControl /template/ Border#PART_Border">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
+          <!-- Belt and braces: even if a theme renames the presenter
+               part, zero-size invisible items leave no strip. Child
+               combinator keeps this off the nested Devices TabControl. -->
+          <Style Selector="TabControl#OuterNavTabs > TabItem">
+            <Setter Property="IsVisible" Value="False" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Padding" Value="0" />
           </Style>
         </TabControl.Styles>
 
         <!-- ═══ DASHBOARD ══════════════════════════════════════════════ -->
         <TabItem>
-          <TabItem.Header>
-            <Panel Width="210" Height="50">
-              <Border Classes="navAccent" Width="3" HorizontalAlignment="Left"
-                      VerticalAlignment="Stretch"
-                      Background="{DynamicResource AppAccent}"
-                      Opacity="0" CornerRadius="0,3,3,0" />
-              <StackPanel Orientation="Horizontal" Spacing="14"
-                          Margin="22,0,0,0" VerticalAlignment="Center">
-                <TextBlock Text="▣" FontSize="15" VerticalAlignment="Center" />
-                <TextBlock Text="{Binding DashboardTabLabel}"
-                           FontWeight="Medium" VerticalAlignment="Center" />
-              </StackPanel>
-            </Panel>
-          </TabItem.Header>
 
           <ScrollViewer Margin="20,16,20,16"
-                        Padding="0,0,14,0"
+                        Padding="0,0,22,0"
                         VerticalScrollBarVisibility="Auto"
                         HorizontalScrollBarVisibility="Disabled">
             <StackPanel Spacing="16">
@@ -287,16 +366,26 @@
                       <StackPanel Spacing="8" Margin="0,0,0,10">
                         <Grid ColumnDefinitions="*,Auto">
                           <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="13" FontWeight="SemiBold" />
+                          <!-- Lightbar chip — only rendered while lighting is
+                               actually on; a transparent fill with a visible
+                               border used to leave an empty box here. -->
                           <Border Grid.Column="1" Width="40" Height="10" CornerRadius="3"
                                   VerticalAlignment="Center"
+                                  IsVisible="{Binding HasLightColor}"
                                   Background="{Binding LightColor}"
                                   BorderBrush="{DynamicResource AppBorder0}" BorderThickness="1" />
                         </Grid>
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="14">
-                          <Border Grid.Column="0">
+                        <Grid ColumnSpacing="14">
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding PhysicalColumnWidth}" />
+                            <ColumnDefinition Width="{Binding VirtualColumnWidth}" />
+                          </Grid.ColumnDefinitions>
+                          <Border Grid.Column="0"
+                                  IsVisible="{Binding ShowPhysical}">
                             <views:ControllerSurface DataContext="{Binding PhysicalVisual}" />
                           </Border>
-                          <Border Grid.Column="1">
+                          <Border Grid.Column="1"
+                                  IsVisible="{Binding ShowVirtual}">
                             <views:ControllerSurface DataContext="{Binding VirtualVisual}" />
                             <!--
                                 Badge lives in the same cell as the virtual
@@ -310,9 +399,26 @@
                                 every OTHER application, just not to itself.
                             -->
                           </Border>
-                          <Border Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Top"
+                          <!-- Output problem banner: the sink's own status
+                               line, e.g. "HIDMaestro unavailable — no output
+                               (not running as Administrator)". Answers "no
+                               controller is being created" on the panel
+                               itself instead of only in the log. -->
+                          <Border Grid.Column="1"
+                                  HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                                  Margin="10,0,10,10" Padding="10,5" CornerRadius="8"
+                                  Background="#33D97706" BorderBrush="#D97706" BorderThickness="1"
+                                  IsVisible="{Binding HasOutputWarning}"
+                                  IsHitTestVisible="False">
+                            <TextBlock Text="{Binding OutputStatus}" FontSize="11"
+                                       Foreground="#F5C36B" TextWrapping="Wrap"
+                                       MaxWidth="520" TextAlignment="Center" />
+                          </Border>
+                          <Border Grid.Column="1"
+                                  HorizontalAlignment="Right" VerticalAlignment="Top"
                                   Margin="0,10,10,0" Padding="7,3" CornerRadius="10"
                                   Background="{DynamicResource AppAccent}"
+                                  IsVisible="{Binding ShowVirtual}"
                                   IsHitTestVisible="False">
                             <TextBlock Text="{Binding VirtualBadgeLabel}"
                                        FontSize="9" FontWeight="Bold" LetterSpacing="0.6"
@@ -331,20 +437,6 @@
 
         <!-- ═══ PROFILES ══════════════════════════════════════════════ -->
         <TabItem>
-          <TabItem.Header>
-            <Panel Width="210" Height="50">
-              <Border Classes="navAccent" Width="3" HorizontalAlignment="Left"
-                      VerticalAlignment="Stretch"
-                      Background="{DynamicResource AppAccent}"
-                      Opacity="0" CornerRadius="0,3,3,0" />
-              <StackPanel Orientation="Horizontal" Spacing="14"
-                          Margin="22,0,0,0" VerticalAlignment="Center">
-                <TextBlock Text="≡" FontSize="17" VerticalAlignment="Center" />
-                <TextBlock Text="{Binding ProfilesTabLabel}"
-                           FontWeight="Medium" VerticalAlignment="Center" />
-              </StackPanel>
-            </Panel>
-          </TabItem.Header>
 
           <Grid Margin="20,16" RowDefinitions="Auto,Auto,*" RowSpacing="14">
             <Border Grid.Row="0" Padding="18,16" CornerRadius="14"
@@ -503,20 +595,6 @@
 
         <!-- ═══ DEVICES ════════════════════════════════════════════════ -->
         <TabItem IsSelected="{Binding DevicesPanel.IsViewActive, Mode=OneWayToSource}">
-          <TabItem.Header>
-            <Panel Width="210" Height="50">
-              <Border Classes="navAccent" Width="3" HorizontalAlignment="Left"
-                      VerticalAlignment="Stretch"
-                      Background="{DynamicResource AppAccent}"
-                      Opacity="0" CornerRadius="0,3,3,0" />
-              <StackPanel Orientation="Horizontal" Spacing="14"
-                          Margin="22,0,0,0" VerticalAlignment="Center">
-                <TextBlock Text="⊟" FontSize="15" VerticalAlignment="Center" />
-                <TextBlock Text="{Binding DevicesTabLabel}"
-                           FontWeight="Medium" VerticalAlignment="Center" />
-              </StackPanel>
-            </Panel>
-          </TabItem.Header>
 
           <TabControl Margin="8,4"
                       SelectedIndex="{Binding DevicesSubTabIndex, Mode=TwoWay}">
@@ -650,6 +728,26 @@
                         <TextBlock Text="{Binding HardwareId}" FontFamily="Consolas" FontSize="11"
                                    Opacity="0.7" TextWrapping="Wrap" />
                       </StackPanel>
+                    </StackPanel>
+
+                    <!-- Category override (DevicesPanel scope) — the "use
+                         this HID device as a gamepad" escape hatch for
+                         devices Windows/SDL misidentifies. Applied in the
+                         device catalog itself, so slots, themes, and the
+                         dashboard all see the corrected type. -->
+                    <StackPanel Spacing="6" IsVisible="{Binding HasCategoryOverrideTarget}">
+                      <Border Height="1" Background="{DynamicResource AppBorder0}" />
+                      <TextBlock Text="TREAT AS" FontSize="10" FontWeight="SemiBold"
+                                 Opacity="0.5" LetterSpacing="0.8" />
+                      <TextBlock TextWrapping="Wrap" FontSize="11" Opacity="0.6"
+                                 Text="If Windows identifies this device incorrectly (e.g. a HID controller listed as unknown, or a device stuck as keyboard/mouse), override its type here. Takes effect immediately and persists." />
+                      <ComboBox ItemsSource="{Binding CategoryOverrideOptions}"
+                                SelectedItem="{Binding SelectedCategoryOverride, Mode=TwoWay}"
+                                MinHeight="28" FontSize="11" HorizontalAlignment="Stretch">
+                        <ComboBox.ItemTemplate>
+                          <DataTemplate><TextBlock Text="{Binding Label}" /></DataTemplate>
+                        </ComboBox.ItemTemplate>
+                      </ComboBox>
                     </StackPanel>
 
                     <!-- Button calibration (DevicesPanel scope) — gamepad/joystick only -->
@@ -871,6 +969,19 @@
                         </DataTemplate>
                       </ItemsControl.ItemTemplate>
                     </ItemsControl>
+
+                    <!-- Demo preview: drives this virtual controller with
+                         the built-in animated waveform instead of its
+                         assigned devices — end-to-end (dashboard AND the
+                         real HIDMaestro output), no physical pad needed.
+                         While it's on, assigning devices is moot, so the
+                         Available list below is disabled. -->
+                    <CheckBox Content="{Binding TemplateEditor.DemoPreviewLabel}"
+                              IsChecked="{Binding TemplateEditor.DemoPreview}"
+                              ToolTip.Tip="{Binding TemplateEditor.DemoPreviewTooltip}"
+                              Margin="0,4,0,0" FontSize="12" />
+
+                    <StackPanel Spacing="6" IsEnabled="{Binding !TemplateEditor.DemoPreview}">
                     <TextBlock Text="Available" FontSize="11" Opacity="0.6" Margin="0,4,0,0" />
                     <ItemsControl ItemsSource="{Binding AvailableDevices}">
                       <ItemsControl.ItemTemplate>
@@ -885,6 +996,7 @@
                         </DataTemplate>
                       </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                    </StackPanel>
                   </StackPanel>
 
                   <Border Height="1" Background="{DynamicResource AppBorder0}" />
@@ -946,11 +1058,21 @@
                         </ComboBox.ItemTemplate>
                       </ComboBox>
                     </StackPanel>
-                    <StackPanel Spacing="3">
-                      <TextBlock Text="{Binding OutputProviderLabel}" FontSize="11" Opacity="0.6" />
-                      <ComboBox ItemsSource="{Binding OutputProviderOptions}"
-                                SelectedItem="{Binding SelectedOutputProvider}"
-                                ToolTip.Tip="{Binding OutputProviderTooltip}"
+                    <!-- Output backend is implicit now: HIDMaestro is the
+                         sole Windows output backend, so there's nothing to
+                         pick — the old provider combo box was one item of
+                         dead choice. -->
+
+                    <!-- Full HIDMaestro catalog (225 profiles) — lets this
+                         slot emit ANY supported controller, not just the
+                         four curated kinds above. Hidden until the catalog
+                         has been enumerated. -->
+                    <StackPanel Spacing="3" IsVisible="{Binding HasOutputProfileOptions}">
+                      <TextBlock Text="{Binding OutputProfileLabel}" FontSize="11" Opacity="0.6" />
+                      <ComboBox ItemsSource="{Binding OutputProfileOptions}"
+                                SelectedItem="{Binding SelectedOutputProfile}"
+                                ToolTip.Tip="{Binding OutputProfileTooltip}"
+                                MaxDropDownHeight="420"
                                 HorizontalAlignment="Stretch">
                         <ComboBox.ItemTemplate>
                           <DataTemplate><TextBlock Text="{Binding Label}" /></DataTemplate>
@@ -960,7 +1082,7 @@
 
                     <StackPanel Spacing="6" IsVisible="{Binding ShowGenericShape}">
                       <TextBlock Text="Device shape" FontSize="11" Opacity="0.6" />
-                      <Grid ColumnDefinitions="*,60" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="4">
+                      <Grid ColumnDefinitions="*,110" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="4">
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Thumbsticks" FontSize="11" VerticalAlignment="Center" />
                         <TextBox  Grid.Row="0" Grid.Column="1" Text="{Binding ThumbstickCount}" />
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Triggers" FontSize="11" VerticalAlignment="Center" />
@@ -969,6 +1091,12 @@
                         <TextBox  Grid.Row="2" Grid.Column="1" Text="{Binding ButtonCount}" />
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="POVs" FontSize="11" VerticalAlignment="Center" />
                         <TextBox  Grid.Row="3" Grid.Column="1" Text="{Binding PovCount}" />
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Product name" FontSize="11" VerticalAlignment="Center" />
+                        <TextBox  Grid.Row="4" Grid.Column="1" Text="{Binding ProductString}" PlaceholderText="GameFlow Game Controller" />
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Vendor ID (hex)" FontSize="11" VerticalAlignment="Center" />
+                        <TextBox  Grid.Row="5" Grid.Column="1" Text="{Binding GenericVidText}" />
+                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Product ID (hex)" FontSize="11" VerticalAlignment="Center" />
+                        <TextBox  Grid.Row="6" Grid.Column="1" Text="{Binding GenericPidText}" />
                       </Grid>
                     </StackPanel>
                   </StackPanel>
@@ -983,41 +1111,6 @@
 
 
       </TabControl>
-
-      <!-- Sidebar footer (Options button + credits) -->
-      <StackPanel Width="210"
-                  HorizontalAlignment="Left"
-                  VerticalAlignment="Bottom"
-                  Spacing="0">
-
-        <!-- Options entry — visually a left-nav item, but invokes the
-             OpenSettings command instead of switching tabs. Matches the
-             50px height and 22px text margin of the real TabItems above
-             so it lines up with them visually. -->
-        <Button Command="{Binding OpenSettingsCommand}"
-                Width="210" Height="50"
-                HorizontalAlignment="Left"
-                HorizontalContentAlignment="Left"
-                Background="Transparent"
-                BorderThickness="0"
-                Padding="0"
-                Cursor="Hand">
-          <Panel Width="210" Height="50">
-            <Border Width="3" HorizontalAlignment="Left"
-                    VerticalAlignment="Stretch"
-                    Background="{DynamicResource AppAccent}"
-                    Opacity="0" CornerRadius="0,3,3,0" />
-            <StackPanel Orientation="Horizontal" Spacing="14"
-                        Margin="22,0,0,0" VerticalAlignment="Center">
-              <TextBlock Text="⚙" FontSize="15" VerticalAlignment="Center" />
-              <TextBlock Text="{Binding OpenSettingsButtonLabel}"
-                         FontWeight="Medium" VerticalAlignment="Center" />
-            </StackPanel>
-          </Panel>
-        </Button>
-
-
-      </StackPanel>
 
     </Grid>
   </Grid>

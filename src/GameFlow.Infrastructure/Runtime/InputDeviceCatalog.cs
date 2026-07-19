@@ -12,13 +12,23 @@ namespace GameFlow.Infrastructure.Runtime;
 public sealed class InputDeviceCatalog
 {
     private readonly ILocalizationService localization;
+    private readonly DeviceCategoryOverrideStore categoryOverrides;
     private readonly Lock gate = new();
 
     private IReadOnlyList<InputDeviceInfo> devices = [];
     private Dictionary<string, InputDeviceInfo> devicesById = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, IReadOnlyList<InputDeviceInfo>> devicesBySource = new(StringComparer.Ordinal);
     private IReadOnlySet<string> ignoredDeviceIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-    private IReadOnlyList<(ushort Vid, ushort Pid)> ignoredHardwareSignatures = [];
+    private IReadOnlyList<(ushort Vid, ushort Pid, DateTimeOffset ActivatedAt)> ignoredHardwareSignatures = [];
+
+    /// <summary>
+    /// UTC time each device id was first observed this session. Ignore
+    /// entries only apply to devices that appeared AT/AFTER their
+    /// sink's activation, so a real pad of the same model that was
+    /// already connected stays visible while the app's own emitted
+    /// device (which enumerates only after creation) is filtered.
+    /// </summary>
+    private readonly Dictionary<string, DateTimeOffset> firstSeenById = new(StringComparer.OrdinalIgnoreCase);
     private string? selectedDeviceId;
     private string? rawInspectionTargetId;
     private RawDeviceSnapshot? rawInspection;
@@ -47,10 +57,12 @@ public sealed class InputDeviceCatalog
 
     /// <param name="localization">Localization service used to resolve the catalog's
     /// idle/no-provider status string.</param>
-    public InputDeviceCatalog(ILocalizationService localization)
+    public InputDeviceCatalog(ILocalizationService localization, DeviceCategoryOverrideStore categoryOverrides)
     {
         this.localization = localization;
         this.localization.CultureChanged += OnCultureChanged;
+        this.categoryOverrides = categoryOverrides;
+        this.categoryOverrides.OverrideChanged += (_, _) => ReapplyOverrides();
     }
 
     /// <summary>Raised whenever the catalog's device list, status, or selection changes.</summary>
@@ -253,6 +265,15 @@ public sealed class InputDeviceCatalog
     /// <summary>Flattens all source slices into one filtered, deduped list (caller holds <see cref="gate"/>).</summary>
     private IReadOnlyList<InputDeviceInfo> MergeSources()
     {
+        var now = DateTimeOffset.UtcNow;
+        foreach (var raw in devicesBySource.Values.SelectMany(list => list))
+        {
+            if (!firstSeenById.ContainsKey(raw.Id))
+            {
+                firstSeenById[raw.Id] = now;
+            }
+        }
+
         return
         [
             .. devicesBySource.Values
@@ -261,7 +282,29 @@ public sealed class InputDeviceCatalog
                 .Where(d => !MatchesIgnoredHardwareSignature(d))
                 .GroupBy(d => d.Id, StringComparer.OrdinalIgnoreCase)
                 .Select(g => g.First())
+                .Select(categoryOverrides.Apply)
         ];
+    }
+
+    /// <summary>
+    /// Re-runs the merge against the current source slices without
+    /// waiting for the next enumeration tick — called when a category
+    /// override is set/cleared so the correction is visible immediately
+    /// rather than on the next poll.
+    /// </summary>
+    private void ReapplyOverrides()
+    {
+        lock (gate)
+        {
+            var merged = MergeSources();
+            if (devices.SequenceEqual(merged))
+            {
+                return;
+            }
+            devices = merged;
+            RebuildIndex();
+        }
+        RaiseUpdated();
     }
 
     /// <summary>
@@ -339,7 +382,7 @@ public sealed class InputDeviceCatalog
     /// <summary>
     /// Replaces the set of (vendor id, product id) pairs that should be
     /// hidden from <see cref="Devices"/>. The runtime uses this to hide its
-    /// own virtual output device (e.g. a ViGEm Xbox 360 controller advertises
+    /// own virtual output device (e.g. a HIDMaestro-emitted Xbox 360 controller advertises
     /// VID 0x045E PID 0x028E and would otherwise re-appear in the input
     /// source dropdown, creating a confusing self-referential entry).
     ///
@@ -350,7 +393,7 @@ public sealed class InputDeviceCatalog
     /// <param name="signatures">
     /// VID/PID pairs to ignore. Pass an empty collection to clear the filter.
     /// </param>
-    public void SetIgnoredHardwareSignatures(IEnumerable<(ushort Vid, ushort Pid)>? signatures)
+    public void SetIgnoredHardwareSignatures(IEnumerable<(ushort Vid, ushort Pid, DateTimeOffset ActivatedAt)>? signatures)
     {
         var next = (signatures ?? []).Distinct().ToArray();
 
@@ -439,10 +482,15 @@ public sealed class InputDeviceCatalog
             return false;
         }
 
+        var firstSeen = firstSeenById.TryGetValue(device.Id, out var seen)
+            ? seen
+            : DateTimeOffset.UtcNow;
+
         for (var i = 0; i < ignoredHardwareSignatures.Count; i++)
         {
             var sig = ignoredHardwareSignatures[i];
-            if (sig.Vid == device.VendorId && sig.Pid == device.ProductId)
+            if (sig.Vid == device.VendorId && sig.Pid == device.ProductId
+                && firstSeen >= sig.ActivatedAt.AddSeconds(-3))
             {
                 return true;
             }

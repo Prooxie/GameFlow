@@ -139,7 +139,7 @@ public sealed record AppSettings
     // ---------------------------------------------------------------------
 
     /// <summary>
-    /// When <see langword="true"/>, the requirements check (ViGEm Bus, etc.)
+    /// When <see langword="true"/>, the requirements check (HIDMaestro, etc.)
     /// runs at startup and prompts the user to install missing pieces. Set
     /// to <see langword="false"/> by the "Don't ask again" choice.
     /// </summary>

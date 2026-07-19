@@ -213,7 +213,6 @@ public static class ThemeJsonLoader
             // implementations is mechanical: declare a node type in
             // ThemeNodes.cs, parse it here, render it in ThemeRenderer.
             case "ppie":
-            case "trailpad":
             case "basic3d1":
             default:
                 Log.Debug(
@@ -223,6 +222,30 @@ public static class ThemeJsonLoader
                 {
                     X = x, Y = y, Rotation = rot, Children = children
                 };
+
+            case "trailpad":
+            {
+                // The trail (touch history) isn't implemented, but the
+                // pad's own art very much matters — a DS4 theme without
+                // its touchpad looks broken. Render it as a plain image
+                // with the children (touch dot etc.) layered in the same
+                // coordinate space; the dot just won't move yet.
+                var padImage = element.TryGetProperty("image", out var trailImg)
+                    ? trailImg.GetString() ?? string.Empty
+                    : string.Empty;
+                if (string.IsNullOrWhiteSpace(padImage))
+                {
+                    return new GroupNode { X = x, Y = y, Rotation = rot, Children = children };
+                }
+                return new ImageNode
+                {
+                    X = x, Y = y, Rotation = rot, Children = children,
+                    ImagePath = padImage,
+                    Width  = element.TryGetProperty("width",  out var tw) ? tw.GetDouble() : 0,
+                    Height = element.TryGetProperty("height", out var th) ? th.GetDouble() : 0,
+                    Center = element.TryGetProperty("center", out var tc) && tc.ValueKind == JsonValueKind.True,
+                };
+            }
         }
     }
 

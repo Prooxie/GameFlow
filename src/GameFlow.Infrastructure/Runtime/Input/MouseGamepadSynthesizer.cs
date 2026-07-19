@@ -27,11 +27,19 @@ public interface IMouseStateSource
 {
     /// <summary>Accumulated movement since the last call (resets) + current buttons.</summary>
     MouseFrame ReadMouseFrame(string deviceId);
+
+    /// <summary>
+    /// Combined frame across EVERY tracked mouse (summed deltas, OR'd
+    /// buttons). Fallback for the composite-HID id mismatch — see
+    /// <see cref="IKeyboardStateSource.GetPressedKeysAggregate"/>.
+    /// </summary>
+    MouseFrame ReadMouseFrameAggregate();
 }
 
 /// <summary>No-op default: every mouse reports no movement and no buttons.</summary>
 public sealed class NullMouseStateSource : IMouseStateSource
 {
+    public MouseFrame ReadMouseFrameAggregate() => default;
     public MouseFrame ReadMouseFrame(string deviceId) => default;
 }
 

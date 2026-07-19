@@ -628,7 +628,7 @@ msgid "MappingEditorSelectRuleToEdit"
 msgstr "Vyberte pravidlo k úpravě"
 
 msgid "MappingEditorOrUseAddRule"
-msgstr "Nebo použijte „Přidat pravidlo“ k vytvoření nového mapování." pro vytvoření nového mapování."
+msgstr "Nebo použijte „Přidat pravidlo“ k vytvoření nového mapování."
 
 msgid "MappingEditorSaveButton"
 msgstr "Uložit"
@@ -1035,7 +1035,22 @@ msgid "TemplateOutputProviderLabel"
 msgstr "Výstupní poskytovatel"
 
 msgid "TemplateOutputProviderTooltip"
-msgstr "Který backend tento slot použije (HIDMaestro, konkrétní zařízení ViGEm, nebo pouze náhled). Ponechání na „(zděděno z profilu)“ použije globálního výstupního poskytovatele profilu, který je standardně nastaven na náhled — žádné skutečné zařízení — dokud to tady nezměníte."
+msgstr "Backend, který vytváří virtuální zařízení tohoto slotu. HIDMaestro je jediný výstupní backend pro Windows — běží v uživatelském režimu, bez ovladače jádra — a vyžaduje spuštění GameFlow jako správce s knihovnou HIDMaestro.Core.dll vedle spustitelného souboru."
+
+msgid "TemplateOutputProfileLabel"
+msgstr "Profil HIDMaestro"
+
+msgid "TemplateOutputProfileTooltip"
+msgstr "Přesně určuje, jaký ovladač tento slot prezentuje hrám. „Výchozí“ použije standardní profil pro výstupní zařízení výše; volbou konkrétního profilu lze emulovat jakýkoli ovladač podporovaný HIDMaestro — volanty, HOTAS, letecké joysticky, arkádové ovladače a další."
+
+msgid "TemplateOutputProfileDefaultOption"
+msgstr "Výchozí pro zvolené výstupní zařízení"
+
+msgid "TemplateDemoPreviewLabel"
+msgstr "Ukázkový náhled"
+
+msgid "TemplateDemoPreviewTooltip"
+msgstr "Rozpohybuje tento virtuální ovladač vestavěnou ukázkovou animací místo přiřazených zařízení — páčky krouží, spouště pulzují, tlačítka se střídají. Mapovací profily i skutečný výstup virtuálního ovladače přitom běží, takže náhled lze sledovat na nástěnce nebo vyzkoušet přímo ve hře bez fyzického ovladače. Vypnutím se řízení vrátí přiřazeným zařízením."
 
 msgid "DashboardVirtualBadgeLabel"
 msgstr "VIRTUÁLNÍ"
@@ -1047,4 +1062,7 @@ msgid "SlotsSaveLabel"
 msgstr "Uložit"
 
 msgid "DashboardNoControllerConnected"
-msgstr "Není připojen žádný ovladač"
+msgstr "Žádný ovladač není přiřazen"
+
+msgid "SidebarAddController"
+msgstr "Přidat ovladač"

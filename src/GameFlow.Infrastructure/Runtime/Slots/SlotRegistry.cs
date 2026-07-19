@@ -270,13 +270,27 @@ public sealed class SlotRegistry
                     // meaning "silently inherit the profile's default" —
                     // historically Preview, the confusing no-real-device
                     // footgun this whole restriction exists to close.
-                    // Deliberately NOT touching an already-explicit
-                    // "hidmaestro" or "preview" here: those remain fully
-                    // functional at the sink level and represent an
-                    // actual prior choice, not the bug this backfills.
                     if (string.IsNullOrWhiteSpace(slot.OutputTemplate.OutputProvider))
                     {
-                        slot.OutputTemplate.OutputProvider = "vigem-xbox360";
+                        slot.OutputTemplate.OutputProvider = OutputProviderPolicy.Resolve(null);
+                    }
+                    // Migration: on Windows, HIDMaestro is the ONLY
+                    // output backend this build ships — retired vigem-*
+                    // ids, the old per-slot "preview" choice, and any
+                    // unknown value all migrate forward via
+                    // OutputProviderPolicy instead of silently resolving
+                    // to nothing (or to a preview sink that reads as
+                    // "broken output"). Non-Windows resolves to preview
+                    // the same way, since HIDMaestro can't run there.
+                    else if (OutputProviderPolicy.RequiresMigration(
+                                 slot.OutputTemplate.OutputProvider, OperatingSystem.IsWindows()))
+                    {
+                        var migrated = OutputProviderPolicy.Resolve(slot.OutputTemplate.OutputProvider);
+                        logger.LogInformation(
+                            "Slot {SlotId} used output provider '{OldProvider}' — migrated to '{NewProvider}' " +
+                            "(the platform's sole output backend).",
+                            slot.Id, slot.OutputTemplate.OutputProvider, migrated);
+                        slot.OutputTemplate.OutputProvider = migrated;
                     }
                 }
                 Normalize();

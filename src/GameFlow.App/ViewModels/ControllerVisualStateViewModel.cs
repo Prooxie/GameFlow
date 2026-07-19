@@ -676,6 +676,18 @@ public sealed partial class ControllerVisualStateViewModel : ViewModelBase
         return false;
     }
 
+    private static bool ContainsAny(string haystack, params string[] needles)
+    {
+        foreach (var needle in needles)
+        {
+            if (haystack.Contains(needle, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void SelectElement(string? parameter)
     {
         if (!string.IsNullOrWhiteSpace(parameter))
@@ -717,8 +729,20 @@ public sealed partial class ControllerVisualStateViewModel : ViewModelBase
         }
 
         // Step 2: name heuristic — kept for backwards compatibility
-        // with sources that don't surface VID/PID.
+        // with sources that don't surface VID/PID. Keyboard/mouse first:
+        // Raw Input device names carry the word, and those panels should
+        // render their own layout art, never a gamepad silhouette.
         var deviceName = snapshot.DeviceName ?? string.Empty;
+        // Windows localizes device names — cover the common spellings so
+        // e.g. a Czech "Klávesnice" still renders the keyboard layout.
+        if (ContainsAny(deviceName, "keyboard", "klávesnice", "klavesnice", "tastatur", "clavier", "teclado", "tastiera"))
+        {
+            return ControllerVisualStyle.Keyboard;
+        }
+        if (ContainsAny(deviceName, "mouse", "myš", "mys ", "maus", "souris", "ratón", "raton", "マウス"))
+        {
+            return ControllerVisualStyle.Mouse;
+        }
         return deviceName.Contains("dualsense", StringComparison.OrdinalIgnoreCase) ||
                deviceName.Contains("ps5", StringComparison.OrdinalIgnoreCase)
             ? ControllerVisualStyle.PlayStation5

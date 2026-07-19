@@ -9,6 +9,9 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace GameFlow.App.ViewModels;
 
+/// <summary>One "treat as" choice in the Devices page's category-override picker. Null Category means Auto (detected, no override).</summary>
+public sealed record DeviceCategoryOption(DeviceCategory? Category, string Label);
+
 /// <summary>
 /// View-model for the Devices tab — a device-discovery surface listing
 /// every input device the active provider currently sees, with a detail
@@ -32,6 +35,7 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable
     private readonly GameFlow.Infrastructure.Runtime.Input.ButtonMapStore buttonMapStore;
     private readonly GameFlow.Infrastructure.Runtime.Input.IKeyboardStateSource keyboardStateSource;
     private readonly GameFlow.Infrastructure.Runtime.Input.IMouseStateSource mouseStateSource;
+    private readonly DeviceCategoryOverrideStore categoryOverrides;
     private readonly DispatcherTimer keyboardPreviewTimer;
 
     private DeviceRowViewModel? selectedDevice;
@@ -46,14 +50,18 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable
     private readonly Dictionary<ButtonId, int> capturedMap = new();
     private HashSet<int> lastPressedRaw = [];
 
-    public DevicesViewModel(InputDeviceCatalog catalog, ILocalizationService localization, GameFlow.Infrastructure.Runtime.Templates.DeviceTemplateStore templateStore, GameFlow.Infrastructure.Runtime.Input.ButtonMapStore buttonMapStore, GameFlow.Infrastructure.Runtime.Input.IKeyboardStateSource keyboardStateSource, GameFlow.Infrastructure.Runtime.Input.IMouseStateSource mouseStateSource)
+    public DevicesViewModel(InputDeviceCatalog catalog, ILocalizationService localization, GameFlow.Infrastructure.Runtime.Templates.DeviceTemplateStore templateStore, GameFlow.Infrastructure.Runtime.Input.ButtonMapStore buttonMapStore, GameFlow.Infrastructure.Runtime.Input.IKeyboardStateSource keyboardStateSource, GameFlow.Infrastructure.Runtime.Input.IMouseStateSource mouseStateSource, GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfileCatalogService hidMaestroCatalog, DeviceCategoryOverrideStore categoryOverrides)
     {
         this.catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         this.localization = localization ?? throw new ArgumentNullException(nameof(localization));
         this.buttonMapStore = buttonMapStore ?? throw new ArgumentNullException(nameof(buttonMapStore));
         this.keyboardStateSource = keyboardStateSource ?? throw new ArgumentNullException(nameof(keyboardStateSource));
         this.mouseStateSource = mouseStateSource ?? throw new ArgumentNullException(nameof(mouseStateSource));
-        TemplateEditor = new DeviceTemplateEditorViewModel(templateStore ?? throw new ArgumentNullException(nameof(templateStore)), localization);
+        this.categoryOverrides = categoryOverrides ?? throw new ArgumentNullException(nameof(categoryOverrides));
+        TemplateEditor = new DeviceTemplateEditorViewModel(
+            templateStore ?? throw new ArgumentNullException(nameof(templateStore)),
+            localization,
+            hidMaestroCatalog ?? throw new ArgumentNullException(nameof(hidMaestroCatalog)));
 
         keyboardPreviewTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(33) };
         keyboardPreviewTimer.Tick += OnInputPreviewTick;
@@ -91,6 +99,49 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable
 
     /// <summary>Selected device is a keyboard — show the keyboard-as-gamepad reference.</summary>
     public bool IsKeyboardSelected => SelectedDevice?.Category == DeviceCategory.Keyboard;
+
+    /// <summary>
+    /// "Treat as" options for the selected device's category override —
+    /// the escape hatch for devices Windows/SDL misidentifies (a
+    /// HID-only wheel reported as Unknown, a gamepad-shaped device that
+    /// falls through to keyboard/mouse heuristics, or the reverse).
+    /// Auto (first entry, null Category) clears any override.
+    /// </summary>
+    public IReadOnlyList<DeviceCategoryOption> CategoryOverrideOptions { get; } =
+    [
+        new(null, "Auto (detected)"),
+        new(DeviceCategory.Gamepad, "Gamepad"),
+        new(DeviceCategory.Joystick, "Joystick"),
+        new(DeviceCategory.Keyboard, "Keyboard"),
+        new(DeviceCategory.Mouse, "Mouse"),
+    ];
+
+    /// <summary>True once a device is selected — gates the override picker's visibility.</summary>
+    public bool HasCategoryOverrideTarget => SelectedDevice is not null;
+
+    /// <summary>
+    /// The active override for the selected device (Auto = no override).
+    /// Setting this writes through to <see cref="DeviceCategoryOverrideStore"/>
+    /// immediately; the catalog re-merges and every consumer (dashboard,
+    /// slot device lists, theme resolution) picks up the correction.
+    /// </summary>
+    public DeviceCategoryOption SelectedCategoryOverride
+    {
+        get
+        {
+            var overridden = SelectedDevice is null ? null : categoryOverrides.GetOrNull(SelectedDevice.Id);
+            return CategoryOverrideOptions.FirstOrDefault(o => o.Category == overridden) ?? CategoryOverrideOptions[0];
+        }
+        set
+        {
+            if (SelectedDevice is null)
+            {
+                return;
+            }
+            categoryOverrides.Set(SelectedDevice.Id, value.Category ?? DeviceCategory.Unknown);
+            OnPropertyChanged();
+        }
+    }
 
     /// <summary>
     /// A selected keyboard is always presented as a gamepad — the opt-out
@@ -286,6 +337,8 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable
             OnPropertyChanged(nameof(HasButtonMap));
             OnPropertyChanged(nameof(IsKeyboardSelected));
             OnPropertyChanged(nameof(IsMouseSelected));
+            OnPropertyChanged(nameof(HasCategoryOverrideTarget));
+            OnPropertyChanged(nameof(SelectedCategoryOverride));
             OnPropertyChanged(nameof(IsCalibratableSelected));
             OnPropertyChanged(nameof(ShowKeyboardGamepadPreview));
             if (IsKeyboardSelected || IsMouseSelected)

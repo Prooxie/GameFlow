@@ -49,6 +49,7 @@ public sealed class RuntimeCoordinator(
     InputDeviceCatalog inputDeviceCatalog,
     Slots.SlotRegistry slotRegistry,
     Slots.SlotSnapshotStore slotSnapshotStore,
+    Slots.PhysicalPanelPinService physicalPanelPins,
     ILogger<RuntimeCoordinator> logger) : BackgroundService
 {
     private readonly IInputSourceFactory inputSourceFactory = inputSourceFactory;
@@ -59,6 +60,7 @@ public sealed class RuntimeCoordinator(
     private readonly InputDeviceCatalog inputDeviceCatalog = inputDeviceCatalog;
     private readonly Slots.SlotRegistry slotRegistry = slotRegistry;
     private readonly Slots.SlotSnapshotStore slotSnapshotStore = slotSnapshotStore;
+    private readonly Slots.PhysicalPanelPinService physicalPanelPins = physicalPanelPins;
     private readonly ILogger<RuntimeCoordinator> logger = logger;
     private readonly SemaphoreSlim providerGate = new(1, 1);
 
@@ -67,6 +69,18 @@ public sealed class RuntimeCoordinator(
     private Slots.SlotRuntime? slotRuntime;
     private ProfileDocument? slotRuntimeProfile;
     private volatile bool slotsDirty;
+
+    // Debounce: coalesces rapid-fire dirty signals (e.g. a slot property
+    // that fires SlotsChanged on every keystroke, or several edits made
+    // in quick succession) into a single actual rebuild. Without this,
+    // each dirty signal that lands on its own tick tears down and
+    // recreates every slot's output sink — for HIDMaestro specifically,
+    // that means a brand-new virtual device per rebuild, and HIDMaestro's
+    // own device teardown isn't instantaneous, so rebuilds arriving
+    // faster than teardown can complete accumulate visible devices
+    // rather than cleanly replacing one with the next.
+    private DateTimeOffset lastSlotRebuildAt = DateTimeOffset.MinValue;
+    private static readonly TimeSpan SlotRebuildDebounce = TimeSpan.FromMilliseconds(400);
     private int disposeStarted;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -152,10 +166,20 @@ public sealed class RuntimeCoordinator(
                     // whether anything actually changed, and this runs every
                     // tick, so an unstable order would look like constant
                     // churn even when the active set hasn't changed.
-                    var ownedSignatures = new HashSet<(ushort Vid, ushort Pid)>();
-                    if (currentOutputSink?.OwnedHardwareSignature is { } topLevelSignature)
+                    // Entries carry the sink's device-creation time: the
+                    // catalog hides only devices that APPEARED at/after it,
+                    // so a real pad of the same model that was already
+                    // plugged in stays visible and assignable, while the
+                    // app's own emitted device (which enumerates only
+                    // after creation) is never offered back as an input —
+                    // assigning our own output to ourselves was a
+                    // feedback loop that ended in the sink's give-up
+                    // latch ("gets shutdown and cannot create anymore").
+                    var ownedSignatures = new HashSet<(ushort Vid, ushort Pid, DateTimeOffset ActivatedAt)>();
+                    if (currentOutputSink?.OwnedHardwareSignature is { } topLevelSignature
+                        && currentOutputSink.OwnedSignatureActivatedAt is { } topLevelActivatedAt)
                     {
-                        ownedSignatures.Add(topLevelSignature);
+                        ownedSignatures.Add((topLevelSignature.Vid, topLevelSignature.Pid, topLevelActivatedAt));
                     }
                     if (slotRuntime is not null)
                     {
@@ -165,7 +189,7 @@ public sealed class RuntimeCoordinator(
                         }
                     }
                     inputDeviceCatalog.SetIgnoredHardwareSignatures(
-                        [.. ownedSignatures.OrderBy(s => s.Vid).ThenBy(s => s.Pid)]);
+                        [.. ownedSignatures.OrderBy(s => s.Vid).ThenBy(s => s.Pid).ThenBy(s => s.ActivatedAt)]);
 
                     if (consecutiveTickFailures > 0)
                     {
@@ -312,7 +336,16 @@ public sealed class RuntimeCoordinator(
 
             _ = await currentInputSource.ReadAsync(cancellationToken);
 
-            currentOutputSink = outputSinkFactory.Create(profile.OutputProvider);
+            // The TOP-LEVEL output sink is deliberately a no-op. Slots
+            // own every real virtual controller now; the old behavior —
+            // creating a sink from the profile's provider here — meant a
+            // phantom device (the profile default: Xbox 360) appeared at
+            // activation with NO slot configured and NO controller
+            // connected, and every profile save re-activated providers,
+            // cycling that phantom through create/remove visibly and
+            // endlessly. The top-level pipeline still runs for the
+            // legacy snapshot store; it just writes nowhere.
+            currentOutputSink = outputSinkFactory.CreateNoOp();
 
             // Hide the runtime's own virtual output device from the input source
             // dropdown (e.g. when the ViGEm DualShock 4 sink is active, the
@@ -321,8 +354,11 @@ public sealed class RuntimeCoordinator(
             // that don't materialise an OS-visible device return null here and
             // contribute nothing to the filter.
             var ownedSignature = currentOutputSink.OwnedHardwareSignature;
+            var ownedActivatedAt = currentOutputSink.OwnedSignatureActivatedAt;
             inputDeviceCatalog.SetIgnoredHardwareSignatures(
-                ownedSignature is null ? [] : [ownedSignature.Value]);
+                ownedSignature is null || ownedActivatedAt is null
+                    ? []
+                    : [(ownedSignature.Value.Vid, ownedSignature.Value.Pid, ownedActivatedAt.Value)]);
 
             if (logger.IsEnabled(LogLevel.Information))
             {
@@ -414,10 +450,15 @@ public sealed class RuntimeCoordinator(
     /// </summary>
     private async ValueTask<bool> TryTickSlotsAsync(ProfileDocument activeProfile, DateTimeOffset now, CancellationToken cancellationToken)
     {
-        if (currentInputSource is not Slots.IMultiDeviceInputSource multiInput)
-        {
-            return false;
-        }
+        // A source that can't do per-device reads (input provider "none"
+        // or "demo", or SDL failed to initialize) used to disable ALL
+        // slot processing here — which surfaced as "demo preview does
+        // nothing" with zero feedback, since demo previews never touch
+        // the input source at all. Slots now tick against a null-object
+        // source instead: device-fed slots read empty (accurate), demo
+        // slots animate normally.
+        var multiInput = currentInputSource as Slots.IMultiDeviceInputSource
+            ?? Slots.EmptyMultiDeviceInputSource.Instance;
 
         slotRuntime ??= new Slots.SlotRuntime(slotRegistry, outputSinkFactory, slotSnapshotStore, profileRepository, logger);
 
@@ -426,11 +467,26 @@ public sealed class RuntimeCoordinator(
             return false;
         }
 
-        if (slotsDirty || !ReferenceEquals(slotRuntimeProfile, activeProfile))
+        var profileSwitched = !ReferenceEquals(slotRuntimeProfile, activeProfile);
+        var debounceElapsed = now - lastSlotRebuildAt >= SlotRebuildDebounce;
+
+        if (profileSwitched || (slotsDirty && debounceElapsed))
         {
             await slotRuntime.RebuildAsync(activeProfile, activeProfile.OutputProvider);
             slotRuntimeProfile = activeProfile;
             slotsDirty = false;
+            lastSlotRebuildAt = now;
+        }
+        else if (slotsDirty)
+        {
+            // Debug, not Information: this can legitimately fire every
+            // tick while debounced (up to a few hundred times a second),
+            // so it stays out of the default log level but is available
+            // for confirming the debounce is actually the thing
+            // preventing rapid-fire rebuilds, if that's ever in doubt.
+            logger.LogDebug(
+                "Slot runtime: rebuild requested but debounced ({ElapsedMs} ms since last rebuild, waiting for {DebounceMs} ms).",
+                (now - lastSlotRebuildAt).TotalMilliseconds, SlotRebuildDebounce.TotalMilliseconds);
         }
 
         var representative = await slotRuntime.TickAsync(multiInput, now, cancellationToken);
@@ -438,7 +494,37 @@ public sealed class RuntimeCoordinator(
         {
             snapshotStore.Update(r.Input, r.Output, r.Result);
         }
+
+        PublishPinnedPhysicalSnapshots(multiInput, now);
         return true;
+    }
+
+    /// <summary>
+    /// Feeds the dashboard's physical-only layout panels: reads each
+    /// pinned device's current state and publishes it to the pin
+    /// service. Piggybacks on the slot tick (the source was already
+    /// pumped there), so pinned panels cost one ReadDevice per device
+    /// per tick and nothing when nothing is pinned.
+    /// </summary>
+    private void PublishPinnedPhysicalSnapshots(Slots.IMultiDeviceInputSource multiInput, DateTimeOffset now)
+    {
+        var pinnedIds = physicalPanelPins.GetPinnedDeviceIds();
+        if (pinnedIds.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var deviceId in pinnedIds)
+        {
+            try
+            {
+                physicalPanelPins.PublishSnapshot(deviceId, multiInput.ReadDevice(deviceId) with { Timestamp = now });
+            }
+            catch (Exception exception)
+            {
+                logger.LogDebug(exception, "Pinned physical panel read failed for {DeviceId}.", deviceId);
+            }
+        }
     }
 
     private void OnSlotsChanged(object? sender, EventArgs e) => slotsDirty = true;

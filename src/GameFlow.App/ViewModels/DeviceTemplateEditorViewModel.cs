@@ -1,6 +1,8 @@
-using System.Runtime.CompilerServices;
 using System.Globalization;
+using System.Runtime.CompilerServices;
+using Avalonia.Threading;
 using GameFlow.Infrastructure.Runtime;
+using GameFlow.Infrastructure.Runtime.HidMaestro;
 using GameFlow.Infrastructure.Runtime.Templates;
 
 namespace GameFlow.App.ViewModels;
@@ -9,24 +11,31 @@ namespace GameFlow.App.ViewModels;
 public sealed record OutputKindOption(VirtualControllerKind Kind, string Label);
 
 /// <summary>
-/// Output-provider (backend) option for the template editor's combo box.
-/// <see cref="Key"/> is empty for the "inherit from profile" sentinel —
-/// the historical behavior for slots saved before per-slot providers
-/// existed — and a <see cref="ProviderCatalog"/> key otherwise.
+/// One HIDMaestro catalog profile in the template editor's profile combo
+/// box. <see cref="Key"/> is the catalog id (empty for the "default for
+/// the selected output device" sentinel).
 /// </summary>
-public sealed record SlotOutputProviderOption(string Key, string Label);
+public sealed record SlotOutputProfileOption(string Key, string Label);
 
 /// <summary>
 /// Edits the <see cref="DeviceOutputTemplate"/> for the device currently
 /// selected in the Devices view. Loads a detached copy from the
 /// <see cref="DeviceTemplateStore"/>, binds the UI to it, and saves on
-/// every change. Output kinds gate which sections apply: lighting for
-/// the DualShock family, adaptive triggers for DualSense, axis/button
-/// counts for the generic DirectInput device.
+/// every change. Output kinds gate which sections apply: the runtime-built
+/// device shape for the generic kind, lighting for the DualShock family,
+/// adaptive triggers for DualSense.
+///
+/// <para>Beyond the four curated kinds, the editor lists HIDMaestro's
+/// full profile catalog (225 profiles across 32 vendors when the SDK is
+/// present) so a slot can emit ANY supported controller — wheels, HOTAS,
+/// flight sticks, arcade pads — not just the Xbox/PlayStation set.
+/// Picking a profile also re-classifies the template's kind family so
+/// the dashboard theme follows the selection.</para>
 /// </summary>
 public sealed class DeviceTemplateEditorViewModel : ViewModelBase
 {
     private readonly DeviceTemplateStore store;
+    private readonly HidMaestroProfileCatalogService profileCatalog;
 
     private DeviceOutputTemplate? template;
     private bool loading;
@@ -34,7 +43,8 @@ public sealed class DeviceTemplateEditorViewModel : ViewModelBase
 
     public DeviceTemplateEditorViewModel(
         DeviceTemplateStore store,
-        GameFlow.Infrastructure.Localization.ILocalizationService localization)
+        GameFlow.Infrastructure.Localization.ILocalizationService localization,
+        HidMaestroProfileCatalogService profileCatalog)
     {
         this.localization = localization ?? throw new ArgumentNullException(nameof(localization));
         localization.CultureChanged += (_, _) =>
@@ -42,44 +52,82 @@ public sealed class DeviceTemplateEditorViewModel : ViewModelBase
             OnPropertyChanged(nameof(EmitLabel));
             OnPropertyChanged(nameof(EmitTooltip));
             OnPropertyChanged(nameof(OutputDeviceLabel));
-            OnPropertyChanged(nameof(OutputProviderLabel));
-            OnPropertyChanged(nameof(OutputProviderTooltip));
+            OnPropertyChanged(nameof(OutputProfileLabel));
+            OnPropertyChanged(nameof(OutputProfileTooltip));
+            OnPropertyChanged(nameof(DemoPreviewLabel));
+            OnPropertyChanged(nameof(DemoPreviewTooltip));
+            RebuildProfileOptions();
         };
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.profileCatalog = profileCatalog ?? throw new ArgumentNullException(nameof(profileCatalog));
 
         OutputKindOptions =
         [
-            new OutputKindOption(VirtualControllerKind.Xbox360, "Xbox 360"),
-            new OutputKindOption(VirtualControllerKind.DualShock4, "DualShock 4"),
-            new OutputKindOption(VirtualControllerKind.DualSense, "DualSense"),
-            new OutputKindOption(VirtualControllerKind.GenericDirectInput, "Generic (DirectInput)"),
+            .. GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfiles.SelectableKinds
+                .Select(k => new OutputKindOption(k, GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfiles.LabelFor(k))),
         ];
 
-        // Beta scope: only the three ViGEm backends are selectable here.
-        // HidMaestro and Preview are both still fully implemented at the
-        // sink layer (nothing there changed) — they're just not offered
-        // as a choice in this dropdown for now, since both have been
-        // recurring sources of "why isn't my output working" confusion
-        // (HidMaestro's reflection bridge is inherently fragile without
-        // the real SDK to verify against; Preview creates no real device
-        // at all, which reads as broken rather than intentional to most
-        // users). Dropping the "(inherit from profile)" sentinel too —
-        // it could silently resolve to Preview via the profile's own
-        // default, which is exactly the confusing-default problem this
-        // whole restriction exists to close. To bring either back
-        // post-beta, just add its key back to this Where clause; no
-        // other change is needed, since SlotRuntime, the factory, and
-        // both sinks never stopped supporting them.
-        OutputProviderOptions =
-        [
-            .. ProviderCatalog.KnownProviders
-                .Where(p => p.Key is "vigem-xbox360" or "vigem-ds4" or "vigem-ds5")
-                .Select(p => new SlotOutputProviderOption(p.Key, p.DisplayName)),
-        ];
+        RebuildProfileOptions();   // seed the default sentinel synchronously
+        LoadProfileCatalogAsync(); // then swap in the real catalog off-thread
     }
 
     public IReadOnlyList<OutputKindOption> OutputKindOptions { get; }
-    public IReadOnlyList<SlotOutputProviderOption> OutputProviderOptions { get; }
+
+    /// <summary>
+    /// HIDMaestro catalog profiles offered for this slot: a "default for
+    /// the selected output device" sentinel first, then the live catalog
+    /// once enumerated (the curated built-ins until then / when the SDK
+    /// isn't present).
+    /// </summary>
+    public System.Collections.ObjectModel.ObservableCollection<SlotOutputProfileOption> OutputProfileOptions { get; } = [];
+
+    /// <summary>True once the catalog offers more than the default sentinel — drives the combo's visibility.</summary>
+    public bool HasOutputProfileOptions => OutputProfileOptions.Count > 1;
+
+    private IReadOnlyList<HidMaestroCatalogProfile> loadedCatalog = [];
+
+    private async void LoadProfileCatalogAsync()
+    {
+        try
+        {
+            var profiles = await profileCatalog.GetProfilesAsync();
+            Dispatcher.UIThread.Post(() =>
+            {
+                loadedCatalog = profiles;
+                RebuildProfileOptions();
+            });
+        }
+        catch (Exception exception)
+        {
+            Serilog.Log.Warning(exception, "Template editor: HIDMaestro profile catalog load failed.");
+        }
+    }
+
+    private void RebuildProfileOptions()
+    {
+        OutputProfileOptions.Clear();
+        OutputProfileOptions.Add(new SlotOutputProfileOption(string.Empty, DefaultProfileOptionLabel));
+        foreach (var profile in loadedCatalog)
+        {
+            if (!profile.IsDeployable)
+            {
+                // The SDK's own HMProfile.IsDeployable said no — these
+                // entries throw "has no HID descriptor and cannot be
+                // deployed" from CreateController every single time,
+                // and no amount of retrying fixes that. Not offering
+                // them spares a pick that's guaranteed to fail.
+                continue;
+            }
+            var label = string.IsNullOrWhiteSpace(profile.Vendor)
+                ? $"{profile.Name}  ·  {profile.Id}"
+                : $"{profile.Vendor} — {profile.Name}  ·  {profile.Id}";
+            OutputProfileOptions.Add(new SlotOutputProfileOption(profile.Id, label));
+        }
+
+        // Selection re-resolves from the template by key.
+        OnPropertyChanged(nameof(HasOutputProfileOptions));
+        OnPropertyChanged(nameof(SelectedOutputProfile));
+    }
 
     /// <summary>True when a device that supports an output template is loaded.</summary>
     private readonly GameFlow.Infrastructure.Localization.ILocalizationService localization;
@@ -90,8 +138,19 @@ public sealed class DeviceTemplateEditorViewModel : ViewModelBase
     public string EmitLabel        => localization["TemplateEmitLabel"];
     public string EmitTooltip      => localization["TemplateEmitTooltip"];
     public string OutputDeviceLabel => localization["TemplateOutputDeviceLabel"];
-    public string OutputProviderLabel => localization["TemplateOutputProviderLabel"];
-    public string OutputProviderTooltip => localization["TemplateOutputProviderTooltip"];
+    public string OutputProfileLabel => Loc("TemplateOutputProfileLabel", "HIDMaestro profile");
+    public string OutputProfileTooltip => Loc("TemplateOutputProfileTooltip",
+        "Exactly which controller this slot presents to games. \"Default\" uses the standard profile for the " +
+        "output device above; picking a specific profile can emit any controller HIDMaestro supports — " +
+        "wheels, HOTAS, flight sticks, arcade pads and more.");
+    private string DefaultProfileOptionLabel => Loc("TemplateOutputProfileDefaultOption", "Default for the selected output device");
+
+    /// <summary>PO lookup with an English fallback for keys not yet translated (the localizer returns the key itself for unknown ids).</summary>
+    private string Loc(string key, string fallback)
+    {
+        var hit = localization[key];
+        return string.IsNullOrEmpty(hit) || string.Equals(hit, key, StringComparison.Ordinal) ? fallback : hit;
+    }
 
     /// <summary>
     /// Loads the template for the given device. Templates apply to
@@ -186,39 +245,87 @@ public sealed class DeviceTemplateEditorViewModel : ViewModelBase
                 return;
             }
             template.OutputKind = value.Kind;
+            // An explicit kind pick means "the default device of this
+            // kind" — clear any specific catalog profile so the two
+            // combos can't silently contradict each other.
+            template.OutputProfileId = string.Empty;
             Commit();
             OnPropertyChanged();
+            OnPropertyChanged(nameof(SelectedOutputProfile));
+            OnPropertyChanged(nameof(ShowGenericShape));
+        }
+    }
+
+    // ── HIDMaestro catalog profile ──
+
+    /// <summary>
+    /// The specific HIDMaestro catalog profile this slot emits, or the
+    /// default sentinel. Picking a profile also re-classifies
+    /// <see cref="DeviceOutputTemplate.OutputKind"/> into the profile's
+    /// family (DualSense profile → DualSense kind, wheel → generic, …)
+    /// so the dashboard theme and the kind-gated editor sections follow
+    /// the selected output controller.
+    /// </summary>
+    public SlotOutputProfileOption? SelectedOutputProfile
+    {
+        get
+        {
+            var key = template?.OutputProfileId ?? string.Empty;
+            return OutputProfileOptions.FirstOrDefault(
+                o => string.Equals(o.Key, key, StringComparison.OrdinalIgnoreCase))
+                ?? OutputProfileOptions.FirstOrDefault();
+        }
+        set
+        {
+            if (template is null || value is null
+                || string.Equals(template.OutputProfileId ?? string.Empty, value.Key, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            template.OutputProfileId = value.Key;
+            if (!string.IsNullOrWhiteSpace(value.Key))
+            {
+                var catalogEntry = loadedCatalog.FirstOrDefault(
+                    p => string.Equals(p.Id, value.Key, StringComparison.OrdinalIgnoreCase));
+                template.OutputKind = profileCatalog.ClassifyFamily(value.Key, catalogEntry?.Name);
+            }
+            Commit();
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(SelectedOutputKind));
             OnPropertyChanged(nameof(ShowGenericShape));
         }
     }
 
     /// <summary>
-    /// The backend this slot actually uses. This is what fixes "I picked
-    /// HIDMaestro and nothing happened" — that pick lived only on the
-    /// Dashboard's global selector, gated behind its own Apply button,
-    /// with no connection to this specific virtual controller. Changing
-    /// it here writes straight to this slot's template and commits
-    /// immediately, the same as every other field in this editor.
+    /// The runtime-built device shape only applies when the generic kind
+    /// is selected WITHOUT an explicit catalog profile (an explicit
+    /// profile defines its own shape).
     /// </summary>
-    public SlotOutputProviderOption? SelectedOutputProvider
+    public bool ShowGenericShape =>
+        template?.OutputKind == VirtualControllerKind.GenericDirectInput
+        && string.IsNullOrWhiteSpace(template?.OutputProfileId);
+
+    // ── Demo preview ──
+
+    /// <summary>
+    /// Drive this slot with the built-in demo waveform instead of its
+    /// assigned devices — an end-to-end preview of the virtual
+    /// controller (dashboard panels AND the real HIDMaestro output move)
+    /// with no physical pad attached.
+    /// </summary>
+    public bool DemoPreview
     {
-        get => OutputProviderOptions.FirstOrDefault(
-            o => string.Equals(o.Key, template?.OutputProvider ?? string.Empty, StringComparison.OrdinalIgnoreCase))
-            ?? OutputProviderOptions.FirstOrDefault();
-        set
-        {
-            if (template is null || value is null
-                || string.Equals(template.OutputProvider, value.Key, StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-            template.OutputProvider = value.Key;
-            Commit();
-            OnPropertyChanged();
-        }
+        get => template?.DemoPreview ?? false;
+        set => SetField(t => t.DemoPreview = value, template?.DemoPreview, value);
     }
 
-    public bool ShowGenericShape => template?.OutputKind == VirtualControllerKind.GenericDirectInput;
+    public string DemoPreviewLabel => Loc("TemplateDemoPreviewLabel", "Demo preview");
+    public string DemoPreviewTooltip => Loc("TemplateDemoPreviewTooltip",
+        "Animates this virtual controller with the built-in demo timeline instead of its assigned devices — " +
+        "sticks sweep, triggers pulse, buttons cycle. The mapping profiles and the real virtual controller " +
+        "output all run, so you can watch it in the dashboard or test it inside a game with no physical " +
+        "controller. Turn off to hand control back to the assigned devices.");
 
     // ── Generic device shape ──
     public int ThumbstickCount
@@ -249,6 +356,58 @@ public sealed class DeviceTemplateEditorViewModel : ViewModelBase
     {
         get => template?.ProductString ?? string.Empty;
         set => SetField(t => t.ProductString = value ?? string.Empty, template?.ProductString, value ?? string.Empty);
+    }
+
+    /// <summary>Vendor id the generic device advertises, editable as hex ("0xBEEF" / "BEEF") or decimal.</summary>
+    public string GenericVidText
+    {
+        get => template is null ? string.Empty : $"0x{template.GenericVendorId:X4}";
+        set
+        {
+            if (template is null || !TryParseUShort(value, out var parsed) || template.GenericVendorId == parsed)
+            {
+                OnPropertyChanged(); // re-normalise the display either way
+                return;
+            }
+            template.GenericVendorId = parsed;
+            Commit();
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>Product id the generic device advertises, editable as hex ("0xF001" / "F001") or decimal.</summary>
+    public string GenericPidText
+    {
+        get => template is null ? string.Empty : $"0x{template.GenericProductId:X4}";
+        set
+        {
+            if (template is null || !TryParseUShort(value, out var parsed) || template.GenericProductId == parsed)
+            {
+                OnPropertyChanged();
+                return;
+            }
+            template.GenericProductId = parsed;
+            Commit();
+            OnPropertyChanged();
+        }
+    }
+
+    private static bool TryParseUShort(string? text, out ushort value)
+    {
+        value = 0;
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return false;
+        }
+
+        var trimmed = text.Trim();
+        if (trimmed.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+        {
+            return ushort.TryParse(trimmed[2..], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out value);
+        }
+
+        return ushort.TryParse(trimmed, NumberStyles.Integer, CultureInfo.InvariantCulture, out value)
+            || ushort.TryParse(trimmed, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out value);
     }
 
     // ── helpers ──
@@ -285,12 +444,16 @@ public sealed class DeviceTemplateEditorViewModel : ViewModelBase
         OnPropertyChanged(nameof(HasTemplate));
         OnPropertyChanged(nameof(Enabled));
         OnPropertyChanged(nameof(SelectedOutputKind));
-        OnPropertyChanged(nameof(SelectedOutputProvider));
+        OnPropertyChanged(nameof(SelectedOutputProfile));
+        OnPropertyChanged(nameof(HasOutputProfileOptions));
         OnPropertyChanged(nameof(ShowGenericShape));
+        OnPropertyChanged(nameof(DemoPreview));
         OnPropertyChanged(nameof(ThumbstickCount));
         OnPropertyChanged(nameof(TriggerCount));
         OnPropertyChanged(nameof(ButtonCount));
         OnPropertyChanged(nameof(PovCount));
         OnPropertyChanged(nameof(ProductString));
+        OnPropertyChanged(nameof(GenericVidText));
+        OnPropertyChanged(nameof(GenericPidText));
     }
 }

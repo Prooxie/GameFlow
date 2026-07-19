@@ -18,12 +18,9 @@
           BorderThickness="1">
     <Grid RowDefinitions="*,Auto">
 
-      <!-- Background art layer -->
+      <!-- Background layer — art removed by request: the splash is the
+           wordmark on the gradient, nothing else. -->
       <Grid Grid.Row="0">
-        <Image Source="avares://GameFlow.App/Assets/SplashArt.png"
-               Stretch="UniformToFill"
-               Opacity="0.55" />
-
         <!-- Gradient vignette -->
         <Border>
           <Border.Background>
@@ -47,31 +44,36 @@
           </Border.Background>
         </Border>
 
-        <!-- Wordmark -->
-        <StackPanel Margin="40,0,40,32"
-                    VerticalAlignment="Bottom"
-                    Spacing="8">
-          <StackPanel Orientation="Horizontal" Spacing="14">
-            <Border Width="42" Height="42" CornerRadius="10"
-                    Background="#001B26" BorderBrush="#00D4FF" BorderThickness="1.5"
+        <!-- Wordmark — THE logo now: the art's own baked-in wordmark was
+             cropped out (it pinned the logo/title to the top half and
+             duplicated this block), so this is centered and sized to
+             carry the splash. -->
+        <StackPanel Margin="40,0,40,24"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="12">
+          <StackPanel Orientation="Horizontal" Spacing="18" HorizontalAlignment="Center">
+            <Border Width="64" Height="64" CornerRadius="16"
+                    Background="#001B26" BorderBrush="#00D4FF" BorderThickness="2"
                     VerticalAlignment="Center">
-              <TextBlock Text="⊕" FontSize="22" FontWeight="Black"
+              <TextBlock Text="⊕" FontSize="34" FontWeight="Black"
                          Foreground="#00D4FF"
                          HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Border>
             <!-- Single-line two-tone wordmark — see ShellWindow.axaml for why this replaced stacked two-line text. -->
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="0">
-              <TextBlock Text="GAME" FontSize="30" FontWeight="Black"
-                         Foreground="White" VerticalAlignment="Center" LetterSpacing="1" />
-              <TextBlock Text="FLOW" FontSize="30" FontWeight="Black"
-                         Foreground="#00D4FF" VerticalAlignment="Center" LetterSpacing="1" />
+              <TextBlock Text="GAME" FontSize="46" FontWeight="Black"
+                         Foreground="White" VerticalAlignment="Center" LetterSpacing="1.5" />
+              <TextBlock Text="FLOW" FontSize="46" FontWeight="Black"
+                         Foreground="#00D4FF" VerticalAlignment="Center" LetterSpacing="1.5" />
             </StackPanel>
           </StackPanel>
           <TextBlock Text="Cross-platform controller remapping, autofire &amp; speedrun tooling"
-                     FontSize="13.5"
-                     Foreground="#64748B"
+                     FontSize="14"
+                     Foreground="#8FA3BC"
                      TextWrapping="Wrap"
-                     Margin="56,0,0,0" />
+                     TextAlignment="Center"
+                     HorizontalAlignment="Center" />
         </StackPanel>
       </Grid>
 

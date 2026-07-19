@@ -122,6 +122,9 @@ public sealed class ThemeSurface : Control
             {
                 Log.Information("ThemeSurface theme cleared.");
             }
+            highlightMaskCache.Clear();
+            hoveredHit = null;
+            pressedHit = null;
             InvalidateVisual();
         }
     }
@@ -234,15 +237,19 @@ public sealed class ThemeSurface : Control
     // ─── Hover + click-to-map highlight state ────────────────────────────
     //
     // Painted on top of all the regular theme content at the end of
-    // Render. Hover = a thin outline around whatever interactive area
-    // the cursor is currently over (click-to-map affordance). Selected
-    // = a thicker outline with a translucent fill, persisted until the
-    // user clicks somewhere else. Mutation is internal to the surface
-    // — Clicked still fires for the host so the VM's existing
-    // SelectElement pipeline runs in parallel.
+    // Render, in the SHAPE of the element itself: the element's own art
+    // (the same overlay the theme shows for a real press) is used as an
+    // opacity mask and filled with the highlight tint — so hovering the
+    // South button lights up a South-button silhouette, not a yellow
+    // rectangle. Hover = lighter tint; held-down = stronger tint. There
+    // is deliberately NO persistent selection state anymore: the
+    // highlight exists only while the pointer is over/pressing the
+    // element and disappears on release/leave (it used to stick around
+    // until you clicked empty space, which read as a glitch). Clicked
+    // still fires for the host so the VM's SelectElement pipeline runs.
 
     private ThemeHitResult? hoveredHit;
-    private ThemeHitResult? selectedHit;
+    private ThemeHitResult? pressedHit;
 
     /// <summary>
     /// Cached hand cursor used when the pointer is over a mappable
@@ -252,40 +259,31 @@ public sealed class ThemeSurface : Control
     private static readonly Cursor HandCursor = new(StandardCursorType.Hand);
 
     /// <summary>
-    /// Outline / fill colour for the click-to-map highlight. Bright
-    /// amber so it contrasts cleanly with the typical dark UI as well
-    /// as the cyan-teal of the active-press overlays in the asset
-    /// pack.
+    /// Highlight tint. Bright amber so it contrasts cleanly with the
+    /// typical dark UI as well as the cyan-teal of the active-press
+    /// overlays in the asset pack. Alpha differs per state: hover is a
+    /// clear "this is clickable", held-down is a solid "you're pressing
+    /// this" — both filling the element's whole silhouette (outline and
+    /// interior together, since the mask covers the full shape).
     /// </summary>
-    private static readonly Color HighlightStrokeColor = Color.FromArgb(0xFF, 0xFF, 0xC3, 0x00);
+    private static readonly SolidColorBrush HighlightHoverBrush =
+        new(Color.FromArgb(0x66, 0xFF, 0xC3, 0x00));
+    private static readonly SolidColorBrush HighlightPressedBrush =
+        new(Color.FromArgb(0xAA, 0xFF, 0xC3, 0x00));
+
+    /// <summary>Outline pen for the rounded-rect fallback (element has no art of its own).</summary>
+    private static readonly Pen HighlightFallbackPen =
+        new(new SolidColorBrush(Color.FromArgb(0xFF, 0xFF, 0xC3, 0x00)), 2);
 
     /// <summary>
-    /// Translucent variant of <see cref="HighlightStrokeColor"/> used
-    /// to fill the selected element's rect. Alpha is kept low so the
-    /// underlying art (button glyph, trigger, etc.) stays legible
-    /// through the highlight.
+    /// Per-path opacity-mask brushes for the silhouette highlight. Tiny
+    /// (a handful of interactive elements per theme) but rebuilt at
+    /// most once per art path instead of once per 30 Hz repaint.
     /// </summary>
-    private static readonly Color HighlightFillColor = Color.FromArgb(0x55, 0xFF, 0xC3, 0x00);
+    private readonly Dictionary<string, ImageBrush?> highlightMaskCache = new(StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>Pre-built solid amber brush — fill for the selected element's rect.</summary>
-    private static readonly SolidColorBrush HighlightFillBrush = new(HighlightFillColor);
-
-    /// <summary>
-    /// Lighter fill for hover — enough presence to read as genuine
-    /// feedback (closer to a press than a bare outline was) while
-    /// staying visibly weaker than the persistent selection fill above,
-    /// so the two states remain distinguishable at a glance.
-    /// </summary>
-    private static readonly SolidColorBrush HighlightHoverFillBrush =
-        new(Color.FromArgb(0x30, 0xFF, 0xC3, 0x00));
-
-    /// <summary>Pre-built thicker stroke pen used for the selection outline.</summary>
-    private static readonly Pen HighlightSelectedPen =
-        new(new SolidColorBrush(HighlightStrokeColor), 3);
-
-    /// <summary>Pre-built thinner stroke pen used for the hover outline only.</summary>
-    private static readonly Pen HighlightHoverPen =
-        new(new SolidColorBrush(HighlightStrokeColor), 2);
+    /// <summary>Sliders whose one-shot diagnostic has fired (see <see cref="LogSliderDiagnosticsOnce"/>).</summary>
+    private readonly HashSet<SliderNode> sliderDiagnosticsLogged = [];
 
     /// <inheritdoc/>
     protected override Size MeasureOverride(Size availableSize)
@@ -409,7 +407,7 @@ public sealed class ThemeSurface : Control
             // Both physical and virtual panels render the full theme.
             // Each surface independently consumes its own snapshot
             // (physical = input source, virtual = output emitted to
-            // ViGEm), so feedback animates naturally in each panel from
+            // HIDMaestro), so feedback animates naturally in each panel from
             // its respective source. The IsPhysicalView flag is kept
             // on the surface for potential future use (e.g. a
             // "passive view" toggle) but it no longer gates render
@@ -427,20 +425,16 @@ public sealed class ThemeSurface : Control
             // outline. If the cursor is currently over the selected
             // element we paint only the selected highlight (avoids
             // doubled outlines).
-            if (selectedHit is not null)
+            // While the pointer is held down on an element, only the
+            // stronger pressed tint paints; otherwise the hover tint.
+            // Nothing persists once the pointer releases or leaves.
+            if (pressedHit is not null)
             {
-                // 3px stroke / 30% fill — strong "you've picked this"
-                // affordance that persists until a new pick.
-                context.DrawRectangle(HighlightFillBrush, HighlightSelectedPen, selectedHit.Bounds);
+                DrawHighlight(context, pressedHit, HighlightPressedBrush);
             }
-            if (hoveredHit is not null &&
-                hoveredHit.ElementId != selectedHit?.ElementId)
+            else if (hoveredHit is not null)
             {
-                // Light fill + outline — closer to the visual weight of
-                // an actual button press than a bare outline was, while
-                // staying clearly lighter than the persistent selection
-                // fill above so the two states don't read as identical.
-                context.DrawRectangle(HighlightHoverFillBrush, HighlightHoverPen, hoveredHit.Bounds);
+                DrawHighlight(context, hoveredHit, HighlightHoverBrush);
             }
         }
         }
@@ -523,9 +517,10 @@ public sealed class ThemeSurface : Control
     protected override void OnPointerExited(PointerEventArgs e)
     {
         base.OnPointerExited(e);
-        if (hoveredHit is not null)
+        if (hoveredHit is not null || pressedHit is not null)
         {
             hoveredHit = null;
+            pressedHit = null;
             Cursor = Cursor.Default;
             InvalidateVisual();
         }
@@ -568,20 +563,86 @@ public sealed class ThemeSurface : Control
             return;
         }
 
-        // Update the persistent selection highlight. Clicking a
-        // mappable element sets it as the new selection; clicking
-        // empty space (no hit) clears the selection. The change is
-        // local to the surface, but Clicked still fires so the host
-        // VM's existing SelectElement pipeline runs as well.
-        var newSelection = ThemeHitTester.TryHit(doc, localX, localY);
-        if (newSelection?.ElementId != selectedHit?.ElementId)
+        // Light the pressed element for exactly as long as the button
+        // is physically held — mirroring how the theme's own press
+        // overlay behaves during play. OnPointerReleased / capture-lost
+        // / pointer-exited all clear it; nothing persists afterwards.
+        var pressed = ThemeHitTester.TryHit(doc, localX, localY);
+        if (pressed?.ElementId != pressedHit?.ElementId)
         {
-            selectedHit = newSelection;
+            pressedHit = pressed;
             InvalidateVisual();
         }
 
         Clicked.Invoke(this, new ThemeClickEventArgs(localX, localY));
         e.Handled = true;
+    }
+
+    /// <inheritdoc/>
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+        ClearPressedHighlight();
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// Click-to-map typically opens the mapping window on click, which
+    /// can steal pointer capture before Released reaches this surface —
+    /// capture-lost is the reliable "the press is over" signal in that
+    /// case.
+    /// </remarks>
+    protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+    {
+        base.OnPointerCaptureLost(e);
+        ClearPressedHighlight();
+    }
+
+    private void ClearPressedHighlight()
+    {
+        if (pressedHit is not null)
+        {
+            pressedHit = null;
+            InvalidateVisual();
+        }
+    }
+
+    /// <summary>
+    /// Paints one highlight in the SHAPE of the hit element: the
+    /// element's own art becomes an opacity mask over a solid tint fill,
+    /// producing a tinted silhouette of exactly what the theme renders
+    /// for that control during play — outline and interior together.
+    /// Falls back to a rounded rect (fill + outline) when the element
+    /// has no art or its bitmap can't load.
+    /// </summary>
+    private void DrawHighlight(DrawingContext ctx, ThemeHitResult hit, SolidColorBrush tint)
+    {
+        var theme = activeTheme;
+        ImageBrush? mask = null;
+        if (theme is not null && hit.ShapeImagePath is { Length: > 0 } path)
+        {
+            if (!highlightMaskCache.TryGetValue(path, out mask))
+            {
+                var bmp = LoadBitmap(path, theme);
+                mask = bmp is null ? null : new ImageBrush(bmp) { Stretch = Stretch.Fill };
+                highlightMaskCache[path] = mask;
+            }
+        }
+
+        if (mask is not null)
+        {
+            using (ctx.PushOpacityMask(mask, hit.Bounds))
+            {
+                ctx.FillRectangle(tint, hit.Bounds);
+            }
+        }
+        else
+        {
+            // No art to silhouette — rounded rect with both fill and
+            // outline so it still reads as a soft button shape rather
+            // than a hard box.
+            ctx.DrawRectangle(tint, HighlightFallbackPen, hit.Bounds, 8, 8);
+        }
     }
 
     /// <summary>
@@ -617,6 +678,11 @@ public sealed class ThemeSurface : Control
                 return;
 
             case ImageNode image:
+                // One frame for the bitmap AND the children — the
+                // preamble already holds this node's X/Y, DrawImage adds
+                // only the center shift, and children apply their own
+                // X/Y via their own preambles. That's the whole VSCView
+                // contract; anything more double-translates.
                 using (ctx.PushTransform(transform))
                 {
                     DrawImage(ctx, image, owner);
@@ -630,7 +696,9 @@ public sealed class ThemeSurface : Control
             case SliderNode slider:
                 // Render at neutral position — drop the InputX/InputY
                 // deflection that the virtual view applies, so the
-                // stick sits in its well regardless of live input.
+                // stick sits in its well regardless of live input. The
+                // node's own X/Y still applies (children are relative
+                // to it).
                 using (ctx.PushTransform(transform))
                 {
                     foreach (var child in slider.Children)
@@ -671,6 +739,12 @@ public sealed class ThemeSurface : Control
 
             case SliderNode slider:
             {
+                LogSliderDiagnosticsOnce(slider, symbols);
+                // Deflection ONLY: the walker's preamble at the top of
+                // this method already applied the node's own X/Y (every
+                // node renders inside its translated frame — that IS the
+                // VSCView contract). Adding slider.X here again was a
+                // double-translation that displaced every stick.
                 var t =
                     Matrix.CreateTranslation(slider.InputX.Evaluate(symbols),
                                              slider.InputY.Evaluate(symbols)) *
@@ -689,6 +763,9 @@ public sealed class ThemeSurface : Control
 
             case ImageNode image:
             {
+                // See the static path's note: one frame, no extra child
+                // translation — the preamble is the single application
+                // of this node's X/Y.
                 using (ctx.PushTransform(transform))
                 {
                     DrawImage(ctx, image, owner);
@@ -785,20 +862,82 @@ public sealed class ThemeSurface : Control
     /// the whole render pass. The null is cached so subsequent ticks
     /// don't repeatedly re-attempt the same broken path.
     /// </summary>
+    /// <summary>
+    /// One-shot per slider node: logs its position, first meaningfully
+    /// non-zero evaluated deflection, and child summary. Exists to
+    /// debug third-party themes whose sticks render missing or
+    /// misplaced — the log answers "did the expression evaluate, to
+    /// what magnitude, and does the child art exist" without needing
+    /// the theme's JSON in hand.
+    /// </summary>
+    private void LogSliderDiagnosticsOnce(SliderNode slider, GameFlow.Infrastructure.Theming.Flee.IFleeSymbols symbols)
+    {
+        if (sliderDiagnosticsLogged.Contains(slider))
+        {
+            return;
+        }
+
+        var ix = slider.InputX.Evaluate(symbols);
+        var iy = slider.InputY.Evaluate(symbols);
+        if (Math.Abs(ix) < 0.01 && Math.Abs(iy) < 0.01)
+        {
+            return; // wait for actual movement so the logged magnitudes mean something
+        }
+
+        _ = sliderDiagnosticsLogged.Add(slider);
+        var firstChild = slider.Children.FirstOrDefault();
+        Log.Information(
+            "Theme slider diagnostic: node=({X},{Y}) deflection=({Ix:F1},{Iy:F1})px children={Count} firstChild={Kind} {Detail}",
+            slider.X, slider.Y, ix, iy, slider.Children.Count,
+            firstChild?.GetType().Name ?? "(none)",
+            firstChild is ImageNode img ? $"image='{img.ImagePath}' at ({img.X},{img.Y}) {img.Width}x{img.Height} center={img.Center}" : string.Empty);
+    }
+
     private static Bitmap? LoadBitmap(string imagePath, InstalledTheme owner)
     {
         if (string.IsNullOrWhiteSpace(imagePath)) { return null; }
 
+        var baseDir = owner.Document.BaseDirectory;
         string? absolute;
         if (imagePath.StartsWith('\\') || imagePath.StartsWith('/'))
         {
             var root = owner.Document.ThemesRootDirectory;
-            if (string.IsNullOrEmpty(root)) { return null; }
-            absolute = Path.Combine(root, imagePath.TrimStart('\\', '/'));
+            var relative = imagePath.TrimStart('\\', '/');
+            absolute = string.IsNullOrEmpty(root) ? null : Path.Combine(root, relative);
+
+            // VSCView themes address art root-relatively
+            // ("\dualsense\default\ThemeAssets\x.png"), which only
+            // resolves when the ENTIRE VSCView folder tree was copied
+            // verbatim. Users overwhelmingly install a single theme
+            // folder, breaking every such path — invisible sticks,
+            // missing touchpads. Fall back to the theme's own folder:
+            // most copies keep ThemeAssets right next to the json.
+            if ((absolute is null || !File.Exists(Path.GetFullPath(absolute))) && !string.IsNullOrEmpty(baseDir))
+            {
+                var segments = relative.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+                var fileName = segments[^1];
+                string?[] candidates =
+                [
+                    Path.Combine(baseDir, relative),
+                    segments.Length >= 2 ? Path.Combine(baseDir, segments[^2], fileName) : null,
+                    Path.Combine(baseDir, fileName),
+                ];
+                foreach (var candidate in candidates)
+                {
+                    if (candidate is not null && File.Exists(Path.GetFullPath(candidate)))
+                    {
+                        Log.Information(
+                            "Theme image {Image} resolved via theme-local fallback ({Resolved}) — the root-relative path was broken.",
+                            imagePath, candidate);
+                        absolute = candidate;
+                        break;
+                    }
+                }
+            }
+            if (absolute is null) { return null; }
         }
         else
         {
-            var baseDir = owner.Document.BaseDirectory;
             if (string.IsNullOrEmpty(baseDir)) { return TryLoadAvares(imagePath); }
             absolute = Path.Combine(baseDir, imagePath);
         }

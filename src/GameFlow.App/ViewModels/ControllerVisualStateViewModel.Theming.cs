@@ -265,7 +265,23 @@ public sealed partial class ControllerVisualStateViewModel
     public void RefreshActiveTheme()
     {
         var registry = themeRegistry;
-        var variants = registry?.GetThemesForStyle(visualStyle) ?? [];
+        IReadOnlyList<InstalledTheme> variants = registry?.GetThemesForStyle(visualStyle) ?? [];
+
+        // Skins are decoupled from the OUTPUT on virtual panels: the
+        // output kind decides what the GAME sees (XInput vs DualShock
+        // vs DualSense capabilities); the skin is purely what YOU see.
+        // Style-matched themes lead the list (and stay the default),
+        // every other installed theme follows — pick a Switch Pro skin
+        // on an Xbox 360 output if that's your aesthetic.
+        if (!IsPhysicalView && registry is not null)
+        {
+            var all = registry.Themes;
+            if (all.Count > variants.Count)
+            {
+                var lead = variants;
+                variants = [.. lead, .. all.Where(t => !lead.Contains(t))];
+            }
+        }
 
         // Replace AvailableThemeVariants in place to avoid losing the
         // ComboBox's binding identity. We do a small diff against the

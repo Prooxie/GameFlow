@@ -11,12 +11,12 @@ namespace GameFlow.Infrastructure.Requirements;
 /// </para>
 /// </summary>
 /// <param name="Id">
-/// Stable, machine-readable identifier (e.g. <c>"vigem-bus"</c>). Used in
+/// Stable, machine-readable identifier (e.g. <c>"hidmaestro"</c>). Used in
 /// log lines and — eventually — to remember "don't ask me about <c>X</c>"
 /// preferences on a per-requirement basis.
 /// </param>
 /// <param name="DisplayName">
-/// Human-readable name for the dialog (e.g. <c>"ViGEm Bus driver"</c>).
+/// Human-readable name for the dialog (e.g. <c>"HIDMaestro"</c>).
 /// </param>
 /// <param name="Description">
 /// One- or two-sentence summary of why this requirement matters. Shown
@@ -33,11 +33,11 @@ namespace GameFlow.Infrastructure.Requirements;
 /// HTTPS URL the user should be sent to when they choose "install".
 /// Typically a GitHub releases page or the upstream vendor's installer.
 /// May be <see langword="null"/> if the requirement is platform-only and
-/// has no actionable resolution (e.g. on macOS where ViGEm doesn't apply).
+/// has no actionable resolution (e.g. on macOS where HIDMaestro doesn't apply).
 /// </param>
 /// <param name="IsApplicable">
 /// <see langword="false"/> when the requirement is not relevant to the
-/// current platform (e.g. ViGEm Bus on Linux). The coordinator filters
+/// current platform (e.g. HIDMaestro on Linux). The coordinator filters
 /// these out before deciding whether to show the dialog.
 /// </param>
 public sealed record RequirementStatus(
