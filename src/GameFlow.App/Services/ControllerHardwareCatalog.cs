@@ -19,7 +19,7 @@ namespace GameFlow.App.Services;
 ///
 /// <para>
 /// The IDs encoded here come from public USB descriptors and are
-/// widely distributed in open-source projects (libsdl, ViGEm,
+/// widely distributed in open-source projects (libsdl, HIDMaestro,
 /// JoyShockMapper). They are not proprietary.
 /// </para>
 /// </summary>

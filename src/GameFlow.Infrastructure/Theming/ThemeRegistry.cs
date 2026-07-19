@@ -156,11 +156,19 @@ public sealed class ThemeRegistry
     }
 
     /// <summary>
-    /// Returns every installed theme whose
-    /// <see cref="InstalledTheme.PreferredStyle"/> matches
-    /// <paramref name="style"/>, sorted by display name. Empty list when
-    /// no theme is installed for the family. This is the picker source
-    /// for the per-controller theme/skin dropdown in the UI.
+    /// Returns the installed themes to offer for <paramref name="style"/>,
+    /// sorted by display name. Resolution walks a FAMILY FALLBACK CHAIN
+    /// rather than requiring an exact style match: an Xbox 360 panel with
+    /// no 360-specific theme installed falls back to any Xbox-generation
+    /// theme, a DualSense panel to any PlayStation theme, and — as the
+    /// universal last resort — ANY installed theme at all. Rendering the
+    /// nearest available art (with its name visible in the skin picker)
+    /// beats a blank panel that says "no theme installed" when the user
+    /// demonstrably has themes; the exact-match message now only appears
+    /// when the themes folder is genuinely empty.
+    /// <see cref="ControllerVisualStyle.None"/> and
+    /// <see cref="ControllerVisualStyle.Auto"/> still return an empty
+    /// list — None means "render nothing" by contract.
     /// </summary>
     public IReadOnlyList<InstalledTheme> GetThemesForStyle(ControllerVisualStyle style)
     {
@@ -171,19 +179,56 @@ public sealed class ThemeRegistry
 
         lock (syncRoot)
         {
-            var result = new List<InstalledTheme>();
-            foreach (var t in themes)
+            foreach (var candidate in FallbackChainFor(style))
             {
-                if (t.PreferredStyle == style)
+                var result = new List<InstalledTheme>();
+                foreach (var t in themes)
                 {
-                    result.Add(t);
+                    if (t.PreferredStyle == candidate)
+                    {
+                        result.Add(t);
+                    }
+                }
+                if (result.Count > 0)
+                {
+                    result.Sort(static (a, b) => string.Compare(
+                        a.DisplayName, b.DisplayName, StringComparison.OrdinalIgnoreCase));
+                    return result;
                 }
             }
-            result.Sort(static (a, b) => string.Compare(
+
+            // Universal last resort: anything installed at all.
+            var any = new List<InstalledTheme>(themes);
+            any.Sort(static (a, b) => string.Compare(
                 a.DisplayName, b.DisplayName, StringComparison.OrdinalIgnoreCase));
-            return result;
+            return any;
         }
     }
+
+    /// <summary>
+    /// Family-ordered fallback for each style: same generation first,
+    /// then siblings within the brand family, nearest generation first.
+    /// </summary>
+    private static ControllerVisualStyle[] FallbackChainFor(ControllerVisualStyle style) => style switch
+    {
+        ControllerVisualStyle.Xbox360 => [ControllerVisualStyle.Xbox360, ControllerVisualStyle.Xbox, ControllerVisualStyle.XboxOne, ControllerVisualStyle.XboxSeries],
+        ControllerVisualStyle.XboxOne => [ControllerVisualStyle.XboxOne, ControllerVisualStyle.XboxSeries, ControllerVisualStyle.Xbox, ControllerVisualStyle.Xbox360],
+        ControllerVisualStyle.XboxSeries => [ControllerVisualStyle.XboxSeries, ControllerVisualStyle.XboxOne, ControllerVisualStyle.Xbox, ControllerVisualStyle.Xbox360],
+        ControllerVisualStyle.Xbox => [ControllerVisualStyle.Xbox, ControllerVisualStyle.XboxSeries, ControllerVisualStyle.XboxOne, ControllerVisualStyle.Xbox360],
+        ControllerVisualStyle.PlayStation5 => [ControllerVisualStyle.PlayStation5, ControllerVisualStyle.PlayStation4, ControllerVisualStyle.PlayStation3],
+        ControllerVisualStyle.PlayStation4 => [ControllerVisualStyle.PlayStation4, ControllerVisualStyle.PlayStation5, ControllerVisualStyle.PlayStation3],
+        ControllerVisualStyle.PlayStation3 => [ControllerVisualStyle.PlayStation3, ControllerVisualStyle.PlayStation4, ControllerVisualStyle.PlayStation5],
+        ControllerVisualStyle.SteamDeck => [ControllerVisualStyle.SteamDeck, ControllerVisualStyle.SteamController],
+        ControllerVisualStyle.SteamController => [ControllerVisualStyle.SteamController, ControllerVisualStyle.SteamDeck],
+        ControllerVisualStyle.SimpleGamepad => [ControllerVisualStyle.SimpleGamepad, ControllerVisualStyle.Arcade, ControllerVisualStyle.Xbox360, ControllerVisualStyle.XboxSeries],
+        ControllerVisualStyle.Arcade => [ControllerVisualStyle.Arcade, ControllerVisualStyle.SimpleGamepad],
+        // Keyboard/Mouse never borrow gamepad art via the family chain —
+        // wrong-device art there is worse than the bundled defaults,
+        // which ship for both styles.
+        ControllerVisualStyle.Keyboard => [ControllerVisualStyle.Keyboard],
+        ControllerVisualStyle.Mouse => [ControllerVisualStyle.Mouse],
+        _ => [style],
+    };
 
     /// <summary>
     /// Resolves a theme by its registry id (the lower-cased,
@@ -300,8 +345,18 @@ public sealed class ThemeRegistry
         {
             return ControllerVisualStyle.Arcade;
         }
+        if (name.Contains("keyboard", StringComparison.Ordinal) ||
+            name.Contains("kbd", StringComparison.Ordinal))
+        {
+            return ControllerVisualStyle.Keyboard;
+        }
+        if (name.Contains("mouse", StringComparison.Ordinal))
+        {
+            return ControllerVisualStyle.Mouse;
+        }
         if (name.Contains("simple", StringComparison.Ordinal) ||
-            name.Contains("generic", StringComparison.Ordinal))
+            name.Contains("generic", StringComparison.Ordinal) ||
+            name.Contains("gamepad", StringComparison.Ordinal))
         {
             return ControllerVisualStyle.SimpleGamepad;
         }

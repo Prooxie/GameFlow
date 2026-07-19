@@ -15,7 +15,9 @@ public static class ProfileDefaults
             Version = 4,
             PollingRateHz = 250,
             InputProvider = "sdl",
-            OutputProvider = "preview",
+            // The platform's sole real output backend (HIDMaestro on
+            // Windows; preview elsewhere) — see OutputProviderPolicy.
+            OutputProvider = Runtime.OutputProviderPolicy.Resolve(null),
             PreferredInputDeviceId = string.Empty,
             Ui = new UiPreferences
             {

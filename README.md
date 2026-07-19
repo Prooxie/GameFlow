@@ -5,7 +5,7 @@
 **Cross-platform gamepad tooling for speedrunners and power users.**
 Autofire, remapping, stick shaping, freeze macros, keyboard/mouse-as-gamepad, and virtual controller output — all in one clean UI.
 
-**v1.0.0 Beta** · Built with **.NET 10** · **Avalonia UI** · **SDL3** · **ViGEm** · **HIDMaestro**
+**v1.0.0 Beta** · Built with **.NET 10** · **Avalonia UI** · **SDL3** · **HIDMaestro**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-informational)](#requirements)
@@ -52,7 +52,7 @@ Transformations include:
 | **Multiple controllers** | Each "slot" is an independent input → profile → output pipeline; run as many simultaneously as you have devices and outputs for |
 | **Profiles** | JSON-based, per-profile polling rate, provider selection, controller style, and rename support |
 | **Input providers** | SDL3 unified (all platforms, gamepads + joysticks), Windows Raw Input (keyboard/mouse), Demo preview, None |
-| **Output providers** | ViGEm Xbox 360 / DualShock 4 / DualSense (Windows), HIDMaestro (Windows, no kernel driver), Preview (no virtual device, any platform) |
+| **Output providers** | HIDMaestro (Windows, no kernel driver), Preview (no virtual device, any platform) |
 | **Dashboard** | Physical and virtual controllers shown side by side — both the primary pipeline and every active slot — with a shared background/theme picker and a clear "virtual" badge on emitted devices |
 | **UI** | 8-language interface, switchable live from the header without restarting |
 
@@ -81,16 +81,9 @@ Download from [libsdl.org](https://libsdl.org/) or build from source. An optiona
 
 ### Windows — virtual controller output
 
-GameFlow ships **two independent** ways to create a virtual controller on Windows. Pick either, per slot — they don't depend on each other, and one does not fall back to the other:
+GameFlow uses **[HIDMaestro](https://github.com/hifihedgehog/HIDMaestro)** exclusively to create a virtual controller: a user-mode platform with no kernel driver and no reboot. Drop **`HIDMaestro.Core.dll`** (plus its driver payload) next to `GameFlow.App.exe` and it activates automatically on next launch — no rebuild needed. The first run may prompt for elevation to install its (still driver-less, UMDF2) component.
 
-- **ViGEm Bus** — the classic route. Emits a virtual Xbox 360, DualShock 4, or DualSense (as a DS4-shaped device) controller.
-  → **[Download ViGEm Bus → vigembusdriver.com](https://vigembusdriver.com/)**
-
-- **[HIDMaestro](https://github.com/hifihedgehog/HIDMaestro)** — a newer, user-mode virtual controller platform: no kernel driver, no reboot. Drop **`HIDMaestro.Core.dll`** (plus its driver payload) next to `GameFlow.App.exe` and it activates automatically on next launch — no rebuild needed. The first run may prompt for elevation to install its (still driver-less, UMDF2) component.
-
-If neither is available for a given slot's chosen output, that slot simply has no output — GameFlow will not silently substitute one provider for another, and the log and the slot's displayed name both say exactly why.
-
-Without ViGEm Bus *and* HIDMaestro, the application still runs normally; any slot's output provider falls back to **Preview** (no virtual device — the transformed state is shown on the dashboard only).
+If it isn't available, that slot simply has no output — GameFlow will not silently substitute a different provider, and the log and the slot's displayed name both say exactly why. The app still runs normally either way; any slot's output provider falls back to **Preview** (no virtual device — the transformed state is shown on the dashboard only).
 
 ### Linux / macOS
 
@@ -151,7 +144,7 @@ Open the **Profiles** tab and create a new profile, or start from the default. A
 3. Assign the slot's input: pick the physical device from the list.
 4. Open the slot's Template Editor and set:
    - **Output kind** — the virtual controller *shape* (Xbox 360 / DualShock 4 / DualSense / Generic).
-   - **Output provider** — the *backend* that actually emits it (ViGEm Xbox 360/DS4/DS5, HIDMaestro, or Preview). This is the setting that matters for whether a real device is created — pick it explicitly per slot rather than leaving it on "(inherit from profile)," which follows the profile's own default and is easy to lose track of.
+   - **Output provider** — the *backend* that actually emits it (HIDMaestro or Preview). This is the setting that matters for whether a real device is created.
 5. Toggle **Enabled** on the slot.
 
 ### Confirm it's live
@@ -182,7 +175,6 @@ The background picker (Dashboard tab) applies one background — a solid color o
     "DashboardRefreshHz": 165,
     "StartRuntimeOnLaunch": true,
     "DefaultCulture": "en",
-    "EnableViGEm": true,
     "Updates": {
       "RepoOwner": "Prooxie",
       "RepoName": "GameFlow",
@@ -198,7 +190,6 @@ The background picker (Dashboard tab) applies one background — a solid color o
 | `DashboardRefreshHz` | `165` | UI refresh rate for the live dashboard and controller panels |
 | `StartRuntimeOnLaunch` | `true` | Whether the input/output runtime starts automatically on launch |
 | `DefaultCulture` | `en` | Fallback UI language before a user preference is saved |
-| `EnableViGEm` | `true` | Enable the ViGEm virtual-controller output providers (Windows) |
 | `Updates:RepoOwner` / `RepoName` | `Prooxie` / `GameFlow` | GitHub-releases update checker — enabled by default, pointed at this repo |
 
 ### Profiles
@@ -228,10 +219,7 @@ Older profiles referencing retired providers (XInput, GameInput, x360ce, PS3, an
 
 | ID | Platform | Notes |
 |---|---|---|
-| `vigem-xbox360` | Windows | Virtual Xbox 360 controller via ViGEm Bus. |
-| `vigem-ds4` | Windows | Virtual DualShock 4 controller via ViGEm Bus. |
-| `vigem-ds5` | Windows | Virtual DualSense controller via ViGEm Bus (emitted as a DS4-shaped device). |
-| `hidmaestro` | Windows | Virtual controller via [HIDMaestro](https://github.com/hifihedgehog/HIDMaestro) — no kernel driver. Activates automatically when `HIDMaestro.Core.dll` is present. |
+| `hidmaestro` | Windows | Virtual controller via [HIDMaestro](https://github.com/hifihedgehog/HIDMaestro) — no kernel driver. Activates automatically when `HIDMaestro.Core.dll` is present. The sole real output backend; ViGEm was removed as a dependency. |
 | `preview` | All | No virtual device. Shows the transformed state on the dashboard only. |
 
 ---
@@ -243,7 +231,7 @@ GameFlow/
 ├── src/
 │   ├── GameFlow.App              # Avalonia UI, ViewModels, Views, Localization
 │   ├── GameFlow.Core              # Domain models, pipeline, rule types, schedulers
-│   └── GameFlow.Infrastructure    # SDL3, ViGEm, HIDMaestro, profile persistence, runtime
+│   └── GameFlow.Infrastructure    # SDL3, HIDMaestro, profile persistence, runtime
 ├── tests/
 │   └── GameFlow.Core.Tests        # Unit tests for the mapping pipeline
 └── .github/workflows/             # CI: build, test, and release packaging
@@ -269,7 +257,7 @@ InputSource.ReadAsync() / ReadDevice() ────┘
         │
         ▼
  OutputSink.WriteAsync()
-        │  (ViGEm Xbox360 / DS4 / DS5 · HIDMaestro · Preview)
+        │  (HIDMaestro · Preview)
         ▼
   Virtual controller seen by games — and hidden from GameFlow's
   own input list, so it can never be selected back in as a source.
@@ -310,7 +298,6 @@ This project is licensed under the **[MIT License](LICENSE)**.
 
 ## Acknowledgments
 
-- **[ViGEm Bus](https://github.com/nefarius/ViGEmBus)** by Nefarius — the virtual Xbox 360 / DualShock 4 / DualSense driver stack.
 - **[HIDMaestro](https://github.com/hifihedgehog/HIDMaestro)** by hifihedgehog — the driver-less, user-mode virtual controller platform.
 - **[SDL_GameControllerDB](https://github.com/mdqinc/SDL_GameControllerDB)** — the community gamepad mapping database SDL3 input builds on.
 - **[VSCView THEMEENGINE](https://github.com/Nielk1/VSCView/blob/master/THEMEENGINE.md)** by Nielk1 — the controller theme format GameFlow's controller surfaces are compatible with.

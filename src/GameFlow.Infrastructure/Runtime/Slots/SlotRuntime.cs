@@ -28,6 +28,26 @@ public sealed class SlotRuntime : IAsyncDisposable
     private readonly List<SlotPipeline> pipelines = [];
     private readonly Dictionary<string, int> slotFailureCounts = new(StringComparer.Ordinal);
 
+    /// <summary>
+    /// Output sinks cached ACROSS rebuilds, keyed by slot id. Rebuilds
+    /// happen on every slot edit (debounced to 400 ms), and recreating
+    /// the sink each time meant destroying + recreating the virtual OS
+    /// device each time — the visible symptom being controllers
+    /// multiplying/blinking during ordinary editing. A cached sink is
+    /// re-Configure()d instead; its emit-shape fingerprint keeps the
+    /// live device untouched unless the emitted DEVICE actually changed
+    /// (kind/profile/identity). Sinks are disposed only when their slot
+    /// disappears, its provider changes, or the runtime shuts down.
+    /// </summary>
+    private readonly Dictionary<string, (string Provider, IOutputSink Sink)> sinkCache = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Time base for per-slot demo previews — one continuous clock for
+    /// the whole runtime so the waveform never jumps on slot edits or
+    /// pipeline rebuilds.
+    /// </summary>
+    private readonly System.Diagnostics.Stopwatch demoClock = System.Diagnostics.Stopwatch.StartNew();
+
     public SlotRuntime(SlotRegistry registry, IOutputSinkFactory outputSinkFactory,
         SlotSnapshotStore snapshotStore,
         IProfileRepository profileRepository, ILogger logger)
@@ -50,11 +70,11 @@ public sealed class SlotRuntime : IAsyncDisposable
     /// outputs can ever be enumerated (and therefore selected) as an
     /// input device — see SlotPipeline.OutputHardwareSignature.
     /// </summary>
-    public IReadOnlyList<(ushort Vid, ushort Pid)> GetActiveOutputSignatures() =>
+    public IReadOnlyList<(ushort Vid, ushort Pid, DateTimeOffset ActivatedAt)> GetActiveOutputSignatures() =>
         [.. pipelines
-            .Select(p => p.OutputHardwareSignature)
-            .Where(sig => sig is not null)
-            .Select(sig => sig!.Value)
+            .Select(p => (Sig: p.OutputHardwareSignature, At: p.OutputSignatureActivatedAt))
+            .Where(x => x.Sig is not null && x.At is not null)
+            .Select(x => (x.Sig!.Value.Vid, x.Sig.Value.Pid, x.At!.Value))
             .Distinct()];
 
     /// <summary>
@@ -110,13 +130,14 @@ public sealed class SlotRuntime : IAsyncDisposable
                     string.IsNullOrWhiteSpace(slot.OutputTemplate.OutputProvider) ? "inherited from profile" : "set on slot");
 
                 var pipeline = new ControllerMappingPipeline(slotProfile);
-                var sink = outputSinkFactory.Create(slotOutputProvider);
+                var sink = await GetOrCreateSinkAsync(slot.Id, slotOutputProvider);
                 if (sink is IConfigurableOutputSink configurable)
                 {
                     configurable.Configure(slot.OutputTemplate);
                 }
 
-                pipelines.Add(new SlotPipeline(slot.Id, slot.InputDeviceIds, slot.OutputTemplate, pipeline, sink));
+                pipelines.Add(new SlotPipeline(slot.Id, slot.InputDeviceIds, slot.OutputTemplate, pipeline, sink,
+                    ownsOutputSink: false));
             }
             catch (Exception exception)
             {
@@ -124,11 +145,67 @@ public sealed class SlotRuntime : IAsyncDisposable
             }
         }
 
+        await PruneSinkCacheAsync();
+
         rebuildSw.Stop();
         logger.LogInformation(
             "Slot runtime built {Count} slot pipeline(s) in {ElapsedMs} ms.",
             pipelines.Count, rebuildSw.ElapsedMilliseconds);
         snapshotStore.Retain(pipelines.Select(p => p.SlotId));
+    }
+
+    /// <summary>
+    /// Returns the cached sink for a slot when its provider is
+    /// unchanged; otherwise disposes any stale sink and creates a fresh
+    /// one for the new provider.
+    /// </summary>
+    private async ValueTask<IOutputSink> GetOrCreateSinkAsync(string slotId, string provider)
+    {
+        if (sinkCache.TryGetValue(slotId, out var cached))
+        {
+            if (string.Equals(cached.Provider, provider, StringComparison.OrdinalIgnoreCase))
+            {
+                return cached.Sink;
+            }
+
+            logger.LogInformation(
+                "Slot runtime: slot {SlotId} provider changed {Old} → {New}; recreating sink.",
+                slotId, cached.Provider, provider);
+            await DisposeSinkQuietlyAsync(slotId, cached.Sink);
+            sinkCache.Remove(slotId);
+        }
+
+        var sink = outputSinkFactory.Create(provider);
+        sinkCache[slotId] = (provider, sink);
+        return sink;
+    }
+
+    /// <summary>Disposes cached sinks whose slot no longer has a pipeline (deleted/disabled slots).</summary>
+    private async Task PruneSinkCacheAsync()
+    {
+        var live = new HashSet<string>(pipelines.Select(p => p.SlotId), StringComparer.Ordinal);
+        foreach (var slotId in sinkCache.Keys.ToList())
+        {
+            if (live.Contains(slotId))
+            {
+                continue;
+            }
+            var (_, sink) = sinkCache[slotId];
+            sinkCache.Remove(slotId);
+            await DisposeSinkQuietlyAsync(slotId, sink);
+        }
+    }
+
+    private async ValueTask DisposeSinkQuietlyAsync(string slotId, IOutputSink sink)
+    {
+        try
+        {
+            await sink.DisposeAsync();
+        }
+        catch (Exception exception)
+        {
+            logger.LogDebug(exception, "Error disposing cached sink for slot {SlotId}.", slotId);
+        }
     }
 
     /// <summary>
@@ -151,7 +228,18 @@ public sealed class SlotRuntime : IAsyncDisposable
             {
                 var deviceIds = pipeline.InputDeviceIds;
                 ControllerSnapshot snapshot;
-                if (deviceIds.Count == 0)
+                if (pipeline.Template.DemoPreview)
+                {
+                    // Demo preview: the slot runs on the built-in demo
+                    // waveform instead of its assigned devices (works
+                    // with zero devices assigned too). Everything
+                    // downstream is real — profiles map it, panels
+                    // animate, the virtual controller emits it.
+                    snapshot = DemoInputSource.GenerateSnapshot(
+                        demoClock.Elapsed.TotalSeconds, "Demo preview") with
+                    { Timestamp = now };
+                }
+                else if (deviceIds.Count == 0)
                 {
                     snapshot = ControllerSnapshot.Empty("No device assigned") with { Timestamp = now };
                 }
@@ -171,6 +259,7 @@ public sealed class SlotRuntime : IAsyncDisposable
 
                 var result = await pipeline.ProcessAsync(snapshot, now, cancellationToken);
                 snapshotStore.Update(pipeline.SlotId, snapshot, result.VirtualSnapshot);
+                snapshotStore.SetOutputStatus(pipeline.SlotId, pipeline.OutputDisplayName);
                 // Lightbar removed: no per-tick SDL LED write to the physical
                 // device (it could block the runtime loop on Bluetooth pads).
                 first ??= ("Slot input", pipeline.OutputDisplayName, result);
@@ -263,5 +352,13 @@ public sealed class SlotRuntime : IAsyncDisposable
         slotFailureCounts.Clear();
     }
 
-    public async ValueTask DisposeAsync() => await DisposePipelinesAsync();
+    public async ValueTask DisposeAsync()
+    {
+        await DisposePipelinesAsync();
+        foreach (var (slotId, entry) in sinkCache.ToList())
+        {
+            await DisposeSinkQuietlyAsync(slotId, entry.Sink);
+        }
+        sinkCache.Clear();
+    }
 }

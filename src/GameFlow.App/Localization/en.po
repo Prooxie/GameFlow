@@ -1035,7 +1035,22 @@ msgid "TemplateOutputProviderLabel"
 msgstr "Output provider"
 
 msgid "TemplateOutputProviderTooltip"
-msgstr "Which backend this slot uses (HIDMaestro, a specific ViGEm device, or preview-only). Leaving this on \"(inherit from profile)\" uses the profile's global output provider, which defaults to preview — no real device — until changed here."
+msgstr "The backend that emits this slot's virtual device. HIDMaestro is the only Windows output backend — user-mode, no kernel driver — and it needs GameFlow to run as Administrator with HIDMaestro.Core.dll next to the executable."
+
+msgid "TemplateOutputProfileLabel"
+msgstr "HIDMaestro profile"
+
+msgid "TemplateOutputProfileTooltip"
+msgstr "Exactly which controller this slot presents to games. \"Default\" uses the standard profile for the output device above; picking a specific profile can emit any controller HIDMaestro supports — wheels, HOTAS, flight sticks, arcade pads and more."
+
+msgid "TemplateOutputProfileDefaultOption"
+msgstr "Default for the selected output device"
+
+msgid "TemplateDemoPreviewLabel"
+msgstr "Demo preview"
+
+msgid "TemplateDemoPreviewTooltip"
+msgstr "Animates this virtual controller with the built-in demo timeline instead of its assigned devices — sticks sweep, triggers pulse, buttons cycle. The mapping profiles and the real virtual controller output all run, so you can watch it in the dashboard or test it inside a game with no physical controller. Turn off to hand control back to the assigned devices."
 
 msgid "DashboardVirtualBadgeLabel"
 msgstr "VIRTUAL"
@@ -1047,4 +1062,7 @@ msgid "SlotsSaveLabel"
 msgstr "Save"
 
 msgid "DashboardNoControllerConnected"
-msgstr "No controller connected"
+msgstr "No controller assigned"
+
+msgid "SidebarAddController"
+msgstr "Add controller"

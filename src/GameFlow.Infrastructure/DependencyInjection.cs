@@ -50,6 +50,9 @@ public static class DependencyInjection
         _ = services.AddSingleton<Runtime.Slots.SlotSnapshotStore>();
         _ = services.AddSingleton<IInputSourceFactory, DefaultInputSourceFactory>();
         _ = services.AddSingleton<IOutputSinkFactory, DefaultOutputSinkFactory>();
+        _ = services.AddSingleton<Runtime.HidMaestro.HidMaestroProfileCatalogService>();
+        _ = services.AddSingleton<Runtime.Slots.PhysicalPanelPinService>();
+        _ = services.AddSingleton<Runtime.DeviceCategoryOverrideStore>();
         _ = services.AddHostedService<RuntimeCoordinator>();
         _ = services.AddHostedService<RawInputEnumerationService>();
         _ = services.AddHostedService<Overlay.OverlayServer>();

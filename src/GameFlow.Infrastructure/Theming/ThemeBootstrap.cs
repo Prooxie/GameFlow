@@ -66,17 +66,47 @@ public static class ThemeBootstrap
             if (string.IsNullOrWhiteSpace(name)) { continue; }
 
             var dst = Path.Combine(userRoot, name);
+            var bundleStamp = ComputeBundleStamp(src);
+            var stampPath = Path.Combine(dst, ".bundled.stamp");
+
             if (Directory.Exists(dst))
             {
-                // User already has this theme (or has explicitly
-                // deleted only part of it). Leave it untouched so
-                // local edits survive a re-install.
-                continue;
+                // A stamp marks the folder as a bundled copy that this
+                // bootstrap owns. Same stamp → up to date, leave alone.
+                // Different or MISSING stamp → the shipped content
+                // changed since it was copied (missing covers copies made
+                // by older bootstraps that never stamped) → refresh in
+                // place. Without this, fixed bundled themes never reached
+                // users who already had the earlier copies — they kept
+                // rendering the old broken layouts forever. Users who
+                // want to customise a default should copy it under a new
+                // folder name; same-named folders are treated as ours.
+                var existingStamp = File.Exists(stampPath) ? File.ReadAllText(stampPath).Trim() : null;
+                if (string.Equals(existingStamp, bundleStamp, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    Directory.Delete(dst, recursive: true);
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex,
+                        "Could not refresh bundled theme '{Name}' (delete failed); keeping the existing copy.",
+                        name);
+                    continue;
+                }
+                Log.Information(
+                    "Bundled theme '{Name}' changed since it was installed — refreshing.",
+                    name);
             }
 
             try
             {
                 CopyDirectoryRecursive(src, dst);
+                File.WriteAllText(stampPath, bundleStamp);
                 installedCount++;
                 Log.Information(
                     "Installed bundled theme '{Name}' into {Path}.",
@@ -91,6 +121,27 @@ public static class ThemeBootstrap
         }
 
         return installedCount;
+    }
+
+    /// <summary>
+    /// Cheap content fingerprint of a bundled theme folder: relative
+    /// path and length of every file, hashed. Regenerated art virtually
+    /// always changes at least one file size, so a re-shipped theme
+    /// yields a new stamp, while identical bits yield a stable one.
+    /// </summary>
+    private static string ComputeBundleStamp(string themeDir)
+    {
+        var builder = new System.Text.StringBuilder();
+        foreach (var file in Directory.EnumerateFiles(themeDir, "*", SearchOption.AllDirectories)
+                     .OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
+        {
+            var info = new FileInfo(file);
+            _ = builder.Append(Path.GetRelativePath(themeDir, file))
+                       .Append('|').Append(info.Length).Append('\n');
+        }
+        var bytes = System.Security.Cryptography.SHA256.HashData(
+            System.Text.Encoding.UTF8.GetBytes(builder.ToString()));
+        return Convert.ToHexString(bytes);
     }
 
     /// <summary>

@@ -1,12 +1,12 @@
+using GameFlow.Infrastructure.Runtime.HidMaestro;
 using Microsoft.Extensions.Logging;
 
 namespace GameFlow.Infrastructure.Requirements;
 
 /// <summary>
-/// Default <see cref="IRequirementChecker"/>. Today it knows about a
-/// single requirement (the ViGEm Bus driver, Windows-only); add new
-/// requirements here as the input/output sink list grows in step 5 of
-/// they land (HIDMaestro driver presence is the next candidate).
+/// Default <see cref="IRequirementChecker"/>. Knows about a single
+/// requirement: HIDMaestro, the sole output backend (ViGEm Bus was
+/// retired as a dependency). Windows-only, like the requirement itself.
 ///
 /// <para>
 /// The checker always returns one entry per known requirement, even on
@@ -18,11 +18,10 @@ namespace GameFlow.Infrastructure.Requirements;
 public sealed class DefaultRequirementChecker : IRequirementChecker
 {
     /// <summary>
-    /// The canonical install URL for the ViGEm Bus driver, per the
-    /// upstream project README. Constant rather than configurable
-    /// because it's a third-party stable URL.
+    /// Where to point a user missing the requirement — HIDMaestro's own
+    /// repository, which carries the SDK/DLL and setup instructions.
     /// </summary>
-    private static readonly Uri ViGEmBusInstallerUrl = new("https://github.com/nefarius/ViGEmBus/releases");
+    private static readonly Uri HidMaestroInfoUrl = new("https://github.com/hifihedgehog/HIDMaestro");
 
     private readonly ILogger<DefaultRequirementChecker> logger;
 
@@ -41,7 +40,7 @@ public sealed class DefaultRequirementChecker : IRequirementChecker
 
         var results = new List<RequirementStatus>
         {
-            CheckViGEmBus(),
+            CheckHidMaestro(),
         };
 
         // Log a one-line summary so support bundles always carry the
@@ -60,17 +59,21 @@ public sealed class DefaultRequirementChecker : IRequirementChecker
     }
 
     /// <summary>
-    /// Probes for the ViGEm Bus driver. On non-Windows platforms returns
-    /// an inapplicable status so the dialog hides it from the user.
+    /// Probes for HIDMaestro.Core.dll next to the executable, reusing
+    /// the same detection logic the output sink itself uses to decide
+    /// whether to activate — one source of truth for "is HIDMaestro
+    /// available," not a second, potentially-divergent probe. On
+    /// non-Windows platforms returns an inapplicable status so the
+    /// dialog hides it from the user.
     /// </summary>
-    private RequirementStatus CheckViGEmBus()
+    private RequirementStatus CheckHidMaestro()
     {
-        const string id = "vigem-bus";
-        const string displayName = "ViGEm Bus driver";
+        const string id = "hidmaestro";
+        const string displayName = "HIDMaestro";
         const string description =
-            "Required to create virtual Xbox 360, DualShock 4 or DualSense controllers. " +
-            "Without it, only the Preview output is available — physical controllers will be read normally, but the " +
-            "transformed output won't be visible to other apps.";
+            "Required to create a virtual controller — HIDMaestro is the only output backend. " +
+            "Without it, physical controllers will be read normally, but the transformed output " +
+            "won't be visible to games or other apps.";
 
         if (!OperatingSystem.IsWindows())
         {
@@ -83,24 +86,39 @@ public sealed class DefaultRequirementChecker : IRequirementChecker
                 IsApplicable: false);
         }
 
-        var detection = ViGEmBusDetection.Detect(logger);
-        var isSatisfied = detection == ViGEmBusDetection.Detection.Installed;
+        var isSatisfied = HidMaestroDynamic.IsAvailable(logger);
+
+        // Elevation is the other half of "available": the bridge can
+        // resolve every type and still be unable to create a single
+        // device, because HIDMaestro's driver install and device
+        // creation need administrator rights (SeLoadDriverPrivilege).
+        // Surface that as an explicit, actionable failure instead of
+        // letting the first CreateController produce an opaque access
+        // error minutes later.
+        var elevationDescription = description;
+        if (isSatisfied && !HidMaestroDynamic.IsProcessElevated)
+        {
+            isSatisfied = false;
+            elevationDescription =
+                "HIDMaestro is present, but GameFlow is not running as Administrator. " +
+                "HIDMaestro needs administrator rights to install its driver and create virtual " +
+                "controllers — restart GameFlow as Administrator (right-click → Run as administrator).";
+        }
 
         if (!isSatisfied)
         {
             logger.LogInformation(
-                "ViGEm Bus driver appears to be missing (probe result: {ProbeResult}). " +
-                "User will be offered the installer at {InstallerUrl}.",
-                detection,
-                ViGEmBusInstallerUrl);
+                "HIDMaestro requirement unsatisfied ({Status}). User will be offered {InfoUrl}.",
+                HidMaestroDynamic.IsProcessElevated ? HidMaestroDynamic.StatusDescription : "process not elevated",
+                HidMaestroInfoUrl);
         }
 
         return new RequirementStatus(
             Id: id,
             DisplayName: displayName,
-            Description: description,
+            Description: elevationDescription,
             IsSatisfied: isSatisfied,
-            InstallerUrl: ViGEmBusInstallerUrl,
+            InstallerUrl: HidMaestroInfoUrl,
             IsApplicable: true);
     }
 }

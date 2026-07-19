@@ -229,7 +229,7 @@ public partial class App : Application
 
         try
         {
-            // Use a generous timeout so native providers (SDL, XInput, ViGEm) have
+            // Use a generous timeout so native providers (SDL, HIDMaestro) have
             // time to release OS handles before the process exits.  Without this
             // the CLR garbage collector may run finalizers AFTER the native DLLs
             // have already been unloaded, causing an AccessViolation on shutdown.
@@ -257,7 +257,7 @@ public partial class App : Application
         finally
         {
             // Dispose BEFORE the process exits so native destructors run in the
-            // correct order and don't fault when the SDL / XInput / ViGEm DLLs
+            // correct order and don't fault when the SDL / HIDMaestro DLLs
             // are still mapped in memory.
             try
             {
@@ -271,7 +271,7 @@ public partial class App : Application
             // Flush Serilog after everything else is torn down.
             Log.CloseAndFlush();
 
-            // Some input/output providers (SDL, XInput, ViGEm wrappers)
+            // Some input/output providers (SDL, HIDMaestro wrappers)
             // park foreground threads we can't reach from managed code,
             // and they're notorious for keeping the process alive after
             // the UI has closed. Now that cleanup is done — host stopped,

@@ -39,10 +39,12 @@ public sealed class SlotRowViewModel : ViewModelBase
     {
         Name = slot.Name;
         Index = slot.Index;
-        KindLabel = SlotsViewModel.KindLabelFor(slot.OutputTemplate.OutputKind);
+        KindLabel = SlotsViewModel.KindLabelFor(slot.OutputTemplate);
         Enabled = slot.Enabled;
         int count = slot.InputDeviceIds.Count;
-        DeviceSummary = count == 0 ? "No devices assigned" : count == 1 ? "1 device" : $"{count} devices";
+        DeviceSummary = slot.OutputTemplate.DemoPreview
+            ? "Demo preview"
+            : count == 0 ? "No devices assigned" : count == 1 ? "1 device" : $"{count} devices";
     }
 }
 
@@ -63,19 +65,33 @@ public sealed class SlotsViewModel : ViewModelBase, IDisposable
     private bool rebuildQueued;
     private bool disposed;
 
-    public SlotsViewModel(SlotRegistry registry, InputDeviceCatalog catalog, DeviceTemplateStore templateStore, ProfileSession profileSession, GameFlow.Infrastructure.Localization.ILocalizationService localization)
+    public SlotsViewModel(SlotRegistry registry, InputDeviceCatalog catalog, DeviceTemplateStore templateStore, ProfileSession profileSession, GameFlow.Infrastructure.Localization.ILocalizationService localization, GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfileCatalogService hidMaestroCatalog)
     {
         this.registry = registry ?? throw new ArgumentNullException(nameof(registry));
         this.catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         this.profileSession = profileSession ?? throw new ArgumentNullException(nameof(profileSession));
-        TemplateEditor = new DeviceTemplateEditorViewModel(templateStore ?? throw new ArgumentNullException(nameof(templateStore)), localization);
+        TemplateEditor = new DeviceTemplateEditorViewModel(
+            templateStore ?? throw new ArgumentNullException(nameof(templateStore)),
+            localization,
+            hidMaestroCatalog ?? throw new ArgumentNullException(nameof(hidMaestroCatalog)));
+
+        // Demo preview and assigned devices are mutually exclusive — the
+        // slot reads EITHER the waveform OR its devices, never both.
+        // Turning the checkbox on unassigns whatever was already there
+        // (the Available list is separately disabled in XAML so nothing
+        // NEW can be added while it's on).
+        TemplateEditor.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(DeviceTemplateEditorViewModel.DemoPreview) && TemplateEditor.DemoPreview)
+            {
+                ClearAssignedDevicesForSelectedSlot();
+            }
+        };
 
         OutputKindOptions =
         [
-            new OutputKindOption(VirtualControllerKind.Xbox360, "Xbox 360"),
-            new OutputKindOption(VirtualControllerKind.DualShock4, "DualShock 4"),
-            new OutputKindOption(VirtualControllerKind.DualSense, "DualSense"),
-            new OutputKindOption(VirtualControllerKind.GenericDirectInput, "Generic (DirectInput)"),
+            .. GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfiles.SelectableKinds
+                .Select(k => new OutputKindOption(k, GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfiles.LabelFor(k))),
         ];
         newSlotKind = OutputKindOptions[0];
 
@@ -216,14 +232,25 @@ public sealed class SlotsViewModel : ViewModelBase, IDisposable
         }
     }
 
-    public static string KindLabelFor(VirtualControllerKind kind) => kind switch
-    {
-        VirtualControllerKind.Xbox360 => "Xbox 360",
-        VirtualControllerKind.DualShock4 => "DualShock 4",
-        VirtualControllerKind.DualSense => "DualSense",
-        VirtualControllerKind.GenericDirectInput => "Generic",
-        _ => "Controller",
-    };
+    public static string KindLabelFor(VirtualControllerKind kind) =>
+        GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfiles.LabelFor(kind);
+
+    /// <summary>
+    /// Row label for a slot's output: the explicit HIDMaestro catalog id
+    /// when one is chosen (any of the 225 profiles), the kind label
+    /// otherwise.
+    /// </summary>
+    public static string KindLabelFor(DeviceOutputTemplate template) =>
+        string.IsNullOrWhiteSpace(template.OutputProfileId)
+            ? KindLabelFor(template.OutputKind)
+            : template.OutputProfileId;
+
+    /// <summary>
+    /// Sidebar entry point for "+ Add controller": same path as the Add
+    /// button on this page (selection follows via pendingSelectId once
+    /// SlotsChanged rebuilds the rows).
+    /// </summary>
+    public void CreateSlotFromSidebar() => CreateSlot();
 
     private void CreateSlot()
     {
@@ -287,6 +314,21 @@ public sealed class SlotsViewModel : ViewModelBase, IDisposable
         if (SelectedSlot is not null && !string.IsNullOrWhiteSpace(deviceId))
         {
             registry.UnassignDevice(SelectedSlot.Id, deviceId);
+        }
+    }
+
+    private void ClearAssignedDevicesForSelectedSlot()
+    {
+        if (SelectedSlot is null)
+        {
+            return;
+        }
+        // Snapshot first: UnassignDevice → registry.SlotsChanged → a
+        // synchronous rebuild of AssignedDevices would otherwise mutate
+        // the collection out from under this foreach.
+        foreach (var row in AssignedDevices.ToList())
+        {
+            registry.UnassignDevice(SelectedSlot.Id, row.Id);
         }
     }
 

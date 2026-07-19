@@ -1,0 +1,88 @@
+{
+ "name": "Mouse \u2014 Default",
+ "width": 700,
+ "height": 860,
+ "version": 1,
+ "children": [
+  {
+   "type": "image",
+   "image": "assets/body.png",
+   "x": 0,
+   "y": 0,
+   "width": 700,
+   "height": 860
+  },
+  {
+   "type": "slider",
+   "inputX": "stick_right:x * 14",
+   "inputY": "stick_right:y * -14",
+   "x": 0,
+   "y": 0,
+   "children": []
+  },
+  {
+   "type": "showhide",
+   "input": "quad_right:s",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/left_glow.png",
+     "x": 0,
+     "y": 0,
+     "width": 700,
+     "height": 860
+    }
+   ]
+  },
+  {
+   "type": "showhide",
+   "input": "quad_right:e",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/right_glow.png",
+     "x": 0,
+     "y": 0,
+     "width": 700,
+     "height": 860
+    }
+   ]
+  },
+  {
+   "type": "showhide",
+   "input": "quad_right:n",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/wheel_glow.png",
+     "x": 322,
+     "y": 150,
+     "width": 56,
+     "height": 130
+    }
+   ]
+  },
+  {
+   "type": "pbar",
+   "input": "triggers:r:analog",
+   "x": 600,
+   "y": 180,
+   "width": 34,
+   "height": 200,
+   "direction": "up",
+   "foreground": "CC35C8E8",
+   "background": "33141922"
+  },
+  {
+   "type": "pbar",
+   "input": "triggers:l:analog",
+   "x": 66,
+   "y": 180,
+   "width": 34,
+   "height": 200,
+   "direction": "down",
+   "foreground": "CC35C8E8",
+   "background": "33141922"
+  }
+ ]
+}

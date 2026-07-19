@@ -42,7 +42,21 @@ public sealed class DemoInputSource : IInputSource
 
     public ValueTask<ControllerSnapshot> ReadAsync(CancellationToken cancellationToken)
     {
-        var elapsed = stopwatch.Elapsed.TotalSeconds;
+        inputDeviceCatalog.SetProviderStatus("ProviderStatus_DemoActive");
+        return ValueTask.FromResult(GenerateSnapshot(stopwatch.Elapsed.TotalSeconds, deviceName));
+    }
+
+    /// <summary>
+    /// The demo waveform as a pure function of elapsed time — sticks
+    /// sweep in Lissajous curves, triggers pulse, buttons fire on
+    /// staggered cycles. Shared between the top-level "demo" input
+    /// provider (above) and the per-slot demo preview
+    /// (<see cref="Slots.SlotRuntime"/>, driven by
+    /// <see cref="Templates.DeviceOutputTemplate.DemoPreview"/>), so a
+    /// preview looks identical wherever it runs.
+    /// </summary>
+    public static ControllerSnapshot GenerateSnapshot(double elapsed, string deviceName)
+    {
         var buttons = ButtonState.Clone(ButtonState.CreateEmptyMap());
 
         var leftStick = new StickVector(
@@ -82,9 +96,7 @@ public sealed class DemoInputSource : IInputSource
         buttons[ButtonId.LeftTriggerButton] = leftTrigger > 0.92f;
         buttons[ButtonId.RightTriggerButton] = rightTrigger > 0.92f;
 
-        inputDeviceCatalog.SetProviderStatus("ProviderStatus_DemoActive");
-
-        var snapshot = new ControllerSnapshot
+        return new ControllerSnapshot
         {
             DeviceName = deviceName,
             LeftStick = leftStick,
@@ -95,8 +107,6 @@ public sealed class DemoInputSource : IInputSource
             Buttons = buttons,
             Timestamp = DateTimeOffset.UtcNow
         };
-
-        return ValueTask.FromResult(snapshot);
     }
 
     public ValueTask DisposeAsync()

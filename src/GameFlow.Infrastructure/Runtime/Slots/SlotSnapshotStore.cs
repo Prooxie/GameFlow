@@ -22,6 +22,34 @@ public sealed class SlotSnapshotStore
 {
     private readonly Lock gate = new();
     private readonly Dictionary<string, SlotSnapshotPair> snapshots = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> outputStatusById = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Records the slot sink's human-readable status (its DisplayName —
+    /// e.g. "HIDMaestro unavailable — no output (needs Administrator)").
+    /// The dashboard shows it on the virtual panel so "why is there no
+    /// output" is answered ON SCREEN instead of only in the log.
+    /// </summary>
+    public void SetOutputStatus(string slotId, string status)
+    {
+        if (string.IsNullOrEmpty(slotId))
+        {
+            return;
+        }
+        lock (gate)
+        {
+            outputStatusById[slotId] = status ?? string.Empty;
+        }
+    }
+
+    /// <summary>The slot sink's latest status text, or empty when unknown.</summary>
+    public string GetOutputStatus(string slotId)
+    {
+        lock (gate)
+        {
+            return outputStatusById.TryGetValue(slotId, out var status) ? status : string.Empty;
+        }
+    }
 
     /// <summary>Records a slot's latest physical (pre-mapping) and virtual (post-mapping) snapshots.</summary>
     public void Update(string slotId, ControllerSnapshot physical, ControllerSnapshot virtualSnapshot)
@@ -58,6 +86,7 @@ public sealed class SlotSnapshotStore
             foreach (var id in snapshots.Keys.Where(id => !live.Contains(id)).ToList())
             {
                 _ = snapshots.Remove(id);
+                _ = outputStatusById.Remove(id);
             }
         }
     }

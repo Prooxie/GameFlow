@@ -15,7 +15,6 @@
     <PackageReference Include="Microsoft.Extensions.Localization" />
     <PackageReference Include="OrchardCore.Localization.Core" />
     <PackageReference Include="SDL3-CS.Native" />
-    <PackageReference Include="Nefarius.ViGEm.Client" />
     <!--
       Serilog is referenced for the theme engine (ThemeBootstrap,
       ThemeJsonLoader, ThemeRegistry) which logs progress and parse

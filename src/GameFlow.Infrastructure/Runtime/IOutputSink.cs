@@ -13,7 +13,7 @@ public interface IOutputSink : IAsyncDisposable
     /// <summary>
     /// (Vendor id, Product id) of the virtual device this sink advertises to the
     /// host OS, when applicable. Returned non-null by sinks that emit a real
-    /// virtual device through a kernel driver (e.g. ViGEm Bus): the runtime then
+    /// virtual device through a kernel driver: the runtime then
     /// asks the input device catalog to hide any input device matching the same
     /// signature, so the user does not see the runtime's own output device in
     /// the input source dropdown.
@@ -22,6 +22,16 @@ public interface IOutputSink : IAsyncDisposable
     /// (mock/no-op sinks, log-only sinks, etc.) — those don't need filtering.
     /// </summary>
     (ushort Vid, ushort Pid)? OwnedHardwareSignature => null;
+
+    /// <summary>
+    /// When the sink's virtual device was actually CREATED, or null when
+    /// no device currently exists. The catalog uses this to hide only
+    /// devices that APPEARED after this moment — so a real pad of the
+    /// same model that was already connected stays visible, while the
+    /// sink's own emitted device (which by definition enumerates after
+    /// creation) is filtered from the app's input list.
+    /// </summary>
+    DateTimeOffset? OwnedSignatureActivatedAt => null;
 
     /// <summary>
     /// Pushes a virtual controller snapshot to the underlying device.

@@ -69,6 +69,30 @@ public sealed class WindowsRawInputReader : IKeyboardStateSource, IMouseStateSou
             : EmptyKeys;
     }
 
+    public IReadOnlySet<int> GetPressedKeysAggregate()
+    {
+        var union = new HashSet<int>();
+        foreach (var state in keyboardStateById.Values)
+        {
+            union.UnionWith(state.Snapshot());
+        }
+        return union;
+    }
+
+    public MouseFrame ReadMouseFrameAggregate()
+    {
+        int dx = 0, dy = 0, wheel = 0;
+        bool l = false, r = false, m = false, b4 = false, b5 = false;
+        foreach (var state in mouseStateById.Values)
+        {
+            var frame = state.ReadAndReset();
+            dx += frame.Dx; dy += frame.Dy; wheel += frame.WheelDelta;
+            l |= frame.Left; r |= frame.Right; m |= frame.Middle;
+            b4 |= frame.Button4; b5 |= frame.Button5;
+        }
+        return new MouseFrame(dx, dy, l, r, m, b4, b5, wheel);
+    }
+
     public MouseFrame ReadMouseFrame(string deviceId)
     {
         return !string.IsNullOrEmpty(deviceId)

@@ -63,6 +63,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         rawInputAttacher.AttachToHwnd(mainWindowHwnd);
     private readonly GameFlow.Infrastructure.Runtime.Slots.SlotRegistry slotRegistry;
     private readonly GameFlow.Infrastructure.Runtime.Slots.SlotSnapshotStore slotSnapshotStore;
+    private readonly GameFlow.Infrastructure.Runtime.Slots.PhysicalPanelPinService physicalPanelPins;
     private readonly IProfileFileDialogService profileFileDialogService;
     private readonly ILoggerFactory loggerFactory;
     private readonly ILogger<ShellViewModel> logger;
@@ -124,6 +125,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         GameFlow.Infrastructure.Runtime.Input.IRawInputAttacher rawInputAttacher,
         GameFlow.Infrastructure.Runtime.Slots.SlotRegistry slotRegistry,
         GameFlow.Infrastructure.Runtime.Slots.SlotSnapshotStore slotSnapshotStore,
+        GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfileCatalogService hidMaestroCatalog,
+        GameFlow.Infrastructure.Runtime.Slots.PhysicalPanelPinService physicalPanelPins,
+        GameFlow.Infrastructure.Runtime.DeviceCategoryOverrideStore deviceCategoryOverrides,
         IProfileFileDialogService profileFileDialogService,
         IOptions<AppRuntimeOptions> runtimeOptions,
         ILoggerFactory loggerFactory,
@@ -152,6 +156,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         DeleteProfileCommand             = new AsyncRelayCommand(DeleteProfileAsync, CanDeleteProfile);
         OpenControlEditorCommand         = new RelayCommand<string>(OpenControlEditor);
         OpenSettingsCommand              = new AsyncRelayCommand(OpenSettingsAsync);
+        AddVirtualControllerCommand      = new RelayCommand(AddVirtualControllerFromSidebar);
 
         SupportedLanguages     = localizationService.SupportedLanguages;
         ThemeOptions           = CreateThemeOptions();
@@ -160,13 +165,14 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         ControllerStyleOptions = CreateControllerStyleOptions();
         MappingEditor          = new MappingEditorViewModel(loggerFactory.CreateLogger<MappingEditorViewModel>(), localizationService);
         MappingEditor.RulesChanged += OnMappingRulesChanged;
-        DevicesPanel           = new DevicesViewModel(inputDeviceCatalog, localizationService, deviceTemplateStore, buttonMapStore, keyboardStateSource, mouseStateSource);
-        SlotsPanel             = new SlotsViewModel(slotRegistry, inputDeviceCatalog, deviceTemplateStore, profileSession, localizationService);
+        DevicesPanel           = new DevicesViewModel(inputDeviceCatalog, localizationService, deviceTemplateStore, buttonMapStore, keyboardStateSource, mouseStateSource, hidMaestroCatalog, deviceCategoryOverrides);
+        SlotsPanel             = new SlotsViewModel(slotRegistry, inputDeviceCatalog, deviceTemplateStore, profileSession, localizationService, hidMaestroCatalog);
 
         this.slotRegistry = slotRegistry;
         this.slotSnapshotStore = slotSnapshotStore;
-        RebuildControllerPanels();
-        RebuildMenuColumn();
+        this.physicalPanelPins = physicalPanelPins ?? throw new ArgumentNullException(nameof(physicalPanelPins));
+        physicalPanelPins.PinsChanged += (_, _) =>
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => { RebuildControllerPanels(); RebuildMenuColumn(); });
         slotRegistry.SlotsChanged += (_, _) =>
             Avalonia.Threading.Dispatcher.UIThread.Post(() => { RebuildControllerPanels(); RebuildMenuColumn(); });
         ControlRuleMatcher.UseLocalizer(localizationService);
@@ -201,6 +207,13 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         PhysicalController.SetPanelKind(isPhysical: true);
         VirtualController  = new ControllerVisualStateViewModel(OnControllerElementSelected, localizationService);
         VirtualController.SetPanelKind(isPhysical: false);
+
+        // Initial build — deliberately AFTER PhysicalController /
+        // VirtualController above; see the note on the removed early
+        // call sites. Event-driven rebuilds are posted to the dispatcher
+        // and can't run before the constructor completes.
+        RebuildControllerPanels();
+        RebuildMenuColumn();
 
         // Mark each panel's render mode. Physical = base image only
         // (the actual controller model, no live overlays); Virtual =
@@ -242,6 +255,18 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     public IAsyncRelayCommand RenameProfileCommand             { get; }
     public IAsyncRelayCommand DeleteProfileCommand             { get; }
     public IAsyncRelayCommand OpenSettingsCommand              { get; }
+
+    /// <summary>Sidebar "+ Add controller": creates a slot and jumps to its editor.</summary>
+    public IRelayCommand AddVirtualControllerCommand { get; }
+
+    public string SidebarAddControllerLabel => Localized("SidebarAddController", "Add controller");
+
+    private void AddVirtualControllerFromSidebar()
+    {
+        SlotsPanel.CreateSlotFromSidebar();
+        OuterNavSelectedIndex = 2; // Devices tab
+        DevicesSubTabIndex = 1;    // Virtual sub-tab (slot editor)
+    }
     public IRelayCommand<string> OpenControlEditorCommand      { get; }
 
     public event EventHandler<ControlMappingRequestedEventArgs>? ControlMappingRequested;
@@ -347,7 +372,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             var capturedId = device.Id;
             PhysicalMenuItems.Add(new MenuColumnItemViewModel(
                 device.Id, device.DisplayName, icon, isConnected: true,
-                onSelect: () => SelectPhysicalMenuItem(capturedId)));
+                onSelect: () => SelectPhysicalMenuItem(capturedId),
+                isPinned: physicalPanelPins.IsPinned(capturedId),
+                onTogglePin: () => physicalPanelPins.TogglePin(capturedId)));
         }
 
         VirtualMenuItems.Clear();
@@ -386,19 +413,62 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     /// <summary>"VIRTUAL" badge shown on every virtual/output panel, top-level and per-slot alike.</summary>
     public string VirtualBadgeLabel => Localized("DashboardVirtualBadgeLabel", "VIRTUAL");
 
-    public string NoControllerConnectedLabel => Localized("DashboardNoControllerConnected", "No controller connected");
+    public string NoControllerConnectedLabel => Localized("DashboardNoControllerConnected", "No controller assigned");
+
+    /// <summary>
+    /// The dashboard style derived from the first enabled slot's output
+    /// controller, or null when no slot is enabled. Recomputed in
+    /// <see cref="RebuildControllerPanels"/> (which already runs on every
+    /// SlotsChanged) so the per-tick refresh never touches the registry.
+    /// This is what makes the theme follow the selected output virtual
+    /// controller: pick a DualSense output and the Auto virtual panel
+    /// renders the PS5 silhouette with its skin variants, pick Xbox 360
+    /// and it renders the Xbox layout.
+    /// </summary>
+    private ControllerVisualStyle? slotDerivedVirtualStyle;
+
+    /// <summary>
+    /// Resolves a slot's output template to the dashboard style that
+    /// represents it: the explicit HIDMaestro catalog profile's family
+    /// when one is chosen (any of the 225 profiles classify), the
+    /// template's kind otherwise.
+    /// </summary>
+    private static ControllerVisualStyle ResolveSlotVirtualStyle(GameFlow.Infrastructure.Runtime.Slots.ControllerSlot slot)
+    {
+        var template = slot.OutputTemplate;
+        var family = string.IsNullOrWhiteSpace(template.OutputProfileId)
+            ? template.OutputKind
+            : GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfiles.ClassifyFamily(template.OutputProfileId);
+        return GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfiles.ResolveVisualStyle(family);
+    }
 
     private void RebuildControllerPanels()
     {
         var connected = inputDeviceCatalog.Devices.Select(d => d.Id).ToHashSet(StringComparer.Ordinal);
-        var slots = slotRegistry.GetSlots()
-            .Where(s => s.Enabled && s.InputDeviceIds.Any(connected.Contains))
+        var allEnabled = slotRegistry.GetSlots().Where(s => s.Enabled).ToList();
+        slotDerivedVirtualStyle = allEnabled.Count > 0
+            ? ResolveSlotVirtualStyle(allEnabled[0])
+            : null;
+
+        var slots = allEnabled
+            .Where(s => s.InputDeviceIds.Any(connected.Contains) || s.OutputTemplate.DemoPreview)
             .ToList();
 
-        // Remove panels whose slot vanished or was disabled.
+        // Pinned layout-only panels live behind a "phys:" id prefix so
+        // slot ids and device ids can never collide in the panel list.
+        var pinnedIds = physicalPanelPins.GetPinnedDeviceIds()
+            .Where(connected.Contains)
+            .ToList();
+
+        // Remove panels whose slot vanished/was disabled, or whose pin
+        // was removed / device disconnected.
         for (int i = ControllerPanels.Count - 1; i >= 0; i--)
         {
-            if (slots.All(s => s.Id != ControllerPanels[i].SlotId))
+            var panel = ControllerPanels[i];
+            var stale = panel.IsPhysicalOnly
+                ? !pinnedIds.Contains(panel.SlotId[5..])
+                : slots.All(s => s.Id != panel.SlotId);
+            if (stale)
             {
                 ControllerPanels.RemoveAt(i);
             }
@@ -421,14 +491,19 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                 // and each other from the first frame instead of popping
                 // to a default and then jumping when the picker is next
                 // touched.
-                var currentBackground = PhysicalController.PanelBackgroundBrush;
-                physicalVisual.PanelBackgroundBrush = currentBackground;
-                virtualVisual.PanelBackgroundBrush = currentBackground;
+                var currentBackground = PhysicalController?.PanelBackgroundBrush;
+                if (currentBackground is not null)
+                {
+                    physicalVisual.PanelBackgroundBrush = currentBackground;
+                    virtualVisual.PanelBackgroundBrush = currentBackground;
+                }
 
                 var panel = new DashboardControllerPanelViewModel(
                     slot.Id, slot.Name, physicalVisual, virtualVisual, VirtualBadgeLabel)
                 {
                     LightColor = LightColorForSlot(slot),
+                    VirtualStyle = ResolveSlotVirtualStyle(slot),
+                    IsDemoPreview = slot.OutputTemplate.DemoPreview,
                 };
                 ControllerPanels.Insert(Math.Min(idx, ControllerPanels.Count), panel);
             }
@@ -436,11 +511,43 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             {
                 existing.Title = slot.Name;
                 existing.LightColor = LightColorForSlot(slot);
+                existing.VirtualStyle = ResolveSlotVirtualStyle(slot);
+                existing.IsDemoPreview = slot.OutputTemplate.DemoPreview;
                 int cur = ControllerPanels.IndexOf(existing);
                 if (cur != idx && idx < ControllerPanels.Count)
                 {
                     ControllerPanels.Move(cur, idx);
                 }
+            }
+        }
+
+        // Pinned layout-only panels follow after the slot panels.
+        foreach (var deviceId in pinnedIds)
+        {
+            var panelId = "phys:" + deviceId;
+            var existing = ControllerPanels.FirstOrDefault(p => p.SlotId == panelId);
+            var deviceName = inputDeviceCatalog.Devices
+                .FirstOrDefault(d => string.Equals(d.Id, deviceId, StringComparison.Ordinal))?.DisplayName ?? deviceId;
+            if (existing is null)
+            {
+                var physicalVisual = new ControllerVisualStateViewModel(OnControllerElementSelected, localizationService);
+                physicalVisual.SetPanelKind(isPhysical: true);
+                var pinnedBackground = PhysicalController?.PanelBackgroundBrush;
+                if (pinnedBackground is not null)
+                {
+                    physicalVisual.PanelBackgroundBrush = pinnedBackground;
+                }
+                var virtualVisual = new ControllerVisualStateViewModel(OnControllerElementSelected, localizationService);
+                virtualVisual.SetPanelKind(isPhysical: false);
+                ControllerPanels.Add(new DashboardControllerPanelViewModel(
+                    panelId, deviceName, physicalVisual, virtualVisual, VirtualBadgeLabel)
+                {
+                    IsPhysicalOnly = true,
+                });
+            }
+            else
+            {
+                existing.Title = deviceName;
             }
         }
 
@@ -988,16 +1095,21 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         var physicalStyle = SelectedPhysicalStyle?.Style ?? profile.Ui.PhysicalControllerStyle;
         var virtualStyle  = SelectedVirtualStyle?.Style  ?? profile.Ui.VirtualControllerStyle;
 
-        // When the user leaves the virtual panel on Auto, the visual style
-        // would normally be inferred from the emitted device's name. That
-        // misclassifies DS5 output as PS4: ViGEm Bus has no native DualSense
-        // target, so the DS5 sink emits a DS4-shaped device, and a name-based
-        // resolver sees "DualShock 4" / "Wireless Controller" and picks the
-        // PS4 silhouette. Honour the user's choice of OUTPUT SINK instead —
-        // the provider id (e.g. "vigem-ds5") is unambiguous.
+        // When the user leaves the virtual panel on Auto, resolve the
+        // style from the SELECTED OUTPUT CONTROLLER first — the first
+        // enabled slot's kind or explicit HIDMaestro catalog profile
+        // (computed in RebuildControllerPanels). This is authoritative in
+        // a way device names never were: HIDMaestro's provider id is
+        // always just "hidmaestro" regardless of what it emits, and the
+        // emitted snapshot carries the PHYSICAL device's name, so both
+        // older inference paths misclassified (a DualSense output driven
+        // by an Xbox pad rendered as Xbox). The provider-id map stays as
+        // a fallback for any future backend that encodes kind in its id.
         if (virtualStyle == ControllerVisualStyle.Auto)
         {
-            virtualStyle = InferVirtualStyleFromProvider(snapshot.OutputProvider) ?? virtualStyle;
+            virtualStyle = slotDerivedVirtualStyle
+                ?? InferVirtualStyleFromProvider(snapshot.OutputProvider)
+                ?? virtualStyle;
         }
 
         // Physical "Auto" with no concrete detection yields an EMPTY theme
@@ -1024,11 +1136,22 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         // unlabeled "LIVE" panel rather than a clearly-marked physical one.
         foreach (var panel in ControllerPanels)
         {
+            if (panel.IsPhysicalOnly)
+            {
+                // Layout-only panel: physical side straight from the pin
+                // service; no virtual half exists.
+                var deviceSnapshot = physicalPanelPins.GetSnapshot(panel.SlotId[5..]);
+                panel.PhysicalVisual.Update(panel.SlotId + ":physical", PhysicalInputLabel,
+                    deviceSnapshot, ControllerVisualStyle.Auto);
+                continue;
+            }
+
             var pair = slotSnapshotStore.Get(panel.SlotId);
+            panel.OutputStatus = slotSnapshotStore.GetOutputStatus(panel.SlotId);
             panel.PhysicalVisual.Update(panel.SlotId + ":physical", PhysicalInputLabel,
                 pair.Physical, ControllerVisualStyle.Auto);
             panel.VirtualVisual.Update(panel.SlotId + ":virtual", VirtualOutputLabel,
-                pair.Virtual, ControllerVisualStyle.Auto);
+                pair.Virtual, panel.VirtualStyle);
         }
 
         // Header subtitle intentionally left to transient command/error
@@ -2086,23 +2209,26 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     private IReadOnlyList<OutputProviderOption> CreateOutputProviderOptions()
     {
+        // One real choice per platform — HIDMaestro is the sole Windows
+        // output backend (see OutputProviderPolicy), and it can't run
+        // anywhere else, where the in-app preview is all there is.
+        // Offering retired/unreachable options here is precisely how "I
+        // picked an output and nothing happened" used to occur.
+        if (OperatingSystem.IsWindows())
+        {
+            return
+            [
+                new OutputProviderOption("hidmaestro",
+                    Localized("OutputProviderHidMaestroLabel",         "HIDMaestro virtual controller"),
+                    Localized("OutputProviderHidMaestroDescription",   "User-mode virtual controller platform — no kernel driver or reboot. Presents as real hardware to XInput, DirectInput, SDL3 and WGI, with 225 controller profiles plus custom devices. Activates when HIDMaestro.Core.dll is next to the executable and GameFlow runs as Administrator. The sole output backend — if it can't activate, the slot has no output.")),
+            ];
+        }
+
         return
         [
-            new OutputProviderOption("vigem-xbox360",
-                Localized("OutputProviderViGEmXbox360Label",       "ViGEm Xbox 360"),
-                Localized("OutputProviderViGEmXbox360Description", "Virtual Xbox 360 controller via ViGEm Bus. Requires ViGEm Bus driver.")),
-            new OutputProviderOption("vigem-ds4",
-                Localized("OutputProviderViGEmDs4Label",           "ViGEm DualShock 4"),
-                Localized("OutputProviderViGEmDs4Description",     "Virtual DualShock 4 controller via ViGEm Bus. Requires ViGEm Bus driver.")),
-            new OutputProviderOption("vigem-ds5",
-                Localized("OutputProviderViGEmDs5Label",           "ViGEm DualSense (DS5)"),
-                Localized("OutputProviderViGEmDs5Description",     "Virtual DualSense controller via ViGEm Bus. Requires ViGEm Bus driver v1.22+.")),
-            new OutputProviderOption("hidmaestro",
-                Localized("OutputProviderHidMaestroLabel",         "HIDMaestro virtual controller"),
-                Localized("OutputProviderHidMaestroDescription",   "User-mode virtual controller platform — no kernel driver or reboot. Presents as real hardware to XInput, DirectInput, SDL3 and WGI. Windows only. Activates automatically when HIDMaestro.Core.dll is present next to the executable. Does not fall back to ViGEm — if it can't activate, this slot has no output.")),
             new OutputProviderOption("preview",
                 Localized("OutputProviderPreviewLabel",            "Preview only"),
-                Localized("OutputProviderPreviewDescription",      "Shows the transformed output in the dashboard without creating a virtual device.")),
+                Localized("OutputProviderPreviewDescription",      "Shows the transformed output in the dashboard without creating a virtual device. HIDMaestro output is Windows-only.")),
         ];
     }
 
@@ -2259,11 +2385,17 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     /// device-name-based resolver in that case.
     /// </summary>
     /// <remarks>
-    /// Exists because ViGEm Bus has no native DualSense target: a
-    /// <c>vigem-ds5</c> sink emits a DS4-shaped device on the bus, so
-    /// inferring "DS5" from the device's actual name is impossible.
-    /// The provider id, on the other hand, captures the user's intent
-    /// unambiguously.
+    /// Originally existed because ViGEm Bus had no native DualSense
+    /// target (a <c>vigem-ds5</c> sink emitted a DS4-shaped device, so
+    /// inferring "DS5" from the device's actual name was impossible).
+    /// ViGEm is gone now, but this stays as a general provider-id-to-style
+    /// mapping — still useful for any future backend whose device name
+    /// doesn't cleanly reveal its kind. Note HIDMaestro's provider string
+    /// is always just "hidmaestro" regardless of kind (unlike the old
+    /// vigem-ds4/vigem-ds5 split), so this returns null for HIDMaestro
+    /// slots today and the caller falls through to the device-name
+    /// resolver — a pre-existing gap, not one introduced by removing
+    /// ViGEm.
     /// </remarks>
     private static ControllerVisualStyle? InferVirtualStyleFromProvider(string? outputProvider)
     {
@@ -2275,9 +2407,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         var n = outputProvider.Trim().ToLowerInvariant();
         return n switch
         {
-            "vigem-xbox360" or "xbox360" or "x360" => ControllerVisualStyle.Xbox,
-            "vigem-ds4" or "ds4" or "dualshock4" or "playstation4" or "ps4" => ControllerVisualStyle.PlayStation4,
-            "vigem-ds5" or "ds5" or "dualsense" or "playstation5" or "ps5" => ControllerVisualStyle.PlayStation5,
+            "xbox360" or "x360" => ControllerVisualStyle.Xbox,
+            "ds4" or "dualshock4" or "playstation4" or "ps4" => ControllerVisualStyle.PlayStation4,
+            "ds5" or "dualsense" or "playstation5" or "ps5" => ControllerVisualStyle.PlayStation5,
             _ => null,
         };
     }

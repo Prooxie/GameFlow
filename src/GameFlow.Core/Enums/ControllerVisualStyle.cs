@@ -46,4 +46,13 @@ public enum ControllerVisualStyle
     // ─── Generic / other ─────────────────────────────────────────
     SimpleGamepad = 50,
     Arcade        = 51,
+
+    /// <summary>
+    /// Non-gamepad input hardware rendered with its own layout art —
+    /// lets a keyboard or mouse feeding a slot (or pinned to the
+    /// dashboard) show as a real device layout instead of borrowing a
+    /// gamepad silhouette.
+    /// </summary>
+    Keyboard = 60,
+    Mouse    = 61,
 }

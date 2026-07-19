@@ -299,7 +299,16 @@ public sealed class SdlUnifiedInputSource : IInputSource, GameFlow.Infrastructur
     {
             if (info?.Category == DeviceCategory.Keyboard)
             {
+                // Per-device first; when that handle reports nothing,
+                // fall back to the union of ALL keyboards — Windows
+                // frequently splits one physical keyboard into several
+                // Raw Input handles, and the assigned id isn't always
+                // the one keystrokes arrive under.
                 var pressed = keyboardStateSource.GetPressedKeys(deviceId);
+                if (pressed.Count == 0)
+                {
+                    pressed = keyboardStateSource.GetPressedKeysAggregate();
+                }
                 return GameFlow.Infrastructure.Runtime.Input.KeyboardGamepadSynthesizer
                     .Synthesize(info.DisplayName ?? deviceId, pressed)
                     with { Timestamp = DateTimeOffset.UtcNow };
@@ -307,6 +316,10 @@ public sealed class SdlUnifiedInputSource : IInputSource, GameFlow.Infrastructur
             if (info?.Category == DeviceCategory.Mouse)
             {
                 var frame = mouseStateSource.ReadMouseFrame(deviceId);
+                if (frame is { Dx: 0, Dy: 0, WheelDelta: 0, Left: false, Right: false, Middle: false, Button4: false, Button5: false })
+                {
+                    frame = mouseStateSource.ReadMouseFrameAggregate();
+                }
                 return GameFlow.Infrastructure.Runtime.Input.MouseGamepadSynthesizer
                     .Synthesize(info.DisplayName ?? deviceId, frame)
                     with { Timestamp = DateTimeOffset.UtcNow };

@@ -18,12 +18,41 @@ public sealed class MenuColumnItemViewModel
     public bool IsConnected { get; }
     public ICommand SelectCommand { get; }
 
+    /// <summary>True when this row offers a dashboard pin toggle (physical devices only).</summary>
+    public bool CanPin { get; }
+
+    /// <summary>Pin-state glyph: filled when the device is pinned to the dashboard.</summary>
+    public string PinIcon { get; }
+
+    /// <summary>Tooltip for the pin toggle.</summary>
+    public string PinTooltip { get; }
+
+    public ICommand? PinCommand { get; }
+
     public MenuColumnItemViewModel(string id, string name, string iconText, bool isConnected, Action onSelect)
+        : this(id, name, iconText, isConnected, onSelect, isPinned: false, onTogglePin: null)
+    {
+    }
+
+    /// <summary>
+    /// Pin-capable overload (sidebar physical devices): adds a toggle
+    /// that shows/hides a layout-only panel for this device on the
+    /// dashboard — no virtual controller involved.
+    /// </summary>
+    public MenuColumnItemViewModel(
+        string id, string name, string iconText, bool isConnected, Action onSelect,
+        bool isPinned, Action? onTogglePin)
     {
         Id = id;
         Name = string.IsNullOrWhiteSpace(name) ? "(unnamed)" : name;
         IconText = iconText;
         IsConnected = isConnected;
         SelectCommand = new RelayCommand(onSelect);
+        CanPin = onTogglePin is not null;
+        PinIcon = isPinned ? "◉" : "◎";
+        PinTooltip = isPinned
+            ? "Remove this device's layout panel from the dashboard"
+            : "Show this device's layout on the dashboard (no virtual controller needed)";
+        PinCommand = onTogglePin is null ? null : new RelayCommand(onTogglePin);
     }
 }

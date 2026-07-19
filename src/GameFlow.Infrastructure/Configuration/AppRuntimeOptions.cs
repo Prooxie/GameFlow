@@ -33,11 +33,8 @@ public sealed class AppRuntimeOptions
     /// </summary>
     public string DefaultCulture { get; set; } = "en";
 
-    /// <summary>
-    /// Enables the ViGEm Bus virtual controller output providers (vigem-xbox360, vigem-ds4, vigem-ds5).
-    /// Requires the ViGEm Bus driver to be installed: https://github.com/nefarius/ViGEmBus/releases
-    /// </summary>
-    public bool EnableViGEm { get; set; } = true;
+    // EnableViGEm was removed along with the ViGEm dependency itself —
+    // HIDMaestro is now the sole output backend.
 
     /// <summary>
     /// Updater subsection — owner / repo / asset filter pattern. Bound

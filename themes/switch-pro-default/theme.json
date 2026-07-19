@@ -1,0 +1,269 @@
+{
+ "name": "Switch Pro \u2014 Default",
+ "width": 1485,
+ "height": 1079,
+ "version": 1,
+ "children": [
+  {
+   "type": "image",
+   "image": "assets/base.png",
+   "x": 0,
+   "y": 0,
+   "width": 1485,
+   "height": 1079
+  },
+  {
+   "type": "showhide",
+   "input": "triggers:l",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/zl.png",
+     "x": 300,
+     "y": 70,
+     "center": true
+    }
+   ]
+  },
+  {
+   "type": "showhide",
+   "input": "triggers:r",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/zr.png",
+     "x": 1185,
+     "y": 70,
+     "center": true
+    }
+   ]
+  },
+  {
+   "type": "showhide",
+   "input": "bumpers:l",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/l_bumper.png",
+     "x": 330,
+     "y": 150,
+     "center": true
+    }
+   ]
+  },
+  {
+   "type": "showhide",
+   "input": "bumpers:r",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/r_bumper.png",
+     "x": 1155,
+     "y": 150,
+     "center": true
+    }
+   ]
+  },
+  {
+   "type": "showhide",
+   "input": "quad_left:n",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/dpad_up.png",
+     "x": 610,
+     "y": 645,
+     "center": true
+    }
+   ]
+  },
+  {
+   "type": "showhide",
+   "input": "quad_left:s",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/dpad_down.png",
+     "x": 610,
+     "y": 760,
+     "center": true
+    }
+   ]
+  },
+  {
+   "type": "showhide",
+   "input": "quad_left:w",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/dpad_left.png",
+     "x": 550,
+     "y": 700,
+     "center": true
+    }
+   ]
+  },
+  {
+   "type": "showhide",
+   "input": "quad_left:e",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/dpad_right.png",
+     "x": 672,
+     "y": 700,
+     "center": true
+    }
+   ]
+  },
+  {
+   "type": "showhide",
+   "input": "menu:l",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/plusminus.png",
+     "x": 640,
+     "y": 285,
+     "center": true
+    }
+   ]
+  },
+  {
+   "type": "showhide",
+   "input": "menu:r",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/plusminus.png",
+     "x": 845,
+     "y": 285,
+     "center": true
+    }
+   ]
+  },
+  {
+   "type": "showhide",
+   "input": "home",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/home.png",
+     "x": 830,
+     "y": 390,
+     "center": true
+    }
+   ]
+  },
+  {
+   "type": "showhide",
+   "input": "quad_right:n",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/face.png",
+     "x": 1090,
+     "y": 355,
+     "center": true
+    }
+   ]
+  },
+  {
+   "type": "showhide",
+   "input": "quad_right:s",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/face.png",
+     "x": 1090,
+     "y": 575,
+     "center": true
+    }
+   ]
+  },
+  {
+   "type": "showhide",
+   "input": "quad_right:w",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/face.png",
+     "x": 980,
+     "y": 465,
+     "center": true
+    }
+   ]
+  },
+  {
+   "type": "showhide",
+   "input": "quad_right:e",
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/face.png",
+     "x": 1200,
+     "y": 465,
+     "center": true
+    }
+   ]
+  },
+  {
+   "type": "slider",
+   "inputX": "stick_left:x * 22",
+   "inputY": "stick_left:y * -22",
+   "x": 395,
+   "y": 470,
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/stick_left.png",
+     "x": 0,
+     "y": 0,
+     "center": true
+    },
+    {
+     "type": "showhide",
+     "input": "stick_left:click",
+     "children": [
+      {
+       "type": "image",
+       "image": "assets/stick_click.png",
+       "x": 0,
+       "y": 0,
+       "center": true
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "slider",
+   "inputX": "stick_right:x * 22",
+   "inputY": "stick_right:y * -22",
+   "x": 875,
+   "y": 700,
+   "children": [
+    {
+     "type": "image",
+     "image": "assets/stick_right.png",
+     "x": 0,
+     "y": 0,
+     "center": true
+    },
+    {
+     "type": "showhide",
+     "input": "stick_right:click",
+     "children": [
+      {
+       "type": "image",
+       "image": "assets/stick_click.png",
+       "x": 0,
+       "y": 0,
+       "center": true
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

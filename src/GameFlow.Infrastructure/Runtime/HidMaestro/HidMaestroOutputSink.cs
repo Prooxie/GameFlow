@@ -1,10 +1,9 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using GameFlow.Core.Enums;
 using GameFlow.Core.Models;
 using GameFlow.Infrastructure.Runtime.Templates;
 #if HIDMAESTRO_SDK
-using HIDMaestro; // HMContext, HMController, HMProfile, HMGamepadState, HMButton, HMHat, HMOutputPacket
+using HIDMaestro; // HMContext, HMController, HMProfile, HMProfileBuilder, HidDescriptorBuilder, HMGamepadState, HMButton, HMHat, HMOutputPacket
 #endif
 
 namespace GameFlow.Infrastructure.Runtime.HidMaestro;
@@ -17,9 +16,7 @@ namespace GameFlow.Infrastructure.Runtime.HidMaestro;
 /// WGI/GameInput, with no kernel driver, EV certificate, or reboot
 /// (UMDF2 + a locally-trusted self-signed cert). MIT-licensed.
 ///
-/// <para><b>Activation has two tiers</b> (this is the important part —
-/// earlier builds of this sink could silently produce no output at all,
-/// which is exactly what the diagnostics below eliminate):</para>
+/// <para><b>Activation has two tiers:</b></para>
 /// <list type="number">
 /// <item><b>Compile-time SDK</b> (<c>#if HIDMAESTRO_SDK</c>, below) — used
 /// when the project is built with the HIDMaestro.Core assembly referenced
@@ -30,65 +27,90 @@ namespace GameFlow.Infrastructure.Runtime.HidMaestro;
 /// it's loaded via reflection and driven the same way. No rebuild.</item>
 /// </list>
 /// <para>
-/// By explicit product decision this sink does <b>not</b> fall back to
-/// ViGEm: if neither tier can activate, the slot has no output, and both
-/// the log and <see cref="DisplayName"/> say exactly why. Anyone who
-/// wants ViGEm selects one of the "vigem-*" output providers directly —
-/// this sink never substitutes one on their behalf.
+/// HIDMaestro is the sole Windows output backend. If neither tier can
+/// activate, the slot has no output, and both the log and
+/// <see cref="DisplayName"/> say exactly why — including the two causes
+/// that account for essentially every real "no controller appears"
+/// report: the process not running elevated, and a profile id that
+/// doesn't exist in the SDK's catalog. What the sink deploys is decided
+/// by the slot's <see cref="DeviceOutputTemplate"/>: an explicit catalog
+/// profile id when set (any of HIDMaestro's 225 profiles), the verified
+/// default profile for the template's <see cref="VirtualControllerKind"/>
+/// otherwise, or — for <see cref="VirtualControllerKind.GenericDirectInput"/>
+/// — a profile BUILT at runtime from the template's axis/button/POV
+/// counts via <c>HMProfileBuilder</c> + <c>HidDescriptorBuilder</c>.
 /// </para>
 /// </summary>
 #if HIDMAESTRO_SDK
 // ── Tier 1: compile-time SDK implementation ──
 // Active only when the project defines the HIDMAESTRO_SDK compile symbol
-// AND references the HIDMaestro.Core assembly. Modeled on the verified
-// example/SdkDemo/Program.cs:
+// AND references the HIDMaestro.Core assembly. Verified against the
+// SDK's example/SdkDemo/Program.cs:
 //   ctx.LoadDefaultProfiles(); ctx.InstallDriver();
 //   using var ctrl = ctx.CreateController(ctx.GetProfile("xbox-360-wired"));
 //   ctrl.OutputReceived += (controller, packet) => { ... }; // rumble/FFB
 //   ctrl.SubmitState(in state);  // sticks [-1,1], triggers [0,1]
-// Verified: HMGamepadState.{LeftStickX/Y,RightStickX/Y,LeftTrigger,
-// RightTrigger,Buttons(HMButton flags),Hat(HMHat)}; HMHat.{None,North,
-// NorthEast,East,SouthEast,South,SouthWest,West,NorthWest}.
-// STILL INFERRED (flagged inline): HMButton spellings for Back/Start/
-// thumb-clicks, the HMOutputPacket type name + OutputReceived delegate
-// shape, and the rumble byte offsets. Confirm against your SDK / PadForge.
-// Most builds never define HIDMAESTRO_SDK, so this branch gets far less
-// day-to-day exercise than tier 2/3 below — if you're maintaining this,
-// trust the runtime dynamic bridge (HidMaestroDynamic.cs) as the
-// reference implementation first.
+// Verified (v1.3.9+, source cross-checked from github.com/hifihedgehog/
+// HIDMaestro): HMGamepadState has NO LeftStickX/RightStickX/LeftTrigger/
+// RightTrigger fields — analog goes through a single
+// Dictionary<HMAxis,float> Axes field, populated via
+// HMGamepadStateHelpers.StandardAxes(profile, ...), which resolves the
+// correct HID axis per profile (HMProfile.Sticks/Triggers). An earlier
+// version of this comment (and this file) assumed named per-stick
+// properties from an older SDK layout — that shape doesn't exist in the
+// open-source release and caused every controller creation to fail with
+// "HMGamepadState is missing expected member(s)" for every profile,
+// always, regardless of elevation. Buttons(HMButton flags) and
+// Hat(HMHat) are unchanged and confirmed; HMHat None + the eight compass
+// octants; SubmitState is the canonical submit method;
+// HMButton.{A,B,X,Y,LeftBumper,RightBumper,Guide,Share} are confirmed,
+// and Back/Start/LeftStick/RightStick are ALSO confirmed by name
+// (contra the previous comment's "inferred" flag — the enum spells them
+// exactly that way; see HMButton's XML doc for the Sony/Xbox aliasing).
+// STILL INFERRED: the rumble byte offsets in OnOutputReceived.
 
 public sealed class HidMaestroOutputSink : IOutputSink, GameFlow.Infrastructure.Runtime.Slots.IConfigurableOutputSink, IRumbleFeedbackSource
 {
     private readonly ILogger<HidMaestroOutputSink> logger;
-    private readonly DeviceTemplateStore templateStore;
     private readonly object gate = new();
 
     private HMContext? context;
     private HMController? controller;
     private HMProfile? profile;
-    private VirtualControllerKind currentKind = VirtualControllerKind.Xbox360;
+    private DeviceOutputTemplate template = new();
     private bool connected;
+    private bool creationFailed;
     private bool disposed;
 
-    public HidMaestroOutputSink(ILogger<HidMaestroOutputSink> logger, DeviceTemplateStore templateStore)
+    public HidMaestroOutputSink(ILogger<HidMaestroOutputSink> logger)
     {
         this.logger = logger;
-        this.templateStore = templateStore;
     }
 
-    public string DisplayName => "HIDMaestro virtual controller";
+    public string DisplayName => profile is null
+        ? "HIDMaestro virtual controller"
+        : $"HIDMaestro — {profile.Name}";
 
     /// <summary>Raised when the consuming game sends rumble (low, high) in 0–1.</summary>
     public event Action<double, double>? RumbleReceived;
 
     public (ushort Vid, ushort Pid)? OwnedHardwareSignature =>
-        profile is null ? null : (profile.VendorId, profile.ProductId);
+        profile is not null
+            ? (profile.VendorId, profile.ProductId)
+            : HidMaestroProfiles.ResolveHardwareSignature(template.OutputKind);
+
+    /// <inheritdoc />
+    public DateTimeOffset? OwnedSignatureActivatedAt => connected ? activatedAtUtc : null;
+
+    private DateTimeOffset activatedAtUtc;
+
+    /// <summary>Earliest UTC time the next creation attempt is allowed after a failure (cooldown).</summary>
+    private DateTimeOffset retryCreateAfterUtc;
 
     /// <summary>
     /// Applies a device's output template — picks the virtual-controller
-    /// profile to present. Called by the runtime/factory when it knows
-    /// which device/slot this sink serves (per-device routing lands in
-    /// Phase 3). Switching kind tears down and recreates the controller.
+    /// profile to present. Switching to a different profile tears down
+    /// and recreates the controller.
     /// </summary>
     public void Configure(DeviceOutputTemplate template)
     {
@@ -98,14 +120,28 @@ public sealed class HidMaestroOutputSink : IOutputSink, GameFlow.Infrastructure.
         }
         lock (gate)
         {
-            if (template.OutputKind == currentKind && connected)
+            var fingerprintChanged = !string.Equals(
+                Fingerprint(this.template), Fingerprint(template), StringComparison.Ordinal);
+            this.template = template.Clone();
+            if (!fingerprintChanged)
             {
+                // FULL no-op for an identical emit-shape — including when
+                // creation previously FAILED. Rebuilds fire on every
+                // profile save and slot edit; resetting the failure latch
+                // here turned one failed creation (e.g. not running as
+                // Administrator) into an endless stream of retry attempts
+                // that other software (Steam!) saw as controllers
+                // appearing and vanishing. A failed fingerprint stays
+                // failed until the template actually changes.
                 return;
             }
-            currentKind = template.OutputKind;
+            creationFailed = false;
             TeardownController();
         }
     }
+
+    private static string Fingerprint(DeviceOutputTemplate t) =>
+        $"{t.OutputKind}|{t.OutputProfileId}|{t.ThumbstickCount}|{t.TriggerCount}|{t.ButtonCount}|{t.PovCount}|{t.ProductString}|{t.GenericVendorId:X4}|{t.GenericProductId:X4}";
 
     public ValueTask WriteAsync(ControllerSnapshot snapshot, CancellationToken cancellationToken)
     {
@@ -127,8 +163,10 @@ public sealed class HidMaestroOutputSink : IOutputSink, GameFlow.Infrastructure.
             return ValueTask.CompletedTask;
         }
 
-        // HMGamepadState: sticks [-1,1], triggers [0,1] (direct fields).
-        var state = BuildState(snapshot);
+        // HMGamepadState.Axes drives every analog input (v1.3.9+ — no
+        // LeftStickX/RightStickX/LeftTrigger/etc fields); the profile
+        // supplies which HID axis each logical slot maps to.
+        var state = BuildState(snapshot, active.Profile);
         active.SubmitState(in state);
         return ValueTask.CompletedTask;
     }
@@ -139,41 +177,137 @@ public sealed class HidMaestroOutputSink : IOutputSink, GameFlow.Infrastructure.
         {
             return;
         }
+        if (creationFailed)
+        {
+            if (DateTimeOffset.UtcNow < retryCreateAfterUtc)
+            {
+                return;
+            }
+            creationFailed = false; // cooldown elapsed — one fresh attempt
+        }
         try
         {
             context ??= new HMContext();
             _ = context.LoadDefaultProfiles();   // load embedded catalog before GetProfile
             context.InstallDriver();             // no-op when already installed; needs elevation on first run
-            var profileId = HidMaestroProfiles.ResolveProfileId(currentKind);
-            profile = context.GetProfile(profileId)
-                ?? throw new InvalidOperationException($"HIDMaestro profile '{profileId}' not found.");
+
+            profile = ResolveProfile(context, template);
             controller = context.CreateController(profile);
             controller.OutputReceived += OnOutputReceived;   // game rumble/haptics/FFB → physical pad
             connected = true;
+            activatedAtUtc = DateTimeOffset.UtcNow;
             logger.LogInformation("HIDMaestro controller created for profile {ProfileId}.", profile.Id);
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Failed to create HIDMaestro controller; output disabled this tick.");
+            // Latched WITH a cooldown: retrying an identical create
+            // every frame just repeats the same failure at tick rate,
+            // but latching forever meant "no controller is ever created"
+            // when the first attempt failed (e.g. the app wasn't
+            // elevated yet). One retry per cooldown window recovers
+            // automatically once the blocker is gone, and is far too
+            // slow to read as a creation storm. Configure() with a
+            // changed template still resets immediately.
+            creationFailed = true;
+            retryCreateAfterUtc = DateTimeOffset.UtcNow.AddSeconds(45);
+            logger.LogError(exception,
+                "Failed to create HIDMaestro controller; this slot has no output until its template changes " +
+                "or the app restarts.{ElevationHint}",
+                Environment.IsPrivilegedProcess
+                    ? string.Empty
+                    : " GameFlow is NOT running elevated — HIDMaestro needs administrator rights; restart as Administrator.");
             TeardownController();
         }
     }
 
+    /// <summary>
+    /// Resolves the HMProfile the template asks for: the explicit
+    /// catalog id when set, the runtime-built generic profile for the
+    /// generic kind, or the first kind candidate present in the catalog.
+    /// </summary>
+    private static HMProfile ResolveProfile(HMContext context, DeviceOutputTemplate template)
+    {
+        if (!string.IsNullOrWhiteSpace(template.OutputProfileId))
+        {
+            return context.GetProfile(template.OutputProfileId)
+                ?? throw new InvalidOperationException(
+                    $"HIDMaestro profile '{template.OutputProfileId}' not found in the loaded catalog.");
+        }
+
+        if (template.OutputKind == VirtualControllerKind.GenericDirectInput)
+        {
+            return BuildGenericProfile(template);
+        }
+
+        foreach (var candidate in HidMaestroProfiles.GetCandidateProfileIds(template.OutputKind))
+        {
+            if (context.GetProfile(candidate) is { } found)
+            {
+                return found;
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"No catalog profile found for kind {template.OutputKind} " +
+            $"(tried: {string.Join(", ", HidMaestroProfiles.GetCandidateProfileIds(template.OutputKind))}).");
+    }
+
+    /// <summary>
+    /// Authors the generic DirectInput device from the template's shape.
+    /// HMGamepadState models two sticks, two triggers, and one hat, so
+    /// the shape is clamped to what can actually be driven.
+    /// </summary>
+    private static HMProfile BuildGenericProfile(DeviceOutputTemplate template)
+    {
+        var descriptor = new HidDescriptorBuilder().Gamepad();
+        var sticks = Math.Clamp(template.ThumbstickCount, 0, 2);
+        if (sticks >= 1) { descriptor = descriptor.AddStick("Left", 16); }
+        if (sticks >= 2) { descriptor = descriptor.AddStick("Right", 16); }
+        var triggers = Math.Clamp(template.TriggerCount, 0, 2);
+        if (triggers >= 1) { descriptor = descriptor.AddTrigger("Left", 8); }
+        if (triggers >= 2) { descriptor = descriptor.AddTrigger("Right", 8); }
+        descriptor = descriptor.AddButtons(Math.Clamp(template.ButtonCount, 1, 128));
+        if (template.PovCount >= 1) { descriptor = descriptor.AddHat(); }
+
+        var productString = string.IsNullOrWhiteSpace(template.ProductString)
+            ? "GameFlow Game Controller"
+            : template.ProductString;
+
+        return new HMProfileBuilder()
+            .Id($"gameflow-custom-{template.GenericVendorId:x4}{template.GenericProductId:x4}")
+            .Name(productString)
+            .Vendor("GameFlow")
+            .Vid(template.GenericVendorId).Pid(template.GenericProductId)
+            .ProductString(productString)
+            .ManufacturerString("GameFlow")
+            .Type("gamepad")
+            .Connection("usb")
+            .FromDescriptorBuilder(descriptor)
+            .Build();
+    }
+
     // ── State mapping (verified HMGamepadState surface) ──
 
-    private static HMGamepadState BuildState(ControllerSnapshot s)
+    private static HMGamepadState BuildState(ControllerSnapshot s, HMProfile profile)
     {
-        // Sticks [-1,+1] (Autofire already uses this, Y+ = up); triggers
-        // [0,1]. If a target shows inverted Y on hardware, negate the
-        // LeftStickY/RightStickY lines.
+        // v1.3.9+: no LeftStickX/RightStickX/LeftTrigger/etc fields —
+        // HMGamepadStateHelpers.StandardAxes resolves the profile's
+        // actual HID axis for each of the six standard slots (a wheel's
+        // "stick" is a different usage than a gamepad's) and returns a
+        // ready Axes dictionary. Sticks [-1,+1] in our snapshot map to
+        // StandardAxes' [0,1] uniform range (0.5 = center); triggers
+        // [0,1] pass straight through. If a target shows inverted Y on
+        // hardware, negate the leftStickY/rightStickY arguments.
         return new HMGamepadState
         {
-            LeftStickX  = Math.Clamp(s.LeftStick.X,  -1f, 1f),
-            LeftStickY  = Math.Clamp(s.LeftStick.Y,  -1f, 1f),
-            RightStickX = Math.Clamp(s.RightStick.X, -1f, 1f),
-            RightStickY = Math.Clamp(s.RightStick.Y, -1f, 1f),
-            LeftTrigger  = Math.Clamp(s.LeftTrigger,  0f, 1f),
-            RightTrigger = Math.Clamp(s.RightTrigger, 0f, 1f),
+            Axes = HMGamepadStateHelpers.StandardAxes(
+                profile,
+                leftStickX:  (Math.Clamp(s.LeftStick.X,  -1f, 1f) + 1f) * 0.5f,
+                leftStickY:  (Math.Clamp(s.LeftStick.Y,  -1f, 1f) + 1f) * 0.5f,
+                rightStickX: (Math.Clamp(s.RightStick.X, -1f, 1f) + 1f) * 0.5f,
+                rightStickY: (Math.Clamp(s.RightStick.Y, -1f, 1f) + 1f) * 0.5f,
+                leftTrigger:  Math.Clamp(s.LeftTrigger,  0f, 1f),
+                rightTrigger: Math.Clamp(s.RightTrigger, 0f, 1f)),
             Buttons = MapButtons(s),
             Hat = MapHat(s),
         };
@@ -223,8 +357,7 @@ public sealed class HidMaestroOutputSink : IOutputSink, GameFlow.Infrastructure.
     // virtual pad; the consumer decodes + forwards. This is a best-effort
     // decode of the common rumble layout into normalized (low, high) →
     // RumbleReceived, which the slot runtime forwards to the physical
-    // device. VERIFY the packet type name, the (controller, packet)
-    // delegate shape, and these byte offsets against PadForge's output
+    // device. VERIFY these byte offsets against PadForge's output
     // handler for the profiles you emit.
     private void OnOutputReceived(HMController sender, HMOutputPacket packet)
     {
@@ -265,6 +398,7 @@ public sealed class HidMaestroOutputSink : IOutputSink, GameFlow.Infrastructure.
         }
         catch (Exception exception) { logger.LogDebug(exception, "HIDMaestro controller dispose error."); }
         controller = null;
+        profile = null;
         connected = false;
     }
 
@@ -286,29 +420,26 @@ public sealed class HidMaestroOutputSink : IOutputSink, GameFlow.Infrastructure.
     }
 }
 #else
-// ── Tier 2/3: what an ordinary (non-SDK) build actually runs ──
+// ── Tier 2: what an ordinary (non-SDK) build actually runs ──
 // This is the class that compiles for essentially every real install,
-// since referencing a private/inferred SDK assembly is not something a
+// since referencing the SDK assembly at build time is not something a
 // normal build does.
 //
-// Per explicit product decision: this sink does NOT fall back to ViGEm.
-// HIDMaestro is either active (dynamic bridge found a working
-// HIDMaestro.Core.dll) or it is not — in which case DisplayName and the
-// log say exactly why, and WriteAsync is a documented no-op. Users who
-// want ViGEm select one of the "vigem-*" output providers directly;
-// this sink will never silently substitute one.
+// HIDMaestro is the sole Windows output backend. It's either active
+// (dynamic bridge found a working HIDMaestro.Core.dll) or it is not —
+// in which case DisplayName and the log say exactly why, and WriteAsync
+// is a documented no-op. There is no fallback provider to substitute.
 public sealed class HidMaestroOutputSink : IOutputSink, GameFlow.Infrastructure.Runtime.Slots.IConfigurableOutputSink
 {
     private readonly ILogger<HidMaestroOutputSink> logger;
     private readonly object gate = new();
 
-    private VirtualControllerKind currentKind = VirtualControllerKind.Xbox360;
-    private bool configured;
+    private DeviceOutputTemplate template = new();
     private bool disposed;
 
     // Resolved lazily on first write after each Configure(). Non-null
     // only while HIDMaestro is genuinely active and healthy.
-    private DynamicHidMaestroController? dynamicController;
+    private DynamicControllerHandle? activeHandle;
     private string activeState = "unresolved"; // "unresolved" | "active" | "unavailable"
     private string? unavailableReason;
 
@@ -319,24 +450,53 @@ public sealed class HidMaestroOutputSink : IOutputSink, GameFlow.Infrastructure.
 
     /// <summary>
     /// Reflects the real state so the slots list and dashboard show the
-    /// truth at a glance: active, or exactly why it isn't.
+    /// truth at a glance: which profile is live, or exactly why none is.
     /// </summary>
     public string DisplayName => activeState switch
     {
-        "active" => "HIDMaestro virtual controller",
+        "active" when activeHandle is not null => $"HIDMaestro — {activeHandle.ProfileName}",
         "unavailable" => $"HIDMaestro unavailable — no output ({unavailableReason})",
         _ => "HIDMaestro virtual controller",
     };
 
-    // Closes the same input-hiding gap ViGEm's sinks never had: without
-    // this, HIDMaestro's own emitted device could be selected right back
-    // in as input, direct or via another slot — the exact class of bug
-    // the hardware-signature filtering exists to prevent. See
-    // HidMaestroProfiles.ResolveHardwareSignature for why the well-known
-    // pair is the right answer here (HIDMaestro impersonates the real
-    // controller identity, same as ViGEm does).
-    public (ushort Vid, ushort Pid)? OwnedHardwareSignature =>
-        HidMaestroProfiles.ResolveHardwareSignature(currentKind);
+    /// <summary>
+    /// The identity this sink's emitted device advertises, used to hide
+    /// it from the input list (a virtual output selected back in as
+    /// input was a real freeze source). Once a controller is live this
+    /// is the REAL identity read from the deployed profile — covering
+    /// all 225 catalog profiles and runtime-built generics — with the
+    /// per-kind well-known pair as the pre-activation fallback.
+    /// </summary>
+    public (ushort Vid, ushort Pid)? OwnedHardwareSignature
+    {
+        get
+        {
+            lock (gate)
+            {
+                return activeHandle?.HardwareSignature
+                    ?? (template.OutputKind == VirtualControllerKind.GenericDirectInput
+                        ? (template.GenericVendorId, template.GenericProductId)
+                        : HidMaestroProfiles.ResolveHardwareSignature(template.OutputKind));
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public DateTimeOffset? OwnedSignatureActivatedAt
+    {
+        get
+        {
+            lock (gate)
+            {
+                return activeState == "active" ? dynamicActivatedAtUtc : null;
+            }
+        }
+    }
+
+    private DateTimeOffset dynamicActivatedAtUtc;
+
+    /// <summary>Cooldown twin of the SDK tier's <c>retryCreateAfterUtc</c>.</summary>
+    private DateTimeOffset dynamicRetryCreateAfterUtc;
 
     public void Configure(DeviceOutputTemplate template)
     {
@@ -345,28 +505,43 @@ public sealed class HidMaestroOutputSink : IOutputSink, GameFlow.Infrastructure.
             return;
         }
 
-        DynamicHidMaestroController? old;
+        DynamicControllerHandle? old;
         lock (gate)
         {
-            if (configured && template.OutputKind == currentKind)
+            var fingerprintChanged = !string.Equals(
+                Fingerprint(this.template), Fingerprint(template), StringComparison.Ordinal);
+            this.template = template.Clone();
+            if (!fingerprintChanged)
             {
+                // FULL no-op for an identical emit-shape — see the SDK
+                // tier's comment: an "unavailable" latch (failed creation,
+                // give-up) must survive rebuilds, or every profile save
+                // retries and the OS sees a controller-creation storm.
+                // The latch clears only when the template genuinely
+                // changes what device is emitted.
                 return;
             }
-            currentKind = template.OutputKind;
-            configured = true;
-            old = dynamicController;
-            dynamicController = null;
+            old = activeHandle;
+            activeHandle = null;
             activeState = "unresolved";
             unavailableReason = null;
         }
-        old?.Dispose();
+        old?.Controller.Dispose();
     }
+
+    /// <summary>
+    /// Everything about the template that changes WHAT device is
+    /// emitted. Lighting/rumble fields deliberately excluded — they
+    /// mustn't tear down a live device.
+    /// </summary>
+    private static string Fingerprint(DeviceOutputTemplate t) =>
+        $"{t.OutputKind}|{t.OutputProfileId}|{t.ThumbstickCount}|{t.TriggerCount}|{t.ButtonCount}|{t.PovCount}|{t.ProductString}|{t.GenericVendorId:X4}|{t.GenericProductId:X4}";
 
     public ValueTask WriteAsync(ControllerSnapshot snapshot, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        DynamicHidMaestroController? dynamic;
+        DynamicControllerHandle? handle;
         lock (gate)
         {
             if (disposed)
@@ -374,10 +549,10 @@ public sealed class HidMaestroOutputSink : IOutputSink, GameFlow.Infrastructure.
                 return ValueTask.CompletedTask;
             }
             EnsureActiveLocked();
-            dynamic = dynamicController;
+            handle = activeHandle;
         }
 
-        if (dynamic is null)
+        if (handle is null)
         {
             // Unavailable — EnsureActiveLocked already logged exactly why,
             // once, the first time resolution failed for this
@@ -385,24 +560,27 @@ public sealed class HidMaestroOutputSink : IOutputSink, GameFlow.Infrastructure.
             return ValueTask.CompletedTask;
         }
 
-        var ok = SubmitDynamic(dynamic, snapshot);
-        if (!ok && !dynamic.IsHealthy)
+        var ok = SubmitDynamic(handle.Controller, snapshot);
+        if (!ok && !handle.Controller.IsHealthy)
         {
             // The controller itself gave up after too many consecutive
             // reflection failures (logged there). Stop holding a
             // reference to a proven-broken instance so the NEXT write
-            // doesn't keep trying it — Configure() (a kind switch) or a
-            // process restart are the paths back to "unresolved".
+            // doesn't keep trying it — Configure() (a template change) or
+            // a process restart are the paths back to "unresolved".
             lock (gate)
             {
-                if (ReferenceEquals(dynamicController, dynamic))
+                if (ReferenceEquals(activeHandle, handle))
                 {
-                    dynamicController = null;
+                    activeHandle = null;
                     activeState = "unavailable";
                     unavailableReason = "submit failed repeatedly — see log";
+                    // Longer cooldown than a creation failure: a retry
+                    // here creates a NEW device, so cycling must be rare.
+                    dynamicRetryCreateAfterUtc = DateTimeOffset.UtcNow.AddMinutes(5);
                 }
             }
-            dynamic.Dispose();
+            handle.Controller.Dispose();
         }
 
         return ValueTask.CompletedTask;
@@ -414,9 +592,32 @@ public sealed class HidMaestroOutputSink : IOutputSink, GameFlow.Infrastructure.
     /// </summary>
     private void EnsureActiveLocked()
     {
-        if (dynamicController is not null || activeState == "unavailable")
+        if (activeHandle is not null)
         {
-            return; // already resolved (success or terminal failure) for this configuration
+            return; // already active for this configuration
+        }
+        if (activeState == "unavailable")
+        {
+            // Latched — but only until the cooldown elapses. A single
+            // failed creation (typically: not running as Administrator
+            // yet) used to be terminal until the template changed, which
+            // read as "no controller is ever created". One retry per
+            // 45 s window recovers automatically once the blocker is
+            // gone and cannot read as a creation storm.
+            if (DateTimeOffset.UtcNow < dynamicRetryCreateAfterUtc)
+            {
+                return;
+            }
+            activeState = "unresolved";
+            unavailableReason = null;
+        }
+
+        if (!OperatingSystem.IsWindows())
+        {
+            unavailableReason = "HIDMaestro is only available on Windows.";
+            activeState = "unavailable";
+            logger.LogWarning("HIDMaestro requested on a non-Windows platform — this slot has no output.");
+            return;
         }
 
         if (!HidMaestroDynamic.IsAvailable(logger))
@@ -424,30 +625,95 @@ public sealed class HidMaestroOutputSink : IOutputSink, GameFlow.Infrastructure.
             unavailableReason = HidMaestroDynamic.StatusDescription;
             activeState = "unavailable";
             logger.LogWarning(
-                "HIDMaestro is not available ({Status}) and this sink no longer falls back to ViGEm — " +
-                "this slot has NO output until HIDMaestro.Core.dll is placed next to the executable " +
-                "(or select a ViGEm output provider directly for this slot instead).",
+                "HIDMaestro is not available ({Status}) — this slot has NO output until HIDMaestro.Core.dll " +
+                "is in place. There is no fallback output provider.",
                 HidMaestroDynamic.StatusDescription);
             return;
         }
 
-        var profileId = HidMaestroProfiles.ResolveProfileId(currentKind);
-        var controller = HidMaestroDynamic.TryCreateController(profileId, logger, out var creationFailure);
-        if (controller is null)
+        DynamicControllerHandle? handle;
+        string? creationFailure;
+        if (template.OutputKind == VirtualControllerKind.GenericDirectInput
+            && string.IsNullOrWhiteSpace(template.OutputProfileId))
+        {
+            var productString = string.IsNullOrWhiteSpace(template.ProductString)
+                ? "GameFlow Game Controller"
+                : template.ProductString;
+            handle = HidMaestroDynamic.TryCreateCustomController(
+                profileId: $"gameflow-custom-{template.GenericVendorId:x4}{template.GenericProductId:x4}",
+                displayName: productString,
+                productString: productString,
+                vendorId: template.GenericVendorId,
+                productId: template.GenericProductId,
+                thumbstickCount: template.ThumbstickCount,
+                triggerCount: template.TriggerCount,
+                buttonCount: template.ButtonCount,
+                povCount: template.PovCount,
+                logger, out creationFailure);
+        }
+        else
+        {
+            var profileId = ResolveCatalogProfileId();
+            handle = HidMaestroDynamic.TryCreateController(profileId, logger, out creationFailure);
+        }
+
+        if (handle is null)
         {
             unavailableReason = creationFailure;
+            dynamicRetryCreateAfterUtc = DateTimeOffset.UtcNow.AddSeconds(45);
             activeState = "unavailable";
             logger.LogError(
-                "HIDMaestro controller creation failed for profile '{ProfileId}' ({Failure}) — this slot has " +
-                "no output. This sink no longer falls back to ViGEm; select a ViGEm output provider directly " +
-                "for this slot if you want output while this is investigated.",
-                profileId, creationFailure);
+                "HIDMaestro controller creation failed ({Failure}) — this slot has no output until this is " +
+                "resolved. There is no fallback output provider.",
+                creationFailure);
             return;
         }
 
-        dynamicController = controller;
+        activeHandle = handle;
         activeState = "active";
-        logger.LogInformation("HIDMaestro (dynamic) active for profile {ProfileId}.", profileId);
+        dynamicActivatedAtUtc = DateTimeOffset.UtcNow;
+        logger.LogInformation(
+            "HIDMaestro (dynamic) active: profile {ProfileId} ('{ProfileName}', VID/PID {Signature}).",
+            handle.ProfileId, handle.ProfileName,
+            handle.HardwareSignature is { } sig ? $"{sig.Vid:X4}:{sig.Pid:X4}" : "unknown");
+    }
+
+    /// <summary>
+    /// The catalog id this template resolves to: the explicit pick when
+    /// set (verified against the catalog, with the kind's defaults as a
+    /// safety net if the pick has vanished from a newer SDK), otherwise
+    /// the first kind candidate that exists in the loaded catalog.
+    /// </summary>
+    private string ResolveCatalogProfileId()
+    {
+        var kindCandidates = HidMaestroProfiles.GetCandidateProfileIds(template.OutputKind);
+        List<string> candidates;
+        if (!string.IsNullOrWhiteSpace(template.OutputProfileId))
+        {
+            candidates = new List<string>(kindCandidates.Count + 1) { template.OutputProfileId.Trim() };
+            candidates.AddRange(kindCandidates);
+        }
+        else
+        {
+            candidates = [.. kindCandidates];
+        }
+
+        if (candidates.Count == 0)
+        {
+            // GenericDirectInput with an explicit profile cleared between
+            // Configure and now — fall back to the safest catalog id.
+            candidates = ["xbox-360-wired"];
+        }
+
+        var resolved = HidMaestroDynamic.TryResolveExistingProfileId(candidates, logger) ?? candidates[0];
+        if (!string.IsNullOrWhiteSpace(template.OutputProfileId)
+            && !string.Equals(resolved, template.OutputProfileId.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            logger.LogWarning(
+                "HIDMaestro: this slot's chosen profile '{Chosen}' is not in the loaded catalog — using '{Resolved}' instead.",
+                template.OutputProfileId, resolved);
+        }
+        return resolved;
     }
 
     /// <summary>Maps a snapshot onto the dynamic bridge's button-name/hat-name submit call.</summary>
@@ -503,7 +769,7 @@ public sealed class HidMaestroOutputSink : IOutputSink, GameFlow.Infrastructure.
 
     public ValueTask DisposeAsync()
     {
-        DynamicHidMaestroController? dynamic;
+        DynamicControllerHandle? handle;
         lock (gate)
         {
             if (disposed)
@@ -511,11 +777,11 @@ public sealed class HidMaestroOutputSink : IOutputSink, GameFlow.Infrastructure.
                 return ValueTask.CompletedTask;
             }
             disposed = true;
-            dynamic = dynamicController;
-            dynamicController = null;
+            handle = activeHandle;
+            activeHandle = null;
         }
 
-        dynamic?.Dispose();
+        handle?.Controller.Dispose();
         return ValueTask.CompletedTask;
     }
 }

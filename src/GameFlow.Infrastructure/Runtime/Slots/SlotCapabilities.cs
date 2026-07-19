@@ -32,3 +32,26 @@ public interface IConfigurableOutputSink
 {
     void Configure(DeviceOutputTemplate template);
 }
+
+/// <summary>
+/// Null-object <see cref="IMultiDeviceInputSource"/> used when the
+/// top-level input source doesn't support per-device reads (e.g. the
+/// profile's input provider is "none" or "demo", or SDL failed to
+/// initialize). Slots still tick against it: device-fed slots read as
+/// empty (accurately — there's nothing to read), while demo-preview
+/// slots animate normally, because the demo waveform never touches the
+/// input source at all. Before this existed, a non-multi-device source
+/// silently disabled ALL slot processing — which surfaced to users as
+/// "demo preview does nothing" with zero feedback.
+/// </summary>
+public sealed class EmptyMultiDeviceInputSource : IMultiDeviceInputSource
+{
+    public static EmptyMultiDeviceInputSource Instance { get; } = new();
+
+    private EmptyMultiDeviceInputSource() { }
+
+    public void PumpForSlots() { }
+
+    public ControllerSnapshot ReadDevice(string deviceId) =>
+        ControllerSnapshot.Empty(deviceId) with { Timestamp = DateTimeOffset.UtcNow };
+}

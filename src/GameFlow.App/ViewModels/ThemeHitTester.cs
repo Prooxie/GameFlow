@@ -4,14 +4,19 @@ using GameFlow.Infrastructure.Theming.Models;
 namespace GameFlow.App.ViewModels;
 
 /// <summary>
-/// Result of a hit test against a theme document — carries both the
-/// logical element id and the bounding rect of the element that was
-/// hit (in theme-local coordinates, i.e. the same space the
-/// theme.json x/y/width/height fields use). The bounds let
-/// <see cref="GameFlow.App.Views.ThemeSurface"/> draw hover-outline
-/// and click-fill highlights for the click-to-map affordance.
+/// Result of a hit test against a theme document — the logical element
+/// id, the bounding rect of the element that was hit (in theme-local
+/// coordinates, i.e. the same space the theme.json x/y/width/height
+/// fields use), and the theme-relative path of the element's own art.
+/// <see cref="GameFlow.App.Views.ThemeSurface"/> uses that art as an
+/// opacity mask so the hover/press highlight takes the SHAPE of the
+/// button itself (a tinted silhouette of the same overlay the theme
+/// shows during play) rather than an axis-aligned rectangle that fits
+/// nothing. <see cref="ShapeImagePath"/> is null when the element has
+/// no image of its own (colour-only pbar) — the surface then falls back
+/// to a rounded rect.
 /// </summary>
-public sealed record ThemeHitResult(string ElementId, Avalonia.Rect Bounds);
+public sealed record ThemeHitResult(string ElementId, Avalonia.Rect Bounds, string? ShapeImagePath = null);
 
 /// <summary>
 /// Resolves a click in theme-local coordinates to a logical controller
@@ -115,7 +120,8 @@ public static class ThemeHitTester
                         if (id is not null)
                         {
                             topmost = new ThemeHitResult(id,
-                                new Avalonia.Rect(rectX, rectY, image.Width, image.Height));
+                                new Avalonia.Rect(rectX, rectY, image.Width, image.Height),
+                                string.IsNullOrWhiteSpace(image.ImagePath) ? null : image.ImagePath);
                         }
                     }
                     foreach (var child in image.Children)
@@ -141,7 +147,8 @@ public static class ThemeHitTester
                         if (triggerId is not null)
                         {
                             topmost = new ThemeHitResult(triggerId,
-                                new Avalonia.Rect(rectX, rectY, bar.Width, bar.Height));
+                                new Avalonia.Rect(rectX, rectY, bar.Width, bar.Height),
+                                string.IsNullOrWhiteSpace(bar.ImagePath) ? null : bar.ImagePath);
                         }
                     }
                     foreach (var child in bar.Children)
@@ -354,6 +361,7 @@ public static class ThemeHitTester
             : (isLeft ? "LeftStick" : "RightStick");
 
         topmost = new ThemeHitResult(id,
-            new Avalonia.Rect(rectX, rectY, primary.Width, primary.Height));
+            new Avalonia.Rect(rectX, rectY, primary.Width, primary.Height),
+            string.IsNullOrWhiteSpace(primary.ImagePath) ? null : primary.ImagePath);
     }
 }
