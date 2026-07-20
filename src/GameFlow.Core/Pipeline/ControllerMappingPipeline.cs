@@ -1,12 +1,22 @@
 using GameFlow.Core.Enums;
 using GameFlow.Core.Models;
 using GameFlow.Core.Models.Rules;
+using GameFlow.Core.Scripting;
 
 namespace GameFlow.Core.Pipeline;
 
-public sealed class ControllerMappingPipeline(ProfileDocument profile)
+/// <param name="profile">The active profile whose rules this instance executes.</param>
+/// <param name="scriptEngine">
+/// Optional. When null (the default — every existing call site keeps
+/// compiling and behaving exactly as before), <see cref="ControlScriptRule"/>
+/// and <see cref="MultiSourceCombineRule"/> rows in <see cref="CombineMode.Script"/>
+/// mode are silently skipped rather than throwing, since there's nowhere
+/// to run their Lua. Pass a real engine to light both up.
+/// </param>
+public sealed class ControllerMappingPipeline(ProfileDocument profile, LuaScriptEngine? scriptEngine = null)
 {
     private readonly ProfileDocument profile = profile;
+    private readonly LuaScriptEngine? scriptEngine = scriptEngine;
     private readonly Dictionary<string, StickPulseScheduler> stickAutofireSchedulers = [];
     private readonly Dictionary<string, StickPulseScheduler> freezeSchedulers = [];
     private readonly Dictionary<string, BinaryPulseScheduler> buttonAutofireSchedulers = [];
@@ -19,6 +29,24 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile)
     /// between two rules with the same trigger.
     /// </summary>
     private readonly Dictionary<string, MultiButtonAutofireExecutor> multiButtonExecutors = [];
+
+    /// <summary>
+    /// Per-rule executor for <see cref="MultiSourceCombineRule"/>, same
+    /// keyed-by-rule-id lifetime rationale as <see cref="multiButtonExecutors"/>
+    /// above — only <see cref="CombineMode.ToggleOnAny"/> actually carries
+    /// state, but every combine rule gets one for a uniform lookup.
+    /// </summary>
+    private readonly Dictionary<string, MultiSourceCombineExecutor> combineExecutors = [];
+
+    /// <summary>
+    /// <see cref="ButtonId"/> has no gaps in its ordinals (see that enum's
+    /// own comment about why <c>None</c> must stay first), so a plain
+    /// array indexed by <c>(int)ButtonId</c> is a safe, allocation-cheap
+    /// stand-in for the dictionary when calling into
+    /// <see cref="LuaScriptEngine.Execute"/>, which was written against
+    /// that array shape.
+    /// </summary>
+    private static readonly int ButtonCount = Enum.GetValues<ButtonId>().Length;
 
     /// <summary>
     /// Runtime "is this rule currently muted" overlay maintained by
@@ -94,6 +122,15 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile)
         var transformedSticks = BuildSourceStickMap(physical);
         var leftStick = transformedSticks[StickId.Left];
         var rightStick = transformedSticks[StickId.Right];
+
+        // Previously these were never read back — the final snapshot always
+        // carried physical.LeftTrigger/RightTrigger through untouched, so no
+        // rule kind could actually change a trigger. Mutable locals here,
+        // fed into the final snapshot below, are what any trigger-writing
+        // rule kind (ControlScriptRule today; a future Stick-Trim-style
+        // rule later) actually writes into.
+        var leftTrigger = physical.LeftTrigger;
+        var rightTrigger = physical.RightTrigger;
 
         foreach (var rule in profile.Rules.OfType<ButtonRemapRule>().Where(IsActive))
         {
@@ -172,6 +209,38 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile)
                 multiButtonExecutors[rule.Id] = executor;
             }
             executor.Apply(physical, buttons, now);
+        }
+
+        // Runs after every other button-producing rule kind so a combine
+        // row can list an already-remapped/autofired/combo'd button as one
+        // of its own sources — see MultiSourceCombineRule's class comment.
+        foreach (var rule in profile.Rules.OfType<MultiSourceCombineRule>().Where(IsActive))
+        {
+            if (rule.Mode == RuleMode.Passthrough)
+            {
+                continue;
+            }
+
+            if (rule.Mode == RuleMode.DoNothing)
+            {
+                if (rule.TargetButton != ButtonId.None)
+                {
+                    buttons[rule.TargetButton] = false;
+                }
+                continue;
+            }
+
+            if (rule.Strategy == CombineMode.Script && rule.TargetButton != ButtonId.None && scriptEngine is null)
+            {
+                notes.Add($"Combine rule '{rule.Name}' uses the Script strategy but no script engine is attached — target left untouched.");
+            }
+
+            if (!combineExecutors.TryGetValue(rule.Id, out var combineExecutor))
+            {
+                combineExecutor = new MultiSourceCombineExecutor(rule);
+                combineExecutors[rule.Id] = combineExecutor;
+            }
+            combineExecutor.Apply(buttons, scriptEngine, now);
         }
 
         foreach (var rule in profile.Rules.OfType<StickAutofireRule>().Where(IsActive))
@@ -270,10 +339,39 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile)
             }
         }
 
+        // Runs last, after every deterministic rule kind, so a script sees
+        // the fully-composed virtual state (remaps, autofire, combos,
+        // combine rows, stick handling — everything) and can layer its own
+        // adjustments on top or override outright, same "already-remapped
+        // button" guarantee as every other rule kind gives the ones after it.
+        if (scriptEngine is not null)
+        {
+            var scriptRules = profile.Rules.OfType<ControlScriptRule>().Where(IsActive).ToList();
+            if (scriptRules.Count > 0)
+            {
+                var virtualBefore = physical
+                    .WithStick(StickId.Left, leftStick.Clamp())
+                    .WithStick(StickId.Right, rightStick.Clamp())
+                    .WithButtons(buttons)
+                    .WithTriggers(leftTrigger, rightTrigger);
+
+                var buttonArray = ButtonsToArray(buttons);
+
+                foreach (var rule in scriptRules)
+                {
+                    scriptEngine.Execute(rule, physical, virtualBefore, buttonArray,
+                        ref leftStick, ref rightStick, ref leftTrigger, ref rightTrigger, now);
+                }
+
+                ArrayToButtons(buttonArray, buttons);
+            }
+        }
+
         var virtualSnapshot = physical
             .WithStick(StickId.Left, leftStick.Clamp())
             .WithStick(StickId.Right, rightStick.Clamp())
             .WithButtons(buttons)
+            .WithTriggers(leftTrigger, rightTrigger)
             with
             {
                 Timestamp = now,
@@ -320,6 +418,24 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile)
             StickBlendMode.Additive => (current + pulse).Clamp(),
             _ => current
         };
+    }
+
+    private static bool[] ButtonsToArray(Dictionary<ButtonId, bool> buttons)
+    {
+        var array = new bool[ButtonCount];
+        foreach (var (button, pressed) in buttons)
+        {
+            array[(int)button] = pressed;
+        }
+        return array;
+    }
+
+    private static void ArrayToButtons(bool[] array, Dictionary<ButtonId, bool> buttons)
+    {
+        for (var i = 0; i < array.Length; i++)
+        {
+            buttons[(ButtonId)i] = array[i];
+        }
     }
 
     private static StickVector GetStick(StickVector leftStick, StickVector rightStick, StickId stickId)

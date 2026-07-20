@@ -14,6 +14,7 @@ namespace GameFlow.Core.Models;
 [JsonDerivedType(typeof(MultiButtonAutofireRule), "multi-button-autofire")]
 [JsonDerivedType(typeof(RuleToggleRule), "rule-toggle")]
 [JsonDerivedType(typeof(ControlScriptRule), "control-script")]
+[JsonDerivedType(typeof(MultiSourceCombineRule), "multi-source-combine")]
 public abstract record MappingRule
 {
     public string Id { get; init; } = Guid.NewGuid().ToString("N");
