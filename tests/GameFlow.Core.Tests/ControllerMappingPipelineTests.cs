@@ -2,6 +2,8 @@ using GameFlow.Core.Enums;
 using GameFlow.Core.Models;
 using GameFlow.Core.Models.Rules;
 using GameFlow.Core.Pipeline;
+using GameFlow.Core.Scripting;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace GameFlow.Core.Tests;
@@ -132,5 +134,74 @@ public sealed class ControllerMappingPipelineTests
 
         Assert.True(first.VirtualSnapshot.IsPressed(ButtonId.South));
         Assert.False(second.VirtualSnapshot.IsPressed(ButtonId.South));
+    }
+
+    [Fact]
+    public void Process_PassesTriggersThroughUnchangedWhenNothingWritesThem()
+    {
+        // Regression guard for the trigger-mutability change: before it,
+        // LeftTrigger/RightTrigger were never read back into the final
+        // snapshot at all, so this always trivially "passed" by construction.
+        // Now they're explicit locals threaded through — this proves that
+        // plumbing doesn't silently drop or zero them when no rule touches them.
+        var profile = new ProfileDocument { Rules = [] };
+        var pipeline = new ControllerMappingPipeline(profile);
+        var frame = new ControllerSnapshot
+        {
+            Buttons = ButtonState.Clone(ButtonState.CreateEmptyMap()),
+            LeftTrigger = 0.42f,
+            RightTrigger = 0.77f
+        };
+
+        var result = pipeline.Process(frame, DateTimeOffset.UtcNow);
+
+        Assert.Equal(0.42f, result.VirtualSnapshot.LeftTrigger);
+        Assert.Equal(0.77f, result.VirtualSnapshot.RightTrigger);
+    }
+
+    [Fact]
+    public void Process_WithNoScriptEngineAttached_IgnoresControlScriptRulesWithoutThrowing()
+    {
+        var rule = new ControlScriptRule
+        {
+            Id = "script",
+            Name = "Script",
+            ControlKey = "South",
+            ScriptCode = "function on_tick(ctx) ctx.press(\"South\") end"
+        };
+        var profile = new ProfileDocument { Rules = [rule] };
+        var pipeline = new ControllerMappingPipeline(profile); // scriptEngine left null
+
+        var result = pipeline.Process(
+            new ControllerSnapshot { Buttons = ButtonState.Clone(ButtonState.CreateEmptyMap()) },
+            DateTimeOffset.UtcNow);
+
+        Assert.False(result.VirtualSnapshot.IsPressed(ButtonId.South));
+    }
+
+    [Fact]
+    public void Process_WithScriptEngineAttached_RunsControlScriptRuleWithoutThrowing()
+    {
+        // Proves the wiring (pipeline -> LuaScriptEngine.Execute, including
+        // the buttons-dictionary <-> array round trip) doesn't throw. Whether
+        // ctx.press("South") actually lands needs a real MoonSharp package
+        // to confirm — this sandbox can't restore one. Run `dotnet test` on
+        // your machine for that.
+        var rule = new ControlScriptRule
+        {
+            Id = "script",
+            Name = "Script",
+            ControlKey = "South",
+            ScriptCode = "function on_tick(ctx) ctx.press(\"South\") end"
+        };
+        var profile = new ProfileDocument { Rules = [rule] };
+        var engine = new LuaScriptEngine(NullLogger<LuaScriptEngine>.Instance);
+        var pipeline = new ControllerMappingPipeline(profile, engine);
+
+        var exception = Record.Exception(() => pipeline.Process(
+            new ControllerSnapshot { Buttons = ButtonState.Clone(ButtonState.CreateEmptyMap()) },
+            DateTimeOffset.UtcNow));
+
+        Assert.Null(exception);
     }
 }

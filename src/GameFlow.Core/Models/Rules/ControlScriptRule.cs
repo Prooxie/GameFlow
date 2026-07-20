@@ -1,8 +1,11 @@
 namespace GameFlow.Core.Models.Rules;
 
 /// <summary>
-/// Stores per-control script configuration in the profile.
-/// Runtime execution is intentionally handled by higher layers / future providers.
+/// A Lua-scripted control, executed each tick by
+/// <see cref="Pipeline.ControllerMappingPipeline"/> via
+/// <see cref="Scripting.LuaScriptEngine"/>. See that engine's class
+/// comment for the full <c>ctx</c> API (ctx.press, ctx.set_left, etc.)
+/// and the sandbox it runs under.
 /// </summary>
 public sealed record ControlScriptRule : MappingRule
 {

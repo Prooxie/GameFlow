@@ -38,11 +38,19 @@ namespace GameFlow.Core.Scripting;
 ///   • Compile errors are logged once and the script is disabled until edited.
 ///   • Runtime errors are throttled (1 message every 5 s) and the script's effect
 ///     on this tick is discarded.
+///
+/// A second, narrower entry point — <see cref="EvaluateCombine"/> — serves
+/// <see cref="Models.Rules.MultiSourceCombineRule"/>'s Script mode. It uses
+/// a different contract (<c>function evaluate(ctx) return ... end</c>, no
+/// ctx.press()/set_left() side-effect API) because that rule kind only
+/// ever needs to compute one boolean from a handful of named sources —
+/// see that method's doc comment for the exact shape.
 /// </summary>
 public sealed class LuaScriptEngine : IDisposable
 {
     private readonly ILogger<LuaScriptEngine> logger;
     private readonly Dictionary<string, LoadedScript> scripts = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, LoadedCombineScript> combineScripts = new(StringComparer.Ordinal);
     private readonly Lock gate = new();
     private bool disposed;
 
@@ -249,11 +257,118 @@ public sealed class LuaScriptEngine : IDisposable
         }
     }
 
+    /// <summary>
+    /// Evaluates a <see cref="Models.Rules.MultiSourceCombineRule"/> running
+    /// in Script mode. Unlike <see cref="Execute"/> — which drives an
+    /// entire tick's worth of virtual output imperatively via
+    /// ctx.press()/set_left() etc. — this is a narrow "compute one value
+    /// from several named inputs" contract:
+    /// <code>
+    ///   function evaluate(ctx)
+    ///       return ctx.A and not ctx.B   -- ctx fields are the row's own
+    ///   end                              -- source button names, 0/1 each
+    /// </code>
+    /// <c>ctx</c> also exposes <c>ctx.now_ms</c>. The return value is
+    /// read with normal Lua truthiness (nil/false = not pressed,
+    /// everything else = pressed) — there's no ctx.press() or any other
+    /// side-effect API here; this script can only ever produce the one
+    /// boolean the combine row asked for.
+    /// </summary>
+    /// <param name="ruleId">Cache key — pass the owning rule's <c>Id</c>.</param>
+    /// <param name="scriptCode">The Lua source. Recompiled only when it changes.</param>
+    /// <param name="sources">
+    /// The combine row's own sources, keyed by <see cref="Enums.ButtonId"/>
+    /// name, each 1 (pressed) or 0 (released) this tick.
+    /// </param>
+    /// <returns>
+    /// <see langword="false"/> if disposed, the script is empty, or it
+    /// fails to compile/run — same "discard this tick's effect rather
+    /// than throw" philosophy as <see cref="Execute"/>.
+    /// </returns>
+    public bool EvaluateCombine(string ruleId, string scriptCode, IReadOnlyDictionary<string, double> sources, DateTimeOffset now)
+    {
+        if (disposed || string.IsNullOrWhiteSpace(scriptCode))
+        {
+            return false;
+        }
+
+        LoadedCombineScript loaded;
+        lock (gate)
+        {
+            var hash = scriptCode.GetHashCode();
+            if (!combineScripts.TryGetValue(ruleId, out var existing) || existing.SourceHash != hash)
+            {
+                existing = CompileCombineScript(ruleId, scriptCode, hash);
+                combineScripts[ruleId] = existing;
+            }
+            loaded = existing;
+        }
+
+        if (!loaded.IsRunnable)
+        {
+            return false;
+        }
+
+        try
+        {
+            var ctx = DynValue.NewTable(loaded.Script);
+            ctx.Table.Set("now_ms", DynValue.NewNumber((now - DateTimeOffset.UnixEpoch).TotalMilliseconds));
+            foreach (var (name, value) in sources)
+            {
+                ctx.Table.Set(name, DynValue.NewNumber(value));
+            }
+
+            return loaded.Script.Call(loaded.Evaluate, ctx).CastToBool();
+        }
+        catch (ScriptRuntimeException ex)
+        {
+            logger.LogWarning("Lua runtime error in combine script {RuleId}: {Error}", ruleId, ex.DecoratedMessage);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Lua runtime error in combine script {RuleId}.", ruleId);
+            return false;
+        }
+    }
+
+    private LoadedCombineScript CompileCombineScript(string ruleId, string scriptCode, int hash)
+    {
+        try
+        {
+            var script = new Script(CoreModules.Preset_HardSandbox)
+            {
+                Options = { ScriptLoader = new InvalidScriptLoader() }
+            };
+            script.DoString(scriptCode);
+
+            var evaluate = script.Globals.Get("evaluate");
+            if (evaluate.Type != DataType.Function)
+            {
+                logger.LogWarning("Combine script {RuleId} does not define an evaluate(ctx) function — disabling.", ruleId);
+                return new LoadedCombineScript(null!, DynValue.Nil, hash);
+            }
+
+            return new LoadedCombineScript(script, evaluate, hash);
+        }
+        catch (SyntaxErrorException ex)
+        {
+            logger.LogWarning("Lua compile error in combine script {RuleId}: {Error}", ruleId, ex.DecoratedMessage);
+            return new LoadedCombineScript(null!, DynValue.Nil, hash);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to load combine script {RuleId}.", ruleId);
+            return new LoadedCombineScript(null!, DynValue.Nil, hash);
+        }
+    }
+
     public void Remove(string ruleId)
     {
         lock (gate)
         {
             scripts.Remove(ruleId);
+            combineScripts.Remove(ruleId);
         }
     }
 
@@ -265,6 +380,7 @@ public sealed class LuaScriptEngine : IDisposable
         }
         disposed = true;
         scripts.Clear();
+        combineScripts.Clear();
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -330,6 +446,12 @@ public sealed class LuaScriptEngine : IDisposable
             LastError: "compile failed",
             LastErrorAtUtc: DateTimeOffset.UtcNow,
             LastInvokeAtUtc: DateTimeOffset.MinValue);
+    }
+
+    /// <summary>Compiled state for <see cref="EvaluateCombine"/> — deliberately smaller than <see cref="LoadedScript"/> since combine scripts carry no persistent Lua-side state or ctx callbacks.</summary>
+    private sealed record LoadedCombineScript(Script Script, DynValue Evaluate, int SourceHash)
+    {
+        public bool IsRunnable => Script is not null && Evaluate.Type == DataType.Function;
     }
 
     /// <summary>
