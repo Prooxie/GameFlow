@@ -2,7 +2,10 @@
 
 # ⊕ GameFlow
 
-**Cross-platform gamepad tooling for speedrunners and power users.**
+**Cross-platform gamepad tooling for anyone.**
+
+Ultimate multi-platform, multi-language controller tool for remapping and compability layering, Any input device in, any virtual controller out: Xbox, PlayStation or Nintendo. third-party gamepad, keyboard or/and mouse. Built on SDL3, HIDMaestro, VigemBus, and .NET 10 and Avalonia.
+
 Autofire, remapping, stick shaping, freeze macros, keyboard/mouse-as-gamepad, and virtual controller output — all in one clean UI.
 
 **v1.0.0 Beta** · Built with **.NET 10** · **Avalonia UI** · **SDL3** · **ViGEm** · **HIDMaestro**
