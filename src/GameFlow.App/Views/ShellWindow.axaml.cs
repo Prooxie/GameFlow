@@ -37,10 +37,24 @@ public partial class ShellWindow : Window
 
     protected override void OnDataContextChanged(EventArgs e)
     {
-        shellViewModel?.ControlMappingRequested -= OnControlMappingRequested;
+        // Explicit null checks rather than `shellViewModel?.Event -= handler`:
+        // the null-conditional operator cannot be used for event
+        // subscription in C# (the left side of += / -= must be an event
+        // access, not a null-conditional expression). Behaviour is
+        // identical — subscribe/unsubscribe only when the view model is
+        // present.
+        if (shellViewModel is not null)
+        {
+            shellViewModel.ControlMappingRequested -= OnControlMappingRequested;
+        }
+
         base.OnDataContextChanged(e);
         shellViewModel = DataContext as ShellViewModel;
-        shellViewModel?.ControlMappingRequested += OnControlMappingRequested;
+
+        if (shellViewModel is not null)
+        {
+            shellViewModel.ControlMappingRequested += OnControlMappingRequested;
+        }
     }
 
     private async void OnControlMappingRequested(object? sender, ControlMappingRequestedEventArgs e)
@@ -101,7 +115,12 @@ public partial class ShellWindow : Window
         Opened  -= OnOpened;
         Closing -= OnClosing;
         Closed  -= OnClosed;
-        shellViewModel?.ControlMappingRequested -= OnControlMappingRequested;
+        if (shellViewModel is not null)
+        {
+            // Same reason as OnDataContextChanged above: `?.` is not
+            // valid for event unsubscription.
+            shellViewModel.ControlMappingRequested -= OnControlMappingRequested;
+        }
         shellViewModel = null;
 
         if (DataContext is IDisposable disposable)

@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 namespace GameFlow.App.ViewModels;
 
 /// <summary>
-/// One entry in the left menu column (PadForge-style): an icon + name +
+/// One entry in the left menu column (compact style): an icon + name +
 /// click command that jumps to the right tab and selects the underlying
 /// device or slot. The instance carries no state beyond its display
 /// fields, so simple <see langword="get"/>-only properties work — no

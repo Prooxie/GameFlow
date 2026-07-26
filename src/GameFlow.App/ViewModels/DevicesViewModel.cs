@@ -22,7 +22,7 @@ public sealed record DeviceCategoryOption(DeviceCategory? Category, string Label
 ///
 /// <para>
 /// Note on scope: per-device live raw axis/button visualization (like
-/// the PadForge reference) isn't possible from this layer — only the
+/// the the original reference) isn't possible from this layer — only the
 /// active/selected device produces a live snapshot, and that's already
 /// shown on the Dashboard. This view is the discovery + identity
 /// surface: what's connected, its VID/PID, and which one is active.

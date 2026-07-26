@@ -128,6 +128,42 @@ internal static partial class SdlInterop
     [return: MarshalAs(UnmanagedType.I1)]
     internal static partial bool GetGamepadButton(IntPtr gamepad, GamepadButton button);
 
+    /// <summary>
+    /// SDL_SensorType — values verified against upstream
+    /// include/SDL3/SDL_sensor.h, not written from memory.
+    /// </summary>
+    internal enum SensorType
+    {
+        Invalid = -1,
+        Unknown = 0,
+        Accel = 1,
+        Gyro = 2,
+        AccelLeft = 3,
+        GyroLeft = 4,
+        AccelRight = 5,
+        GyroRight = 6
+    }
+
+    [LibraryImport("SDL3", EntryPoint = "SDL_GamepadHasSensor")]
+    [return: MarshalAs(UnmanagedType.I1)]
+    internal static partial bool GamepadHasSensor(IntPtr gamepad, SensorType type);
+
+    [LibraryImport("SDL3", EntryPoint = "SDL_SetGamepadSensorEnabled")]
+    [return: MarshalAs(UnmanagedType.I1)]
+    internal static partial bool SetGamepadSensorEnabled(IntPtr gamepad, SensorType type, [MarshalAs(UnmanagedType.I1)] bool enabled);
+
+    /// <summary>
+    /// Fills <paramref name="data"/> with <paramref name="numValues"/> floats.
+    /// Per the upstream header: gyro is RADIANS PER SECOND, positive =
+    /// counter-clockwise, and the three values are [0]=pitch (x axis),
+    /// [1]=yaw (y axis), [2]=roll (z axis). Accelerometer is m/s².
+    /// Both use axes: -X..+X left..right, -Y..+Y bottom..top,
+    /// -Z..+Z farther..closer (controller held in front of you).
+    /// </summary>
+    [LibraryImport("SDL3", EntryPoint = "SDL_GetGamepadSensorData")]
+    [return: MarshalAs(UnmanagedType.I1)]
+    internal static partial bool GetGamepadSensorData(IntPtr gamepad, SensorType type, [Out] float[] data, int numValues);
+
     [LibraryImport("SDL3", EntryPoint = "SDL_GetNumGamepadTouchpads")]
     internal static partial int GetNumGamepadTouchpads(IntPtr gamepad);
 

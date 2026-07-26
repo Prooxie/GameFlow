@@ -39,12 +39,43 @@ public static class DependencyInjection
             _ = services.AddSingleton<Runtime.Input.IKeyboardStateSource>(sp => sp.GetRequiredService<Runtime.Input.WindowsRawInputReader>());
             _ = services.AddSingleton<Runtime.Input.IMouseStateSource>(sp => sp.GetRequiredService<Runtime.Input.WindowsRawInputReader>());
             _ = services.AddSingleton<Runtime.Input.IRawInputAttacher>(sp => sp.GetRequiredService<Runtime.Input.WindowsRawInputReader>());
+            _ = services.AddSingleton<Runtime.Input.IMouseOutputWriter, Runtime.Input.Win32MouseOutputWriter>();
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            // evdev (read) + uinput (write) — real keyboard/mouse-as-a-
+            // source reading AND real touchpad-mouse output, both under
+            // Runtime/Input/Linux/. No Linux equivalent of "attach to a
+            // window" exists for evdev (reads are already system-wide
+            // once permitted), so IRawInputAttacher reuses the same
+            // NullRawInputAttacher the "else" branch below uses.
+            _ = services.AddSingleton<Runtime.Input.Linux.LinuxRawInputReader>();
+            _ = services.AddSingleton<Runtime.Input.IKeyboardStateSource>(sp => sp.GetRequiredService<Runtime.Input.Linux.LinuxRawInputReader>());
+            _ = services.AddSingleton<Runtime.Input.IMouseStateSource>(sp => sp.GetRequiredService<Runtime.Input.Linux.LinuxRawInputReader>());
+            _ = services.AddSingleton<Runtime.Input.IRawInputAttacher, Runtime.Input.NullRawInputAttacher>();
+            _ = services.AddSingleton<Runtime.Input.IMouseOutputWriter, Runtime.Input.Linux.LinuxMouseOutputWriter>();
+        }
+        else if (OperatingSystem.IsMacOS())
+        {
+            // CGEventTap (read) + CGEventPost (write) — see
+            // Runtime/Input/Mac/. No per-device distinction exists at
+            // this API level (one aggregate stream for every
+            // keyboard/mouse), so IKeyboardStateSource/IMouseStateSource
+            // route through the aggregate-read fallback path those
+            // interfaces already define. No window-attach concept here
+            // either — same NullRawInputAttacher as Linux.
+            _ = services.AddSingleton<Runtime.Input.Mac.MacRawInputReader>();
+            _ = services.AddSingleton<Runtime.Input.IKeyboardStateSource>(sp => sp.GetRequiredService<Runtime.Input.Mac.MacRawInputReader>());
+            _ = services.AddSingleton<Runtime.Input.IMouseStateSource>(sp => sp.GetRequiredService<Runtime.Input.Mac.MacRawInputReader>());
+            _ = services.AddSingleton<Runtime.Input.IRawInputAttacher, Runtime.Input.NullRawInputAttacher>();
+            _ = services.AddSingleton<Runtime.Input.IMouseOutputWriter, Runtime.Input.Mac.MacMouseOutputWriter>();
         }
         else
         {
             _ = services.AddSingleton<Runtime.Input.IKeyboardStateSource, Runtime.Input.NullKeyboardStateSource>();
             _ = services.AddSingleton<Runtime.Input.IMouseStateSource, Runtime.Input.NullMouseStateSource>();
             _ = services.AddSingleton<Runtime.Input.IRawInputAttacher, Runtime.Input.NullRawInputAttacher>();
+            _ = services.AddSingleton<Runtime.Input.IMouseOutputWriter, Runtime.Input.NullMouseOutputWriter>();
         }
         _ = services.AddSingleton<Runtime.Slots.SlotRegistry>();
         _ = services.AddSingleton<Runtime.Slots.SlotSnapshotStore>();
@@ -56,6 +87,15 @@ public static class DependencyInjection
         _ = services.AddHostedService<RuntimeCoordinator>();
         _ = services.AddHostedService<RawInputEnumerationService>();
         _ = services.AddHostedService<Overlay.OverlayServer>();
+
+        // Web controller: the hub is shared state between the socket
+        // server (writes phone input) and the input source (reads it),
+        // so it must be a singleton BOTH resolve to — registering the
+        // server as a hosted service alone would give it a separate instance.
+        _ = services.AddSingleton<Runtime.Web.WebControllerHub>();
+        _ = services.AddSingleton<Runtime.Web.WebControllerServer>();
+        _ = services.AddHostedService(sp => sp.GetRequiredService<Runtime.Web.WebControllerServer>());
+        _ = services.AddHostedService<Runtime.Web.WebControllerEnumerationService>();
 
         // Step 3 of the roadmap: requirement & update checks.
         _ = services.AddSingleton<IRequirementChecker, DefaultRequirementChecker>();

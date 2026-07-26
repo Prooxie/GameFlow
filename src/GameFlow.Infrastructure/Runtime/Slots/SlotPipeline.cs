@@ -78,5 +78,15 @@ public sealed class SlotPipeline : IAsyncDisposable
     /// toggle — reconfigures the EXISTING virtual device instead of
     /// destroying and recreating it on every 400 ms rebuild.
     /// </summary>
-    public ValueTask DisposeAsync() => ownsOutputSink ? outputSink.DisposeAsync() : ValueTask.CompletedTask;
+    /// <summary>
+    /// The mapping pipeline is always freshly constructed per SlotPipeline
+    /// (unlike the sink, which the runtime caches across rebuilds) — so
+    /// unconditionally disposing it here is correct every time, releasing
+    /// any ControlScriptRule's compiled Lua scripts this slot had loaded.
+    /// </summary>
+    public ValueTask DisposeAsync()
+    {
+        pipeline.Dispose();
+        return ownsOutputSink ? outputSink.DisposeAsync() : ValueTask.CompletedTask;
+    }
 }

@@ -357,7 +357,7 @@ public sealed class HidMaestroOutputSink : IOutputSink, GameFlow.Infrastructure.
     // virtual pad; the consumer decodes + forwards. This is a best-effort
     // decode of the common rumble layout into normalized (low, high) →
     // RumbleReceived, which the slot runtime forwards to the physical
-    // device. VERIFY these byte offsets against PadForge's output
+    // device. VERIFY these byte offsets against the output
     // handler for the profiles you emit.
     private void OnOutputReceived(HMController sender, HMOutputPacket packet)
     {
