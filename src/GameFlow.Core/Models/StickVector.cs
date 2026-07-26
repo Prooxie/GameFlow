@@ -9,6 +9,9 @@ public readonly record struct StickVector(float X, float Y)
         return MathF.Abs(X) < epsilon && MathF.Abs(Y) < epsilon;
     }
 
+    /// <summary>Euclidean length of the vector, clamped to [0,1] (a diagonal-pushed stick can slightly exceed 1 on raw hardware).</summary>
+    public float Magnitude => Math.Clamp(MathF.Sqrt((X * X) + (Y * Y)), 0f, 1f);
+
     public StickVector Clamp()
     {
         return new(Math.Clamp(X, -1f, 1f), Math.Clamp(Y, -1f, 1f));

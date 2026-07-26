@@ -14,13 +14,13 @@ namespace GameFlow.Infrastructure.Runtime.Slots;
 /// through this registry.
 ///
 /// <para>Capacity is capped at <see cref="MaxSlots"/> (16, matching
-/// PadForge's MaxPads). All mutations persist immediately and raise
+/// the MaxPads ceiling). All mutations persist immediately and raise
 /// <see cref="SlotsChanged"/>. Thread-safe via a single lock; the change
 /// event is raised outside the lock.</para>
 /// </summary>
 public sealed class SlotRegistry
 {
-    /// <summary>Maximum number of slots (mirrors PadForge MaxPads).</summary>
+    /// <summary>Maximum number of slots (mirrors MaxPads ceiling).</summary>
     public const int MaxSlots = 16;
 
     private readonly ILogger<SlotRegistry> logger;

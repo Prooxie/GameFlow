@@ -21,7 +21,7 @@ public enum VirtualControllerKind
 /// A per-device output template — what virtual controller a physical
 /// device should present through HidMaestro, plus its lighting, rumble,
 /// force-feedback and adaptive-trigger configuration. The field set is
-/// grounded in PadForge's slot configs (ExtendedSlotConfig /
+/// grounded in the established slot-config shape (ExtendedSlotConfig /
 /// PlayStationSlotConfig) so it maps cleanly onto HidMaestro's
 /// <c>HMProfileBuilder</c> / <c>HidDescriptorBuilder</c> once the output
 /// sink is wired (Phase 2b).
@@ -97,7 +97,7 @@ public sealed class DeviceOutputTemplate
 
     /// <summary>
     /// (Vid, Pid) the runtime-built generic device advertises. Defaults
-    /// match PadForge's custom-profile convention (0xBEEF:0xF000) so a
+    /// match the custom-profile convention (0xBEEF:0xF000) so a
     /// GameFlow generic pad is recognisable in device lists and never
     /// collides with a real vendor id by accident.
     /// </summary>

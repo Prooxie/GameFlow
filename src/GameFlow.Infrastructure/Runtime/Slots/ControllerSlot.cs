@@ -7,7 +7,7 @@ namespace GameFlow.Infrastructure.Runtime.Slots;
 /// assigned physical input devices through its own mapping pipeline into
 /// one virtual controller described by <see cref="OutputTemplate"/>.
 ///
-/// <para>This is the Phase 3 analogue of PadForge's per-pad slot config
+/// <para>This is the Phase 3 per-pad slot config
 /// (SlotCreated / SlotEnabled / SlotControllerTypes + assigned devices),
 /// adapted to Autofire: the per-slot output configuration is the
 /// <see cref="DeviceOutputTemplate"/> introduced in Phase 2a, now owned
@@ -33,7 +33,7 @@ public sealed class ControllerSlot
     /// <summary>
     /// Catalog ids of the physical input devices feeding this slot. A slot
     /// may aggregate several devices (e.g. a stick + a throttle), matching
-    /// PadForge's multi-device-per-slot model.
+    /// the multi-device-per-slot model.
     /// </summary>
     public List<string> InputDeviceIds { get; set; } = [];
 

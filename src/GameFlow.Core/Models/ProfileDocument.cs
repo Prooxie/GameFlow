@@ -21,4 +21,7 @@ public sealed record ProfileDocument
     public string PreferredInputDeviceId { get; init; } = string.Empty;
     public UiPreferences Ui { get; init; } = new();
     public IReadOnlyList<MappingRule> Rules { get; init; } = [];
+
+    /// <summary>Layer definitions; membership is on each rule via <see cref="MappingRule.LayerId"/>. Empty by default — existing profiles load unaffected.</summary>
+    public IReadOnlyList<ShiftLayer> ShiftLayers { get; init; } = [];
 }

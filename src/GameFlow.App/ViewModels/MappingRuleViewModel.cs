@@ -47,6 +47,17 @@ public sealed record RuleKindOption(RuleKind Kind, string Label, string Descript
 
 public enum RuleKind
 {
+    /// <summary>
+    /// A rule type this editor has no dedicated UI for (yet). The
+    /// original model object is stashed verbatim and returned unchanged
+    /// by <see cref="MappingRuleViewModel.ToRule"/> — WITHOUT this,
+    /// FromRule's switch silently fell through for unknown types,
+    /// leaving kind at its ButtonRemap default, and the next profile
+    /// save REPLACED the real rule with a garbage ButtonRemapRule.
+    /// Silent data destruction on every edit of a profile containing a
+    /// newer rule type.
+    /// </summary>
+    Preserved,
     ButtonRemap,
     ButtonAutofire,
     StickThreshold,
@@ -212,6 +223,9 @@ public sealed class MappingRuleViewModel : ViewModelBase
     private string controlKey = string.Empty;
     private string scriptCode = string.Empty;
     private bool suppressScriptSourceInput;
+
+    /// <summary>The verbatim original for <see cref="RuleKind.Preserved"/> rows — see that member's doc.</summary>
+    private MappingRule? preservedRule;
 
     /// <summary>Editable timeline for a MultiButtonAutofire rule.</summary>
     public System.Collections.ObjectModel.ObservableCollection<MultiButtonStepViewModel> Steps { get; } = [];
@@ -760,6 +774,8 @@ public sealed class MappingRuleViewModel : ViewModelBase
 
     public string SummaryText => Kind switch
     {
+        RuleKind.Preserved =>
+            $"{preservedRule?.GetType().Name ?? "Rule"} — no visual editor yet; preserved as-is (edit via profile JSON).",
         RuleKind.ButtonRemap =>
             $"{ControlRuleMatcher.FormatButtonLabel(SourceButton)} → {ControlRuleMatcher.FormatButtonLabel(TargetButton)} · {FormatMode(Mode)}{FormatSuffix(SuppressSourceButton, "suppress src")}",
         RuleKind.ButtonAutofire =>
@@ -889,6 +905,11 @@ public sealed class MappingRuleViewModel : ViewModelBase
 
     public MappingRule ToRule()
     {
+        if (Kind == RuleKind.Preserved && preservedRule is not null)
+        {
+            return preservedRule with { Name = Name, Enabled = Enabled, Mode = Mode };
+        }
+
         return Kind switch
         {
             RuleKind.ButtonRemap => new ButtonRemapRule
@@ -1107,6 +1128,11 @@ public sealed class MappingRuleViewModel : ViewModelBase
                 viewModel.controlKey = typedRule.ControlKey;
                 viewModel.scriptCode = typedRule.ScriptCode;
                 viewModel.suppressScriptSourceInput = typedRule.SuppressSourceInput;
+                break;
+
+            default:
+                viewModel.kind = RuleKind.Preserved;
+                viewModel.preservedRule = rule;
                 break;
         }
 

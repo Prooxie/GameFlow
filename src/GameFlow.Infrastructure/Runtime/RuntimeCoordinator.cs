@@ -50,6 +50,7 @@ public sealed class RuntimeCoordinator(
     Slots.SlotRegistry slotRegistry,
     Slots.SlotSnapshotStore slotSnapshotStore,
     Slots.PhysicalPanelPinService physicalPanelPins,
+    Input.IMouseOutputWriter mouseOutputWriter,
     ILogger<RuntimeCoordinator> logger) : BackgroundService
 {
     private readonly IInputSourceFactory inputSourceFactory = inputSourceFactory;
@@ -61,6 +62,7 @@ public sealed class RuntimeCoordinator(
     private readonly Slots.SlotRegistry slotRegistry = slotRegistry;
     private readonly Slots.SlotSnapshotStore slotSnapshotStore = slotSnapshotStore;
     private readonly Slots.PhysicalPanelPinService physicalPanelPins = physicalPanelPins;
+    private readonly Input.IMouseOutputWriter mouseOutputWriter = mouseOutputWriter;
     private readonly ILogger<RuntimeCoordinator> logger = logger;
     private readonly SemaphoreSlim providerGate = new(1, 1);
 
@@ -89,12 +91,20 @@ public sealed class RuntimeCoordinator(
 
         slotRegistry.SlotsChanged += OnSlotsChanged;
 
+        // Declared here (not with `var` inside the try below) specifically
+        // so `finally` can reach it to dispose the final pipeline instance
+        // at shutdown — it previously couldn't, which was a genuine
+        // compile error (CS0103) once this method actually got exercised
+        // start-to-finish, not just something tree-sitter's syntax-only
+        // checking could have caught.
+        ControllerMappingPipeline? pipeline = null;
+
         try
         {
             await profileSession.EnsureInitializedAsync(stoppingToken);
 
             var activeProfile = profileSession.CurrentProfile;
-            var pipeline = new ControllerMappingPipeline(activeProfile);
+            pipeline = new ControllerMappingPipeline(activeProfile);
             var interval = GetPollingInterval(activeProfile.PollingRateHz);
             var nextTickAt = DateTimeOffset.UtcNow;
 
@@ -117,6 +127,7 @@ public sealed class RuntimeCoordinator(
                 {
                     var previousProfile = activeProfile;
                     activeProfile = profileSession.CurrentProfile;
+                    pipeline.Dispose(); // releases the outgoing pipeline's compiled Lua scripts
                     pipeline = new ControllerMappingPipeline(activeProfile);
                     interval = GetPollingInterval(activeProfile.PollingRateHz);
                     nextTickAt = DateTimeOffset.UtcNow;
@@ -148,6 +159,7 @@ public sealed class RuntimeCoordinator(
                         var outputSink = currentOutputSink ?? throw new InvalidOperationException("Output sink is not initialized.");
                         var physical = await inputSource.ReadAsync(stoppingToken);
                         var result = pipeline.Process(physical, now);
+                        mouseOutputWriter.MoveRelative(result.MouseDeltaX, result.MouseDeltaY);
 
                         await outputSink.WriteAsync(result.VirtualSnapshot, stoppingToken);
                         snapshotStore.Update(inputSource.DisplayName, outputSink.DisplayName, result);
@@ -289,6 +301,18 @@ public sealed class RuntimeCoordinator(
                 await slotRuntime.DisposeAsync();
                 slotRuntime = null;
             }
+
+            // The top-level pipeline owns a LuaScriptEngine (compiled
+            // scripts + their persistent state tables). It was disposed
+            // on profile SWITCH but not here, so the final instance
+            // leaked at shutdown. Harmless in a process that's exiting
+            // anyway, but this method is also the restart path — and a
+            // coordinator that restarts repeatedly would leak one engine
+            // per restart.
+            // Null-guarded: EnsureInitializedAsync (or anything before the
+            // assignment above) could have thrown before pipeline was ever set.
+            pipeline?.Dispose();
+
             await DisposeProvidersAsync();
         }
     }
@@ -460,7 +484,7 @@ public sealed class RuntimeCoordinator(
         var multiInput = currentInputSource as Slots.IMultiDeviceInputSource
             ?? Slots.EmptyMultiDeviceInputSource.Instance;
 
-        slotRuntime ??= new Slots.SlotRuntime(slotRegistry, outputSinkFactory, slotSnapshotStore, profileRepository, logger);
+        slotRuntime ??= new Slots.SlotRuntime(slotRegistry, outputSinkFactory, slotSnapshotStore, profileRepository, mouseOutputWriter, logger);
 
         if (!slotRuntime.HasEnabledSlots)
         {

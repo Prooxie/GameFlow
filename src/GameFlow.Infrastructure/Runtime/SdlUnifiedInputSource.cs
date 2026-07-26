@@ -14,6 +14,9 @@ public sealed class SdlUnifiedInputSource : IInputSource, GameFlow.Infrastructur
     private readonly GameFlow.Infrastructure.Runtime.Input.ButtonMapStore buttonMapStore;
     private readonly GameFlow.Infrastructure.Runtime.Input.IKeyboardStateSource keyboardStateSource;
     private readonly GameFlow.Infrastructure.Runtime.Input.IMouseStateSource mouseStateSource;
+
+    /// <summary>Phones connected to the web controller server. Answered directly in <see cref="ReadDevice"/> — they never touch SDL.</summary>
+    private readonly GameFlow.Infrastructure.Runtime.Web.WebControllerHub webControllerHub;
     private OpenedDevice? openedDevice;
     // Per-slot device handles (slot mode), keyed by catalog device id —
     // independent of the single `openedDevice` used by the legacy
@@ -58,13 +61,14 @@ public sealed class SdlUnifiedInputSource : IInputSource, GameFlow.Infrastructur
     private readonly Dictionary<string, DateTime> openRetryNotBefore = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> loggedNonSdlSkips = new(StringComparer.OrdinalIgnoreCase);
 
-    public SdlUnifiedInputSource(ILogger<SdlUnifiedInputSource> logger, InputDeviceCatalog inputDeviceCatalog, GameFlow.Infrastructure.Runtime.Input.ButtonMapStore buttonMapStore, GameFlow.Infrastructure.Runtime.Input.IKeyboardStateSource keyboardStateSource, GameFlow.Infrastructure.Runtime.Input.IMouseStateSource mouseStateSource)
+    public SdlUnifiedInputSource(ILogger<SdlUnifiedInputSource> logger, InputDeviceCatalog inputDeviceCatalog, GameFlow.Infrastructure.Runtime.Input.ButtonMapStore buttonMapStore, GameFlow.Infrastructure.Runtime.Input.IKeyboardStateSource keyboardStateSource, GameFlow.Infrastructure.Runtime.Input.IMouseStateSource mouseStateSource, GameFlow.Infrastructure.Runtime.Web.WebControllerHub webControllerHub)
     {
         this.logger = logger;
         this.inputDeviceCatalog = inputDeviceCatalog;
         this.buttonMapStore = buttonMapStore;
         this.keyboardStateSource = keyboardStateSource;
         this.mouseStateSource = mouseStateSource;
+        this.webControllerHub = webControllerHub;
 
         SdlInterop.SetMainReady();
         // SDL_JOYSTICK_THREAD = 0 (was 1). With the background joystick thread
@@ -273,6 +277,17 @@ public sealed class SdlUnifiedInputSource : IInputSource, GameFlow.Infrastructur
             return ControllerSnapshot.Empty("No device") with { Timestamp = DateTimeOffset.UtcNow };
         }
 
+        // Web controller pads are served straight from the hub — they
+        // never touch SDL. Intercepting here rather than teaching
+        // SlotRuntime about a second source keeps every existing slot
+        // feature (multi-device merge, per-slot profiles, the whole rule
+        // pipeline) working on a phone with no special-casing at all.
+        var webPadIndex = Web.WebControllerDeviceScanner.TryParsePadIndex(deviceId);
+        if (webPadIndex >= 0)
+        {
+            return webControllerHub.GetSnapshot(webPadIndex);
+        }
+
         // Lock-free by design: keyboards/mice are synthesized from Raw Input
         // (no SDL), everything else is served from the snapshot the SDL
         // worker last published. Callers can NEVER block behind a device
@@ -398,12 +413,84 @@ public sealed class SdlUnifiedInputSource : IInputSource, GameFlow.Infrastructur
         _ = openRetryNotBefore.Remove(deviceId);
         logger.LogInformation("SDL device {DeviceId} opened in {ElapsedMs} ms.", deviceId, openTimer.ElapsedMilliseconds);
 
+        // Motion sensors are OPT-IN in SDL — without this call every
+        // SDL_GetGamepadSensorData read returns nothing, even on a pad
+        // that fully supports gyro. Failures are non-fatal: a pad
+        // without the sensor just keeps reporting zero motion.
+        if (kind == DeviceKind.Gamepad)
+        {
+            TryEnableMotionSensors(handle, deviceId);
+        }
+
         var displayName = inputDeviceCatalog.TryGetById(deviceId, out var catalogInfo)
             ? catalogInfo!.DisplayName
             : deviceId;
         var opened = new OpenedDevice(deviceId, displayName, instanceId, kind, handle);
         slotHandles[deviceId] = opened;
         return opened;
+    }
+
+    /// <summary>
+    /// Turns on gyro + accelerometer if the pad has them. Both are
+    /// independent: a pad can have one without the other (and the
+    /// Player/World reference frames degrade to Local when the
+    /// accelerometer is absent — see GyroMapRule).
+    /// </summary>
+    private void TryEnableMotionSensors(IntPtr handle, string deviceId)
+    {
+        try
+        {
+            var hasGyro = SdlInterop.GamepadHasSensor(handle, SdlInterop.SensorType.Gyro);
+            var hasAccel = SdlInterop.GamepadHasSensor(handle, SdlInterop.SensorType.Accel);
+
+            if (hasGyro)
+            {
+                _ = SdlInterop.SetGamepadSensorEnabled(handle, SdlInterop.SensorType.Gyro, true);
+            }
+            if (hasAccel)
+            {
+                _ = SdlInterop.SetGamepadSensorEnabled(handle, SdlInterop.SensorType.Accel, true);
+            }
+
+            if (hasGyro || hasAccel)
+            {
+                logger.LogInformation(
+                    "SDL device {DeviceId}: motion sensors enabled (gyro: {HasGyro}, accelerometer: {HasAccel}).",
+                    deviceId, hasGyro, hasAccel);
+            }
+        }
+        catch (Exception exception)
+        {
+            logger.LogDebug(exception, "SDL device {DeviceId}: enabling motion sensors failed.", deviceId);
+        }
+    }
+
+    /// <summary>
+    /// Reads gyro + accelerometer for this tick. Returns all-zero with
+    /// hasGyro=false on pads without the sensor, which is what lets the
+    /// pipeline distinguish "held perfectly still" from "no gyro here".
+    /// </summary>
+    private (bool HasGyro, float Pitch, float Yaw, float Roll, float AccelX, float AccelY, float AccelZ)
+        ReadMotionState(IntPtr gamepad)
+    {
+        var gyro = new float[3];
+        var accel = new float[3];
+
+        ReadBreadcrumb("gamepad: reading GYRO sensor data");
+        var gyroOk = SdlInterop.GetGamepadSensorData(gamepad, SdlInterop.SensorType.Gyro, gyro, 3);
+
+        ReadBreadcrumb("gamepad: reading ACCEL sensor data");
+        var accelOk = SdlInterop.GetGamepadSensorData(gamepad, SdlInterop.SensorType.Accel, accel, 3);
+
+        if (!gyroOk && !accelOk)
+        {
+            return (false, 0f, 0f, 0f, 0f, 0f, 0f);
+        }
+
+        // Index order is SDL's documented contract: [0]=pitch, [1]=yaw, [2]=roll.
+        return (gyroOk,
+            gyroOk ? gyro[0] : 0f, gyroOk ? gyro[1] : 0f, gyroOk ? gyro[2] : 0f,
+            accelOk ? accel[0] : 0f, accelOk ? accel[1] : 0f, accelOk ? accel[2] : 0f);
     }
 
     /// <summary>Closes cached slot handles for devices no longer present.</summary>
@@ -786,9 +873,12 @@ public sealed class SdlUnifiedInputSource : IInputSource, GameFlow.Infrastructur
         buttons[ButtonId.RightTriggerButton] = rightTrigger >= 0.65f;
 
         ReadBreadcrumb("gamepad: reading TOUCHPAD (DualSense-specific)");
-        var touchContactCount = ReadTouchContactCount(device.Handle);
+        var touchState = ReadTouchState(device.Handle);
         ReadBreadcrumb("gamepad: touchpad read returned OK");
-        if (touchContactCount > 0)
+
+        var motion = ReadMotionState(device.Handle);
+        ReadBreadcrumb("gamepad: motion read returned OK");
+        if (touchState.ContactCount > 0)
         {
             buttons[ButtonId.Touchpad] = true;
         }
@@ -823,7 +913,17 @@ public sealed class SdlUnifiedInputSource : IInputSource, GameFlow.Infrastructur
             RightStick = rightStick,
             LeftTrigger = leftTrigger,
             RightTrigger = rightTrigger,
-            TouchContactCount = touchContactCount,
+            TouchContactCount = touchState.ContactCount,
+            TouchDown = touchState.PrimaryDown,
+            TouchX = touchState.PrimaryX,
+            TouchY = touchState.PrimaryY,
+            HasGyro = motion.HasGyro,
+            GyroPitch = motion.Pitch,
+            GyroYaw = motion.Yaw,
+            GyroRoll = motion.Roll,
+            AccelX = motion.AccelX,
+            AccelY = motion.AccelY,
+            AccelZ = motion.AccelZ,
             Buttons = buttons,
             Timestamp = DateTimeOffset.UtcNow
         };
@@ -938,11 +1038,22 @@ public sealed class SdlUnifiedInputSource : IInputSource, GameFlow.Infrastructur
         };
     }
 
-    private int ReadTouchContactCount(IntPtr gamepad)
+    /// <summary>
+    /// Reads every touchpad/finger slot the hardware reports and returns
+    /// the total contact count plus the FIRST currently-down finger's
+    /// position — the "primary" finger for single-finger interactions
+    /// (mouse/stick-anchor/D-pad mapping). SDL_GetGamepadTouchpadFinger
+    /// already returns x/y/pressure; this used to discard all three
+    /// (`out _, out _, out _`) and keep only the down flag.
+    /// </summary>
+    private (int ContactCount, bool PrimaryDown, float PrimaryX, float PrimaryY) ReadTouchState(IntPtr gamepad)
     {
         ReadBreadcrumb("touchpad: GetNumGamepadTouchpads");
         var touchpads = Math.Max(0, SdlInterop.GetNumGamepadTouchpads(gamepad));
         var activeContacts = 0;
+        var primaryDown = false;
+        var primaryX = 0f;
+        var primaryY = 0f;
 
         for (var touchpadIndex = 0; touchpadIndex < touchpads; touchpadIndex++)
         {
@@ -951,7 +1062,7 @@ public sealed class SdlUnifiedInputSource : IInputSource, GameFlow.Infrastructur
             for (var fingerIndex = 0; fingerIndex < fingers; fingerIndex++)
             {
                 ReadBreadcrumb($"touchpad: GetGamepadTouchpadFinger (tp {touchpadIndex}, finger {fingerIndex})");
-                if (!SdlInterop.GetGamepadTouchpadFinger(gamepad, touchpadIndex, fingerIndex, out var down, out _, out _, out _))
+                if (!SdlInterop.GetGamepadTouchpadFinger(gamepad, touchpadIndex, fingerIndex, out var down, out var x, out var y, out _))
                 {
                     continue;
                 }
@@ -959,11 +1070,17 @@ public sealed class SdlUnifiedInputSource : IInputSource, GameFlow.Infrastructur
                 if (down != 0)
                 {
                     activeContacts++;
+                    if (!primaryDown)
+                    {
+                        primaryDown = true;
+                        primaryX = x;
+                        primaryY = y;
+                    }
                 }
             }
         }
 
-        return activeContacts;
+        return (activeContacts, primaryDown, primaryX, primaryY);
     }
 
     private void RefreshDeviceCatalog()

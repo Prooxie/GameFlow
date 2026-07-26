@@ -15,8 +15,8 @@ namespace GameFlow.Infrastructure.Runtime;
 /// pump. The catalog's change-gated publish means a stable set of
 /// devices produces no event churn.</para>
 ///
-/// <para><b>Windows-only.</b> On other platforms the service starts and
-/// immediately idles — the scanner returns nothing.</para>
+/// <para><b>Windows, Linux, and macOS.</b> On other platforms the
+/// service starts and immediately idles — no scanner exists yet.</para>
 /// </summary>
 public sealed class RawInputEnumerationService(
     InputDeviceCatalog catalog,
@@ -27,20 +27,23 @@ public sealed class RawInputEnumerationService(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (!OperatingSystem.IsWindows())
+        if (!OperatingSystem.IsWindows() && !OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS())
         {
-            return; // Raw Input is Windows-only; nothing to enumerate.
+            return; // Raw Input / evdev / CGEventTap: nothing to enumerate on this platform.
         }
 
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                catalog.ReplaceDevices(SourceKey, RawInputDeviceScanner.Scan());
+                var devices = OperatingSystem.IsWindows() ? RawInputDeviceScanner.Scan()
+                    : OperatingSystem.IsLinux() ? Input.Linux.LinuxInputDeviceScanner.Scan(logger)
+                    : Input.Mac.MacInputDeviceScanner.Scan();
+                catalog.ReplaceDevices(SourceKey, devices);
             }
             catch (Exception exception)
             {
-                logger.LogDebug(exception, "Raw Input keyboard/mouse enumeration failed.");
+                logger.LogDebug(exception, "Keyboard/mouse enumeration failed.");
             }
 
             try

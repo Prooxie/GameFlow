@@ -120,7 +120,7 @@
     <Grid Grid.Row="1" ColumnDefinitions="240,*" ColumnSpacing="0">
 
       <!-- Single unified navigation column: the section nav (Dashboard /
-           Profiles / Devices) sits at the top, the PadForge-style device
+           Profiles / Devices) sits at the top, the Compact device
            + slot lists fill the middle, and Options is pinned at the
            bottom. This used to be TWO side-by-side columns — this 240px
            sidebar PLUS the TabControl's own 210px left tab strip — which

@@ -332,7 +332,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     public bool HasControllerPanels => ControllerPanels.Count > 0;
     public bool HasNoControllerPanels => ControllerPanels.Count == 0;
 
-    // ─── PadForge-style menu column ─────────────────────────────────────────
+    // ─── Compact menu column ─────────────────────────────────────────
 
     /// <summary>Index of the active outer tab (0=Dashboard, 1=Profiles, 2=Devices).</summary>
     private int outerNavSelectedIndex;

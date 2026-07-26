@@ -23,6 +23,7 @@ public sealed class SlotRuntime : IAsyncDisposable
     private readonly IOutputSinkFactory outputSinkFactory;
     private readonly SlotSnapshotStore snapshotStore;
     private readonly IProfileRepository profileRepository;
+    private readonly Input.IMouseOutputWriter mouseOutputWriter;
     private readonly ILogger logger;
 
     private readonly List<SlotPipeline> pipelines = [];
@@ -50,12 +51,13 @@ public sealed class SlotRuntime : IAsyncDisposable
 
     public SlotRuntime(SlotRegistry registry, IOutputSinkFactory outputSinkFactory,
         SlotSnapshotStore snapshotStore,
-        IProfileRepository profileRepository, ILogger logger)
+        IProfileRepository profileRepository, Input.IMouseOutputWriter mouseOutputWriter, ILogger logger)
     {
         this.registry = registry;
         this.outputSinkFactory = outputSinkFactory;
         this.snapshotStore = snapshotStore;
         this.profileRepository = profileRepository;
+        this.mouseOutputWriter = mouseOutputWriter;
         this.logger = logger;
     }
 
@@ -258,6 +260,7 @@ public sealed class SlotRuntime : IAsyncDisposable
                 }
 
                 var result = await pipeline.ProcessAsync(snapshot, now, cancellationToken);
+                mouseOutputWriter.MoveRelative(result.MouseDeltaX, result.MouseDeltaY);
                 snapshotStore.Update(pipeline.SlotId, snapshot, result.VirtualSnapshot);
                 snapshotStore.SetOutputStatus(pipeline.SlotId, pipeline.OutputDisplayName);
                 // Lightbar removed: no per-tick SDL LED write to the physical
