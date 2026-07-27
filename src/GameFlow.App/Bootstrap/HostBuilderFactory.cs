@@ -104,6 +104,12 @@ public static class HostBuilderFactory
                 _ = services.AddSingleton<IProfileFileDialogService, ProfileFileDialogService>();
                 _ = services.AddSingleton<StartupChecksCoordinator>();
                 _ = services.AddTransient<SettingsDialogViewModel>();
+
+                // Per-device tuning editor. Transient: each slot/device
+                // pairing gets its own editor instance pointed at the
+                // shared DeviceSettingsStore singleton.
+                _ = services.AddTransient<DeviceSettingsEditorViewModel>();
+
                 _ = services.AddSingleton<ShellViewModel>();
                 _ = services.AddSingleton<ShellWindow>();
             });

@@ -76,6 +76,21 @@ public static class WebControllerProtocol
                 RightStick = new StickVector(ReadAxis(root, "rx"), ReadAxis(root, "ry")),
                 LeftTrigger = ReadUnit(root, "lt"),
                 RightTrigger = ReadUnit(root, "rt"),
+
+                // Phone motion. The browser reports rotation in degrees/s
+                // and the page converts to radians/s before sending, so
+                // these arrive already in SDL's units — meaning a phone
+                // drives GyroMapRule (reference frames, smoothing, Aim
+                // Engage) exactly like a DualSense, with no phone-specific
+                // path anywhere downstream.
+                HasGyro = ReadInt(root, "gyro") != 0,
+                GyroPitch = ReadSigned(root, "gp"),
+                GyroYaw = ReadSigned(root, "gy"),
+                GyroRoll = ReadSigned(root, "gr"),
+                AccelX = ReadSigned(root, "ax"),
+                AccelY = ReadSigned(root, "ay"),
+                AccelZ = ReadSigned(root, "az"),
+
                 Timestamp = DateTimeOffset.UtcNow
             };
         }
@@ -112,6 +127,26 @@ public static class WebControllerProtocol
 
     private static float ReadFloat(JsonElement root, string name) =>
         root.TryGetProperty(name, out var value) && value.TryGetDouble(out var parsed) ? (float)parsed : 0f;
+
+    /// <summary>
+    /// Signed, UNBOUNDED value for motion (rad/s, m/s²). Unlike sticks
+    /// and triggers these have no natural clamp range — a fast flick
+    /// legitimately exceeds any fixed bound, and clamping would silently
+    /// cap it. Still rejects NaN/infinity, which would otherwise poison
+    /// every downstream calculation.
+    /// </summary>
+    private static float ReadSigned(JsonElement root, string name)
+    {
+        var value = ReadFloat(root, name);
+        if (float.IsNaN(value) || float.IsInfinity(value))
+        {
+            return 0f;
+        }
+        // Sanity ceiling only — far beyond any real hand movement, so it
+        // never truncates genuine input, but stops a hostile client
+        // sending 1e30 and overflowing the maths downstream.
+        return Math.Clamp(value, -1000f, 1000f);
+    }
 
     private static float ClampFinite(float value, float min, float max)
     {

@@ -108,7 +108,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     public static string AppVersion { get; } =
         Assembly.GetEntryAssembly()?.GetName().Version is { } v
             ? $"v{v.Major}.{v.Minor}.{v.Build} Beta"
-            : "v1.0.0 Beta";
+            : "v1.0.1 Beta";
 
     public static string AppFooterText { get; } =
         $"Made by Proxy Darkness  ·  {AppVersion}  ·  © 2026";
@@ -128,6 +128,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfileCatalogService hidMaestroCatalog,
         GameFlow.Infrastructure.Runtime.Slots.PhysicalPanelPinService physicalPanelPins,
         GameFlow.Infrastructure.Runtime.DeviceCategoryOverrideStore deviceCategoryOverrides,
+        GameFlow.Infrastructure.Runtime.DeviceSettingsStore deviceSettingsStore,
         IProfileFileDialogService profileFileDialogService,
         IOptions<AppRuntimeOptions> runtimeOptions,
         ILoggerFactory loggerFactory,
@@ -155,6 +156,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         RenameProfileCommand             = new AsyncRelayCommand(RenameProfileAsync);
         DeleteProfileCommand             = new AsyncRelayCommand(DeleteProfileAsync, CanDeleteProfile);
         OpenControlEditorCommand         = new RelayCommand<string>(OpenControlEditor);
+        OpenDeviceSettingsCommand        = new RelayCommand<string>(OpenDeviceSettings);
         OpenSettingsCommand              = new AsyncRelayCommand(OpenSettingsAsync);
         AddVirtualControllerCommand      = new RelayCommand(AddVirtualControllerFromSidebar);
 
@@ -165,7 +167,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         ControllerStyleOptions = CreateControllerStyleOptions();
         MappingEditor          = new MappingEditorViewModel(loggerFactory.CreateLogger<MappingEditorViewModel>(), localizationService);
         MappingEditor.RulesChanged += OnMappingRulesChanged;
-        DevicesPanel           = new DevicesViewModel(inputDeviceCatalog, localizationService, deviceTemplateStore, buttonMapStore, keyboardStateSource, mouseStateSource, hidMaestroCatalog, deviceCategoryOverrides);
+        DevicesPanel           = new DevicesViewModel(inputDeviceCatalog, localizationService, deviceTemplateStore, buttonMapStore, keyboardStateSource, mouseStateSource, hidMaestroCatalog, deviceCategoryOverrides, deviceSettingsStore, slotRegistry);
         SlotsPanel             = new SlotsViewModel(slotRegistry, inputDeviceCatalog, deviceTemplateStore, profileSession, localizationService, hidMaestroCatalog);
 
         this.slotRegistry = slotRegistry;
@@ -269,7 +271,13 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     }
     public IRelayCommand<string> OpenControlEditorCommand      { get; }
 
+    /// <summary>Opens the per-device tuning editor for a slot. Parameter is the slot id.</summary>
+    public IRelayCommand<string> OpenDeviceSettingsCommand     { get; }
+
     public event EventHandler<ControlMappingRequestedEventArgs>? ControlMappingRequested;
+
+    /// <summary>Raised when a virtual panel is clicked; the shell window shows the dialog.</summary>
+    public event EventHandler<DeviceSettingsRequestedEventArgs>? DeviceSettingsRequested;
 
     // ─── Collections ──────────────────────────────────────────────────────────
 
@@ -1835,6 +1843,53 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         ControlConfigurationCards = grouped;
         OnPropertyChanged(nameof(HasControlConfigurationCards));
         OnPropertyChanged(nameof(HasNoControlConfigurationCards));
+    }
+
+    /// <summary>
+    /// Opens the per-device tuning editor for a slot's assigned device.
+    /// A slot with no device assigned has nothing to tune, so this is a
+    /// no-op rather than opening an empty editor.
+    /// </summary>
+    private void OpenDeviceSettings(string? slotId)
+    {
+        if (string.IsNullOrWhiteSpace(slotId))
+        {
+            return;
+        }
+
+        var slot = slotRegistry.GetSlots().FirstOrDefault(s => s.Id == slotId);
+        if (slot is null)
+        {
+            return;
+        }
+
+        // A slot with no device assigned has nothing to tune. Say so
+        // rather than swallowing the click: a panel that highlights on
+        // hover and then does nothing when clicked reads as broken, and
+        // "no device assigned" is the single most common reason a slot
+        // isn't behaving as expected.
+        if (slot.InputDeviceIds.Count == 0)
+        {
+            StatusText = "Assign a device to this slot before tuning it (Devices tab).";
+            return;
+        }
+
+        // Tuning is per slot AND per device; a multi-device slot tunes its
+        // first assigned device here. Per-device selection inside the
+        // editor is the natural follow-up once more than one is common.
+        var deviceId = slot.InputDeviceIds[0];
+        var displayName = inputDeviceCatalog.TryGetById(deviceId, out var info) && info is not null
+            ? info.DisplayName
+            : deviceId;
+
+        var editor = serviceProvider.GetService(typeof(DeviceSettingsEditorViewModel)) as DeviceSettingsEditorViewModel;
+        if (editor is null)
+        {
+            return;
+        }
+
+        editor.Load(slot.Id, deviceId, displayName);
+        DeviceSettingsRequested?.Invoke(this, new DeviceSettingsRequestedEventArgs(editor));
     }
 
     private void OpenControlEditor(string? selectionKey)

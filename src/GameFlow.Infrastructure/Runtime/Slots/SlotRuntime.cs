@@ -24,6 +24,7 @@ public sealed class SlotRuntime : IAsyncDisposable
     private readonly SlotSnapshotStore snapshotStore;
     private readonly IProfileRepository profileRepository;
     private readonly Input.IMouseOutputWriter mouseOutputWriter;
+    private readonly DeviceSettingsStore deviceSettingsStore;
     private readonly ILogger logger;
 
     private readonly List<SlotPipeline> pipelines = [];
@@ -51,13 +52,15 @@ public sealed class SlotRuntime : IAsyncDisposable
 
     public SlotRuntime(SlotRegistry registry, IOutputSinkFactory outputSinkFactory,
         SlotSnapshotStore snapshotStore,
-        IProfileRepository profileRepository, Input.IMouseOutputWriter mouseOutputWriter, ILogger logger)
+        IProfileRepository profileRepository, Input.IMouseOutputWriter mouseOutputWriter,
+        DeviceSettingsStore deviceSettingsStore, ILogger logger)
     {
         this.registry = registry;
         this.outputSinkFactory = outputSinkFactory;
         this.snapshotStore = snapshotStore;
         this.profileRepository = profileRepository;
         this.mouseOutputWriter = mouseOutputWriter;
+        this.deviceSettingsStore = deviceSettingsStore;
         this.logger = logger;
     }
 
@@ -247,14 +250,19 @@ public sealed class SlotRuntime : IAsyncDisposable
                 }
                 else if (deviceIds.Count == 1)
                 {
-                    snapshot = input.ReadDevice(deviceIds[0]);
+                    snapshot = ApplyDeviceSettings(pipeline.SlotId, deviceIds[0], input.ReadDevice(deviceIds[0]));
                 }
                 else
                 {
                     var snaps = new List<ControllerSnapshot>(deviceIds.Count);
                     foreach (var id in deviceIds)
                     {
-                        snaps.Add(input.ReadDevice(id));
+                        // Conditioned per device BEFORE merging. Doing it
+                        // after would apply one device's deadzone/curve to
+                        // the combined result, which is wrong whenever the
+                        // devices are tuned differently — and the whole
+                        // point of per-device settings is that they can be.
+                        snaps.Add(ApplyDeviceSettings(pipeline.SlotId, id, input.ReadDevice(id)));
                     }
                     snapshot = ControllerSnapshotMerger.Merge("Merged", snaps) with { Timestamp = now };
                 }
@@ -289,6 +297,21 @@ public sealed class SlotRuntime : IAsyncDisposable
         }
 
         return first;
+    }
+
+    /// <summary>
+    /// Applies this slot's tuning for one device. Short-circuits when the
+    /// device has no settings or they're all defaults — that's the common
+    /// case, and this runs per device per tick at up to 1000 Hz.
+    /// </summary>
+    private ControllerSnapshot ApplyDeviceSettings(string slotId, string deviceId, ControllerSnapshot snapshot)
+    {
+        var settings = deviceSettingsStore.Get(slotId, deviceId);
+        if (ReferenceEquals(settings, DeviceSettings.Default) || DeviceSettingsProcessor.IsIdentity(settings))
+        {
+            return snapshot;
+        }
+        return DeviceSettingsProcessor.Apply(snapshot, settings);
     }
 
     /// <summary>
