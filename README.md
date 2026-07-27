@@ -9,26 +9,21 @@
 **Ultimate multi-platform, multi-language controller tool for remapping and compability layering, Any input device in, any virtual controller out: Xbox, PlayStation or Nintendo. third-party gamepad, keyboard or/and mouse. Built on SDL3, HIDMaestro, VigemBus, and .NET 10 and Avalonia.**
 
 
+**v1.0.0 Beta** · Built with **.NET 10** · **Avalonia UI** · **SDL3** · **HIDMaestro**
 
-**Autofire, remapping, stick shaping, freeze macros, keyboard/mouse-as-gamepad, and virtual controller output — all in one clean UI.**
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-informational)](#requirements)
+[![GitHub](https://img.shields.io/badge/GitHub-Prooxie%2FGameFlow-181717?logo=github)](https://github.com/Prooxie/GameFlow)
+[![Made by Proxy Darkness](https://img.shields.io/badge/made%20by-Proxy%20Darkness-blueviolet)](https://buymeacoffee.com/ProxyDarkness)
 
+---
 
-
-**v1.0.1 Beta · Built with .NET 10 · Avalonia UI · SDL3 · HIDMaestro · VigemBus**
-
-[!\[License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[!\[Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-informational)](#requirements)
-[!\[GitHub](https://img.shields.io/badge/GitHub-Prooxie%2FGameFlow-181717?logo=github)](https://github.com/Prooxie/GameFlow)
-[!\[Made by Proxy Darkness](https://img.shields.io/badge/made%20by-Proxy%20Darkness-blueviolet)](https://buymeacoffee.com/ProxyDarkness)
-
-\---
-
-[!\[Buy Me a Coffee](https://user-images.githubusercontent.com/1286821/181085373-12eee197-187a-4438-90fe-571ac6d68900.png)](https://buymeacoffee.com/ProxyDarkness)
+[![Buy Me a Coffee](https://user-images.githubusercontent.com/1286821/181085373-12eee197-187a-4438-90fe-571ac6d68900.png)](https://buymeacoffee.com/ProxyDarkness)
 *No pressure — using and sharing the project already helps a lot. Thank you!*
 
 </div>
 
-\---
+---
 
 ## What is GameFlow?
 
@@ -38,7 +33,7 @@ This project started as a script to spare players from repetitive inputs that we
 
 For the full feature reference, per-rule mechanics, and platform-by-platform verification notes, see [**WIKI.md**](WIKI.md).
 
-\---
+---
 
 ## Features at a Glance
 
@@ -62,7 +57,7 @@ For the full feature reference, per-rule mechanics, and platform-by-platform ver
 |**Profile system**|Create, duplicate, rename, import, export — JSON, human-editable|
 |**Live dashboard**|Physical and virtual controllers rendered side by side, per slot|
 
-\---
+---
 
 ## Requirements
 
@@ -129,7 +124,7 @@ First launch creates a default profile under:
 
 |Platform|Location|
 |-|-|
-|Windows|`%LOCALAPPDATA%\\AutofireNext\\`|
+|Windows|`%LOCALAPPDATA%/AutofireNext/`|
 |Linux|`\~/.local/share/AutofireNext/`|
 |macOS|`\~/Library/Application Support/AutofireNext/`|
 
@@ -168,7 +163,7 @@ A slot's own virtual output is hidden from every input picker — you can't feed
 
 **Profiles** tab → **+ Add rule** against any control. Rules apply in declared order, every polling tick, live — no separate "apply" step.
 
-\---
+---
 
 ## Configuration
 
@@ -199,7 +194,7 @@ A slot's own virtual output is hidden from every input picker — you can't feed
 
 Profiles are JSON in the application data directory (see Quick Start), editable by hand or entirely through the **Profiles** tab.
 
-\---
+---
 
 ## Providers
 
@@ -225,7 +220,7 @@ GameFlow/
 └── .github/workflows/             # CI: build, test, and tag-triggered release packaging
 ```
 
-\---
+---
 
 ## Architecture Overview
 
@@ -262,7 +257,7 @@ Physical input                 Keyboard/mouse            Phone browser
 
 Shift layers resolve first each tick, gating which rules are active. Every slot's rules live in its profile's JSON, applied in order, live. The dashboard reads from lock-free snapshot stores on its own timer, independent of the mapping pipeline's tick rate.
 
-\---
+---
 
 ## Known Limitations
 
@@ -274,13 +269,13 @@ Documented here rather than discovered by surprise:
 * **CGEventTap (macOS) has no per-device keyboard/mouse distinction** — one aggregate stream for the whole system, not per-physical-device like Windows/Linux.
 * **Remote Link, DSU/Cemuhook motion server, per-app profile switching** — on the roadmap, not started.
 
-\---
+---
 
 ## Localization
 
 🇬🇧 English · 🇨🇿 Czech · 🇩🇪 German · 🇪🇸 Spanish · 🇫🇷 French · 🇮🇹 Italian · 🇵🇱 Polish · 🇷🇺 Russian — switchable live from Settings.
 
-\---
+---
 
 ## Contributing
 
@@ -291,13 +286,13 @@ Documented here rather than discovered by surprise:
 
 Keep commits focused with a short description of what changed and why. See [**WIKI.md**](WIKI.md) for how the mapping pipeline and rule system fit together before adding a new rule type.
 
-\---
+---
 
 ## License
 
 MIT — see [**LICENSE**](LICENSE).
 
-\---
+---
 
 ## Acknowledgments
 
@@ -309,7 +304,7 @@ MIT — see [**LICENSE**](LICENSE).
 
 Check out my other projects on GitHub, [YouTube](https://www.youtube.com/@ProxyDarkness), and [Twitch](https://www.twitch.tv/ProxyDarkness).
 
-\---
+---
 
 ## Thanks to
 
