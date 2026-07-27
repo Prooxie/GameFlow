@@ -13,7 +13,6 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-informational)](#requirements)
-[![GitHub](https://img.shields.io/badge/GitHub-Prooxie%2FGameFlow-181717?logo=github)](https://github.com/Prooxie/GameFlow)
 [![Made by Proxy Darkness](https://img.shields.io/badge/made%20by-Proxy%20Darkness-blueviolet)](https://buymeacoffee.com/ProxyDarkness)
 
 ---
