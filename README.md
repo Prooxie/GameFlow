@@ -6,10 +6,10 @@
 
 
 
-**Ultimate multi-platform, multi-language controller tool for remapping and compability layering, Any input device in, any virtual controller out: Xbox, PlayStation or Nintendo. third-party gamepad, keyboard or/and mouse. Built on SDL3, HIDMaestro, VigemBus, and .NET 10 and Avalonia.**
+**Ultimate multi-platform, multi-language controller tool for remapping and compability layering, Any input device in, any virtual controller out: Xbox, PlayStation or Nintendo. third-party gamepad, keyboard or/and mouse.**
 
 
-**v1.0.1 Beta** · Built with **.NET 10** · **Avalonia UI** · **SDL3** · **HIDMaestro**
+**v1.0.1 Beta** · Built with **.NET 10** · **Avalonia UI** · **SDL3** · **HIDMaestro** · **ViGemBus**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-informational)](#requirements)
