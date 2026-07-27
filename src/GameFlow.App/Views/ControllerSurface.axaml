@@ -19,7 +19,21 @@
     -->
     <Border CornerRadius="14"
             Background="{DynamicResource AppSurface1}"
-            BorderBrush="{DynamicResource AppBorder0}" BorderThickness="1">
+            BorderBrush="{DynamicResource AppBorder0}" BorderThickness="1"
+            Name="PanelRoot"
+            PointerPressed="OnPanelPointerPressed">
+      <Border.Styles>
+        <!--
+            Hover outline on the VIRTUAL panel only. The physical side
+            already outlines on hover; matching it here signals the panel
+            is interactive, and on this side a click opens the slot's
+            settings editor.
+        -->
+        <Style Selector="Border#PanelRoot:pointerover">
+          <Setter Property="BorderBrush" Value="{DynamicResource AppAccent}" />
+          <Setter Property="BorderThickness" Value="2" />
+        </Style>
+      </Border.Styles>
       <Border Padding="18,14" CornerRadius="14"
               Background="{Binding PanelOverlayBrush}">
         <Grid RowDefinitions="Auto,Auto,*,Auto" MinHeight="260">

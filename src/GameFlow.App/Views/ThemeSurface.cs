@@ -739,7 +739,7 @@ public sealed class ThemeSurface : Control
 
             case SliderNode slider:
             {
-                LogSliderDiagnosticsOnce(slider, symbols);
+                LogSliderDiagnosticsOnce(slider, symbols, transform);
                 // Deflection ONLY: the walker's preamble at the top of
                 // this method already applied the node's own X/Y (every
                 // node renders inside its translated frame — that IS the
@@ -870,7 +870,7 @@ public sealed class ThemeSurface : Control
     /// what magnitude, and does the child art exist" without needing
     /// the theme's JSON in hand.
     /// </summary>
-    private void LogSliderDiagnosticsOnce(SliderNode slider, GameFlow.Infrastructure.Theming.Flee.IFleeSymbols symbols)
+    private void LogSliderDiagnosticsOnce(SliderNode slider, GameFlow.Infrastructure.Theming.Flee.IFleeSymbols symbols, Matrix accumulated)
     {
         if (sliderDiagnosticsLogged.Contains(slider))
         {
@@ -886,9 +886,24 @@ public sealed class ThemeSurface : Control
 
         _ = sliderDiagnosticsLogged.Add(slider);
         var firstChild = slider.Children.FirstOrDefault();
+
+        // The accumulated transform is the decisive piece: node.X/Y alone
+        // can look perfectly correct while the parent chain places the
+        // whole group somewhere wrong. Logging where the stick ACTUALLY
+        // lands on the document, versus where the theme says its base
+        // is, separates "wrong base position" (parent chain) from "wrong
+        // deflection" (input expression / sign) — two different bugs that
+        // look identical on screen.
+        var restingPoint = accumulated.Transform(new Point(slider.X, slider.Y));
+        var deflectedPoint = accumulated.Transform(new Point(slider.X + ix, slider.Y + iy));
+
         Log.Information(
-            "Theme slider diagnostic: node=({X},{Y}) deflection=({Ix:F1},{Iy:F1})px children={Count} firstChild={Kind} {Detail}",
-            slider.X, slider.Y, ix, iy, slider.Children.Count,
+            "Theme slider diagnostic: node=({X},{Y}) deflection=({Ix:F1},{Iy:F1})px " +
+            "resolvedResting=({RX:F1},{RY:F1}) resolvedDeflected=({DX:F1},{DY:F1}) " +
+            "children={Count} firstChild={Kind} {Detail}",
+            slider.X, slider.Y, ix, iy,
+            restingPoint.X, restingPoint.Y, deflectedPoint.X, deflectedPoint.Y,
+            slider.Children.Count,
             firstChild?.GetType().Name ?? "(none)",
             firstChild is ImageNode img ? $"image='{img.ImagePath}' at ({img.X},{img.Y}) {img.Width}x{img.Height} center={img.Center}" : string.Empty);
     }

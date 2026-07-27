@@ -82,7 +82,10 @@ public sealed class HidMaestroProfilesTests
     [InlineData("xbox-series-xs-bt", null, VirtualControllerKind.XboxSeries)]
     [InlineData("xbox-one-s-bt", null, VirtualControllerKind.XboxOne)]
     [InlineData("logitech-g29", "Logitech G29 Racing Wheel", VirtualControllerKind.GenericDirectInput)]
-    [InlineData("switch-pro", "Nintendo Switch Pro Controller", VirtualControllerKind.GenericDirectInput)]
+    // SwitchPro is a first-class output kind (VirtualControllerKind.SwitchPro),
+    // so a Switch Pro classifies as itself rather than falling through to
+    // the generic bucket the way it did before that kind existed.
+    [InlineData("switch-pro", "Nintendo Switch Pro Controller", VirtualControllerKind.SwitchPro)]
     [InlineData("thrustmaster-t16000m", null, VirtualControllerKind.GenericDirectInput)]
     public void Catalog_profiles_classify_into_kind_families(string id, string? name, VirtualControllerKind expected)
     {

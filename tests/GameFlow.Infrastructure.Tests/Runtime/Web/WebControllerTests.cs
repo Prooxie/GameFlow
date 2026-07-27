@@ -98,6 +98,57 @@ public sealed class WebControllerProtocolTests
         Assert.Equal(0f, snapshot!.LeftStick.X, precision: 3);
         Assert.Equal(0f, snapshot.RightTrigger, precision: 3);
     }
+
+    [Fact]
+    public void PhoneMotionPopulatesGyroAndAccelerometer()
+    {
+        var snapshot = WebControllerProtocol.TryParseInput(
+            "{\"b\":0,\"gyro\":1,\"gp\":0.5,\"gy\":-1.25,\"gr\":0.1,\"ax\":0.2,\"ay\":9.8,\"az\":-0.3}",
+            padIndex: 0);
+
+        Assert.NotNull(snapshot);
+        Assert.True(snapshot!.HasGyro);
+        Assert.Equal(0.5f, snapshot.GyroPitch, precision: 3);
+        Assert.Equal(-1.25f, snapshot.GyroYaw, precision: 3);
+        Assert.Equal(0.1f, snapshot.GyroRoll, precision: 3);
+        Assert.Equal(9.8f, snapshot.AccelY, precision: 3);
+    }
+
+    [Fact]
+    public void PhoneWithoutMotionPermissionReportsNoGyro()
+    {
+        // A phone that never got sensor permission (or a desktop browser)
+        // must read as "no gyro hardware", not "gyro sitting perfectly
+        // still" — the pipeline treats those differently.
+        var snapshot = WebControllerProtocol.TryParseInput("{\"b\":0}", padIndex: 0);
+
+        Assert.NotNull(snapshot);
+        Assert.False(snapshot!.HasGyro);
+    }
+
+    [Fact]
+    public void MotionValuesAreNotClampedToStickRange()
+    {
+        // Angular velocity legitimately exceeds 1.0 rad/s on a fast
+        // flick; clamping it like a stick axis would cap real input.
+        var snapshot = WebControllerProtocol.TryParseInput(
+            "{\"b\":0,\"gyro\":1,\"gy\":8.5}", padIndex: 0);
+
+        Assert.NotNull(snapshot);
+        Assert.Equal(8.5f, snapshot!.GyroYaw, precision: 3);
+    }
+
+    [Fact]
+    public void HostileMotionValuesAreRejected()
+    {
+        var nan = WebControllerProtocol.TryParseInput("{\"b\":0,\"gyro\":1,\"gp\":\"NaN\"}", padIndex: 0);
+        Assert.NotNull(nan);
+        Assert.Equal(0f, nan!.GyroPitch, precision: 5);
+
+        var huge = WebControllerProtocol.TryParseInput("{\"b\":0,\"gyro\":1,\"gy\":1e30}", padIndex: 0);
+        Assert.NotNull(huge);
+        Assert.InRange(huge!.GyroYaw, -1000f, 1000f);
+    }
 }
 
 public sealed class WebControllerHubTests
