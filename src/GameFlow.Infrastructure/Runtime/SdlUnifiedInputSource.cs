@@ -108,6 +108,9 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
     private readonly HashSet<string> adaptiveTriggerActive = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> loggedNonSdlSkips = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>Devices whose generic-joystick fallback note is already in the log. Worker thread only.</summary>
+    private readonly HashSet<string> genericFallbackLogged = new(StringComparer.OrdinalIgnoreCase);
+
     public SdlUnifiedInputSource(ILogger<SdlUnifiedInputSource> logger, InputDeviceCatalog inputDeviceCatalog, GameFlow.Infrastructure.Runtime.Input.ButtonMapStore buttonMapStore, GameFlow.Infrastructure.Runtime.Input.IKeyboardStateSource keyboardStateSource, GameFlow.Infrastructure.Runtime.Input.IMouseStateSource mouseStateSource, GameFlow.Infrastructure.Runtime.Web.WebControllerHub webControllerHub, GameFlow.Infrastructure.Runtime.Effects.ControllerEffectMailbox? effectMailbox = null)
     {
         this.logger = logger;
@@ -1186,7 +1189,11 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
             buttons[ButtonId.Touchpad] = true;
         }
 
-        inputDeviceCatalog.SetProviderStatus($"Using SDL3 mapped gamepad: {device.DisplayName}.");
+        // No status write here. This runs on every read, up to 1000 times a
+        // second: a status string per read was an allocation per tick, and
+        // it flipped against the catalog refresh's "SDL3 active" status, so
+        // the catalog raised Updated about 8 times a second and every page
+        // queued a rebuild. RefreshDeviceCatalog owns the status.
 
         ReadBreadcrumb("gamepad: reading sticks + vendor/product");
         var vendorId  = SdlInterop.GetGamepadVendor(device.Handle);
@@ -1342,7 +1349,14 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
             axisCount > 2 ? NormalizeSignedAxis(SdlInterop.GetJoystickAxis(device.Handle, 2)) : 0f,
             axisCount > 3 ? -NormalizeSignedAxis(SdlInterop.GetJoystickAxis(device.Handle, 3)) : 0f).Clamp();
 
-        inputDeviceCatalog.SetProviderStatus($"Using SDL3 generic joystick or HID fallback: {device.DisplayName}. Mapping is provisional until the binding editor is finished.");
+        // Once per device, not per read — see the mapped-gamepad read above.
+        if (genericFallbackLogged.Add(device.DeviceId))
+        {
+            logger.LogInformation(
+                "Using the SDL3 generic joystick fallback for {Device}. The axis order is a guess; " +
+                "calibrate it on the Devices page if a stick or trigger is wrong.",
+                device.DisplayName);
+        }
 
         // The axis order above is a guess — the first four axes are
         // assumed to be the two sticks — so an unrecognized pad is
