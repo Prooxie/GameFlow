@@ -317,11 +317,10 @@
                 here, next to the address, is the difference between a
                 one-click fix and an unexplained failure.
 
-                Three buttons rather than one, because there are three
-                different situations and only one fix each: no rule at
-                all, a rule that does not cover this network's category,
-                and the safer way out of the second (re-categorise the
-                network in Windows instead of opening the port on Public).
+                One button for every case: no rule, an old rule that does
+                not match, or no URL reservation. An elevated GameFlow
+                writes the rule by itself when the server starts, so this
+                button is for a GameFlow that is not elevated.
             -->
             <Border Classes="inset" Padding="10,8"
                     IsVisible="{Binding Overlay.HasReachabilityWarning}"
@@ -334,19 +333,9 @@
                 <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
                   <Button Classes="ghost"
                           Content="Allow through firewall"
-                          ToolTip.Tip="Adds an inbound rule for GameFlow on this port, for private and domain networks only. Windows will ask for administrator permission."
+                          ToolTip.Tip="Adds an inbound rule for GameFlow on this port. It accepts devices on your local network only, never the internet. Windows will ask for administrator permission."
                           IsVisible="{Binding Overlay.CanAllowThroughFirewall}"
                           Command="{Binding Overlay.AllowThroughFirewallCommand}" />
-                  <Button Classes="ghost"
-                          Content="Open network settings"
-                          ToolTip.Tip="Opens Windows' network settings, where a home network can be switched from Public to Private. This is the safer of the two fixes."
-                          IsVisible="{Binding Overlay.CanAllowOnPublicNetwork}"
-                          Command="{Binding Overlay.OpenNetworkSettingsCommand}" />
-                  <Button Classes="ghost"
-                          Content="Allow on public networks"
-                          ToolTip.Tip="Widens the rule to cover Public networks. This accepts incoming connections on untrusted networks too, such as café or hotel Wi-Fi. Windows will ask for administrator permission."
-                          IsVisible="{Binding Overlay.CanAllowOnPublicNetwork}"
-                          Command="{Binding Overlay.AllowOnPublicNetworkCommand}" />
                 </StackPanel>
               </StackPanel>
             </Border>

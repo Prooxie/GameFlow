@@ -57,14 +57,9 @@
                          Text="{Binding ReachabilityMessage}" />
               <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
                 <Button Classes="ghost" Content="Allow through firewall"
+                        ToolTip.Tip="Adds an inbound rule for GameFlow on this port. It accepts devices on your local network only, never the internet. Windows will ask for administrator permission."
                         IsVisible="{Binding CanAllowThroughFirewall}"
                         Command="{Binding AllowThroughFirewallCommand}" />
-                <Button Classes="ghost" Content="Open network settings"
-                        IsVisible="{Binding CanAllowOnPublicNetwork}"
-                        Command="{Binding OpenNetworkSettingsCommand}" />
-                <Button Classes="ghost" Content="Allow on public networks"
-                        IsVisible="{Binding CanAllowOnPublicNetwork}"
-                        Command="{Binding AllowOnPublicNetworkCommand}" />
               </StackPanel>
             </StackPanel>
           </Border>

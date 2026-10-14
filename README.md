@@ -177,11 +177,7 @@ On the Adaptive tab, **React to rumble** ties a trigger to what the game is actu
 
 Up to 16 phones can connect at once. Each browser tab keeps a stable pad number across automatic WebSocket reconnects, and stale sockets cannot overwrite a replacement connection. Game rumble returns through the browser Vibration API when the phone supports it; GameFlow sends an explicit stop when rumble ends or the connection closes.
 
-> **Windows firewall note:** binding to all interfaces needs an admin URL ACL, or the server falls back to localhost-only and phones can't reach it (the log says which mode it's in):
-> 
-> ```
-> netsh http add urlacl url=http://+:8080/ user=Everyone
-> ```
+> **Windows firewall:** when GameFlow runs as administrator, it opens port 8080 to your local network by itself when the server starts. It adds an inbound firewall rule and a URL reservation. The rule accepts only devices on your local network (local subnet and private addresses), on every network profile, so a home network that Windows filed as Public works too. The internet stays blocked. When GameFlow is not elevated, click **Allow through firewall** under **Settings → Phone controller** once and accept the Windows prompt. If the address then still shows `localhost`, restart GameFlow.
 
 ### Add a controller overlay to OBS
 
