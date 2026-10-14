@@ -237,7 +237,7 @@
                        Text="This is what you will see in the sidebar and on the dashboard. With more than one virtual controller it is the only thing telling them apart, so something like &quot;Racing pad&quot; beats &quot;Controller 2&quot;." />
 
             <TextBox Text="{Binding SlotName, Mode=TwoWay}"
-                     Watermark="Leave empty to let GameFlow name it"
+                     PlaceholderText="Leave empty to let GameFlow name it"
                      MaxLength="48" FontSize="14" Padding="10,8" />
 
             <TextBlock Classes="hint"
