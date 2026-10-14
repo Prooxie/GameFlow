@@ -16,6 +16,15 @@ namespace GameFlow.Infrastructure.Runtime.Web.Overlay;
 /// </para>
 ///
 /// <para>
+/// <b>Fingers.</b> For a theme with no <c>trailpad</c> node, the page draws
+/// each touch contact inside <see cref="OverlayProgram.TouchRegion"/>, the way
+/// <c>ThemeSurface.DrawContactsOverTouchRegion</c> does: a smoke trail, loose
+/// smoke puffs that rise, and a soft fingertip glow. The constants are the
+/// ones in <c>ThemeSurface</c>, <c>TouchTrail</c> and <c>TouchParticles</c>.
+/// Change both sides together.
+/// </para>
+///
+/// <para>
 /// <b>The background is transparent on purpose</b> and must stay that
 /// way: OBS composites a browser source over the scene below it, so any
 /// opaque body would show up as a black box around the controller. The
@@ -76,6 +85,131 @@ var pads = [];           // this frame's touch contacts, per trailpad
 var light = null;        // this frame's lightbar colour
 var images = [];         // Image objects, index-aligned with program.images
 var dirty = false;       // a frame arrived since the last paint
+
+// ── Touch ────────────────────────────────────────────────────────────
+// Fingers for a theme with no trailpad node, drawn as smoke the way the
+// app's ThemeSurface.DrawContactsOverTouchRegion draws them. The constants
+// are the ones in ThemeSurface.cs, TouchTrail.cs and TouchParticles.cs.
+var FINGER_COLORS = [[0x4F,0x9C,0xFF],[0xFF,0x6B,0x35],[0x4A,0xDE,0x80],[0xE8,0x79,0xF0],[0xFB,0xBF,0x24]];
+var CORE = [0xFF,0xF4,0xD6];
+var SMOKE = [0xB8,0xBE,0xC8];
+var SMOKE_PEAK = 0.32, SMOKE_TRAIL_RISE = 12;
+var TRAIL_LIFE = 0.55, TRAIL_GAP = 0.012, TRAIL_MAX = 48, TRAIL_STEP = 0.004;
+var PUFF_LIFE = 0.9, PUFF_GAP = 0.04, PUFF_MAX = 120, PUFF_RISE = 0.1;
+
+var touchRegion = null;  // touchpad rectangle in theme units; null when the theme draws its own
+var touches = [];        // this frame's contacts: [x, y, finger, pressure], each 0..1
+var trails = {};         // finger slot -> [{x, y, p, t}], oldest first
+var puffs = [];          // {f, x, y, vx, vy, t, life, scale}
+var lastEmit = {};       // finger slot -> time of its last puff
+var touchAlive = false;  // something was still fading at the last paint
+
+function nowSeconds() { return performance.now() / 1000; }
+
+function resetTouch() { touches = []; trails = {}; puffs = []; lastEmit = {}; touchAlive = false; }
+
+function colorIndex(finger) {
+  var n = FINGER_COLORS.length;
+  return ((finger % n) + n) % n;
+}
+
+function blend(a, b, t) {
+  t = Math.min(1, Math.max(0, t));
+  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+}
+
+function rgba(c, alpha) {
+  return "rgba(" + Math.round(c[0]) + "," + Math.round(c[1]) + "," + Math.round(c[2]) + "," + alpha + ")";
+}
+
+function spawnPuff(c, now) {
+  // A small random drift, wider under more pressure, plus a rise that is
+  // larger than the drift, so each puff goes up — TouchParticles.Spawn.
+  var angle = Math.random() * Math.PI * 2;
+  var speed = (0.01 + Math.random() * 0.05) * (0.6 + 0.8 * c[3]);
+  return { f: c[2], x: c[0], y: c[1], vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - PUFF_RISE,
+           t: now, life: PUFF_LIFE * (0.65 + Math.random() * 0.7), scale: 0.6 + Math.random() * 0.9 };
+}
+
+// Called per frame message. Sampling is time-gated, so a faster or slower
+// socket does not change how long the trail is.
+function recordTouches(now) {
+  for (var i = 0; i < touches.length; i++) {
+    var c = touches[i], f = c[2];
+    var list = trails[f] || (trails[f] = []);
+    var last = list[list.length - 1];
+    if (!last || (now - last.t >= TRAIL_GAP && Math.hypot(c[0] - last.x, c[1] - last.y) >= TRAIL_STEP)) {
+      list.push({ x: c[0], y: c[1], p: c[3], t: now });
+      if (list.length > TRAIL_MAX) { list.splice(0, list.length - TRAIL_MAX); }
+    }
+    if (lastEmit[f] === undefined || now - lastEmit[f] >= PUFF_GAP) {
+      lastEmit[f] = now;
+      puffs.push(spawnPuff(c, now));
+    }
+  }
+  if (puffs.length > PUFF_MAX) { puffs.splice(0, puffs.length - PUFF_MAX); }
+}
+
+// Drops what has faded. True while anything is left to draw.
+function pruneTouches(now) {
+  var alive = touches.length > 0;
+  for (var f in trails) {
+    var list = trails[f], drop = 0;
+    while (drop < list.length && now - list[drop].t > TRAIL_LIFE) { drop++; }
+    if (drop > 0) { list.splice(0, drop); }
+    if (list.length > 0) { alive = true; }
+  }
+  puffs = puffs.filter(function (s) { return now - s.t < s.life; });
+  return alive || puffs.length > 0;
+}
+
+// A round fill, solid at the centre and clear at the edge — the
+// SoftBrush gradient in ThemeSurface.
+function soft(x, y, radius, c, alpha) {
+  if (radius <= 0 || alpha <= 0) { return; }
+  var g = ctx.createRadialGradient(x, y, 0, x, y, radius);
+  g.addColorStop(0, rgba(c, alpha));
+  g.addColorStop(0.45, rgba(c, alpha * 0.45));
+  g.addColorStop(1, rgba(c, 0));
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// Starts in the finger's colour, turns grey and fades as it ages.
+function smoke(x, y, radius, finger, age) {
+  var tint = blend(FINGER_COLORS[colorIndex(finger)], SMOKE, 0.25 + 0.75 * age);
+  soft(x, y, radius, tint, SMOKE_PEAK * Math.pow(1 - age, 1.5));
+}
+
+// The trail first, then the loose puffs, then the fingertips, so the
+// fingertip is always on top.
+function drawTouches(now) {
+  var r = touchRegion;
+  function px(x) { return r.x + r.width * Math.min(1, Math.max(0, x)); }
+  function py(y) { return r.y + r.height * Math.min(1, Math.max(0, y)); }
+
+  for (var f in trails) {
+    var list = trails[f];
+    for (var i = 0; i < list.length; i++) {
+      var s = list[i], age = Math.min(1, (now - s.t) / TRAIL_LIFE);
+      smoke(px(s.x), py(s.y) - SMOKE_TRAIL_RISE * age, (5 + 13 * age) * (0.7 + 0.3 * s.p), +f, age);
+    }
+  }
+
+  // Not clamped to the pad: smoke that stopped at its top edge would pile up there.
+  for (var j = 0; j < puffs.length; j++) {
+    var pf = puffs[j], a = Math.min(1, (now - pf.t) / pf.life), dt = now - pf.t;
+    smoke(r.x + r.width * (pf.x + pf.vx * dt), r.y + r.height * (pf.y + pf.vy * dt), pf.scale * (4 + 12 * a), pf.f, a);
+  }
+
+  for (var k = 0; k < touches.length; k++) {
+    var t = touches[k], x = px(t[0]), y = py(t[1]);
+    soft(x, y, 12 + 8 * t[3], FINGER_COLORS[colorIndex(t[2])], 0.6);
+    soft(x, y, 7, CORE, 0.45);
+  }
+}
 
 // ── Canvas sizing ────────────────────────────────────────────────────
 // The canvas backing store is sized in device pixels so the art is not
@@ -257,6 +391,14 @@ function drawBar(node) {
 
 function paint() {
   requestAnimationFrame(paint);
+
+  // The trail and the smoke move with no new frame, so keep painting while they
+  // live, plus one more paint to clear the last faded marks.
+  var now = nowSeconds();
+  var alive = touchRegion ? pruneTouches(now) : false;
+  if (alive || touchAlive) { dirty = true; }
+  touchAlive = alive;
+
   if (!program || !dirty) { return; }
   dirty = false;
 
@@ -270,6 +412,7 @@ function paint() {
     (canvas.height - program.height * scale) / 2);
 
   for (var i = 0; i < program.nodes.length; i++) { drawNode(program.nodes[i]); }
+  if (touchRegion) { drawTouches(now); }
 }
 requestAnimationFrame(paint);
 
@@ -293,6 +436,8 @@ function connect() {
 
     if (data.type === "program") {
       program = data;
+      touchRegion = data.touchRegion || null;
+      resetTouch();
       tintCache = {};
       images = data.images.map(function (src) {
         var img = new Image();
@@ -311,6 +456,8 @@ function connect() {
       values = data.v || [];
       pads = data.pads || [];
       light = data.light || null;
+      touches = data.touch || [];
+      if (touchRegion) { recordTouches(nowSeconds()); }
       dirty = true;
       return;
     }

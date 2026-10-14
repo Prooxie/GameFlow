@@ -187,7 +187,7 @@ Up to 16 phones can connect at once. Each browser tab keeps a stable pad number 
 4. Copy the generated URL.
 5. In OBS, add a **Browser** source, paste the URL, and set its width/height for the scene.
 
-The page has a transparent background, reconnects automatically, and renders directly from the same slot snapshots as the dashboard. The controller, side, and optional skin are encoded in the URL, so OBS can reuse it without QR scanning or an always-on-top GameFlow window. GameFlow must be running while the Browser source is active.
+The page has a transparent background, reconnects automatically, and renders directly from the same slot snapshots as the dashboard. Touchpad fingers show on the skin's touchpad the same way as on the dashboard. The controller, side, and optional skin are encoded in the URL, so OBS can reuse it without QR scanning or an always-on-top GameFlow window. GameFlow must be running while the Browser source is active.
 
 ### Add mapping rules
 

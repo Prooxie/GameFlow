@@ -94,7 +94,7 @@ public static class ThemeHitTester
                 // Treat the input expression as the binding for everything
                 // underneath unless a nested showhide overrides it.
                 {
-                    var nestedBinding = FirstVariableBinding(show.Input) ?? currentInputBinding;
+                    var nestedBinding = FleeVariables.FirstName(show.Input) ?? currentInputBinding;
                     foreach (var child in show.Children)
                     {
                         WalkAndHit(child, x, y, nx, ny, nestedBinding, ref topmost);
@@ -153,7 +153,7 @@ public static class ThemeHitTester
                         x >= rectX && x < rectX + bar.Width &&
                         y >= rectY && y < rectY + bar.Height)
                     {
-                        var expr = FirstVariableBinding(bar.Input);
+                        var expr = FleeVariables.FirstName(bar.Input);
                         var triggerId = MapInputExpressionToElementId(expr);
                         if (triggerId is not null)
                         {
@@ -175,48 +175,6 @@ public static class ThemeHitTester
                     WalkAndHit(child, x, y, nx, ny, currentInputBinding, ref topmost);
                 }
                 return;
-        }
-    }
-
-    /// <summary>
-    /// Walks a Flee AST and returns the first colon-containing variable
-    /// name found — that's the one we treat as the binding for hit-test
-    /// purposes. Compound expressions like <c>"bumpers:l or bumpers:r"</c>
-    /// resolve to <c>"bumpers:l"</c>, which is good enough for
-    /// click-to-map (the user can right-click to disambiguate later).
-    /// </summary>
-    private static string? FirstVariableBinding(FleeNode node)
-    {
-        switch (node)
-        {
-            // Any variable name, colon or not. The guard here used to
-            // require a colon, on the assumption that every theme binding
-            // is "group:member" — but a bare name is legal and at least one
-            // is in wide use: every Sony pack names the PS button `home`.
-            // A colon-less binding returned null, so the PS/Guide button
-            // produced no hit result at all and could not be clicked or
-            // hovered, and the `"home" => "Guide"` arm below had never once
-            // been reached. Filtering belongs to the mapper, which returns
-            // null for anything it does not recognise, not here.
-            case VariableNode v:
-                return v.Name;
-
-            case UnaryNode u:
-                return FirstVariableBinding(u.Operand);
-
-            case BinaryNode b:
-                return FirstVariableBinding(b.Left) ?? FirstVariableBinding(b.Right);
-
-            case CallNode c:
-                foreach (var arg in c.Arguments)
-                {
-                    var inner = FirstVariableBinding(arg);
-                    if (inner is not null) { return inner; }
-                }
-                return null;
-
-            default:
-                return null;
         }
     }
 
@@ -304,8 +262,8 @@ public static class ThemeHitTester
     /// </summary>
     private static string? GuessSliderStickBinding(SliderNode slider)
     {
-        var x = FirstVariableBinding(slider.InputX);
-        var y = FirstVariableBinding(slider.InputY);
+        var x = FleeVariables.FirstName(slider.InputX);
+        var y = FleeVariables.FirstName(slider.InputY);
 
         var probe = x ?? y;
         if (probe is null) { return null; }

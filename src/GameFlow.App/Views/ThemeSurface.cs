@@ -450,7 +450,7 @@ public sealed class ThemeSurface : Control
         // which is what made the whole UI sluggish whenever a controller was
         // attached. Only repaint when something the art can actually show has
         // changed; otherwise keep the latest snapshot but skip the paint.
-        // A cooling trail and burning sparks are animations with no input
+        // A fading trail and drifting smoke are animations with no input
         // behind them: the snapshot stops changing the moment the finger
         // stops or lifts, and without this they would freeze mid-fade and
         // sit there until something else happened to force a paint.
@@ -1504,23 +1504,42 @@ public sealed class ThemeSurface : Control
         [.. ContactColors.Select(c => (IBrush)new ImmutableSolidColorBrush(c))];
 
     /// <summary>
-    /// The colour a trail point has just been laid down at — near-white,
-    /// so a moving finger has a hot head. Every point cools from here
-    /// through its finger's own colour and out.
+    /// The colour of the soft core at the fingertip — near-white, so the
+    /// contact point is clear inside its coloured glow.
     /// </summary>
-    private static readonly Color TrailCoreColor = Color.FromRgb(0xFF, 0xF4, 0xD6);
+    private static readonly Color FingertipCoreColor = Color.FromRgb(0xFF, 0xF4, 0xD6);
 
     /// <summary>
-    /// What a point cools TO before it disappears. A deep oxidised red,
-    /// which is what makes the trail read as an ember rather than as a
-    /// smear of the finger's colour at decreasing opacity.
+    /// What smoke fades TO as it ages: a cool light grey. A puff starts in its
+    /// finger's colour and turns grey, which is what makes it read as smoke.
     /// </summary>
-    private static readonly Color TrailEmberColor = Color.FromRgb(0x8C, 0x1F, 0x04);
+    private static readonly Color SmokeColor = Color.FromRgb(0xB8, 0xBE, 0xC8);
 
-    /// <summary>Recent positions per finger, for the ember trail.</summary>
+    /// <summary>Opacity of a smoke puff at its start. It fades from here to zero.</summary>
+    private const double SmokePeakOpacity = 0.32;
+
+    /// <summary>How far a trail puff rises over its life, in theme pixels.</summary>
+    private const double SmokeTrailRise = 12;
+
+    /// <summary>
+    /// Age steps in the smoke brush cache. Sixteen steps fade smoothly at
+    /// 60 Hz, and a cached brush means a frame allocates no brushes.
+    /// </summary>
+    private const int SmokeAgeSteps = 16;
+
+    /// <summary>Smoke brushes per finger colour and age step: <c>[colour][step]</c>.</summary>
+    private static readonly IBrush[][] SmokeBrushes = BuildSmokeBrushes();
+
+    /// <summary>The coloured fingertip glow, per finger colour.</summary>
+    private static readonly IBrush[] FingertipGlowBrushes = [.. ContactColors.Select(c => SoftBrush(c, 0.6))];
+
+    /// <summary>The near-white fingertip core.</summary>
+    private static readonly IBrush FingertipCoreBrush = SoftBrush(FingertipCoreColor, 0.45);
+
+    /// <summary>Recent positions per finger, for the smoke trail.</summary>
     private readonly TouchTrail touchTrail = new();
 
-    /// <summary>Sparks thrown off each fingertip, in place of a marker dot.</summary>
+    /// <summary>Smoke puffs that drift off each fingertip.</summary>
     private readonly TouchParticles touchParticles = new();
 
     /// <summary>
@@ -1574,8 +1593,8 @@ public sealed class ThemeSurface : Control
         var now = trailClock.Elapsed.TotalSeconds;
 
         // Record before the early-out on an empty contact list: a lifted
-        // finger's trail still has to finish cooling and its sparks still
-        // have to burn out, and nothing else would be ageing them.
+        // finger's trail and smoke still have to fade, and nothing else
+        // would be ageing them.
         touchTrail.Record(contacts, now);
         touchParticles.Emit(contacts, now);
 
@@ -1594,90 +1613,89 @@ public sealed class ThemeSurface : Control
             bounds.X + (bounds.Width * Math.Clamp(x, 0d, 1d)),
             bounds.Y + (bounds.Height * Math.Clamp(y, 0d, 1d)));
 
-        // Trails under the live contacts, so a dot is never buried by its
-        // own history. Every finger's whole trail is drawn before any
-        // live marker, rather than trail-then-marker per finger, so two
-        // crossing fingers do not have one marker hidden by the other's
-        // tail.
-        foreach (var contact in AllTrailedFingers(contacts))
+        // The trail first: a ribbon of puffs where the finger was, each one
+        // growing and rising as it ages. Every finger's whole trail is drawn
+        // before any fingertip, so two crossing fingers do not hide each other.
+        foreach (var finger in AllTrailedFingers(contacts))
         {
-            var color = ContactColors[FingerColorIndex(contact)];
-            var samples = touchTrail.Samples(contact);
-
+            var samples = touchTrail.Samples(finger);
             for (var i = 0; i < samples.Count; i++)
             {
                 var sample = samples[i];
                 var age = TouchTrail.NormalizedAge(sample, now);
-
-                // Cools white -> the finger's colour -> oxidised red, and
-                // spreads as it goes, the way an ember's glow does. The
-                // finger's own colour sits in the MIDDLE of that ramp
-                // rather than at the head, so which finger drew a trail is
-                // still readable while the head stays hot.
-                var tint = age < 0.35
-                    ? Blend(TrailCoreColor, color, age / 0.35)
-                    : Blend(color, TrailEmberColor, (age - 0.35) / 0.65);
-
-                var opacity = Math.Pow(1 - age, 1.6) * (0.35 + (0.65 * Math.Clamp(sample.Pressure, 0d, 1d)));
-                if (opacity <= 0.01)
-                {
-                    continue;
-                }
-
-                var radius = 3.5 + (7.5 * age);
-                var brush = new ImmutableSolidColorBrush(tint, opacity);
-                ctx.DrawEllipse(brush, null, ToSurface(sample.X, sample.Y), radius, radius);
+                var radius = (5 + (13 * age)) * (0.7 + (0.3 * Math.Clamp(sample.Pressure, 0d, 1d)));
+                var point = ToSurface(sample.X, sample.Y) - new Point(0, SmokeTrailRise * age);
+                ctx.DrawEllipse(SmokeBrush(finger, age), null, point, radius, radius);
             }
         }
 
-        // Sparks, in place of the marker dot inside a ring. Drawn over the
-        // trail and under the fingertip glow, so the brightest thing on
-        // screen is still exactly where the finger is.
+        // Loose puffs that drift off the finger and rise. Not clamped to the
+        // pad: smoke that stopped at the pad's top edge would pile up there.
         foreach (var particle in touchParticles.Particles)
         {
             var age = particle.Age(now);
-            var color = ContactColors[FingerColorIndex(particle.FingerIndex)];
-
-            // Same cooling ramp as the trail — white-hot, through the
-            // finger's colour, out to ember — so the sparks and the trail
-            // read as one effect rather than two overlapping ones.
-            var tint = age < 0.3
-                ? Blend(TrailCoreColor, color, age / 0.3)
-                : Blend(color, TrailEmberColor, (age - 0.3) / 0.7);
-
-            var opacity = Math.Pow(1 - age, 1.4);
-            if (opacity <= 0.02)
-            {
-                continue;
-            }
-
-            // Shrinks as it burns out, which is what makes a spark read as
-            // a spark rather than as a dot that fades.
-            var radius = particle.Scale * (3.2 * (1 - (0.7 * age)));
-            ctx.DrawEllipse(
-                new ImmutableSolidColorBrush(tint, opacity),
-                null,
-                ToSurface(particle.XAt(now), particle.YAt(now)),
-                radius,
-                radius);
+            var radius = particle.Scale * (4 + (12 * age));
+            var point = new Point(
+                bounds.X + (bounds.Width * particle.XAt(now)),
+                bounds.Y + (bounds.Height * particle.YAt(now)));
+            ctx.DrawEllipse(SmokeBrush(particle.FingerIndex, age), null, point, radius, radius);
         }
 
-        // The fingertip itself: a soft glow rather than a hard dot in a
-        // ring. Two translucent discs, the outer one scaled by pressure,
-        // so the contact point stays unambiguous while the sparks do the
-        // work of looking like fire.
+        // The fingertip: a soft coloured glow around a soft light core. No
+        // hard edge anywhere, so it reads as the source of the smoke.
         for (var i = 0; i < contacts.Count && i < ContactColors.Length; i++)
         {
             var contact = contacts[i];
             var point = ToSurface(contact.X, contact.Y);
-            var color = ContactColors[FingerColorIndex(contact.FingerIndex)];
-            var pressure = Math.Clamp(contact.Pressure, 0f, 1f);
+            var glowRadius = 12 + (8 * Math.Clamp(contact.Pressure, 0f, 1f));
 
-            ctx.DrawEllipse(new ImmutableSolidColorBrush(color, 0.22), null, point, 11 + (7 * pressure), 11 + (7 * pressure));
-            ctx.DrawEllipse(new ImmutableSolidColorBrush(color, 0.45), null, point, 6.5, 6.5);
-            ctx.DrawEllipse(new ImmutableSolidColorBrush(TrailCoreColor, 0.95), null, point, 3, 3);
+            ctx.DrawEllipse(FingertipGlowBrushes[FingerColorIndex(contact.FingerIndex)], null, point, glowRadius, glowRadius);
+            ctx.DrawEllipse(FingertipCoreBrush, null, point, 7, 7);
         }
     }
+
+    /// <summary>
+    /// The cached smoke brush for one finger at one age (0 to 1). The tint goes
+    /// from the finger colour to <see cref="SmokeColor"/>, and the opacity falls
+    /// from <see cref="SmokePeakOpacity"/> to zero.
+    /// </summary>
+    private static IBrush SmokeBrush(int fingerIndex, double age)
+    {
+        var step = Math.Clamp((int)(age * SmokeAgeSteps), 0, SmokeAgeSteps - 1);
+        return SmokeBrushes[FingerColorIndex(fingerIndex)][step];
+    }
+
+    private static IBrush[][] BuildSmokeBrushes()
+    {
+        var brushes = new IBrush[ContactColors.Length][];
+        for (var color = 0; color < ContactColors.Length; color++)
+        {
+            brushes[color] = new IBrush[SmokeAgeSteps];
+            for (var step = 0; step < SmokeAgeSteps; step++)
+            {
+                var age = (step + 0.5) / SmokeAgeSteps;
+                var tint = Blend(ContactColors[color], SmokeColor, 0.25 + (0.75 * age));
+                brushes[color][step] = SoftBrush(tint, SmokePeakOpacity * Math.Pow(1 - age, 1.5));
+            }
+        }
+
+        return brushes;
+    }
+
+    /// <summary>
+    /// A round brush that is solid at the centre and clear at the edge, for
+    /// an ellipse of any size. The OBS overlay page draws the same gradient.
+    /// </summary>
+    private static IBrush SoftBrush(Color color, double opacity) =>
+        new ImmutableRadialGradientBrush(
+            [
+                new ImmutableGradientStop(0, color),
+                new ImmutableGradientStop(0.45, Color.FromArgb(115, color.R, color.G, color.B)),
+                new ImmutableGradientStop(1, Color.FromArgb(0, color.R, color.G, color.B)),
+            ],
+            opacity,
+            radiusX: RelativeScalar.Middle,
+            radiusY: RelativeScalar.Middle);
 
     /// <summary>
     /// Finger slots that need a trail drawn: the ones down now, plus any
@@ -1724,9 +1742,8 @@ public sealed class ThemeSurface : Control
 
     /// <summary>
     /// The touchpad element's rectangle in theme coordinates, cached per
-    /// theme. Probing walks a coarse grid because the hit tester answers
-    /// point queries only — there is no enumeration of regions — and the
-    /// pad's position varies per pack.
+    /// theme. <see cref="ThemeTouchpadLocator"/> finds it, so the OBS
+    /// overlay puts each finger at the same place.
     /// </summary>
     private Rect? ResolveTouchRegion(InstalledTheme theme)
     {
@@ -1736,23 +1753,9 @@ public sealed class ThemeSurface : Control
         }
 
         touchRegionTheme = theme.Id;
-        touchRegionBounds = null;
-
-        var doc = theme.Document;
-        for (var yStep = 1; yStep < 20 && touchRegionBounds is null; yStep++)
-        {
-            for (var xStep = 1; xStep < 20; xStep++)
-            {
-                var hit = GameFlow.App.ViewModels.ThemeHitTester.TryHit(
-                    doc, doc.Width * xStep / 20d, doc.Height * yStep / 20d);
-
-                if (hit is { } touchpadHit && ThemeHitTester.IsTouchpadHit(touchpadHit))
-                {
-                    touchRegionBounds = touchpadHit.Bounds;
-                    break;
-                }
-            }
-        }
+        touchRegionBounds = ThemeTouchpadLocator.Find(theme.Document) is { } region
+            ? new Rect(region.X, region.Y, region.Width, region.Height)
+            : null;
 
         return touchRegionBounds;
     }

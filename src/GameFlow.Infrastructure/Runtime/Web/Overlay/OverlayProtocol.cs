@@ -35,6 +35,12 @@ namespace GameFlow.Infrastructure.Runtime.Web.Overlay;
 /// </summary>
 public static class OverlayProtocol
 {
+    /// <summary>
+    /// Most touch contacts in one frame. The app has five finger colours and
+    /// draws a fingertip for at most five contacts.
+    /// </summary>
+    public const int MaxTouchContacts = 5;
+
     private static readonly JsonSerializerOptions ProgramJson = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -67,7 +73,8 @@ public static class OverlayProtocol
                 .Range(0, program.ImagePaths.Count)
                 .Select(i => $"/overlay/asset?theme={Uri.EscapeDataString(program.ThemeId)}&i={i}")
                 .ToArray(),
-            nodes = program.Nodes
+            nodes = program.Nodes,
+            touchRegion = program.TouchRegion
         };
 
         return JsonSerializer.Serialize(payload, ProgramJson);
@@ -120,6 +127,7 @@ public static class OverlayProtocol
         _ = builder.Append(']');
 
         AppendTrailPads(builder, program, symbols);
+        AppendTouchContacts(builder, program, snapshot);
 
         var css = OverlayProgramBuilder.ToCssColor(lightColor);
         if (css is not null)
@@ -186,6 +194,46 @@ public static class OverlayProtocol
         }
         _ = builder.Append(']');
     }
+
+    /// <summary>
+    /// The touch contacts, for a program with a <see cref="OverlayProgram.TouchRegion"/>.
+    /// Format: <c>"touch":[[x,y,finger,pressure],...]</c>. X, Y and pressure are 0 to 1.
+    /// The finger is the hardware finger slot, which sets the colour on the page.
+    /// </summary>
+    /// <remarks>
+    /// An empty list is sent too. It tells the page that each finger is up, so the
+    /// trails can cool. At most <see cref="MaxTouchContacts"/> contacts are sent.
+    /// </remarks>
+    private static void AppendTouchContacts(StringBuilder builder, OverlayProgram program, ControllerSnapshot snapshot)
+    {
+        if (program.TouchRegion is null)
+        {
+            return;
+        }
+
+        var contacts = snapshot.TouchContacts;
+        var count = Math.Min(contacts.Count, MaxTouchContacts);
+
+        _ = builder.Append(",\"touch\":[");
+        for (var i = 0; i < count; i++)
+        {
+            if (i > 0) { _ = builder.Append(','); }
+
+            var contact = contacts[i];
+            _ = builder.Append('[');
+            AppendUnit(builder, contact.X);
+            _ = builder.Append(',');
+            AppendUnit(builder, contact.Y);
+            _ = builder.Append(',').Append(contact.FingerIndex.ToString(CultureInfo.InvariantCulture)).Append(',');
+            AppendUnit(builder, contact.Pressure);
+            _ = builder.Append(']');
+        }
+        _ = builder.Append(']');
+    }
+
+    /// <summary>Writes a value clamped to 0..1. A non-finite value becomes 0.</summary>
+    private static void AppendUnit(StringBuilder builder, float value) =>
+        AppendNumber(builder, float.IsFinite(value) ? Math.Clamp(value, 0f, 1f) : 0f);
 
     /// <summary>
     /// Writes a JSON number. Non-finite values become 0: a theme can
