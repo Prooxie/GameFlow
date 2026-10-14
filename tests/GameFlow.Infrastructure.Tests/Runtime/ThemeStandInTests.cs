@@ -1,6 +1,7 @@
 using GameFlow.Core.Enums;
 using GameFlow.Infrastructure.Configuration;
 using GameFlow.Infrastructure.Theming;
+using GameFlow.Infrastructure.Tests.Theming;
 using Xunit;
 
 namespace GameFlow.Infrastructure.Tests.Runtime;
@@ -16,6 +17,7 @@ namespace GameFlow.Infrastructure.Tests.Runtime;
 /// persisted preferences still carry. Both rendered an empty panel.
 /// </para>
 /// </summary>
+[Collection(ThemeFileCacheCollection.Name)]
 public sealed class ThemeStandInTests
 {
     [Fact]

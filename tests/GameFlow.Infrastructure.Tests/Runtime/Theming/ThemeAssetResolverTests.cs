@@ -9,6 +9,7 @@ namespace GameFlow.Infrastructure.Tests.Theming;
 /// been renamed and every root-relative art path in its manifests still
 /// named the old folder.
 /// </summary>
+[Collection(ThemeFileCacheCollection.Name)]
 public sealed class ThemeAssetResolverTests : IDisposable
 {
     private readonly string root;
@@ -162,6 +163,37 @@ public sealed class ThemeAssetResolverTests : IDisposable
             Path.GetFullPath(Path.Combine(root, "dualshock-4-default")),
             Path.GetFullPath(ThemeAssetResolver.GetPackRoot(
                 Dir("dualshock-4-default", "DS4 V2 Gold"), root)));
+    }
+
+    /// <summary>
+    /// The dashboard resolves every image of every panel on every frame. A second
+    /// resolve of the same image must not touch the disk.
+    /// </summary>
+    [Fact]
+    public void ResolveSameImageTwiceReturnsCachedPathWithoutDiskCheck()
+    {
+        var file = Touch("pack", "assets", "body.png");
+        var first = ThemeAssetResolver.Resolve("assets/body.png", Dir("pack"), root);
+        File.Delete(file);
+
+        var second = ThemeAssetResolver.Resolve("assets/body.png", Dir("pack"), root);
+
+        Assert.Equal(Path.GetFullPath(file), second);
+        Assert.Equal(first, second);
+    }
+
+    /// <summary>A theme refresh clears the cache, so a removed file is noticed again.</summary>
+    [Fact]
+    public void ResolveAfterClearCacheChecksDiskAgain()
+    {
+        var file = Touch("pack", "assets", "body.png");
+        _ = ThemeAssetResolver.Resolve("assets/body.png", Dir("pack"), root);
+        File.Delete(file);
+        ThemeAssetResolver.ClearCache();
+
+        var result = ThemeAssetResolver.Resolve("assets/body.png", Dir("pack"), root);
+
+        Assert.Null(result);
     }
 
     [Fact]
