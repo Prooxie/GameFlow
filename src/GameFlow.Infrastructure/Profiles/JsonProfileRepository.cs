@@ -1,18 +1,46 @@
 using System.Text.Json;
 using GameFlow.Core.Models;
 using GameFlow.Infrastructure.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace GameFlow.Infrastructure.Profiles;
 
-public sealed class JsonProfileRepository : IProfileRepository
+/// <summary>
+/// Stores each profile as <c>{id}.json</c> in the profiles folder, and the app
+/// settings in <see cref="AppPaths.SettingsFile"/>. All writes are atomic, see
+/// <see cref="AtomicFile"/>.
+/// </summary>
+/// <remarks>
+/// A profile file that does not parse is moved to <c>{id}.json.damaged</c> and
+/// reads as missing. The caller then uses the default profile, the file list
+/// no longer shows the damaged file, and the user can repair the copy by hand.
+/// Before this, one damaged file stopped the start-up and the profile list.
+/// </remarks>
+/// <param name="logger">Logs a damaged file.</param>
+/// <param name="profilesDirectory">
+/// Profiles folder for tests. Null uses <see cref="AppPaths.ProfilesDirectory"/>,
+/// which follows the folder chosen in the settings.
+/// </param>
+public sealed class JsonProfileRepository(
+    ILogger<JsonProfileRepository> logger,
+    string? profilesDirectory = null) : IProfileRepository
 {
+    /// <summary>Suffix of a profile file that did not parse.</summary>
+    private const string DamagedSuffix = ".damaged";
+
+    private readonly ILogger<JsonProfileRepository> logger = logger;
+    private readonly string? profilesDirectory = profilesDirectory;
+
+    private string ProfilesDirectory => profilesDirectory ?? AppPaths.ProfilesDirectory;
+
     public async Task<IReadOnlyList<string>> ListAsync(CancellationToken cancellationToken = default)
     {
-        _ = Directory.CreateDirectory(AppPaths.ProfilesDirectory);
+        var folder = ProfilesDirectory;
+        _ = Directory.CreateDirectory(folder);
 
         return await Task.Run<IReadOnlyList<string>>(
             () => [.. Directory
-                .EnumerateFiles(AppPaths.ProfilesDirectory, "*.json", SearchOption.TopDirectoryOnly)
+                .EnumerateFiles(folder, "*.json", SearchOption.TopDirectoryOnly)
                 .Select(Path.GetFileNameWithoutExtension)
                 .Where(name => !string.IsNullOrWhiteSpace(name))
                 .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
@@ -28,8 +56,16 @@ public sealed class JsonProfileRepository : IProfileRepository
             return null;
         }
 
-        await using var stream = File.OpenRead(path);
-        return await JsonSerializer.DeserializeAsync<ProfileDocument>(stream, ProfileJsonOptions.Default, cancellationToken);
+        try
+        {
+            await using var stream = File.OpenRead(path);
+            return await JsonSerializer.DeserializeAsync<ProfileDocument>(stream, ProfileJsonOptions.Default, cancellationToken);
+        }
+        catch (JsonException exception)
+        {
+            MoveAside(profileId, path, exception);
+            return null;
+        }
     }
 
     public Task SaveAsync(ProfileDocument profile, CancellationToken cancellationToken = default)
@@ -70,6 +106,33 @@ public sealed class JsonProfileRepository : IProfileRepository
 
     public string GetProfilePath(string profileId)
     {
-        return AppPaths.GetProfileFile(profileId);
+        return Path.Combine(ProfilesDirectory, $"{profileId}.json");
+    }
+
+    /// <summary>
+    /// Moves a profile file that does not parse to <c>{path}.damaged</c>. An older
+    /// damaged copy is replaced, because the newest one is the one to repair.
+    /// </summary>
+    private void MoveAside(string profileId, string path, JsonException exception)
+    {
+        var damagedPath = path + DamagedSuffix;
+        try
+        {
+            File.Move(path, damagedPath, overwrite: true);
+            logger.LogWarning(
+                exception,
+                "Profile {ProfileId} could not be read and was moved to {DamagedPath}. GameFlow uses the default profile.",
+                profileId,
+                damagedPath);
+        }
+        catch (Exception moveException) when (moveException is IOException or UnauthorizedAccessException)
+        {
+            logger.LogWarning(
+                exception,
+                "Profile {ProfileId} at {Path} could not be read, and it could not be moved aside ({Reason}).",
+                profileId,
+                path,
+                moveException.Message);
+        }
     }
 }
