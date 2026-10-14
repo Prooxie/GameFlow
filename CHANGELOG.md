@@ -8,6 +8,51 @@ GitHub's auto-generated commit list appended below it.
 Format: one `## vX.Y.Z` heading per release, newest first. The heading
 text must match the tag exactly — that is what the extraction keys on.
 
+## v1.0.6
+
+### Added
+
+- **Axis inversion per profile.** A new Axis inversion card on the profile
+  page inverts the left stick X and Y, the right stick X and Y, and L2 and
+  R2 for one game. The game gets the inversion. The on-screen controller
+  shows it only when "Show the inversion on the on-screen controller" is
+  on, so pushing up still draws as up. Profiles move to version 6. A
+  profile from an older version loads with nothing inverted.
+- **New brand.** A new brand mark in the title bar and on the splash
+  screen, a new app icon, and new splash art.
+
+### Fixed
+
+- **Phones and the OBS PC reach the web controller with no manual firewall
+  rule.** The rule that GameFlow made named `GameFlow.App.exe`, but the web
+  server runs on HTTP.sys, which accepts connections in the Windows System
+  process. That rule never matched, and the Options page still said the
+  port was open. The rule now has no program filter, covers every network
+  profile, and accepts only local-subnet and private addresses. An elevated
+  GameFlow writes it, and the URL reservation, when the server starts. The
+  status check reads the rule fields and calls an old rule stale.
+- **Touchpad fingers show in the OBS overlay.** Most skins have no
+  `trailpad` node, so the overlay drew no fingers. It now draws them on the
+  skin's touchpad the same way as the dashboard.
+- **The OBS overlay follows skin and type changes.** The overlay loaded its
+  layout once and ignored the skin picked on the dashboard. It now shows the
+  skin of the slot's dashboard panel, and the server sends a new layout
+  within 250 ms when the skin or the output type changes. OBS needs no refresh.
+
+### Changed
+
+- **Touchpad fingers draw as smoke.** The dashboard and the OBS overlay drew
+  each finger as an ember trail, sparks and a bright dot. Each finger is now
+  a soft glow that leaves smoke puffs. A puff starts in the finger's colour,
+  rises, grows, turns grey and fades.
+
+### Removed
+
+- The "Allow on public networks" and "Open network settings" buttons. The
+  one firewall rule now covers every network profile, for LAN addresses only.
+- The `RELEASE-1.0.x.md` files. This changelog is the one source of
+  release notes.
+
 ## v1.0.5
 
 ### Added
