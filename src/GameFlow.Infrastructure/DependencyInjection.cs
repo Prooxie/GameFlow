@@ -124,6 +124,10 @@ public static class DependencyInjection
         _ = services.AddSingleton(_ => Theming.ThemeRegistry.Shared);
 
         _ = services.AddSingleton<Runtime.Web.WebControllerHub>();
+
+        // The dashboard writes the skin each panel shows, and the overlay
+        // feed reads it, so both must reach the same instance.
+        _ = services.AddSingleton<Runtime.Web.Overlay.OverlayThemeChoices>();
         _ = services.AddSingleton<Runtime.Web.Overlay.OverlayFeed>();
         _ = services.AddSingleton<Runtime.Web.WindowsFirewallAccess>();
         _ = services.AddSingleton<Runtime.Web.WebControllerServer>();

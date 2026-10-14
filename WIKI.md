@@ -284,12 +284,14 @@ The route is `/overlay` with optional query parameters:
 | Parameter | Meaning |
 |---|---|
 | `slot=<id>` | Pin the overlay to one controller slot. Omit it to use the first configured slot. |
-| `theme=<id>` | Pin a specific installed skin. Omit it to follow the slot's output controller style. |
+| `theme=<id>` | Pin a specific installed skin. Omit it to follow the skin that the slot's dashboard panel shows, or the default skin of the slot's output style when the slot has no dashboard panel. |
 | `side=physical` | Show the raw assigned input. Omit it to show the mapped virtual output the game receives. |
 
 For example, `http://10.0.0.5:8080/overlay?slot=player-one&side=physical` follows the physical side of `player-one`. The URL is the complete configuration and remains reusable across OBS launches. If the PC's LAN address changes, copy the regenerated address from Settings.
 
-The Browser source receives a compiled theme once, then controller frames at 60 Hz over an output-only WebSocket. Theme images are served by numeric indexes from the already-resolved theme program, so the route cannot browse arbitrary filesystem paths. The page automatically reconnects if GameFlow restarts and keeps a transparent canvas at any OBS source size.
+The Browser source receives a compiled theme when it connects, then controller frames at 60 Hz over an output-only WebSocket. Theme images are served by numeric indexes from the already-resolved theme program, so the route cannot browse arbitrary filesystem paths. The page automatically reconnects if GameFlow restarts and keeps a transparent canvas at any OBS source size.
+
+**Live layout.** Every 250 ms the server resolves the theme again. When the slot's output type or the dashboard skin changed, it sends a new compiled theme, and the page swaps the layout without a reload. A `theme=<id>` in the URL is a fixed pick and does not follow the dashboard.
 
 **Touchpad fingers.** Most skins have no `trailpad` node. For those, the compiled theme carries the touchpad rectangle (the image under the `touch_center:click` showhide), and each frame carries the contacts as `"touch":[[x, y, finger, pressure], ...]` with values from 0 to 1, at most five. The page draws them like the dashboard: soft smoke puffs that start in the finger's colour, rise, turn grey and fade, around a soft fingertip glow. Each finger has its own colour. A skin with `trailpad` nodes draws its own finger art instead.
 

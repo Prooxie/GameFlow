@@ -182,7 +182,7 @@ Up to 16 phones can connect at once. Each browser tab keeps a stable pad number 
 ### Add a controller overlay to OBS
 
 1. Open **Settings → Stream overlay**.
-2. Choose the controller slot and skin. Leave **Match the controller** selected to follow that slot's output type automatically.
+2. Choose the controller slot and skin. Leave **Match the controller** selected to follow that slot automatically: the overlay shows the skin of the slot's dashboard panel, and changes when you pick another skin or output type. OBS needs no refresh.
 3. Enable **Show the physical pad** only when the stream should display raw hardware input rather than the mapped virtual output the game receives.
 4. Copy the generated URL.
 5. In OBS, add a **Browser** source, paste the URL, and set its width/height for the scene.

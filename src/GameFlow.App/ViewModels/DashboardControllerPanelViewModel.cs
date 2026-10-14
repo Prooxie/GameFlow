@@ -1,3 +1,6 @@
+using System.ComponentModel;
+using GameFlow.Infrastructure.Runtime.Web.Overlay;
+
 namespace GameFlow.App.ViewModels;
 
 /// <summary>
@@ -7,19 +10,74 @@ namespace GameFlow.App.ViewModels;
 /// tick — a genuine side-by-side comparison per slot, at the same size
 /// and style as the top-level pair, rather than a small virtual-only card.
 /// </summary>
-public sealed class DashboardControllerPanelViewModel : ViewModelBase
+/// <remarks>
+/// The panel tells <see cref="OverlayThemeChoices"/> which theme each side
+/// shows, so the OBS overlay shows the same skin. Dispose the panel when it
+/// leaves the dashboard: that removes its choice, and the overlay then
+/// follows the slot type again.
+/// </remarks>
+public sealed class DashboardControllerPanelViewModel : ViewModelBase, IDisposable
 {
+    private readonly OverlayThemeChoices? overlayThemes;
+
+    /// <param name="slotId">Slot id, or "phys:" and a device id for a layout-only panel.</param>
+    /// <param name="title">Panel heading.</param>
+    /// <param name="physicalVisual">Physical (input) side.</param>
+    /// <param name="virtualVisual">Virtual (output) side.</param>
+    /// <param name="virtualBadgeLabel">Localized "VIRTUAL" badge text.</param>
+    /// <param name="overlayThemes">
+    /// Where the panel records its themes for the OBS overlay. Null for a
+    /// layout-only panel, which has no slot that an overlay can show.
+    /// </param>
     public DashboardControllerPanelViewModel(
         string slotId, string title,
         ControllerVisualStateViewModel physicalVisual,
         ControllerVisualStateViewModel virtualVisual,
-        string virtualBadgeLabel)
+        string virtualBadgeLabel,
+        OverlayThemeChoices? overlayThemes = null)
     {
         SlotId = slotId;
         this.title = title;
         PhysicalVisual = physicalVisual;
         VirtualVisual = virtualVisual;
         VirtualBadgeLabel = virtualBadgeLabel;
+        this.overlayThemes = overlayThemes;
+
+        if (overlayThemes is not null)
+        {
+            physicalVisual.PropertyChanged += OnVisualPropertyChanged;
+            virtualVisual.PropertyChanged += OnVisualPropertyChanged;
+            overlayThemes.Set(slotId, physical: true, physicalVisual.ActiveTheme);
+            overlayThemes.Set(slotId, physical: false, virtualVisual.ActiveTheme);
+        }
+    }
+
+    /// <summary>Stops recording themes and removes this slot from the overlay choices.</summary>
+    public void Dispose()
+    {
+        if (overlayThemes is null)
+        {
+            return;
+        }
+
+        PhysicalVisual.PropertyChanged -= OnVisualPropertyChanged;
+        VirtualVisual.PropertyChanged -= OnVisualPropertyChanged;
+        overlayThemes.Remove(SlotId);
+    }
+
+    /// <summary>
+    /// Records the new theme of one side. The active theme changes when the user
+    /// picks a skin, and when a slot type change loads the theme for another style.
+    /// </summary>
+    private void OnVisualPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(ControllerVisualStateViewModel.ActiveTheme)
+            || sender is not ControllerVisualStateViewModel visual)
+        {
+            return;
+        }
+
+        overlayThemes?.Set(SlotId, ReferenceEquals(visual, PhysicalVisual), visual.ActiveTheme);
     }
 
     public string SlotId { get; }
