@@ -157,11 +157,7 @@ public sealed class MotionServerPanelViewModel : ViewModelBase
 
         HasPortError = false;
 
-        var updated = userSettings.Current with
-        {
-            MotionServerEnabled = IsEnabled,
-            MotionServerPort = port
-        };
+        var isEnabled = IsEnabled;
 
         // Fire-and-forget with an explicit continuation: this is a UI
         // setter, so it cannot await, but a failed settings write must not
@@ -170,7 +166,11 @@ public sealed class MotionServerPanelViewModel : ViewModelBase
         {
             try
             {
-                await userSettings.ApplyAsync(updated).ConfigureAwait(false);
+                await userSettings.UpdateAsync(settings => settings with
+                {
+                    MotionServerEnabled = isEnabled,
+                    MotionServerPort = port
+                }).ConfigureAwait(false);
             }
             catch (Exception exception)
             {

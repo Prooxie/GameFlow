@@ -48,7 +48,7 @@ public sealed class SettingsDialogThreadingTests
         public AppSettings Current { get; } = new();
         public event EventHandler<UserSettingsChangedEventArgs>? Changed { add { } remove { } }
         public Task InitializeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
-        public Task ApplyAsync(AppSettings updated, CancellationToken cancellationToken = default) => Completion.Task;
+        public Task UpdateAsync(Func<AppSettings, AppSettings> change, CancellationToken cancellationToken = default) => Completion.Task;
     }
 
     private sealed class PumpContext : SynchronizationContext, IDisposable
