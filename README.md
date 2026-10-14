@@ -1,19 +1,17 @@
 <div align="center">
 
-# ⊕ GameFlow
+<img src="brand/logo-lockup.png" alt="GameFlow" width="620">
 
 **Cross-platform gamepad tooling for anyone.**
 
-
-
 **Ultimate multi-platform, multi-language controller tool for remapping and compability layering, Any input device in, any virtual controller out: Xbox, PlayStation or Nintendo. third-party gamepad, keyboard or/and mouse.**
-
 
 **v1.0.5** · Built with **.NET 10** · **Avalonia UI** · **SDL3** · **HIDMaestro**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-informational)](#requirements)
 [![Made by Proxy Darkness](https://img.shields.io/badge/made%20by-Proxy%20Darkness-blueviolet)](https://buymeacoffee.com/ProxyDarkness)
+[![Website](https://img.shields.io/badge/website-prooxie.github.io%2FGameFlow-00D4FF)](https://prooxie.github.io/GameFlow/)
 
 ---
 
@@ -31,33 +29,34 @@ GameFlow sits between your physical input — a gamepad, keyboard, mouse, or a p
 This project started as a script to spare players from repetitive inputs that were damaging both their controllers and their hands. It was later rebuilt in Python as **Autofire**, then in C#/.NET as the architecture you're looking at now, since renamed GameFlow to separate the *product* from *autofire* the individual *feature*.
 
 For the full feature reference, per-rule mechanics, and platform-by-platform verification notes, see [**WIKI.md**](WIKI.md).
+There is also a project site at **[prooxie.github.io/GameFlow](https://prooxie.github.io/GameFlow/)**.
 
 ---
 
 ## Features at a Glance
 
-|Category|Details|
-|-|-|
-|**Autofire**|Button and stick autofire, hysteresis-shaped so it doesn't jitter at the trigger threshold|
-|**Remapping**|Button-to-button remap with optional source suppression; toggle rules to flip other rules on/off at runtime|
-|**Shift layers**|"Caps Lock for your controller" — 6 activation modes (Hold, Toggle, Latch, Cycle, Sticky, No Button), long-press-to-engage, idle auto-cancel|
-|**SOCD cleaning**|Opposite-direction key resolution — Last-wins (Snap Tap), First-wins, or Neutral, per button pair|
-|**Stick Trim**|Hold a digital button, a stick modulates it into an analog trigger press — deadzone, ramp rate, and reset-on-release all configurable|
-|**Multi-source rows**|Many inputs → one output. Six combine modes (Maximum, Minimum, Sum, Average, Multiply, FirstActive) or a **formula** — a small dependency-free expression compiler (`s1 - s2`, `if(s1>0.5, s2, 0)`, `clamp(...)`), with 10 starter recipes|
-|**Gyro aiming**|Local / Player / World reference frames, dual-threshold smoothing (kills tremor, keeps flicks sharp), 4 engage modes including a raw-stick gate, drift bias calibration, output to a stick or the mouse|
-|**Touchpad mapping**|Finger-anchored virtual stick, 8-way wedge D-pad, frame-to-frame mouse mode — works on any pad with a touch surface|
-|**Custom scripting**|Sandboxed Lua per control (MoonSharp), for logic the built-in rule types don't cover|
-|**Button combos**|One press → a timed sequence of virtual presses|
-|**Freeze macro**|Captures the stick vector on the rising edge of a button; optional pulse-while-frozen|
-|**Per-device tuning**|Deadzone, anti-deadzone, full-at, sensitivity, response curve, and invert — per stick, per trigger, **per slot AND per device**, so the same pad feels different on two different slots. Offline slots remain editable through inheritable defaults; rumble, lighting, and adaptive-trigger settings reach assigned supported hardware through the effects thread.|
-|**Device calibration**|Press-to-detect for buttons and D-pad, move-to-detect for sticks and triggers. Fixes a pad SDL recognises with the wrong button order, or a converter that reports the right stick on the trigger axes. Each stick binds as two independent axes; a pad whose L2/R2 are plain switches binds them as on/off triggers|
-|**Rumble-linked adaptive triggers**|A DualSense trigger can stiffen with the game's rumble, or buzz along with it — the impulse-trigger feel, without the game knowing. Per trigger, with its own amount|
-|**Keyboard \& mouse as gamepad**|Full keyboard state (not just a handful of buttons) synthesized into a gamepad snapshot — works on **Windows, Linux, and macOS**|
-|**Motion server**|DSU / Cemuhook over UDP (26760 by default) — Cemu, Dolphin, Yuzu and Ryujinx read gyro and accelerometer straight from any slot with a motion-capable pad. Off by default; enable it in the Dashboard's Motion Server section|
-|**Phone as controller**|No app install — open a URL in any phone browser on the LAN. Dual anchored sticks, 8-way D-pad, analog triggers, rumble via the Vibration API, and the phone's own **gyroscope/accelerometer** feed the same gyro pipeline a DualSense uses. Up to 16 phones at once|
-|**Multiple virtual controllers**|Each "slot" is an independent input → profile → output pipeline, with its own device assignment, output kind, and output provider|
-|**Profile system**|Create, duplicate, rename, import, export — JSON, human-editable|
-|**Live dashboard**|Physical and virtual controllers rendered side by side, per slot|
+| Category                            | Details                                                                                                                                                                                                                                                                                                                                                            |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Autofire**                        | Button and stick autofire, hysteresis-shaped so it doesn't jitter at the trigger threshold                                                                                                                                                                                                                                                                         |
+| **Remapping**                       | Button-to-button remap with optional source suppression; toggle rules to flip other rules on/off at runtime                                                                                                                                                                                                                                                        |
+| **Shift layers**                    | "Caps Lock for your controller" — 6 activation modes (Hold, Toggle, Latch, Cycle, Sticky, No Button), long-press-to-engage, idle auto-cancel                                                                                                                                                                                                                       |
+| **SOCD cleaning**                   | Opposite-direction key resolution — Last-wins (Snap Tap), First-wins, or Neutral, per button pair                                                                                                                                                                                                                                                                  |
+| **Stick Trim**                      | Hold a digital button, a stick modulates it into an analog trigger press — deadzone, ramp rate, and reset-on-release all configurable                                                                                                                                                                                                                              |
+| **Multi-source rows**               | Many inputs → one output. Six combine modes (Maximum, Minimum, Sum, Average, Multiply, FirstActive) or a **formula** — a small dependency-free expression compiler (`s1 - s2`, `if(s1>0.5, s2, 0)`, `clamp(...)`), with 10 starter recipes                                                                                                                         |
+| **Gyro aiming**                     | Local / Player / World reference frames, dual-threshold smoothing (kills tremor, keeps flicks sharp), 4 engage modes including a raw-stick gate, drift bias calibration, output to a stick or the mouse                                                                                                                                                            |
+| **Touchpad mapping**                | Finger-anchored virtual stick, 8-way wedge D-pad, frame-to-frame mouse mode — works on any pad with a touch surface                                                                                                                                                                                                                                                |
+| **Custom scripting**                | Sandboxed Lua per control (MoonSharp), for logic the built-in rule types don't cover                                                                                                                                                                                                                                                                               |
+| **Button combos**                   | One press → a timed sequence of virtual presses                                                                                                                                                                                                                                                                                                                    |
+| **Freeze macro**                    | Captures the stick vector on the rising edge of a button; optional pulse-while-frozen                                                                                                                                                                                                                                                                              |
+| **Per-device tuning**               | Deadzone, anti-deadzone, full-at, sensitivity, response curve, and invert — per stick, per trigger, **per slot AND per device**, so the same pad feels different on two different slots. Offline slots remain editable through inheritable defaults; rumble, lighting, and adaptive-trigger settings reach assigned supported hardware through the effects thread. |
+| **Device calibration**              | Press-to-detect for buttons and D-pad, move-to-detect for sticks and triggers. Fixes a pad SDL recognises with the wrong button order, or a converter that reports the right stick on the trigger axes. Each stick binds as two independent axes; a pad whose L2/R2 are plain switches binds them as on/off triggers                                               |
+| **Rumble-linked adaptive triggers** | A DualSense trigger can stiffen with the game's rumble, or buzz along with it — the impulse-trigger feel, without the game knowing. Per trigger, with its own amount                                                                                                                                                                                               |
+| **Keyboard \& mouse as gamepad**    | Full keyboard state (not just a handful of buttons) synthesized into a gamepad snapshot — works on **Windows, Linux, and macOS**                                                                                                                                                                                                                                   |
+| **Motion server**                   | DSU / Cemuhook over UDP (26760 by default) — Cemu, Dolphin, Yuzu and Ryujinx read gyro and accelerometer straight from any slot with a motion-capable pad. Off by default; enable it in the Dashboard's Motion Server section                                                                                                                                      |
+| **Phone as controller**             | No app install — open a URL in any phone browser on the LAN. Dual anchored sticks, 8-way D-pad, analog triggers, rumble via the Vibration API, and the phone's own **gyroscope/accelerometer** feed the same gyro pipeline a DualSense uses. Up to 16 phones at once                                                                                               |
+| **Multiple virtual controllers**    | Each "slot" is an independent input → profile → output pipeline, with its own device assignment, output kind, and output provider                                                                                                                                                                                                                                  |
+| **Profile system**                  | Create, duplicate, rename, import, export — JSON, human-editable                                                                                                                                                                                                                                                                                                   |
+| **Live dashboard**                  | Physical and virtual controllers rendered side by side, per slot                                                                                                                                                                                                                                                                                                   |
 
 ---
 
@@ -65,20 +64,20 @@ For the full feature reference, per-rule mechanics, and platform-by-platform ver
 
 ### All platforms
 
-|Requirement|Version|
-|-|-|
-|[.NET SDK](https://dotnet.microsoft.com/download)|10.0 or later|
-|Git|Any recent version|
+| Requirement                                       | Version            |
+| ------------------------------------------------- | ------------------ |
+| [.NET SDK](https://dotnet.microsoft.com/download) | 10.0 or later      |
+| Git                                               | Any recent version |
 
 ### SDL3 native library (required everywhere)
 
 Gamepad/joystick input goes through SDL3 on every platform:
 
-|Platform|File|Location|
-|-|-|-|
-|Windows|`SDL3.dll`|Next to `GameFlow.App.exe`|
-|Linux|`libSDL3.so`|System library path, or the app directory|
-|macOS|`libSDL3.dylib`|System library path (e.g. `/usr/local/lib`), or the app directory|
+| Platform | File            | Location                                                          |
+| -------- | --------------- | ----------------------------------------------------------------- |
+| Windows  | `SDL3.dll`      | Next to `GameFlow.App.exe`                                        |
+| Linux    | `libSDL3.so`    | System library path, or the app directory                         |
+| macOS    | `libSDL3.dylib` | System library path (e.g. `/usr/local/lib`), or the app directory |
 
 An optional `gamecontrollerdb.txt` ([SDL\_GameControllerDB](https://github.com/mdqinc/SDL_GameControllerDB)) in the application directory extends the built-in mapping database.
 
@@ -124,11 +123,11 @@ dotnet run --project src/GameFlow.App
 
 First launch creates a default profile under:
 
-|Platform|Location|
-|-|-|
-|Windows|`%LOCALAPPDATA%/GAMEFLOW/`|
-|Linux|`\~/.local/share/GAMEFLOW/`|
-|macOS|`\~/Library/Application Support/GAMEFLOW/`|
+| Platform | Location                                   |
+| -------- | ------------------------------------------ |
+| Windows  | `%LOCALAPPDATA%/GAMEFLOW/`                 |
+| Linux    | `\~/.local/share/GAMEFLOW/`                |
+| macOS    | `\~/Library/Application Support/GAMEFLOW/` |
 
 > Upgrading from a pre-rename build? The folder used to be called `AutofireNext`. On first launch GameFlow **copies** everything from it into the new folder — profiles, settings, slots, per-device tuning — and leaves the old folder untouched, so it doubles as a backup. The copy only happens when the new folder is empty, so it can never overwrite newer data.
 
@@ -179,6 +178,7 @@ On the Adaptive tab, **React to rumble** ties a trigger to what the game is actu
 Up to 16 phones can connect at once. Each browser tab keeps a stable pad number across automatic WebSocket reconnects, and stale sockets cannot overwrite a replacement connection. Game rumble returns through the browser Vibration API when the phone supports it; GameFlow sends an explicit stop when rumble ends or the connection closes.
 
 > **Windows firewall note:** binding to all interfaces needs an admin URL ACL, or the server falls back to localhost-only and phones can't reach it (the log says which mode it's in):
+> 
 > ```
 > netsh http add urlacl url=http://+:8080/ user=Everyone
 > ```
@@ -219,12 +219,12 @@ The page has a transparent background, reconnects automatically, and renders dir
 }
 ```
 
-|Key|Default|Description|
-|-|-|-|
-|`DashboardRefreshHz`|`0`|UI refresh rate for the live dashboard (30–1000). `0` means "follow the display's own refresh rate". This drives a full redraw of every controller surface on screen, so it is the dominant UI cost — pin it lower on a weak machine. Independent of the mapping tick, which polls at its own rate and is unaffected|
-|`StartRuntimeOnLaunch`|`true`|Whether the input/output runtime starts automatically. Set to `false` for diagnostic runs: no input source, output sink or slot pipeline is created, so the app starts with no virtual controller and no device claimed|
-|`DefaultCulture`|`en`|Fallback UI language|
-|`Updates:RepoOwner` / `RepoName`|`Prooxie` / `GameFlow`|GitHub-releases update checker|
+| Key                              | Default                | Description                                                                                                                                                                                                                                                                                                          |
+| -------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DashboardRefreshHz`             | `0`                    | UI refresh rate for the live dashboard (30–1000). `0` means "follow the display's own refresh rate". This drives a full redraw of every controller surface on screen, so it is the dominant UI cost — pin it lower on a weak machine. Independent of the mapping tick, which polls at its own rate and is unaffected |
+| `StartRuntimeOnLaunch`           | `true`                 | Whether the input/output runtime starts automatically. Set to `false` for diagnostic runs: no input source, output sink or slot pipeline is created, so the app starts with no virtual controller and no device claimed                                                                                              |
+| `DefaultCulture`                 | `en`                   | Fallback UI language                                                                                                                                                                                                                                                                                                 |
+| `Updates:RepoOwner` / `RepoName` | `Prooxie` / `GameFlow` | GitHub-releases update checker                                                                                                                                                                                                                                                                                       |
 
 Profiles are JSON in the application data directory (see Quick Start), editable by hand or entirely through the **Profiles** tab.
 
@@ -244,54 +244,57 @@ Older profiles referencing retired providers (XInput, GameInput, x360ce, ViGEm, 
 
 ## Project Structure
 
-```
-GameFlow/
-├── src/
-│   ├── GameFlow.App              # Avalonia UI, ViewModels, Views, Localization
-│   ├── GameFlow.Core              # Domain models, mapping pipeline, rule types, formula engine
-│   └── GameFlow.Infrastructure    # SDL3, HIDMaestro, platform input/output, web controller, profiles
-├── tests/
-│   ├── GameFlow.Core.Tests        # Pipeline, rules, formula compiler, gyro maths
-│   └── GameFlow.Infrastructure.Tests  # Platform interop, protocol, device catalog
-└── .github/workflows/             # CI: build, test, and tag-triggered release packaging
-```
+<img src="brand/diagram-structure.svg" alt="GameFlow project structure: App, Core and Infrastructure, and what each depends on" width="100%">
 
 ---
 
 ## Architecture Overview
 
-```
-Physical input                 Keyboard/mouse            Phone browser
-  (SDL3 gamepad/joystick)     (Win Raw Input /              (WebSocket)
-        │                      Linux evdev /                    │
-        │                      macOS IOHIDManager)              │
-        ▼                            ▼                          ▼
-     InputSource.ReadAsync() / ReadDevice() ─────────────────────┘
-                    │
-                    ▼
-     DeviceSettingsProcessor      (per-device deadzone/curve, before merge)
-                    │
-                    ▼
-     ControllerMappingPipeline    (one per active slot, isolated)
-        ├── RuleToggleRule             ├── StickTrimRule
-        ├── SocdCleanRule              ├── GyroMapRule
-        ├── ButtonRemapRule            ├── TouchpadMapRule
-        ├── ButtonAutofireRule         ├── MultiSourceMapRule (+ Formula)
-        ├── MultiButtonAutofireRule    ├── ControlScriptRule (Lua)
-        ├── ButtonComboRule            └── StickThresholdRule
-        ├── StickAutofireRule
-        └── FreezeLastDirectionRule
-                    │
-                    ▼
-     OutputSink.WriteAsync()      (HIDMaestro · Preview)
-     + IMouseOutputWriter          (SendInput · uinput · CGEventPost, independent of gamepad output)
-                    │
-                    ▼
-     Virtual controller seen by games — hidden from GameFlow's own
-     input list, so it can never be selected back in as a source.
-```
+<img src="brand/diagram-architecture.svg" alt="GameFlow architecture: physical inputs, per-device conditioning, the mapping pipeline, and virtual outputs" width="100%">
 
 Shift layers resolve first each tick, gating which rules are active. Every slot's rules live in its profile's JSON, applied in order, live. The dashboard reads from lock-free snapshot stores on its own timer, independent of the mapping pipeline's tick rate.
+
+---
+
+## How GameFlow Compares
+
+### What's unusual about it
+
+These are the things that are hard to find elsewhere, whatever else a tool does well:
+
+- **A phone is a controller with nothing installed.** Open a URL in any phone browser on the Wi-Fi. Dual anchored sticks, analog triggers, rumble through the Vibration API, and the phone's own gyroscope feeding the same pipeline a DualSense does. Sixteen at once.
+- **A real expression compiler in the mapping grid.** `s1 - s2`, `if(s1 > 0.5, s2, 0)`, `clamp(...)` — many inputs folded into one output, with a compile error rather than a silent zero when you reference a source that isn't there.
+- **Sandboxed Lua per control**, for the logic no built-in rule type covers.
+- **An OBS overlay served by the app itself.** A transparent browser source, no screen capture, no always-on-top window.
+- **Per-device axis calibration.** Not just buttons: each stick binds as two independent axes, and a pad whose L2/R2 are plain switches binds them as on/off triggers. This is what makes third-party pads and PS2-era converters usable.
+- **Deadzone shaping that is radial, not per-axis** — so a diagonal push escapes the deadzone at the same physical distance a straight one does.
+- **Runs on Linux and macOS**, not just Windows. Input and mouse output are real on all three; virtual *gamepad* output is Windows-only for now.
+- **User-mode virtual controllers.** HIDMaestro needs no kernel driver and no reboot.
+- **MIT licensed and free**, with the mapping pipeline testable without any hardware attached.
+
+### Against other tools
+
+> **Please verify before trusting this.** It is a best-effort snapshot compiled from public documentation, not from testing each tool, and these projects all move. If a row is wrong or out of date, [open an issue](https://github.com/Prooxie/GameFlow/issues) — a comparison that misrepresents someone else's work is worth fixing quickly.
+
+| | **GameFlow** | DS4Windows | reWASD | DSX | Steam Input |
+|---|---|---|---|---|---|
+| Cost | Free, MIT | Free, open source | Paid | Paid | Free |
+| Windows | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Linux / macOS | Input + mouse out | — | — | — | ✅ |
+| Works outside Steam | ✅ | ✅ | ✅ | ✅ | Steam-launched games |
+| Virtual pad without a kernel driver | ✅ HIDMaestro | ViGEmBus driver | Driver | n/a | n/a |
+| Phone as a controller, no app install | ✅ | — | — | — | — |
+| Expression / formula engine | ✅ | — | — | — | — |
+| Scripting per control | ✅ Lua | — | — | — | — |
+| Built-in OBS browser overlay | ✅ | — | — | — | — |
+| Per-device stick & trigger axis calibration | ✅ | — | — | — | — |
+| DSU / Cemuhook motion server | ✅ | ✅ | — | — | — |
+| Gyro to stick or mouse | ✅ | ✅ | ✅ | Partial | ✅ |
+| Adaptive triggers | ✅ + rumble-linked | ✅ | ✅ | ✅ | Partial |
+| Shift layers / action sets | ✅ 6 modes | — | ✅ | — | ✅ |
+| Simultaneous virtual controllers | 16 | 4 | Several | n/a | n/a |
+
+DSX is the odd one out in that table by design — it is a DualSense feel-and-haptics tool with game integrations, not a general remapper, so most rows are simply outside what it sets out to do. Steam Input is extremely capable inside Steam; the trade is that it is Steam's runtime, not a virtual device other launchers can see.
 
 ---
 
@@ -350,4 +353,3 @@ Check out my other projects on GitHub, [YouTube](https://www.youtube.com/@ProxyD
 
 **NoobKillerRoof** — voicing real hardware/software pain points that inspired this project, beta testing
 [twitch.tv/noobkillerroof](https://www.twitch.tv/noobkillerroof)
-
