@@ -32,13 +32,10 @@ public sealed class JsonProfileRepository : IProfileRepository
         return await JsonSerializer.DeserializeAsync<ProfileDocument>(stream, ProfileJsonOptions.Default, cancellationToken);
     }
 
-    public async Task SaveAsync(ProfileDocument profile, CancellationToken cancellationToken = default)
+    public Task SaveAsync(ProfileDocument profile, CancellationToken cancellationToken = default)
     {
-        var path = GetProfilePath(profile.Id);
-        _ = Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-
-        await using var stream = File.Create(path);
-        await JsonSerializer.SerializeAsync(stream, profile, ProfileJsonOptions.Default, cancellationToken);
+        var json = JsonSerializer.Serialize(profile, ProfileJsonOptions.Default);
+        return AtomicFile.WriteAllTextAsync(GetProfilePath(profile.Id), json, cancellationToken);
     }
 
     public async Task<AppSettings> LoadSettingsAsync(CancellationToken cancellationToken = default)
@@ -53,12 +50,10 @@ public sealed class JsonProfileRepository : IProfileRepository
         return settings ?? new AppSettings();
     }
 
-    public async Task SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default)
+    public Task SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default)
     {
-        _ = Directory.CreateDirectory(Path.GetDirectoryName(AppPaths.SettingsFile)!);
-
-        await using var stream = File.Create(AppPaths.SettingsFile);
-        await JsonSerializer.SerializeAsync(stream, settings, ProfileJsonOptions.Default, cancellationToken);
+        var json = JsonSerializer.Serialize(settings, ProfileJsonOptions.Default);
+        return AtomicFile.WriteAllTextAsync(AppPaths.SettingsFile, json, cancellationToken);
     }
 
     public Task DeleteAsync(string profileId, CancellationToken cancellationToken = default)
