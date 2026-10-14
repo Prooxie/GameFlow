@@ -104,7 +104,7 @@ public sealed class ButtonMapStore
         try
         {
             var json = JsonSerializer.Serialize(maps, ProfileJsonOptions.Default);
-            File.WriteAllText(AppPaths.ButtonMapsFile, json);
+            AtomicFile.WriteAllText(AppPaths.ButtonMapsFile, json);
         }
         catch (Exception exception)
         {

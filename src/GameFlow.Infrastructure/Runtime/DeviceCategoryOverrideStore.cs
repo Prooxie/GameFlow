@@ -111,7 +111,7 @@ public sealed class DeviceCategoryOverrideStore
         try
         {
             var json = JsonSerializer.Serialize(overrides, ProfileJsonOptions.Default);
-            File.WriteAllText(AppPaths.DeviceCategoryOverridesFile, json);
+            AtomicFile.WriteAllText(AppPaths.DeviceCategoryOverridesFile, json);
         }
         catch (Exception exception)
         {

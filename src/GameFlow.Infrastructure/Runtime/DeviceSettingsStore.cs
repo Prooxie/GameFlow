@@ -267,17 +267,7 @@ public sealed class DeviceSettingsStore
                 snapshot = new Dictionary<string, DeviceSettings>(settings, StringComparer.Ordinal);
             }
 
-            var directory = Path.GetDirectoryName(filePath);
-            if (!string.IsNullOrEmpty(directory))
-            {
-                _ = Directory.CreateDirectory(directory);
-            }
-
-            // Write to a temp file then move: a crash mid-write leaves
-            // the previous good file intact instead of a truncated one.
-            var temp = filePath + ".tmp";
-            File.WriteAllText(temp, JsonSerializer.Serialize(snapshot, JsonOptions));
-            File.Move(temp, filePath, overwrite: true);
+            AtomicFile.WriteAllText(filePath, JsonSerializer.Serialize(snapshot, JsonOptions));
         }
         catch (Exception exception)
         {
