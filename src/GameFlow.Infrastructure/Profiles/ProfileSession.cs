@@ -99,6 +99,57 @@ public sealed class ProfileSession(
     /// </summary>
     public async Task SaveCurrentProfileAsync(ProfileDocument profile, CancellationToken cancellationToken = default)
     {
+        await PersistAsCurrentAsync(profile, cancellationToken);
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Applies <paramref name="change"/> to the current profile and saves it, but only
+    /// while <paramref name="expectedProfileId"/> is still the current profile.
+    /// Raises <see cref="Changed"/> after a save.
+    /// </summary>
+    /// <remarks>
+    /// Use this for an edit that waits before it saves, for example behind a save lock.
+    /// A profile switch in that wait would otherwise put the edit into the new
+    /// profile. The check and the save hold the lock that
+    /// <see cref="SwitchToProfileAsync"/> holds, so no switch can come between them.
+    /// </remarks>
+    /// <param name="expectedProfileId">Id of the profile that the user edited.</param>
+    /// <param name="change">Makes the saved profile from the current one.</param>
+    /// <param name="cancellationToken">Cancels the wait and the write.</param>
+    /// <returns>True when the change was saved. False when another profile is current now.</returns>
+    public async Task<bool> UpdateCurrentProfileAsync(
+        string expectedProfileId,
+        Func<ProfileDocument, ProfileDocument> change,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(change);
+
+        await gate.WaitAsync(cancellationToken);
+        try
+        {
+            if (!string.Equals(CurrentProfile.Id, expectedProfileId, StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogInformation(
+                    "Dropped an edit of profile {EditedProfileId}: profile {CurrentProfileId} became current before the save.",
+                    expectedProfileId,
+                    CurrentProfile.Id);
+                return false;
+            }
+
+            await PersistAsCurrentAsync(change(CurrentProfile), cancellationToken);
+        }
+        finally
+        {
+            _ = gate.Release();
+        }
+
+        Changed?.Invoke(this, EventArgs.Empty);
+        return true;
+    }
+
+    private async Task PersistAsCurrentAsync(ProfileDocument profile, CancellationToken cancellationToken)
+    {
         CurrentProfile = profile;
         await repository.SaveAsync(profile, cancellationToken);
         await SetActiveProfileIdAsync(profile.Id, cancellationToken);
@@ -107,8 +158,6 @@ public sealed class ProfileSession(
             "Saved profile {ProfileId} ({ProfileName}) and set as active.",
             profile.Id,
             profile.Name);
-
-        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>
