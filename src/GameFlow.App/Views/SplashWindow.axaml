@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="using:GameFlow.App.Views"
         x:Class="GameFlow.App.Views.SplashWindow"
         Title="GameFlow"
         Width="720"
@@ -18,9 +19,18 @@
           BorderThickness="1">
     <Grid RowDefinitions="*,Auto">
 
-      <!-- Background layer — art removed by request: the splash is the
-           wordmark on the gradient, nothing else. -->
       <Grid Grid.Row="0">
+        <!-- Background art. Deliberately carries NO logo or wordmark of
+             its own: the previous art baked both in, which pinned them to
+             the top half and duplicated the block below, and is why art
+             was dropped from this window. This is texture only — flow
+             curves echoing the app mark, with a clear centre for the
+             wordmark to sit in. -->
+        <Image Source="avares://GameFlow.App/Assets/SplashBackground.png"
+               Stretch="UniformToFill"
+               HorizontalAlignment="Stretch"
+               VerticalAlignment="Stretch" />
+
         <!-- Gradient vignette -->
         <Border>
           <Border.Background>
@@ -58,9 +68,7 @@
                     BorderBrush="{DynamicResource AppAccent}"
                     BorderThickness="2"
                     VerticalAlignment="Center">
-              <TextBlock Text="⊕" FontSize="34" FontWeight="Black"
-                         Foreground="{DynamicResource AppAccent}"
-                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+              <views:BrandMark Margin="9,0" />
             </Border>
             <!-- Single-line two-tone wordmark — see ShellWindow.axaml for why this replaced stacked two-line text. -->
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="0">

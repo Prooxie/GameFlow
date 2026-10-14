@@ -81,9 +81,7 @@
                     BorderBrush="{DynamicResource AppAccent}"
                     BorderThickness="1"
                     VerticalAlignment="Center">
-              <TextBlock Text="⊕" FontSize="15" FontWeight="Bold"
-                         Foreground="{DynamicResource AppAccent}"
-                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+              <views:BrandMark Margin="3,0" />
             </Border>
             <!--
                 Single-line, two-tone wordmark. Deliberately not stacked

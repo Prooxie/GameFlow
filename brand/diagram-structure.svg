@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 620" width="1240" height="620" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <defs>
+    <linearGradient id="page2" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0" stop-color="#0A1626"/><stop offset="1" stop-color="#050B12"/>
+    </linearGradient>
+    <marker id="dep" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#3D6E8C"/>
+    </marker>
+  </defs>
+
+  <rect width="1240" height="620" rx="20" fill="url(#page2)"/>
+
+  <text x="40" y="48" font-size="13" font-weight="700" fill="#00D4FF" letter-spacing="2">PROJECTS</text>
+  <text x="1200" y="48" font-size="12" fill="#7D8BA3" text-anchor="end">arrows point at what a project depends on</text>
+
+  <!-- ── GameFlow.App ────────────────────────────────────────────── -->
+  <rect x="40" y="70" width="360" height="252" rx="14" fill="#0E1B2E" stroke="#1E4160"/>
+  <rect x="40" y="70" width="360" height="4" rx="2" fill="#00D4FF"/>
+  <text x="64" y="108" font-size="19" font-weight="700" fill="#E2E8F0">GameFlow.App</text>
+  <text x="64" y="130" font-size="13" fill="#7D8BA3">Avalonia UI — what you see and click</text>
+  <g font-size="13" fill="#B8C6D9">
+    <rect x="64" y="146" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="78" y="165">Views · AXAML</text>
+    <rect x="226" y="146" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="240" y="165">ViewModels</text>
+    <rect x="64" y="182" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="78" y="201">Theme surfaces</text>
+    <rect x="226" y="182" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="240" y="201">Localization</text>
+    <rect x="64" y="218" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="78" y="237">Setup guide</text>
+    <rect x="226" y="218" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="240" y="237">Assets · icon</text>
+  </g>
+  <text x="64" y="278" font-size="12" fill="#7D8BA3">No device access, no blocking work, no business</text>
+  <text x="64" y="298" font-size="12" fill="#7D8BA3">logic in code-behind — that all lives to the right.</text>
+
+  <!-- ── GameFlow.Core ───────────────────────────────────────────── -->
+  <rect x="440" y="70" width="360" height="252" rx="14" fill="#0E1B2E" stroke="#1E4160"/>
+  <rect x="440" y="70" width="360" height="4" rx="2" fill="#34D399"/>
+  <text x="464" y="108" font-size="19" font-weight="700" fill="#E2E8F0">GameFlow.Core</text>
+  <text x="464" y="130" font-size="13" fill="#7D8BA3">Pure domain — no OS, no hardware, no I/O</text>
+  <g font-size="13" fill="#B8C6D9">
+    <rect x="464" y="146" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="478" y="165">Mapping pipeline</text>
+    <rect x="626" y="146" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="640" y="165">14 rule types</text>
+    <rect x="464" y="182" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="478" y="201">Formula compiler</text>
+    <rect x="626" y="182" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="640" y="201">Shift layers</text>
+    <rect x="464" y="218" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="478" y="237">Snapshots</text>
+    <rect x="626" y="218" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="640" y="237">Gyro maths</text>
+  </g>
+  <text x="464" y="278" font-size="12" fill="#7D8BA3">Depends on nothing else here, which is what lets</text>
+  <text x="464" y="298" font-size="12" fill="#7D8BA3">the whole transform be tested without a controller.</text>
+
+  <!-- ── GameFlow.Infrastructure ─────────────────────────────────── -->
+  <rect x="840" y="70" width="360" height="252" rx="14" fill="#0E1B2E" stroke="#1E4160"/>
+  <rect x="840" y="70" width="360" height="4" rx="2" fill="#FBBF24"/>
+  <text x="864" y="108" font-size="19" font-weight="700" fill="#E2E8F0">GameFlow.Infrastructure</text>
+  <text x="864" y="130" font-size="13" fill="#7D8BA3">Everything that touches the outside world</text>
+  <g font-size="13" fill="#B8C6D9">
+    <rect x="864" y="146" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="878" y="165">SDL3 input</text>
+    <rect x="1026" y="146" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="1040" y="165">HIDMaestro out</text>
+    <rect x="864" y="182" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="878" y="201">Raw Input · evdev</text>
+    <rect x="1026" y="182" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="1040" y="201">IOHIDManager</text>
+    <rect x="864" y="218" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="878" y="237">Web · DSU · OBS</text>
+    <rect x="1026" y="218" width="150" height="28" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="1040" y="237">Profiles · themes</text>
+  </g>
+  <text x="864" y="278" font-size="12" fill="#7D8BA3">Native handles, sockets and timers live here, and</text>
+  <text x="864" y="298" font-size="12" fill="#7D8BA3">are owned and disposed deterministically.</text>
+
+  <!-- ── Dependency arrows ───────────────────────────────────────── -->
+  <g stroke="#3D6E8C" stroke-width="2" fill="none" marker-end="url(#dep)">
+    <path d="M 404 180 L 434 180"/>
+    <path d="M 1020 336 C 1020 372 700 372 700 336"/>
+    <path d="M 220 336 C 220 392 1020 392 1020 336" stroke-dasharray="6 5"/>
+  </g>
+  <text x="700" y="368" font-size="12" fill="#7D8BA3" text-anchor="middle">Infrastructure → Core</text>
+  <text x="620" y="408" font-size="12" fill="#7D8BA3" text-anchor="middle">App → Infrastructure (through GameFlow-owned interfaces only)</text>
+
+  <!-- ── Supporting folders ──────────────────────────────────────── -->
+  <text x="40" y="460" font-size="13" font-weight="700" fill="#00D4FF" letter-spacing="2">ALSO IN THE REPO</text>
+
+  <rect x="40" y="478" width="278" height="100" rx="12" fill="#0B1420" stroke="#1B3552"/>
+  <text x="62" y="508" font-size="16" font-weight="600" fill="#E2E8F0">tests/</text>
+  <text x="62" y="532" font-size="12" fill="#7D8BA3">Core.Tests — pipeline, rules, formula</text>
+  <text x="62" y="552" font-size="12" fill="#7D8BA3">Infrastructure.Tests — interop, protocols</text>
+
+  <rect x="334" y="478" width="278" height="100" rx="12" fill="#0B1420" stroke="#1B3552"/>
+  <text x="356" y="508" font-size="16" font-weight="600" fill="#E2E8F0">themes/</text>
+  <text x="356" y="532" font-size="12" fill="#7D8BA3">VSCView-compatible controller skins,</text>
+  <text x="356" y="552" font-size="12" fill="#7D8BA3">one folder per model and colourway</text>
+
+  <rect x="628" y="478" width="278" height="100" rx="12" fill="#0B1420" stroke="#1B3552"/>
+  <text x="650" y="508" font-size="16" font-weight="600" fill="#E2E8F0">brand/</text>
+  <text x="650" y="532" font-size="12" fill="#7D8BA3">Logo, splash and social art, plus the</text>
+  <text x="650" y="552" font-size="12" fill="#7D8BA3">generator that cuts every size from one source</text>
+
+  <rect x="922" y="478" width="278" height="100" rx="12" fill="#0B1420" stroke="#1B3552"/>
+  <text x="944" y="508" font-size="16" font-weight="600" fill="#E2E8F0">.github/workflows/</text>
+  <text x="944" y="532" font-size="12" fill="#7D8BA3">Build, test, tag-triggered release</text>
+  <text x="944" y="552" font-size="12" fill="#7D8BA3">packaging, and the Pages deploy</text>
+</svg>

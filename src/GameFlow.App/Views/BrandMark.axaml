@@ -1,0 +1,50 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GameFlow.App.Views.BrandMark">
+
+  <!--
+      The GameFlow mark, as vector rather than the bitmap app icon.
+
+      Two signal paths enter level, cross, and leave swapped — the path in
+      is not the path out. Geometry is identical to brand/logo-mark.svg
+      (512 unit box, glyph centred on 256,256), so the window chrome and
+      the taskbar icon are the same drawing.
+
+      Drawn rather than referenced as an image for one reason: the accent
+      is theme-dependent — AppThemeService swaps it across five palettes —
+      and a PNG would stay cyan in the purple, green, red and light
+      themes. The woven-under path takes the SAME accent at reduced
+      opacity instead of its own brush, so a new palette needs no new
+      resource to stay correct.
+  -->
+  <!--
+      The canvas is the glyph's own bounding box (378 x 226 including
+      stroke width), not the 512 square the SVG is authored in. A Viewbox
+      scales its child's DESIRED size, so a 512-square canvas holding a
+      378x226 drawing would letterbox against the empty height and render
+      the mark at roughly half the size the host asked for.
+  -->
+  <Viewbox Stretch="Uniform">
+    <Canvas Width="378" Height="226">
+
+      <!-- Under-path, drawn as two sub-paths with a real gap where the
+           over-path crosses. A background-coloured casing would only
+           vanish against the exact background it was drawn for, and this
+           control sits on several. -->
+      <Path Data="M 25,201 C 83,201 129,157 143,143"
+            Stroke="{DynamicResource AppAccent}" Opacity="0.55"
+            StrokeThickness="40" StrokeLineCap="Round" />
+      <Path Data="M 235,83 C 249,69 295,25 353,25"
+            Stroke="{DynamicResource AppAccent}" Opacity="0.55"
+            StrokeThickness="40" StrokeLineCap="Round" />
+
+      <!-- Over-path: heavier and at full strength. That weight difference
+           is what keeps the mark reading as routing rather than as the
+           equal-weight shuffle glyph. -->
+      <Path Data="M 25,25 C 147,25 231,201 353,201"
+            Stroke="{DynamicResource AppAccent}"
+            StrokeThickness="50" StrokeLineCap="Round" />
+
+    </Canvas>
+  </Viewbox>
+</UserControl>
