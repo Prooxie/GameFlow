@@ -1,7 +1,6 @@
 using GameFlow.Infrastructure.Runtime.HidMaestro;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace GameFlow.Infrastructure.Tests.Runtime.HidMaestro;
 
