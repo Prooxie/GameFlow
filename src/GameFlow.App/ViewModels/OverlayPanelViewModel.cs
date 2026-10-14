@@ -36,8 +36,6 @@ public sealed class OverlayPanelViewModel : ViewModelBase
         this.firewallAccess = firewall ?? throw new ArgumentNullException(nameof(firewall));
 
         AllowThroughFirewallCommand = new AsyncRelayCommand(AllowThroughFirewallAsync);
-        AllowOnPublicNetworkCommand = new AsyncRelayCommand(AllowOnPublicNetworkAsync);
-        OpenNetworkSettingsCommand = new RelayCommand(firewall.OpenNetworkSettings);
 
         Refresh();
     }
@@ -50,25 +48,23 @@ public sealed class OverlayPanelViewModel : ViewModelBase
     // running, and the phone still times out — because Windows Firewall
     // drops the inbound connection and says so to nobody.
     //
-    // The subtler half is that a rule can exist and still not apply. A
-    // firewall rule names the network categories it covers, and home
-    // Ethernet is very often left categorised Public because Windows only
-    // asked once. So the rule sits there, enabled, covering Private, on a
-    // machine whose network is Public — and the phone still cannot
-    // connect. These members distinguish the two cases, because the fix
-    // is different for each.
+    // The subtler half is that a rule can exist and still not apply. Older
+    // GameFlow versions made a rule for GameFlow.App.exe, which never
+    // matches because HTTP.sys accepts the connection in the System
+    // process. That rule is "stale", and one click replaces it.
+    //
+    // An elevated GameFlow writes the rule by itself when the server
+    // starts. The button is for a GameFlow that is not elevated.
 
-    private FirewallStatus firewall = new(FirewallRuleState.Unknown, false, null);
+    private FirewallRuleState firewall = FirewallRuleState.Unknown;
     private bool firewallBusy;
+    private bool restartNeeded;
 
-    /// <summary>Requests the inbound firewall rule; raises a UAC prompt.</summary>
+    /// <summary>
+    /// Writes the inbound firewall rule and the URL reservation; raises a UAC
+    /// prompt when GameFlow is not elevated.
+    /// </summary>
     public ICommand AllowThroughFirewallCommand { get; }
-
-    /// <summary>Widens the rule to Public networks; raises a UAC prompt.</summary>
-    public ICommand AllowOnPublicNetworkCommand { get; }
-
-    /// <summary>Opens Windows' own network-category settings.</summary>
-    public ICommand OpenNetworkSettingsCommand { get; }
 
     /// <summary>
     /// Plain-language state of "can a phone actually reach this?".
@@ -82,22 +78,22 @@ public sealed class OverlayPanelViewModel : ViewModelBase
                 return "The web server is not running.";
             }
 
-            if (server.ListenUrl?.Contains("localhost", StringComparison.OrdinalIgnoreCase) == true)
+            if (IsLocalOnly)
             {
-                return "Serving this PC only — Windows would not let GameFlow listen on the network. " +
-                       "Running GameFlow as administrator once is usually enough to fix this.";
+                return restartNeeded
+                    ? "Done. Restart GameFlow so that it listens on the network."
+                    : "Serving this PC only — Windows would not let GameFlow listen on the network. " +
+                      "Allow it through to fix that, or start GameFlow as administrator once.";
             }
 
-            return firewall.State switch
+            return firewall switch
             {
                 FirewallRuleState.Active =>
-                    "Windows Firewall is allowing incoming connections on this port.",
+                    "Windows Firewall is allowing incoming connections on this port from your local network.",
 
-                FirewallRuleState.WrongProfile =>
-                    $"GameFlow is allowed through Windows Firewall, but not on this PC's " +
-                    $"{firewall.NetworkNames} network — and that is the one a phone would connect over, " +
-                    "so it still times out. Setting that network to Private in Windows is the safer fix; " +
-                    "allowing Public networks works too.",
+                FirewallRuleState.Stale =>
+                    "GameFlow has an old firewall rule that does not let phones or OBS in. " +
+                    "Allow it through to replace it.",
 
                 FirewallRuleState.Missing =>
                     "Windows Firewall has no rule for GameFlow, so phones will time out trying to " +
@@ -111,25 +107,19 @@ public sealed class OverlayPanelViewModel : ViewModelBase
     /// <summary>True while the reachability state is a known problem, so the view can call it out.</summary>
     public bool HasReachabilityWarning =>
         server.IsRunning &&
-        (firewall.State is FirewallRuleState.Missing or FirewallRuleState.WrongProfile ||
-         server.ListenUrl?.Contains("localhost", StringComparison.OrdinalIgnoreCase) == true);
+        (firewall is FirewallRuleState.Missing or FirewallRuleState.Stale || IsLocalOnly);
 
     /// <summary>
-    /// Gates the "Allow through Windows Firewall" button: only offered
+    /// Gates the "Allow through firewall" button: only offered
     /// where it can help, and never while a prompt is already open.
     /// </summary>
     public bool CanAllowThroughFirewall =>
-        WindowsFirewallAccess.IsSupported && server.IsRunning && !firewallBusy &&
-        firewall.State is FirewallRuleState.Missing or FirewallRuleState.Unknown;
+        WindowsFirewallAccess.IsSupported && server.IsRunning && !firewallBusy && !restartNeeded &&
+        (firewall != FirewallRuleState.Active || IsLocalOnly);
 
-    /// <summary>
-    /// Shown only when a rule is already in place but the current network
-    /// is outside it — the one case where widening to Public is the
-    /// answer rather than a needless exposure.
-    /// </summary>
-    public bool CanAllowOnPublicNetwork =>
-        WindowsFirewallAccess.IsSupported && server.IsRunning && !firewallBusy &&
-        firewall.State == FirewallRuleState.WrongProfile;
+    /// <summary>True when the server could bind only to localhost, so no other device can reach it.</summary>
+    private bool IsLocalOnly =>
+        server.ListenUrl?.Contains("localhost", StringComparison.OrdinalIgnoreCase) == true;
 
     /// <summary>
     /// Re-reads the firewall state.
@@ -141,25 +131,25 @@ public sealed class OverlayPanelViewModel : ViewModelBase
     /// </remarks>
     public async Task RefreshReachabilityAsync()
     {
-        firewall = await firewallAccess.GetStatusAsync().ConfigureAwait(true);
+        firewall = await firewallAccess.GetStatusAsync(server.Port).ConfigureAwait(true);
         RaiseReachabilityChanged();
     }
 
-    private Task AllowThroughFirewallAsync() => AddRuleAsync(includePublic: false);
-
-    private Task AllowOnPublicNetworkAsync() => AddRuleAsync(includePublic: true);
-
-    private async Task AddRuleAsync(bool includePublic)
+    private async Task AllowThroughFirewallAsync()
     {
         firewallBusy = true;
         RaiseReachabilityChanged();
         try
         {
-            await firewallAccess.TryAddInboundRuleAsync(server.Port, includePublic).ConfigureAwait(true);
+            var added = await firewallAccess.TryAddInboundRuleAsync(server.Port).ConfigureAwait(true);
+
+            // The listener binds when the server starts, so the new URL
+            // reservation takes effect only after a restart.
+            restartNeeded = added && IsLocalOnly;
 
             // Re-read rather than assume: the user may have declined the
-            // UAC prompt, and the rule's real profiles are what matters.
-            firewall = await firewallAccess.GetStatusAsync().ConfigureAwait(true);
+            // UAC prompt, and the rule's real fields are what matters.
+            firewall = await firewallAccess.GetStatusAsync(server.Port).ConfigureAwait(true);
         }
         finally
         {
@@ -173,7 +163,6 @@ public sealed class OverlayPanelViewModel : ViewModelBase
         OnPropertyChanged(nameof(ReachabilityMessage));
         OnPropertyChanged(nameof(HasReachabilityWarning));
         OnPropertyChanged(nameof(CanAllowThroughFirewall));
-        OnPropertyChanged(nameof(CanAllowOnPublicNetwork));
     }
 
     /// <summary>Installed skins, plus a leading "match the controller" entry.</summary>

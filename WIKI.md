@@ -311,9 +311,12 @@ Stand-ins are restricted to controllers whose button complement is a superset of
 
 **A slot's dashboard panel shows animated input I never gave it.** No device is assigned to that slot — it's falling back to the Demo preview source, which intentionally animates. Assign a real device in the Devices tab.
 
-**Web controller says "connection lost" from a phone.** On Windows, binding to all network interfaces needs an admin URL ACL; without it the server falls back to localhost-only (check the log — it states which mode it's in):
+**A phone or the OBS PC cannot reach the web controller.** Windows needs two things: a URL reservation, so GameFlow can listen on the network, and an inbound firewall rule for the port. An elevated GameFlow adds both when the server starts. When GameFlow is not elevated, **Settings → Phone controller** shows a warning and an **Allow through firewall** button. If the address shows `localhost`, restart GameFlow after you click it.
+
+The rule has no program filter on purpose. GameFlow serves through HTTP.sys, which accepts each connection in the Windows System process, so a rule for `GameFlow.App.exe` never matches. Older versions made such a rule; GameFlow now reports it as stale and replaces it. To set it up by hand from an administrator prompt (`WD` is the SID form of "Everyone", which works on every Windows language):
 ```
-netsh http add urlacl url=http://+:8080/ user=Everyone
+netsh http add urlacl url=http://+:8080/ sddl="D:(A;;GX;;;WD)"
+netsh advfirewall firewall add rule name="GameFlow web controller" dir=in action=allow protocol=TCP localport=8080 remoteip=localsubnet,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16 profile=any
 ```
 
 **The phone controls work but it does not vibrate.** Browser support is optional, and some mobile browsers require a user gesture before allowing vibration. Touch a controller control once, keep the page in the foreground, and confirm that the browser exposes the Vibration API. Input continues normally when vibration is unavailable.

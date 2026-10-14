@@ -41,10 +41,12 @@ namespace GameFlow.Infrastructure.Runtime.Web;
 public sealed class WebControllerServer(
     WebControllerHub hub,
     Overlay.OverlayFeed overlay,
+    WindowsFirewallAccess firewall,
     ILogger<WebControllerServer> logger) : BackgroundService
 {
     private readonly WebControllerHub hub = hub;
     private readonly Overlay.OverlayFeed overlay = overlay;
+    private readonly WindowsFirewallAccess firewall = firewall;
     private readonly ILogger<WebControllerServer> logger = logger;
     private HttpListener? listener;
 
@@ -90,6 +92,10 @@ public sealed class WebControllerServer(
         }
 
         IsRunning = true;
+
+        // Off the accept loop: the COM query and netsh can take a second.
+        _ = EnsureFirewallRuleAsync(stoppingToken);
+
         try
         {
             while (!stoppingToken.IsCancellationRequested)
@@ -121,6 +127,22 @@ public sealed class WebControllerServer(
         }
     }
 
+    /// <summary>
+    /// Opens the port to the LAN when GameFlow is elevated. See
+    /// <see cref="WindowsFirewallAccess.EnsureInboundRuleAsync"/>.
+    /// </summary>
+    private async Task EnsureFirewallRuleAsync(CancellationToken stoppingToken)
+    {
+        try
+        {
+            await firewall.EnsureInboundRuleAsync(Port, stoppingToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // shutting down — normal
+        }
+    }
+
     private HttpListener? TryStartListener()
     {
         // All interfaces first — that's the whole point, phones on Wi-Fi.
@@ -137,9 +159,9 @@ public sealed class WebControllerServer(
         {
             logger.LogWarning(
                 "Web controller: could not bind all interfaces on port {Port} ({Message}). " +
-                "On Windows this usually needs an admin URL ACL: " +
-                "netsh http add urlacl url=http://+:{Port}/ user=Everyone. Falling back to localhost only.",
-                Port, exception.Message, Port);
+                "On Windows this needs a URL reservation. Click 'Allow through firewall' in Options, " +
+                "or start GameFlow as administrator once. Falling back to localhost only.",
+                Port, exception.Message);
         }
 
         var localOnly = new HttpListener();
@@ -150,7 +172,7 @@ public sealed class WebControllerServer(
             ListenUrl = $"http://localhost:{Port}";
             logger.LogWarning(
                 "Web controller: listening on {Url} — THIS PC ONLY. Phones on your network cannot reach it " +
-                "until the URL ACL above is added.", ListenUrl);
+                "until the URL reservation above is added and GameFlow restarts.", ListenUrl);
             return localOnly;
         }
         catch (HttpListenerException exception)
