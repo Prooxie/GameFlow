@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
+using GameFlow.Infrastructure.Theming;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -57,6 +58,13 @@ public sealed class WebControllerServer(
     /// frame, so the cost of being generous here is negligible.
     /// </summary>
     private static readonly TimeSpan OverlayFrameInterval = TimeSpan.FromMilliseconds(1000.0 / 60);
+
+    /// <summary>
+    /// Overlay frames between two theme checks: 15 frames at 60 Hz is 250 ms.
+    /// A skin or type change in the app reaches OBS in this time, and the
+    /// check stays out of most frames.
+    /// </summary>
+    private const int OverlayThemeCheckFrames = 15;
 
     /// <summary>
     /// Feedback is sent independently of incoming input. A phone at rest only
@@ -459,6 +467,13 @@ public sealed class WebControllerServer(
     /// </para>
     ///
     /// <para>
+    /// <b>The layout follows the app.</b> Every
+    /// <see cref="OverlayThemeCheckFrames"/> frames the loop resolves the theme
+    /// again. When the slot type or the dashboard skin changed, it sends a new
+    /// program, and the page swaps the layout with no reload.
+    /// </para>
+    ///
+    /// <para>
     /// Frames go out unconditionally rather than only on change. A
     /// dirty check would save bandwidth that is already negligible, and
     /// it would mean a source that connected during an idle moment sat
@@ -499,24 +514,32 @@ public sealed class WebControllerServer(
                 return;
             }
 
-            var program = Overlay.OverlayProgramBuilder.Build(theme);
-            if (program.MissingImages.Count > 0)
-            {
-                logger.LogWarning(
-                    "Overlay: theme {Theme} references {Count} image(s) that are not on disk; they will not draw.",
-                    theme.Id, program.MissingImages.Count);
-            }
-
-            await SendAsync(socket, Overlay.OverlayProtocol.BuildProgram(program), stoppingToken);
+            var program = await SendProgramAsync(socket, theme, stoppingToken);
             logger.LogInformation("Overlay: a browser source connected, drawing theme {Theme}.", theme.Id);
 
             // One symbol table for the life of the connection — rebinding
             // a snapshot is a field assignment, and this runs 60x/sec.
-            var symbols = new Theming.ControllerStateSymbols();
+            var symbols = new ControllerStateSymbols();
             using var ticker = new PeriodicTimer(OverlayFrameInterval);
+            var framesSinceThemeCheck = 0;
 
             while (socket.State == WebSocketState.Open && await ticker.WaitForNextTickAsync(stoppingToken))
             {
+                if (++framesSinceThemeCheck >= OverlayThemeCheckFrames)
+                {
+                    framesSinceThemeCheck = 0;
+
+                    // Null means the slot is gone. Keep the last layout: the
+                    // controller goes neutral, which is better than a blank scene.
+                    var latest = overlay.ResolveTheme(request);
+                    if (latest is not null && !ReferenceEquals(latest, theme))
+                    {
+                        logger.LogInformation("Overlay: layout changed from {Old} to {New}.", theme.Id, latest.Id);
+                        theme = latest;
+                        program = await SendProgramAsync(socket, theme, stoppingToken);
+                    }
+                }
+
                 var frame = Overlay.OverlayProtocol.BuildFrame(
                     program, symbols, overlay.Snapshot(request), overlay.LightColor(request));
                 await SendAsync(socket, frame, stoppingToken);
@@ -539,6 +562,24 @@ public sealed class WebControllerServer(
             logger.LogInformation("Overlay: a browser source disconnected.");
             try { socket.Dispose(); } catch { /* already gone */ }
         }
+    }
+
+    /// <summary>Compiles <paramref name="theme"/> and sends it as the page's program message.</summary>
+    private async Task<Overlay.OverlayProgram> SendProgramAsync(
+        WebSocket socket,
+        InstalledTheme theme,
+        CancellationToken cancellationToken)
+    {
+        var program = Overlay.OverlayProgramBuilder.Build(theme);
+        if (program.MissingImages.Count > 0)
+        {
+            logger.LogWarning(
+                "Overlay: theme {Theme} references {Count} image(s) that are not on disk; they will not draw.",
+                theme.Id, program.MissingImages.Count);
+        }
+
+        await SendAsync(socket, Overlay.OverlayProtocol.BuildProgram(program), cancellationToken);
+        return program;
     }
 
     private static Task SendAsync(WebSocket socket, string json, CancellationToken cancellationToken)

@@ -68,6 +68,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     private readonly ILoggerFactory loggerFactory;
     private readonly ILogger<ShellViewModel> logger;
     private readonly IServiceProvider serviceProvider;
+
+    /// <summary>Receives the skin of each dashboard panel, so the OBS overlay shows the same one.</summary>
+    private readonly GameFlow.Infrastructure.Runtime.Web.Overlay.OverlayThemeChoices overlayThemeChoices;
     private readonly AppRuntimeOptions runtimeOptions;
     private readonly GameFlow.Infrastructure.Configuration.IUserSettingsService userSettings;
 
@@ -165,6 +168,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         GameFlow.Infrastructure.Runtime.DeviceSettingsStore deviceSettingsStore,
         IProfileFileDialogService profileFileDialogService,
         MotionServerPanelViewModel motionServerPanel,
+        GameFlow.Infrastructure.Runtime.Web.Overlay.OverlayThemeChoices overlayThemeChoices,
         IOptions<AppRuntimeOptions> runtimeOptions,
         GameFlow.Infrastructure.Configuration.IUserSettingsService userSettings,
         ILoggerFactory loggerFactory,
@@ -183,6 +187,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         this.loggerFactory = loggerFactory;
         this.logger = logger;
         this.serviceProvider = serviceProvider;
+        this.overlayThemeChoices = overlayThemeChoices;
 
         SaveProfileCommand               = new AsyncRelayCommand(SaveProfileAsync);
         ResetProfileCommand              = new AsyncRelayCommand(ResetProfileAsync);
@@ -716,6 +721,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             if (stale)
             {
                 ControllerPanels.RemoveAt(i);
+                panel.Dispose();
             }
         }
 
@@ -744,7 +750,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                 }
 
                 var panel = new DashboardControllerPanelViewModel(
-                    slot.Id, slot.Name, physicalVisual, virtualVisual, VirtualBadgeLabel)
+                    slot.Id, slot.Name, physicalVisual, virtualVisual, VirtualBadgeLabel, overlayThemeChoices)
                 {
                     LightColor = LightColorForSlot(slot),
                     VirtualStyle = ResolveSlotVirtualStyle(slot),
@@ -2948,6 +2954,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         MappingEditor.RulesChanged         -= OnMappingRulesChanged;
         MappingEditor.Dispose();
         DevicesPanel.Dispose();
+        foreach (var panel in ControllerPanels)
+        {
+            panel.Dispose();
+        }
         rulesSaveGate.Dispose();
         panelBackgroundSaveGate.Dispose();
     }

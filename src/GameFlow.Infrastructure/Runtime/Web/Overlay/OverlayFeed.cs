@@ -19,11 +19,13 @@ namespace GameFlow.Infrastructure.Runtime.Web.Overlay;
 public sealed class OverlayFeed(
     ThemeRegistry themes,
     SlotRegistry slots,
-    SlotSnapshotStore snapshots)
+    SlotSnapshotStore snapshots,
+    OverlayThemeChoices choices)
 {
     private readonly ThemeRegistry themes = themes;
     private readonly SlotRegistry slots = slots;
     private readonly SlotSnapshotStore snapshots = snapshots;
+    private readonly OverlayThemeChoices choices = choices;
 
     /// <summary>What a connection asked for, parsed out of the query string.</summary>
     public sealed record Request(string? ThemeId, string? SlotId, bool Physical);
@@ -38,12 +40,22 @@ public sealed class OverlayFeed(
     public IReadOnlyList<InstalledTheme> Themes() => themes.Themes;
 
     /// <summary>
-    /// Resolves the theme to draw. An explicit <c>theme</c> wins; without
-    /// one, the slot's own output kind picks a theme the way the
-    /// dashboard's virtual panel does, so a URL with no theme still shows
-    /// the right controller. Null when neither route finds anything —
-    /// which for a fresh install with no themes is the honest answer.
+    /// Resolves the theme to draw. The order is:
+    /// <list type="number">
+    /// <item>An installed theme named by the <c>theme</c> parameter.</item>
+    /// <item>The theme that the slot's dashboard panel shows now, from
+    ///   <see cref="OverlayThemeChoices"/>. This follows a skin change in the app.</item>
+    /// <item>The default theme for the slot's output kind. This follows a type
+    ///   change when the slot has no dashboard panel.</item>
+    /// </list>
+    /// Null when no route finds a theme — which for a fresh install with
+    /// no themes is the honest answer.
     /// </summary>
+    /// <remarks>
+    /// The web server calls this again while a source is connected, and sends
+    /// a new program when the result changes. Keep it cheap: it reads cached
+    /// lists only.
+    /// </remarks>
     public InstalledTheme? ResolveTheme(Request request)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -58,6 +70,12 @@ public sealed class OverlayFeed(
         if (slot is null)
         {
             return null;
+        }
+
+        var chosen = choices.Get(slot.Id, request.Physical);
+        if (chosen is not null)
+        {
+            return chosen;
         }
 
         var template = slot.OutputTemplate;

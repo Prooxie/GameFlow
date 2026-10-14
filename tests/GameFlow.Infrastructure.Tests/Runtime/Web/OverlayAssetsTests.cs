@@ -9,6 +9,18 @@ namespace GameFlow.Infrastructure.Tests.Runtime.Web;
 /// </summary>
 public sealed class OverlayAssetsTests
 {
+    /// <summary>
+    /// The server sends a new program when the slot type or skin changes.
+    /// Old values must not draw on the new tree.
+    /// </summary>
+    [Fact]
+    public void OverlayPageNewProgramClearsOldFrameState()
+    {
+        var page = OverlayAssets.OverlayPage;
+
+        Assert.Matches(@"program = data;\s+values = \[\];\s+pads = \[\];[^}]*resetTouch\(\);", page);
+    }
+
     [Fact]
     public void OverlayPageTouchRegionDrawsFingers()
     {

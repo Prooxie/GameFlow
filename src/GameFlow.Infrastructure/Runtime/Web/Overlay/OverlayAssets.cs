@@ -25,6 +25,12 @@ namespace GameFlow.Infrastructure.Runtime.Web.Overlay;
 /// </para>
 ///
 /// <para>
+/// <b>Live layout.</b> The server sends a new <c>program</c> message when the
+/// slot type or the dashboard skin changes. The page then drops the values of
+/// the old tree, so no old number draws on the new layout.
+/// </para>
+///
+/// <para>
 /// <b>The background is transparent on purpose</b> and must stay that
 /// way: OBS composites a browser source over the scene below it, so any
 /// opaque body would show up as a black box around the controller. The
@@ -435,7 +441,11 @@ function connect() {
     try { data = JSON.parse(event.data); } catch (e) { return; }
 
     if (data.type === "program") {
+      // Also the message for a live layout change. The old values index
+      // the old tree, so they must not draw on this one.
       program = data;
+      values = [];
+      pads = [];
       touchRegion = data.touchRegion || null;
       resetTouch();
       tintCache = {};
