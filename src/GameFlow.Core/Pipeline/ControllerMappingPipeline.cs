@@ -1139,11 +1139,23 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
                 DeviceName = $"{physical.DeviceName} / virtual"
             };
 
-        return new ControllerFrameResult(physical with { Timestamp = now }, virtualSnapshot, (IReadOnlyList<string>?)notes ?? [])
+        // Axis inversion is the LAST thing that happens — see
+        // AxisInvertProcessor for why it sits behind every rule rather
+        // than in front of them. When the profile doesn't ask the layout
+        // to show it, the two snapshots diverge here and only here: the
+        // sink gets `inverted`, the panels keep `virtualSnapshot`.
+        var inverted = AxisInvertProcessor.Apply(virtualSnapshot, profile.Invert);
+        var showInLayout = profile.Invert?.ShowInLayout ?? false;
+
+        return new ControllerFrameResult(
+            physical with { Timestamp = now },
+            showInLayout ? inverted : virtualSnapshot,
+            (IReadOnlyList<string>?)notes ?? [])
         {
             ActiveLayerId = shiftLayerResolver.ActiveLayerId,
             MouseDeltaX = mouseDeltaX,
-            MouseDeltaY = mouseDeltaY
+            MouseDeltaY = mouseDeltaY,
+            OutputSnapshot = inverted
         };
     }
 

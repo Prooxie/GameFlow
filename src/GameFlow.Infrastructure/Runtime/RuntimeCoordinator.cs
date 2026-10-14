@@ -193,7 +193,9 @@ public sealed class RuntimeCoordinator(
                         var result = pipeline.Process(physical, now);
                         mouseOutputWriter.MoveRelative(result.MouseDeltaX, result.MouseDeltaY);
 
-                        await outputSink.WriteAsync(result.VirtualSnapshot, stoppingToken);
+                        // See SlotPipeline for why the sink takes
+                        // OutputSnapshot rather than VirtualSnapshot.
+                        await outputSink.WriteAsync(result.OutputSnapshot, stoppingToken);
                         snapshotStore.Update(inputSource.DisplayName, outputSink.DisplayName, result);
                     }
 

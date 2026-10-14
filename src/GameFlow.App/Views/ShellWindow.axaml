@@ -698,6 +698,74 @@
               </StackPanel>
             </Border>
 
+            <!--
+                Axis inversion lives with the PROFILE, not with the device
+                tuning on the Devices tab, and the two are not duplicates:
+                that one corrects a pad whose axis is wired backwards and
+                deliberately survives a profile switch, this one says what
+                one game expects and switches with it. Both apply, and
+                two flips cancel.
+
+                A WrapPanel for the same reason the toolbar above uses
+                one — three labelled groups do not fit side by side once
+                the window approaches its minimum width.
+            -->
+            <Border Grid.Row="1" Classes="panel" Padding="18,16">
+              <StackPanel Spacing="12">
+                <StackPanel Spacing="3">
+                  <TextBlock Text="Axis inversion"
+                             FontSize="15" FontWeight="SemiBold"
+                             Foreground="{DynamicResource AppForeground}" />
+                  <TextBlock Text="{Binding AxisInvertSummary}"
+                             FontSize="12" Foreground="{DynamicResource AppForegroundDim}"
+                             TextWrapping="Wrap" />
+                </StackPanel>
+
+                <WrapPanel Orientation="Horizontal">
+                  <StackPanel Spacing="6" Margin="0,0,36,10">
+                    <TextBlock Text="Left stick" Classes="sectionLabel" />
+                    <StackPanel Orientation="Horizontal" Spacing="14">
+                      <CheckBox Content="Invert X" IsChecked="{Binding InvertLeftStickX}"
+                                Foreground="{DynamicResource AppForeground}"
+                                ToolTip.Tip="Swaps left and right for this profile only.&#10;&#10;The stick still reads the same to everything else — only the virtual controller the game sees is flipped." />
+                      <CheckBox Content="Invert Y" IsChecked="{Binding InvertLeftStickY}"
+                                Foreground="{DynamicResource AppForeground}"
+                                ToolTip.Tip="Swaps up and down for this profile only.&#10;&#10;Use this when a game reads the stick the other way round — push up, character walks down." />
+                    </StackPanel>
+                  </StackPanel>
+
+                  <StackPanel Spacing="6" Margin="0,0,36,10">
+                    <TextBlock Text="Right stick" Classes="sectionLabel" />
+                    <StackPanel Orientation="Horizontal" Spacing="14">
+                      <CheckBox Content="Invert X" IsChecked="{Binding InvertRightStickX}"
+                                Foreground="{DynamicResource AppForeground}"
+                                ToolTip.Tip="Swaps left and right for this profile only." />
+                      <CheckBox Content="Invert Y" IsChecked="{Binding InvertRightStickY}"
+                                Foreground="{DynamicResource AppForeground}"
+                                ToolTip.Tip="Swaps up and down for this profile only.&#10;&#10;The usual one: inverted camera look in a game that offers no setting of its own." />
+                    </StackPanel>
+                  </StackPanel>
+
+                  <StackPanel Spacing="6" Margin="0,0,0,10">
+                    <TextBlock Text="Triggers" Classes="sectionLabel" />
+                    <StackPanel Orientation="Horizontal" Spacing="14">
+                      <CheckBox Content="Invert L2" IsChecked="{Binding InvertLeftTrigger}"
+                                Foreground="{DynamicResource AppForeground}"
+                                ToolTip.Tip="Reflects the trigger within its own range: released reads as fully pulled, and pulled reads as released.&#10;&#10;This is for hardware whose trigger axis runs backwards, not for games. Leave it off unless an untouched trigger is what you want the game to read as held." />
+                      <CheckBox Content="Invert R2" IsChecked="{Binding InvertRightTrigger}"
+                                Foreground="{DynamicResource AppForeground}"
+                                ToolTip.Tip="Reflects the trigger within its own range: released reads as fully pulled, and pulled reads as released.&#10;&#10;This is for hardware whose trigger axis runs backwards, not for games. Leave it off unless an untouched trigger is what you want the game to read as held." />
+                    </StackPanel>
+                  </StackPanel>
+                </WrapPanel>
+
+                <CheckBox Content="Show the inversion on the on-screen controller"
+                          IsChecked="{Binding ShowInvertedInLayout}"
+                          Foreground="{DynamicResource AppForeground}"
+                          ToolTip.Tip="Off by default: pushing up still draws as up, because the game is the thing reading it backwards, not you.&#10;&#10;Turn it on to make the virtual controller show exactly what the game receives." />
+              </StackPanel>
+            </Border>
+
             <Grid Grid.Row="2" ColumnSpacing="14">
               <Grid.ColumnDefinitions>
                 <!-- Was a hard 440. A fixed pane cannot give any width

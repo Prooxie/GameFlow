@@ -4,7 +4,7 @@ public sealed record ProfileDocument
 {
     public string Id { get; init; } = "speedrunner-default";
     public string Name { get; init; } = "Speedrunner Default";
-    public int Version { get; init; } = 5;
+    public int Version { get; init; } = 6;
     /// <summary>
     /// Mapping ticks per second, 30–1000. Defaults to the maximum: the
     /// pipeline tick is cheap next to the input read it wraps, and the
@@ -32,4 +32,11 @@ public sealed record ProfileDocument
 
     /// <summary>Layer definitions; membership is on each rule via <see cref="MappingRule.LayerId"/>. Empty by default — existing profiles load unaffected.</summary>
     public IReadOnlyList<ShiftLayer> ShiftLayers { get; init; } = [];
+
+    /// <summary>
+    /// Per-game axis inversion — see <see cref="AxisInvert"/>. Every
+    /// axis defaults to "no opinion", so a profile written before v6
+    /// loads with nothing inverted and nothing overridden.
+    /// </summary>
+    public AxisInvert Invert { get; init; } = new();
 }
