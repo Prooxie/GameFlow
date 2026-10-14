@@ -8,6 +8,8 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        new Bootstrap.UnhandledExceptionLogger(() => Log.Logger).Install();
+
         try
         {
             _ = BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
