@@ -5,7 +5,7 @@ using Xunit;
 namespace GameFlow.Infrastructure.Tests.ViewModels;
 
 /// <summary>
-/// Emission rate, population cap and ageing for the fingertip sparks.
+/// Emission rate, population cap, drift and ageing for the fingertip smoke puffs.
 ///
 /// <para>
 /// The cap and the rate are the point. An effect that quietly emits ten
@@ -134,8 +134,12 @@ public sealed class TouchParticlesTests
         Assert.True(directions > 3, $"only {directions} distinct directions");
     }
 
+    /// <summary>
+    /// Only the sideways speed is compared. The rise is the same for every puff,
+    /// so it would hide the effect of pressure on the vertical speed.
+    /// </summary>
     [Fact]
-    public void PressingHarderThrowsSparksFurther()
+    public void EmitFirmPressureSpreadsSmokeWider()
     {
         var light = new TouchParticles(Seed);
         var firm = new TouchParticles(Seed);
@@ -143,10 +147,37 @@ public sealed class TouchParticlesTests
         light.Emit([Finger(pressure: 0.05f)], 0);
         firm.Emit([Finger(pressure: 1f)], 0);
 
-        double Speed(TouchParticles p) =>
-            p.Particles.Average(x => Math.Sqrt((x.VelocityX * x.VelocityX) + (x.VelocityY * x.VelocityY)));
+        Assert.True(firm.Particles.Average(p => Math.Abs(p.VelocityX)) > light.Particles.Average(p => Math.Abs(p.VelocityX)));
+    }
 
-        Assert.True(Speed(firm) > Speed(light));
+    /// <summary>
+    /// Smoke rises: each puff, not only most of them. Up is negative Y, because
+    /// touch Y is 0 at the top edge of the pad.
+    /// </summary>
+    [Fact]
+    public void EmitHeldFingerEverySmokePuffRises()
+    {
+        var particles = new TouchParticles(Seed);
+
+        for (var i = 0; i < 40; i++)
+        {
+            particles.Emit([Finger()], i * 0.05);
+        }
+
+        Assert.All(particles.Particles, p => Assert.True(p.VelocityY < 0, $"VelocityY was {p.VelocityY}"));
+    }
+
+    /// <summary>
+    /// A puff must live long enough to grow and drift. The old sparks burned out in 0.38 s.
+    /// </summary>
+    [Fact]
+    public void EmitTouchSmokeOutlivesTheTrail()
+    {
+        var particles = new TouchParticles(Seed);
+
+        particles.Emit([Finger()], 0);
+
+        Assert.True(particles.Particles.Min(p => p.Lifetime) > TouchTrail.LifetimeSeconds);
     }
 
     [Fact]

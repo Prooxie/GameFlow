@@ -291,6 +291,8 @@ For example, `http://10.0.0.5:8080/overlay?slot=player-one&side=physical` follow
 
 The Browser source receives a compiled theme once, then controller frames at 60 Hz over an output-only WebSocket. Theme images are served by numeric indexes from the already-resolved theme program, so the route cannot browse arbitrary filesystem paths. The page automatically reconnects if GameFlow restarts and keeps a transparent canvas at any OBS source size.
 
+**Touchpad fingers.** Most skins have no `trailpad` node. For those, the compiled theme carries the touchpad rectangle (the image under the `touch_center:click` showhide), and each frame carries the contacts as `"touch":[[x, y, finger, pressure], ...]` with values from 0 to 1, at most five. The page draws them like the dashboard: soft smoke puffs that start in the finger's colour, rise, turn grey and fade, around a soft fingertip glow. Each finger has its own colour. A skin with `trailpad` nodes draws its own finger art instead.
+
 ---
 
 ## Theme System

@@ -1,3 +1,4 @@
+using GameFlow.Infrastructure.Theming;
 using GameFlow.Infrastructure.Theming.Flee;
 
 namespace GameFlow.Infrastructure.Runtime.Web.Overlay;
@@ -75,6 +76,14 @@ public sealed record OverlayProgram
 
     /// <summary>Images the theme references that could not be found on disk. Diagnostic only; the tree simply omits them.</summary>
     public required IReadOnlyList<string> MissingImages { get; init; }
+
+    /// <summary>
+    /// The touchpad rectangle where the page draws each finger, or null.
+    /// Set only for a theme with no <c>trailpad</c> node and with a touchpad,
+    /// the same case where the dashboard draws its own finger markers.
+    /// When set, each frame carries the touch contacts.
+    /// </summary>
+    public ThemeRegion? TouchRegion { get; init; }
 }
 
 /// <summary>
