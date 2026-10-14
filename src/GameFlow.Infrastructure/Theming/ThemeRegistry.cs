@@ -134,6 +134,10 @@ public sealed class ThemeRegistry
     {
         var dir = AppPaths.ThemesDirectory;
 
+        // Image paths are cached until a refresh. A refresh is the moment
+        // that art may have been added, moved or removed.
+        ThemeAssetResolver.ClearCache();
+
         var loaded = new List<InstalledTheme>();
         if (!Directory.Exists(dir))
         {

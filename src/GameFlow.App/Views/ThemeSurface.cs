@@ -1970,51 +1970,51 @@ public sealed class ThemeSurface : Control
             return TryLoadAvares(imagePath);
         }
 
+        // Resolution lives in ThemeAssetResolver (Infrastructure) so it can
+        // be tested against real folder layouts. Its fallbacks exist
+        // because shipped packs disagree with their own manifests about
+        // where the art sits — exactly the kind of rule that regresses
+        // silently while it has no coverage, which is how every non-Generic
+        // controller ended up rendering blank. It caches every answer and
+        // returns a full path, so this per-frame call touches no disk and
+        // allocates nothing on a hit.
+        var resolved = ThemeAssetResolver.Resolve(
+            imagePath, baseDir, owner.Document.ThemesRootDirectory);
+        if (resolved is not null)
+        {
+            return GetOrBeginDecode(resolved);
+        }
+
         // A FAILED lookup is cached too, keyed on the unresolved reference.
         // This is load-bearing, not tidiness: the three packs that ship
         // manifests referencing art they do not contain would otherwise
-        // re-run the resolver, re-probe the embedded assets (which costs a
-        // thrown exception per miss) and re-log a warning on EVERY frame.
-        // Measured at ~900 KB of log per 40 seconds before this cache.
+        // re-probe the embedded assets (which costs a thrown exception per
+        // miss) and re-log a warning on EVERY frame. Measured at ~900 KB of
+        // log per 40 seconds before this cache.
         var missKey = $"{owner.Id}|{imagePath}";
         if (ResolveFailureCache.ContainsKey(missKey))
         {
             return null;
         }
 
-        // Resolution lives in ThemeAssetResolver (Infrastructure) so it can
-        // be tested against real folder layouts. Its fallbacks exist
-        // because shipped packs disagree with their own manifests about
-        // where the art sits — exactly the kind of rule that regresses
-        // silently while it has no coverage, which is how every non-Generic
-        // controller ended up rendering blank.
-        var resolved = ThemeAssetResolver.Resolve(
-            imagePath, baseDir, owner.Document.ThemesRootDirectory);
-
-        if (resolved is null)
+        // Nothing on disk anywhere in the pack; the art may still ship
+        // as an embedded app asset.
+        var embedded = TryLoadAvares(imagePath);
+        if (embedded is null)
         {
-            // Nothing on disk anywhere in the pack; the art may still ship
-            // as an embedded app asset.
-            var embedded = TryLoadAvares(imagePath);
-            if (embedded is null)
+            // Warn ONCE per missing image. The condition is permanent —
+            // the file is not there — so repeating it every frame adds
+            // nothing and buries everything else.
+            if (ResolveFailureCache.TryAdd(missKey, 0))
             {
-                // Warn ONCE per missing image. The condition is permanent —
-                // the file is not there — so repeating it every frame adds
-                // nothing and buries everything else.
-                if (ResolveFailureCache.TryAdd(missKey, 0))
-                {
-                    Log.Warning(
-                        "Theme image not found on disk or anywhere in its pack: {Image} (theme {Theme}). "
-                        + "This image will render as missing; the pack is incomplete.",
-                        imagePath, owner.Id);
-                }
+                Log.Warning(
+                    "Theme image not found on disk or anywhere in its pack: {Image} (theme {Theme}). "
+                    + "This image will render as missing; the pack is incomplete.",
+                    imagePath, owner.Id);
             }
-
-            return embedded;
         }
 
-        var absolute = resolved;
-        return GetOrBeginDecode(Path.GetFullPath(absolute));
+        return embedded;
     }
 
     /// <summary>

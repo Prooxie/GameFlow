@@ -38,9 +38,22 @@ public static class ThemeAssetResolver
     private static readonly ConcurrentDictionary<string, string?> PackFileCache = new();
 
     /// <summary>
-    /// Resolves <paramref name="imagePath"/> to an existing file, or
-    /// <see langword="null"/> when nothing matches.
+    /// Every answer of <see cref="Resolve"/>, misses too. The dashboard asks for
+    /// each image of each panel on every frame — about 47 images per panel at
+    /// the display rate — and each uncached answer costs path normalisation and
+    /// a disk check. The tuple key needs no string per call.
     /// </summary>
+    private static readonly ConcurrentDictionary<(string ImagePath, string BaseDirectory, string ThemesRoot), string?> ResolvedCache = new();
+
+    /// <summary>
+    /// Resolves <paramref name="imagePath"/> to the full path of an existing
+    /// file, or <see langword="null"/> when nothing matches.
+    /// </summary>
+    /// <remarks>
+    /// The answer is cached until <see cref="ClearCache"/>, which the theme
+    /// registry calls on each refresh. A file that appears or goes away is
+    /// therefore noticed at the next refresh, not on the next frame.
+    /// </remarks>
     /// <param name="imagePath">The raw value from the manifest.</param>
     /// <param name="baseDirectory">Folder holding the theme.json.</param>
     /// <param name="themesRoot">The themes root; <c>\</c>-prefixed paths are relative to this.</param>
@@ -51,6 +64,15 @@ public static class ThemeAssetResolver
             return null;
         }
 
+        return ResolvedCache.GetOrAdd(
+            (imagePath, baseDirectory, themesRoot ?? string.Empty),
+            static key => ResolveUncached(key.ImagePath, key.BaseDirectory, key.ThemesRoot) is { } found
+                ? Path.GetFullPath(found)
+                : null);
+    }
+
+    private static string? ResolveUncached(string imagePath, string baseDirectory, string themesRoot)
+    {
         var rootFull = string.IsNullOrEmpty(themesRoot) ? null : Path.GetFullPath(themesRoot);
         var rooted = imagePath.StartsWith('\\') || imagePath.StartsWith('/');
         var relative = imagePath.TrimStart('\\', '/')
@@ -184,6 +206,10 @@ public static class ThemeAssetResolver
         }
     }
 
-    /// <summary>Drops cached pack lookups. For tests and theme reinstalls.</summary>
-    public static void ClearCache() => PackFileCache.Clear();
+    /// <summary>Drops every cached lookup. The theme registry calls this on each refresh.</summary>
+    public static void ClearCache()
+    {
+        PackFileCache.Clear();
+        ResolvedCache.Clear();
+    }
 }
