@@ -1,12 +1,26 @@
 using System.Text.Json;
 using GameFlow.Core.Models;
+using GameFlow.Infrastructure.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace GameFlow.Infrastructure.Profiles;
 
-public sealed class ProfileSession(IProfileRepository repository, ILogger<ProfileSession> logger)
+/// <summary>
+/// The active profile, and the profile operations of the UI: save, switch,
+/// create, duplicate, import and delete.
+/// </summary>
+/// <remarks>
+/// The active profile id and the UI culture live in the settings file. The
+/// session writes them through <see cref="IUserSettingsService.UpdateAsync"/>,
+/// which is the only writer of that file. See <see cref="IUserSettingsService"/>.
+/// </remarks>
+public sealed class ProfileSession(
+    IProfileRepository repository,
+    IUserSettingsService userSettings,
+    ILogger<ProfileSession> logger)
 {
     private readonly IProfileRepository repository = repository;
+    private readonly IUserSettingsService userSettings = userSettings;
     private readonly ILogger<ProfileSession> logger = logger;
     private readonly SemaphoreSlim gate = new(1, 1);
     private bool isInitialized;
@@ -15,7 +29,8 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
 
     public ProfileDocument CurrentProfile { get; private set; } = ProfileDefaults.CreateSpeedrunnerDefault();
 
-    public AppSettings Settings { get; private set; } = new();
+    /// <summary>The shared settings. Read-only here; see <see cref="IUserSettingsService.UpdateAsync"/>.</summary>
+    public AppSettings Settings => userSettings.Current;
 
     public string CurrentProfilePath => repository.GetProfilePath(CurrentProfile.Id);
 
@@ -34,7 +49,7 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
                 return;
             }
 
-            Settings = await repository.LoadSettingsAsync(cancellationToken);
+            await userSettings.InitializeAsync(cancellationToken);
 
             var current = await repository.LoadAsync(Settings.ActiveProfileId, cancellationToken);
             if (current is null)
@@ -86,9 +101,7 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
     {
         CurrentProfile = profile;
         await repository.SaveAsync(profile, cancellationToken);
-
-        Settings = Settings with { ActiveProfileId = profile.Id };
-        await repository.SaveSettingsAsync(Settings, cancellationToken);
+        await SetActiveProfileIdAsync(profile.Id, cancellationToken);
 
         logger.LogInformation(
             "Saved profile {ProfileId} ({ProfileName}) and set as active.",
@@ -106,9 +119,7 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
     {
         CurrentProfile = ProfileDefaults.CreateSpeedrunnerDefault();
         await repository.SaveAsync(CurrentProfile, cancellationToken);
-
-        Settings = Settings with { ActiveProfileId = CurrentProfile.Id };
-        await repository.SaveSettingsAsync(Settings, cancellationToken);
+        await SetActiveProfileIdAsync(CurrentProfile.Id, cancellationToken);
 
         logger.LogInformation("Profile reset to speedrunner default.");
 
@@ -121,8 +132,7 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
     public async Task SetCultureAsync(string cultureCode, CancellationToken cancellationToken = default)
     {
         var previous = Settings.SelectedCulture;
-        Settings = Settings with { SelectedCulture = cultureCode };
-        await repository.SaveSettingsAsync(Settings, cancellationToken);
+        await userSettings.UpdateAsync(settings => settings with { SelectedCulture = cultureCode }, cancellationToken);
 
         if (!string.Equals(previous, cultureCode, StringComparison.OrdinalIgnoreCase))
         {
@@ -134,6 +144,10 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
 
         Changed?.Invoke(this, EventArgs.Empty);
     }
+
+    /// <summary>Points the settings at <paramref name="profileId"/> and keeps every other setting.</summary>
+    private Task SetActiveProfileIdAsync(string profileId, CancellationToken cancellationToken) =>
+        userSettings.UpdateAsync(settings => settings with { ActiveProfileId = profileId }, cancellationToken);
 
     public string SerializeCurrentProfile()
     {
@@ -173,8 +187,7 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
 
             var previousId = CurrentProfile.Id;
             CurrentProfile = MigrateProfile(profile);
-            Settings = Settings with { ActiveProfileId = profileId };
-            await repository.SaveSettingsAsync(Settings, cancellationToken);
+            await SetActiveProfileIdAsync(profileId, cancellationToken);
 
             logger.LogInformation(
                 "Switched active profile: {PreviousProfileId} -> {NewProfileId} ({ProfileName}).",

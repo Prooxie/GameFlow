@@ -159,8 +159,8 @@ public sealed class StartupChecksCoordinator
 
     private async Task MarkWalkthroughSeenAsync(CancellationToken cancellationToken)
     {
-        var updated = userSettings.Current with { SetupWalkthroughCompleted = true };
-        await userSettings.ApplyAsync(updated, cancellationToken).ConfigureAwait(false);
+        await userSettings.UpdateAsync(
+            settings => settings with { SetupWalkthroughCompleted = true }, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -203,8 +203,8 @@ public sealed class StartupChecksCoordinator
 
         if (dontAskAgain)
         {
-            var updated = userSettings.Current with { CheckRequirementsOnStartup = false };
-            await userSettings.ApplyAsync(updated, cancellationToken).ConfigureAwait(false);
+            await userSettings.UpdateAsync(
+                settings => settings with { CheckRequirementsOnStartup = false }, cancellationToken).ConfigureAwait(false);
             logger.LogInformation("User opted out of further startup requirement checks.");
         }
     }
@@ -267,8 +267,9 @@ public sealed class StartupChecksCoordinator
         {
             case UpdateDialogChoice.SkipThisUpdate:
                 {
-                    var updated = userSettings.Current with { SkippedUpdateVersion = available.Update.TagName };
-                    await userSettings.ApplyAsync(updated, cancellationToken).ConfigureAwait(false);
+                    await userSettings.UpdateAsync(
+                        settings => settings with { SkippedUpdateVersion = available.Update.TagName },
+                        cancellationToken).ConfigureAwait(false);
                     logger.LogInformation(
                         "User chose to skip update {TagName}.",
                         available.Update.TagName);
@@ -277,8 +278,8 @@ public sealed class StartupChecksCoordinator
 
             case UpdateDialogChoice.DontAskAgain:
                 {
-                    var updated = userSettings.Current with { CheckForUpdatesOnStartup = false };
-                    await userSettings.ApplyAsync(updated, cancellationToken).ConfigureAwait(false);
+                    await userSettings.UpdateAsync(
+                        settings => settings with { CheckForUpdatesOnStartup = false }, cancellationToken).ConfigureAwait(false);
                     logger.LogInformation("User opted out of further startup update checks.");
                     break;
                 }
@@ -309,11 +310,8 @@ public sealed class StartupChecksCoordinator
                     // Clear any previously-skipped version so that if
                     // they install successfully, the next launch
                     // doesn't keep telling them about the same release.
-                    if (!string.IsNullOrEmpty(userSettings.Current.SkippedUpdateVersion))
-                    {
-                        var cleared = userSettings.Current with { SkippedUpdateVersion = null };
-                        await userSettings.ApplyAsync(cleared, cancellationToken).ConfigureAwait(false);
-                    }
+                    await userSettings.UpdateAsync(
+                        settings => settings with { SkippedUpdateVersion = null }, cancellationToken).ConfigureAwait(false);
 
                     break;
                 }

@@ -294,7 +294,7 @@ public sealed partial class SettingsDialogViewModel : ObservableObject
 
     /// <summary>
     /// Folds the dialog state into <see cref="AppSettings"/> and writes
-    /// it back through <see cref="IUserSettingsService.ApplyAsync"/>.
+    /// it back through <see cref="IUserSettingsService.UpdateAsync"/>.
     /// Returns <see langword="true"/> on success.
     /// </summary>
     [RelayCommand]
@@ -302,24 +302,34 @@ public sealed partial class SettingsDialogViewModel : ObservableObject
     {
         try
         {
-            var current = userSettings.Current;
-            var updated = current with
-            {
-                LogLevel = SelectedLogLevel,
-                RememberWindowSize = RememberWindowSize,
-                WindowWidth = ClampWindowDimension(WindowWidth, defaultValue: 1280),
-                WindowHeight = ClampWindowDimension(WindowHeight, defaultValue: 800),
-                DashboardRefreshHz = ParseOptionalInt(DashboardRefreshHzText, min: 30, max: 1000),
-                PollingRateHz = ParseOptionalInt(PollingRateHzText, min: 30, max: 1000),
-                ProfilesDirectoryOverride = string.IsNullOrWhiteSpace(ProfilesDirectoryOverride) ? null : ProfilesDirectoryOverride.Trim(),
-                LogsDirectoryOverride = string.IsNullOrWhiteSpace(LogsDirectoryOverride) ? null : LogsDirectoryOverride.Trim(),
-                CheckForUpdatesOnStartup = CheckForUpdatesOnStartup,
-                CheckRequirementsOnStartup = CheckRequirementsOnStartup,
-            };
+            // Read the dialog on the UI thread, before the change runs under
+            // the settings lock. Only the fields this dialog owns change.
+            var logLevel = SelectedLogLevel;
+            var rememberWindowSize = RememberWindowSize;
+            var windowWidth = ClampWindowDimension(WindowWidth, defaultValue: 1280);
+            var windowHeight = ClampWindowDimension(WindowHeight, defaultValue: 800);
+            var dashboardRefreshHz = ParseOptionalInt(DashboardRefreshHzText, min: 30, max: 1000);
+            var pollingRateHz = ParseOptionalInt(PollingRateHzText, min: 30, max: 1000);
+            var profilesDirectory = string.IsNullOrWhiteSpace(ProfilesDirectoryOverride) ? null : ProfilesDirectoryOverride.Trim();
+            var logsDirectory = string.IsNullOrWhiteSpace(LogsDirectoryOverride) ? null : LogsDirectoryOverride.Trim();
+            var checkForUpdates = CheckForUpdatesOnStartup;
+            var checkRequirements = CheckRequirementsOnStartup;
 
             // This command is entered on Avalonia's UI thread. Preserve its
             // synchronization context for both success and failure notifications.
-            await userSettings.ApplyAsync(updated);
+            await userSettings.UpdateAsync(settings => settings with
+            {
+                LogLevel = logLevel,
+                RememberWindowSize = rememberWindowSize,
+                WindowWidth = windowWidth,
+                WindowHeight = windowHeight,
+                DashboardRefreshHz = dashboardRefreshHz,
+                PollingRateHz = pollingRateHz,
+                ProfilesDirectoryOverride = profilesDirectory,
+                LogsDirectoryOverride = logsDirectory,
+                CheckForUpdatesOnStartup = checkForUpdates,
+                CheckRequirementsOnStartup = checkRequirements,
+            });
 
             // The path-override change may have moved the in-effect
             // directories; refresh the read-only display rows so the user
