@@ -45,6 +45,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- The App view-model and bootstrap tests live in the Infrastructure test project. -->
+    <InternalsVisibleTo Include="GameFlow.Infrastructure.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\GameFlow.Core\GameFlow.Core.csproj" />
     <ProjectReference Include="..\GameFlow.Infrastructure\GameFlow.Infrastructure.csproj" />
   </ItemGroup>
