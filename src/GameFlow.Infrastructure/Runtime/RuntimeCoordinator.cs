@@ -236,10 +236,12 @@ public sealed class RuntimeCoordinator(
                     // Outer catch will handle the cancellation message.
                     throw;
                 }
-                catch (ObjectDisposedException)
+                catch (ObjectDisposedException exception) when (IsShutdownDisposal(exception, stoppingToken.IsCancellationRequested))
                 {
-                    // Provider was torn down out from under us (e.g. profile
-                    // switch in flight). Outer catch logs at Debug.
+                    // Shutdown disposes the providers under a running tick.
+                    // Outer catch logs at Debug. A disposal at any other time
+                    // falls through to the tick-failure handler below, so the
+                    // loop keeps running and the log says why.
                     throw;
                 }
                 catch (Exception exception)
@@ -299,7 +301,7 @@ public sealed class RuntimeCoordinator(
         {
             logger.LogDebug("Runtime coordinator cancellation requested.");
         }
-        catch (ObjectDisposedException exception)
+        catch (ObjectDisposedException exception) when (IsShutdownDisposal(exception, stoppingToken.IsCancellationRequested))
         {
             logger.LogDebug(exception, "Runtime coordinator observed provider disposal during shutdown.");
         }
@@ -655,6 +657,15 @@ public sealed class RuntimeCoordinator(
             var byPid = left.Pid.CompareTo(right.Pid);
             return byPid != 0 ? byPid : left.ActivatedAt.CompareTo(right.ActivatedAt);
         };
+
+    /// <summary>
+    /// True when <paramref name="exception"/> is a provider disposal during shutdown,
+    /// the one disposal that may end the runtime loop quietly. Before this check,
+    /// a disposal while the app ran ended the loop with only a Debug line, and
+    /// mapping stopped until the next start.
+    /// </summary>
+    internal static bool IsShutdownDisposal(Exception exception, bool isStopping) =>
+        exception is ObjectDisposedException && isStopping;
 
     internal static bool ShouldRebuildSlots(
         bool hasEnabledSlots,
