@@ -1327,6 +1327,125 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         }
     } = 250;
 
+    // ─── Per-profile axis inversion ───────────────────────────────────────────
+
+    /// <summary>
+    /// The profile's inversion as loaded, carried verbatim so a toggle
+    /// rewrites ONE axis and leaves the rest as they were — including
+    /// leaving them null. Rebuilding the whole record from the six
+    /// checkboxes would give the profile an explicit opinion about every
+    /// axis the moment anyone touched one of them, and an explicit
+    /// "false" overrides a layered profile underneath where a null would
+    /// have deferred to it.
+    /// </summary>
+    private AxisInvert currentAxisInvert = AxisInvert.None;
+
+    /// <summary>Set while pushing the profile's values INTO the checkboxes, so loading a profile doesn't save it straight back.</summary>
+    private bool suppressAxisInvertSave;
+
+    public bool InvertLeftStickX
+    {
+        get; set { if (SetProperty(ref field, value)) { MutateAxisInvert(i => i with { LeftX = value }); } }
+    }
+
+    public bool InvertLeftStickY
+    {
+        get; set { if (SetProperty(ref field, value)) { MutateAxisInvert(i => i with { LeftY = value }); } }
+    }
+
+    public bool InvertRightStickX
+    {
+        get; set { if (SetProperty(ref field, value)) { MutateAxisInvert(i => i with { RightX = value }); } }
+    }
+
+    public bool InvertRightStickY
+    {
+        get; set { if (SetProperty(ref field, value)) { MutateAxisInvert(i => i with { RightY = value }); } }
+    }
+
+    public bool InvertLeftTrigger
+    {
+        get; set { if (SetProperty(ref field, value)) { MutateAxisInvert(i => i with { LeftTrigger = value }); } }
+    }
+
+    public bool InvertRightTrigger
+    {
+        get; set { if (SetProperty(ref field, value)) { MutateAxisInvert(i => i with { RightTrigger = value }); } }
+    }
+
+    public bool ShowInvertedInLayout
+    {
+        get; set { if (SetProperty(ref field, value)) { MutateAxisInvert(i => i with { ShowInLayout = value }); } }
+    }
+
+    /// <summary>Reads back what is currently inverted, for the card's subtitle.</summary>
+    public string AxisInvertSummary
+    {
+        get
+        {
+            var inverted = new List<string>(6);
+            if (InvertLeftStickX)  { inverted.Add("left X"); }
+            if (InvertLeftStickY)  { inverted.Add("left Y"); }
+            if (InvertRightStickX) { inverted.Add("right X"); }
+            if (InvertRightStickY) { inverted.Add("right Y"); }
+            if (InvertLeftTrigger) { inverted.Add("L2"); }
+            if (InvertRightTrigger) { inverted.Add("R2"); }
+
+            return inverted.Count == 0
+                ? "Nothing inverted — the game gets the axes exactly as you push them."
+                : $"Inverted for this profile: {string.Join(", ", inverted)}.";
+        }
+    }
+
+    private void MutateAxisInvert(Func<AxisInvert, AxisInvert> mutate)
+    {
+        OnPropertyChanged(nameof(AxisInvertSummary));
+
+        if (suppressAxisInvertSave)
+        {
+            return;
+        }
+
+        currentAxisInvert = mutate(currentAxisInvert);
+        _ = SaveAxisInvertAsync(currentAxisInvert);
+    }
+
+    /// <summary>
+    /// Pulls the current profile's inversion into the checkboxes.
+    ///
+    /// <para>
+    /// Called from every path that swaps <c>CurrentProfile</c>, not just
+    /// from the dashboard resync — create, duplicate, import, and switch
+    /// all set <c>isSwitchingProfile</c>, which is precisely the flag
+    /// that makes <c>OnProfileChanged</c> skip the resync. Miss one and
+    /// the checkboxes keep describing the profile the user just left,
+    /// and the next toggle carries that profile's other axes into this
+    /// one.
+    /// </para>
+    /// </summary>
+    private void ReloadAxisInvert() => LoadAxisInvertFromProfile(profileSession.CurrentProfile.Invert);
+
+    private void LoadAxisInvertFromProfile(AxisInvert? invert)
+    {
+        currentAxisInvert = invert ?? AxisInvert.None;
+
+        suppressAxisInvertSave = true;
+        try
+        {
+            InvertLeftStickX   = currentAxisInvert.LeftX ?? false;
+            InvertLeftStickY   = currentAxisInvert.LeftY ?? false;
+            InvertRightStickX  = currentAxisInvert.RightX ?? false;
+            InvertRightStickY  = currentAxisInvert.RightY ?? false;
+            InvertLeftTrigger  = currentAxisInvert.LeftTrigger ?? false;
+            InvertRightTrigger = currentAxisInvert.RightTrigger ?? false;
+            ShowInvertedInLayout = currentAxisInvert.ShowInLayout ?? false;
+        }
+        finally
+        {
+            suppressAxisInvertSave = false;
+        }
+    }
+
     // ─── Lifecycle ────────────────────────────────────────────────────────────
 
     public async Task InitializeAsync()
@@ -1645,6 +1764,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             var profile = await profileSession.CreateNewProfileAsync(unique);
             await RefreshAvailableProfilesAsync();
             ProfileName = profile.Name;
+            ReloadAxisInvert();
             var target = AvailableProfiles.FirstOrDefault(o => o.Id == profile.Id);
             if (target is not null)
             {
@@ -1674,6 +1794,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             var copy = await profileSession.DuplicateCurrentProfileAsync(unique);
             await RefreshAvailableProfilesAsync();
             ProfileName = copy.Name;
+            ReloadAxisInvert();
             var target = AvailableProfiles.FirstOrDefault(o => o.Id == copy.Id);
             if (target is not null)
             {
@@ -1712,6 +1833,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                 ruleSummaryDirty = true;
                 RebuildControlConfigurationCards();
                 ProfileName = profileSession.CurrentProfile.Name;
+                ReloadAxisInvert();
                 await RefreshRuntimeAsync();
             }
             finally
@@ -1965,6 +2087,8 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         // Background brush — applies to both panels uniformly.
         ApplyPanelBackgroundToAll(pendingPanelBackgroundBrush ?? profile.Ui.ControllerPanelBackground);
         OnPropertyChanged(nameof(SelectedPanelBackgroundOption));
+
+        ReloadAxisInvert();
     }
 
     /// <summary>
@@ -2044,6 +2168,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             isSwitchingProfile = true;
             await profileSession.SwitchToProfileAsync(profileId);
             MappingEditor.LoadFromProfile(profileSession.CurrentProfile);
+            ReloadAxisInvert();
             RebuildControlConfigurationCards();
             ProfileJson      = profileSession.SerializeCurrentProfile();
             ruleSummaryDirty = true;
@@ -2202,6 +2327,41 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     private void OnMappingRulesChanged(object? sender, IReadOnlyList<MappingRule> rules)
     {
         _ = SaveRulesAsync(rules);
+    }
+
+    /// <summary>
+    /// Persists a change to the profile's axis inversion. Saves on the
+    /// toggle rather than waiting for the Save button, matching how rule
+    /// edits already behave — and the runtime notices because
+    /// SaveCurrentProfileAsync swaps in a NEW CurrentProfile instance,
+    /// which is the reference the slot rebuild compares against.
+    /// </summary>
+    private async Task SaveAxisInvertAsync(AxisInvert invert)
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        // Shares the rule gate deliberately: both write the whole
+        // profile document, so letting them overlap would let one
+        // clobber the other's edit.
+        await rulesSaveGate.WaitAsync();
+        try
+        {
+            var profile = profileSession.CurrentProfile with { Invert = invert };
+            await profileSession.SaveCurrentProfileAsync(profile);
+            ProfileJson = profileSession.SerializeCurrentProfile();
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Failed to save axis inversion.");
+            StatusText = $"Invert save failed: {exception.Message}";
+        }
+        finally
+        {
+            _ = rulesSaveGate.Release();
+        }
     }
 
     private async Task SaveRulesAsync(IReadOnlyList<MappingRule> rules)

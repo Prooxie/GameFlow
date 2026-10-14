@@ -67,7 +67,10 @@ public sealed class SlotPipeline : IAsyncDisposable
         ControllerSnapshot input, DateTimeOffset now, CancellationToken cancellationToken)
     {
         var result = pipeline.Process(input, now);
-        await outputSink.WriteAsync(result.VirtualSnapshot, cancellationToken);
+        // OutputSnapshot, not VirtualSnapshot: the two differ only when
+        // the profile inverts an axis and asks the layout not to show it,
+        // and the sink is precisely the side that should see the flip.
+        await outputSink.WriteAsync(result.OutputSnapshot, cancellationToken);
         return result;
     }
 

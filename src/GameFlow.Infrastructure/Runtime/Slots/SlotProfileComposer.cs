@@ -9,6 +9,13 @@ namespace GameFlow.Infrastructure.Runtime.Slots;
 /// profile's rules are applied after — and therefore can override — an
 /// earlier profile's. An empty layer set yields a neutral profile with no
 /// rules (no remapping).
+///
+/// <para>
+/// <see cref="ProfileDocument.Invert"/> follows the same
+/// later-layer-wins rule, per axis. It is folded rather than OR'd
+/// precisely so a layer CAN turn an inversion back off — see the note on
+/// <see cref="AxisInvert"/> about why each axis is nullable.
+/// </para>
 /// </summary>
 public static class SlotProfileComposer
 {
@@ -33,6 +40,7 @@ public static class SlotProfileComposer
 
         var rules = new List<MappingRule>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
+        var invert = layers[0].Invert ?? AxisInvert.None;
         foreach (var layer in layers)
         {
             foreach (var rule in layer.Rules)
@@ -44,11 +52,17 @@ public static class SlotProfileComposer
             }
         }
 
+        for (var i = 1; i < layers.Count; i++)
+        {
+            invert = invert.Overlay(layers[i].Invert);
+        }
+
         // Keep the first layer's metadata; combine the names for display.
         return layers[0] with
         {
             Name = string.Join(" + ", layers.Select(l => l.Name)),
             Rules = rules,
+            Invert = invert,
         };
     }
 }

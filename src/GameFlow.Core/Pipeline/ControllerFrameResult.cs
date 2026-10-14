@@ -21,4 +21,24 @@ public sealed record ControllerFrameResult(
     /// </summary>
     public float MouseDeltaX { get; init; }
     public float MouseDeltaY { get; init; }
+
+    /// <summary>
+    /// What actually goes to the output sink. Identical to
+    /// <see cref="VirtualSnapshot"/> unless the profile inverts axes
+    /// without <see cref="Models.AxisInvert.ShowInLayout"/> — then the
+    /// game gets the flip and the on-screen controller keeps drawing the
+    /// direction the user pushed.
+    ///
+    /// <para>
+    /// Defaulting to <see cref="VirtualSnapshot"/> rather than requiring
+    /// a value keeps every existing construction site (and every test)
+    /// correct by default: a caller that knows nothing about inversion
+    /// writes the same snapshot it always did.
+    /// </para>
+    /// </summary>
+    public ControllerSnapshot OutputSnapshot
+    {
+        get => field ?? VirtualSnapshot;
+        init;
+    }
 }

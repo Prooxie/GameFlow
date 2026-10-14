@@ -270,7 +270,12 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
     {
         var inputProvider = NormalizeInputProvider(profile.InputProvider);
         var preferredInputDeviceId = profile.PreferredInputDeviceId?.Trim() ?? string.Empty;
-        var version = Math.Max(profile.Version, 5);
+        // v6 added ProfileDocument.Invert. Nothing to rewrite: every axis
+        // on it defaults to "no opinion", which is exactly what a
+        // pre-v6 profile meant by not having the field at all. The
+        // version still moves so the file records which shape it was
+        // last written in.
+        var version = Math.Max(profile.Version, 6);
 
         // v5: the polling-rate default went from 250 Hz to 1000.
         //
