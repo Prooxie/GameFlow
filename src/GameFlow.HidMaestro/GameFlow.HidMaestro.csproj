@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\build\HidMaestroSdk.props" />
+
+  <PropertyGroup>
+    <RootNamespace>GameFlow.HidMaestro</RootNamespace>
+    <AssemblyName>GameFlow.HidMaestro</AssemblyName>
+    <!--
+      The SDK carries an assembly-level SupportedOSPlatform("Windows10.0.26100.0")
+      that comes from its target framework. It is not a runtime floor. Every
+      adapter type is already marked [SupportedOSPlatform("windows")].
+    -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GameFlow.Infrastructure\GameFlow.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Compile-time only: the user drops the SDK in next to the app. -->
+    <Reference Include="HIDMaestro.Core"><HintPath>$(HidMaestroSdkDll)</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+
+  <Import Project="..\..\build\HidMaestroSdk.targets" />
+</Project>

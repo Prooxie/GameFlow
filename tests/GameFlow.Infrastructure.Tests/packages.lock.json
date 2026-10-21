@@ -601,6 +601,7 @@
           "Avalonia.Themes.Fluent": "[12.1.4, )",
           "CommunityToolkit.Mvvm": "[8.4.2, )",
           "GameFlow.Core": "[1.0.7, )",
+          "GameFlow.HidMaestro": "[1.0.7, )",
           "GameFlow.Infrastructure": "[1.0.7, )",
           "Microsoft.Extensions.Hosting": "[10.0.13, )",
           "SDL3-CS.Native": "[3.4.2, )",
@@ -616,6 +617,13 @@
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.13, )",
           "MoonSharp": "[2.0.0, )"
+        }
+      },
+      "gameflow.hidmaestro": {
+        "type": "Project",
+        "dependencies": {
+          "GameFlow.Infrastructure": "[1.0.7, )",
+          "Microsoft.Extensions.Logging.Abstractions": "[10.0.13, )"
         }
       },
       "gameflow.infrastructure": {

@@ -53,6 +53,12 @@ jobs:
           restore-keys: |
             nuget-${{ runner.os }}-
 
+      - name: Cache HIDMaestro SDK
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .cache/hidmaestro
+          key: hidmaestro-${{ hashFiles('build/HidMaestroSdk.props') }}
+
       - name: Restore
         run: dotnet restore GameFlow.sln --locked-mode
 
@@ -92,6 +98,12 @@ jobs:
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           global-json-file: global.json
+
+      - name: Cache HIDMaestro SDK
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .cache/hidmaestro
+          key: hidmaestro-${{ hashFiles('build/HidMaestroSdk.props') }}
 
       - name: Publish
         shell: bash

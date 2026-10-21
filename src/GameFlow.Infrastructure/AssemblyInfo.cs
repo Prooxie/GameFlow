@@ -5,3 +5,5 @@ using System.Runtime.CompilerServices;
 // Runtime/Input/Linux/) without widening their real visibility just to
 // make them reachable from a separate test assembly.
 [assembly: InternalsVisibleTo("GameFlow.Infrastructure.Tests")]
+[assembly: InternalsVisibleTo("GameFlow.HidMaestro")]
+[assembly: InternalsVisibleTo("GameFlow.HidMaestro.Tests")]

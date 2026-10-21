@@ -52,6 +52,7 @@
   <ItemGroup>
     <ProjectReference Include="..\GameFlow.Core\GameFlow.Core.csproj" />
     <ProjectReference Include="..\GameFlow.Infrastructure\GameFlow.Infrastructure.csproj" />
+    <ProjectReference Include="..\GameFlow.HidMaestro\GameFlow.HidMaestro.csproj" />
   </ItemGroup>
 
   <ItemGroup>
