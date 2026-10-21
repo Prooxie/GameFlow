@@ -48,7 +48,7 @@ internal readonly record struct TouchSubmission(
 
 /// <summary>
 /// The unit conversions between a <see cref="ControllerSnapshot"/> and the
-/// SDK's input ranges. The reflection sink and the typed adapter share
+/// SDK's input ranges. The output sink and the typed adapter share
 /// them, so the two cannot drift apart.
 /// </summary>
 internal static class HidMaestroSubmission

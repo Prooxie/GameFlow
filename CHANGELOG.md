@@ -69,6 +69,32 @@ text must match the tag exactly — that is what the extraction keys on.
 - A DSU loop ending cancels its sibling loops so the server can shut down
   or retry instead of waiting indefinitely.
 
+### HIDMaestro integration
+
+- GameFlow now talks to HIDMaestro through a typed adapter built against
+  HIDMaestro 2.0.1. It needs HIDMaestro 2.0.1 or a later 2.x release.
+  A 1.x DLL or any other version is refused with a status message that names
+  the version found and the range needed. It is never loaded.
+- The first elevated start with 2.0.1 upgrades an installed 1.x HIDMaestro
+  driver. The log reports the driver install outcome.
+- The DLL is still not shipped. Place `HIDMaestro.Core.dll` next to
+  `GameFlow.App.exe`, in a `HIDMaestro` subfolder beside it, or in the folder
+  named by the `GAMEFLOW_HIDMAESTRO_DIR` environment variable.
+- The profile picker lists only gamepad and arcade-stick profiles. Wheels,
+  flight gear, pedals, mice and keyboards are hidden. Mice and keyboards used
+  to appear.
+- Fixed the VID/PID used to hide GameFlow's own virtual pad from the input
+  list before it activates. It was wrong for DualShock 4 and Xbox One, and now
+  comes from the HIDMaestro catalog.
+- Fixed trigger axes for profiles that declare no sticks or triggers, such as
+  the Switch 2 Pro.
+- The generic DirectInput controller is limited to 32 buttons. The template
+  editor clamps to 32.
+- Removed a hiding path that claimed the virtual pad by device instance ID.
+  It never worked.
+- Source builds download the pinned HIDMaestro release once to compile the
+  adapter, so the first build needs network access.
+
 ### Interface fixes
 
 - Main navigation keeps a selected page. Hiding tab headers no longer clears
@@ -88,7 +114,7 @@ text must match the tag exactly — that is what the extraction keys on.
 
 | Archive suffix | Platform | Virtual gamepad output |
 | --- | --- | --- |
-| `win-x64.zip` | Windows x64 | HIDMaestro SDK obtained separately; Administrator required |
+| `win-x64.zip` | Windows x64 | HIDMaestro 2.0.1 or a later 2.x release, obtained separately; Administrator required |
 | `linux-x64.tar.gz` | Linux x64 with glibc and a graphical desktop | Preview only |
 | `osx-arm64.tar.gz` | Apple Silicon macOS | Preview only |
 | `osx-x64.tar.gz` | Intel macOS | Preview only |

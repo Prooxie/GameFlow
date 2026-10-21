@@ -650,7 +650,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     /// <summary>
     /// Resolves a slot's output template to the dashboard style that
     /// represents it: the explicit HIDMaestro catalog profile's family
-    /// when one is chosen (any of the 225 profiles classify), the
+    /// when one is chosen (any catalog profile classifies), the
     /// template's kind otherwise.
     /// </summary>
     /// <summary>

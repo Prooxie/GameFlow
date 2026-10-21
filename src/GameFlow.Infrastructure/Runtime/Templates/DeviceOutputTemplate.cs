@@ -45,7 +45,7 @@ public sealed class DeviceOutputTemplate
     /// <c>"switch-pro"</c>, <c>"logitech-g29"</c>). When non-empty, this exact
     /// catalog profile is deployed instead of the default profile derived
     /// from <see cref="OutputKind"/> — which is what lets a slot emit ANY of
-    /// HIDMaestro's 225 profiles rather than only the four curated kinds.
+    /// HIDMaestro's catalog profiles rather than only the four curated kinds.
     /// Empty means "use the default profile for <see cref="OutputKind"/>".
     /// <see cref="OutputKind"/> is still kept in sync as the profile's
     /// closest family so theming and per-kind UI sections keep working.

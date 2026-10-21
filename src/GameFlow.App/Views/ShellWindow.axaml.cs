@@ -33,7 +33,7 @@ public partial class ShellWindow : Window
     /// <para>
     /// Startup is the one moment the UI thread is guaranteed to be busy
     /// with something other than the dashboard: theme artwork decoding,
-    /// the first device enumeration, and HIDMaestro walking its 231-entry
+    /// the first device enumeration, and HIDMaestro walking its
     /// profile catalog. Ticking at the display's full rate straight into
     /// that contention did not just drop frames, it made the panels look
     /// like they had vanished — and then the adaptive backoff read the

@@ -1507,7 +1507,7 @@
                          pick — the old provider combo box was one item of
                          dead choice. -->
 
-                    <!-- Full HIDMaestro catalog (225 profiles) — lets this
+                    <!-- Full HIDMaestro catalog — lets this
                          slot emit ANY supported controller, not just the
                          four curated kinds above. Hidden until the catalog
                          has been enumerated. -->

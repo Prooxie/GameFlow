@@ -28,3 +28,4 @@ theme has not been recorded in this repository.
 
 HIDMaestro is an optional, separately obtained dependency. It is not included in
 the GameFlow archives; retain its upstream license when distributing it yourself.
+GameFlow supports HIDMaestro 2.0.1 or a later 2.x release.

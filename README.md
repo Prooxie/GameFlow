@@ -101,7 +101,7 @@ An optional `gamecontrollerdb.txt` ([SDL\_GameControllerDB](https://github.com/m
 
 ### Windows — virtual controller output
 
-GameFlow uses [**HIDMaestro**](https://github.com/hifihedgehog/HIDMaestro) exclusively: user-mode, no kernel driver, no reboot. Obtain **`HIDMaestro.Core.dll`** separately from upstream and place it next to `GameFlow.App.exe`. Run GameFlow as Administrator to let HIDMaestro install its user-mode driver and create virtual controllers. If the SDK is missing or cannot create a device, the slot reports that output is unavailable; the dashboard still works. GameFlow does not substitute a different output backend. Compatibility with a particular HIDMaestro release must be checked against a real game before distributing it with GameFlow.
+GameFlow uses [**HIDMaestro**](https://github.com/hifihedgehog/HIDMaestro) exclusively: user-mode, no kernel driver, no reboot. Obtain **`HIDMaestro.Core.dll`** separately from upstream. GameFlow needs HIDMaestro 2.0.1 or a later 2.x release. Place the DLL next to `GameFlow.App.exe`, in a `HIDMaestro` subfolder beside it, or in the folder named by the `GAMEFLOW_HIDMAESTRO_DIR` environment variable. A 1.x DLL or any other version is refused with a status message that names the version found and the range needed, and it is never loaded. Run GameFlow as Administrator to let HIDMaestro install its user-mode driver and create virtual controllers. The first elevated start with 2.0.1 upgrades an installed 1.x HIDMaestro driver, and the log reports the outcome. The profile picker lists only gamepad and arcade-stick profiles. If the SDK is missing or cannot create a device, the slot reports that output is unavailable; the dashboard still works. GameFlow does not substitute a different output backend. Compatibility with a particular HIDMaestro release must be checked against a real game before distributing it with GameFlow.
 
 Windows also has the fullest platform support: keyboard/mouse-as-gamepad, mouse output (`SendInput`), and the only real virtual-**gamepad** output backend.
 
@@ -138,6 +138,8 @@ cd GameFlow
 dotnet build GameFlow.sln
 dotnet run --project src/GameFlow.App
 ```
+
+The first build downloads the pinned HIDMaestro release once to compile the adapter, so it needs network access. The downloaded DLL is used only to build and test. It is never copied into the app's output.
 
 First launch creates a default profile under:
 
