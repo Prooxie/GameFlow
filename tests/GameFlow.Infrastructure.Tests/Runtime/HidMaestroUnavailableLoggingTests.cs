@@ -1,5 +1,6 @@
 using GameFlow.Core.Models;
 using GameFlow.Infrastructure.Runtime.HidMaestro;
+using GameFlow.Infrastructure.Tests.Runtime.HidMaestro;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -23,9 +24,9 @@ public sealed class HidMaestroUnavailableLoggingTests
 {
     /// <summary>
     /// Counts warning/error records so a test can assert "logged once", not
-    /// "logged once per frame".
+    /// "logged once per frame". The sink tests use it too.
     /// </summary>
-    private sealed class CountingLogger : ILogger<HidMaestroOutputSink>
+    internal sealed class CountingLogger : ILogger<HidMaestroOutputSink>
     {
         public int Problems { get; private set; }
 
@@ -44,14 +45,20 @@ public sealed class HidMaestroUnavailableLoggingTests
         }
     }
 
+    /// <summary>A sink whose backend reports the most common failure of all: no SDK beside the executable.</summary>
+    private static HidMaestroOutputSink CreateSink(ILogger<HidMaestroOutputSink> logger) =>
+        new(logger, new FakeHidMaestroBackend
+        {
+            Status = new HidMaestroStatus(HidMaestroState.SdkMissing, "HIDMaestro.Core.dll not found."),
+        });
+
     [Fact]
     public async Task An_unavailable_backend_is_reported_once_not_once_per_frame()
     {
-        // The test host has no HIDMaestro.Core.dll beside it, so this
-        // exercises the real unavailable path on Windows and the
-        // non-Windows path everywhere else. Both must latch quietly.
+        // Every unavailable state takes the same path in the sink, so the
+        // missing SDK stands in for all of them. It must latch quietly.
         var logger = new CountingLogger();
-        await using var sink = new HidMaestroOutputSink(logger);
+        await using var sink = CreateSink(logger);
 
         var snapshot = ControllerSnapshot.Empty("test");
         for (int frame = 0; frame < 500; frame++)
@@ -71,7 +78,7 @@ public sealed class HidMaestroUnavailableLoggingTests
         // Quiet must not mean silent: the reason has to stay visible in the
         // slots list, which is the non-log half of this contract.
         var logger = new CountingLogger();
-        await using var sink = new HidMaestroOutputSink(logger);
+        await using var sink = CreateSink(logger);
 
         await sink.WriteAsync(ControllerSnapshot.Empty("test"), CancellationToken.None);
 
