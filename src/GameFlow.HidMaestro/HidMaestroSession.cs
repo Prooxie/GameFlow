@@ -22,7 +22,7 @@ internal sealed class HidMaestroSession
     private const string FailurePrefix = "HIDMaestro controller creation failed: ";
 
     private readonly ILogger logger;
-    // Not disposed: the SDK's exit handler cleans up, and the reflection bridge never disposed it either.
+    // Not disposed: the SDK's exit handler cleans up, and the old bridge never disposed it either.
     private readonly HMContext context;
     private readonly HidMaestroDriverInitialization driver;
     private bool driverInstallLogged;
