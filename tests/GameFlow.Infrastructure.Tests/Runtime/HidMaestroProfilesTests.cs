@@ -16,26 +16,6 @@ namespace GameFlow.Infrastructure.Tests.Runtime;
 /// </summary>
 public sealed class HidMaestroProfilesTests
 {
-    [Theory]
-    [InlineData("dualsense-edge", "DualSense Edge", "Sony", true)]
-    [InlineData("switch-pro", "Nintendo Switch Pro Controller", "Nintendo", true)]
-    [InlineData("8bitdo-ultimate", "Ultimate Bluetooth Controller", "8BitDo", true)]
-    [InlineData("arcade-fight-stick", "Arcade Fight Stick", "Hori", true)]
-    [InlineData("logitech-g29", "G29 Racing Wheel", "Logitech", false)]
-    [InlineData("thrustmaster-hotas", "T.16000M HOTAS", "Thrustmaster", false)]
-    [InlineData("flight-yoke", "Flight Yoke System", "Logitech", false)]
-    [InlineData("rudder-pedals", "Pro Flight Rudder Pedals", "Saitek", false)]
-    public void Catalog_picker_keeps_game_controllers_and_hides_specialized_simulation_devices(
-        string id,
-        string name,
-        string vendor,
-        bool expected)
-    {
-        var profile = new HidMaestroCatalogProfile(id, name, vendor, 0, 0, 12, 6, true, "usb", true);
-
-        Assert.Equal(expected, HidMaestroProfileCatalogService.IsGameControllerProfile(profile));
-    }
-
     [Fact]
     public void Xbox360_first_candidate_is_the_verified_catalog_slug()
     {

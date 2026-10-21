@@ -4,35 +4,30 @@ using Microsoft.Extensions.Logging;
 namespace GameFlow.Infrastructure.Runtime.HidMaestro;
 
 /// <summary>
-/// UI-facing view of HIDMaestro's profile catalog. Wraps the dynamic
-/// bridge so view models can list every profile the loaded SDK actually
-/// ships (225 across 32 vendors as of v1.1.x) and classify any profile
-/// into a kind family for theming — without touching reflection or
-/// blocking the UI thread on the probe (first availability check
-/// includes a driver-install attempt, which can take seconds).
+/// UI-facing view of HIDMaestro's profile catalog. Reads it through
+/// <see cref="IHidMaestroBackend"/> so view models can list every profile
+/// the loaded SDK actually ships and classify any profile into a kind
+/// family for theming, without touching the SDK or blocking the UI thread
+/// on the first enumeration (which can take seconds).
 ///
-/// <para>When HIDMaestro isn't available (non-Windows, DLL not present
-/// yet), the curated per-kind defaults are returned instead so the
-/// editor still shows the four built-in choices rather than an empty
-/// list.</para>
+/// <para>When the backend cannot list a catalog (non-Windows, SDK not
+/// present yet) or lists nothing, the curated per-kind defaults are
+/// returned instead so the editor still shows the built-in choices
+/// rather than an empty list.</para>
 /// </summary>
-public sealed class HidMaestroProfileCatalogService(ILogger<HidMaestroProfileCatalogService> logger)
+public sealed class HidMaestroProfileCatalogService(
+    ILogger<HidMaestroProfileCatalogService> logger,
+    IHidMaestroBackend backend)
 {
-    private static readonly string[] SpecializedControlTerms =
-    [
-        "wheel", "steering", "racing", "pedal", "shifter", "handbrake",
-        "hotas", "flight", "joystick", "throttle", "rudder", "yoke",
-        "t16000", "t.16000", "warthog", "airbus", "boeing", "virpil", "winwing"
-    ];
-
     private readonly ILogger<HidMaestroProfileCatalogService> logger = logger;
+    private readonly IHidMaestroBackend backend = backend;
     private readonly object gate = new();
     private Task<IReadOnlyList<HidMaestroCatalogProfile>>? enumeration;
 
     /// <summary>
     /// The full catalog, enumerated once off the calling thread and
-    /// cached. Returns the curated fallback list when the bridge can't
-    /// activate.
+    /// cached. Returns the curated fallback list when the backend can't
+    /// list a catalog.
     /// </summary>
     public Task<IReadOnlyList<HidMaestroCatalogProfile>> GetProfilesAsync()
     {
@@ -47,9 +42,9 @@ public sealed class HidMaestroProfileCatalogService(ILogger<HidMaestroProfileCat
     {
         try
         {
-            if (OperatingSystem.IsWindows() && HidMaestroDynamic.IsAvailable(logger))
+            if (backend.GetStatus().CanListCatalog)
             {
-                var live = HidMaestroDynamic.GetCatalogProfiles(logger);
+                var live = backend.GetCatalog();
                 if (live.Count > 0)
                 {
                     return live;
@@ -74,16 +69,16 @@ public sealed class HidMaestroProfileCatalogService(ILogger<HidMaestroProfileCat
 
     /// <summary>
     /// True for regular handheld and arcade-style game controllers. The
-    /// underlying SDK catalog remains intact; specialized simulation rigs
-    /// are only hidden from GameFlow's picker until their extra axes and
-    /// feedback semantics have dedicated UI support.
+    /// SDK tags every profile with a type, so the picker needs no name
+    /// guessing. Wheels, HOTAS, pedals, mice and keyboards stay in the SDK
+    /// catalog, but GameFlow's picker hides them until their extra axes and
+    /// feedback have dedicated UI support. A missing type is not a game
+    /// controller.
     /// </summary>
-    public static bool IsGameControllerProfile(HidMaestroCatalogProfile profile)
-    {
-        var searchableText = $"{profile.Id} {profile.Name} {profile.Vendor}";
-        return !SpecializedControlTerms.Any(term =>
-            searchableText.Contains(term, StringComparison.OrdinalIgnoreCase));
-    }
+    public static bool IsGameControllerProfile(HidMaestroCatalogProfile profile) =>
+        profile.Type is not null
+        && (profile.Type.Equals("gamepad", StringComparison.OrdinalIgnoreCase)
+            || profile.Type.Equals("arcadestick", StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// The curated defaults shown when the live catalog isn't available:
