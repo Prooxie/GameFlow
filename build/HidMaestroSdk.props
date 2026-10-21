@@ -1,0 +1,15 @@
+<Project>
+  <!--
+    Pins the third-party HIDMaestro SDK. The SDK is fetched at build time and
+    is never shipped with GameFlow: the user drops it in next to the app.
+    To bump the SDK, change the version, the URL and the SHA-256 together.
+  -->
+  <PropertyGroup>
+    <HidMaestroSdkVersion>2.0.1</HidMaestroSdkVersion>
+    <HidMaestroSdkZipUrl>https://github.com/hifihedgehog/HIDMaestro/releases/download/v$(HidMaestroSdkVersion)/HIDMaestro-v$(HidMaestroSdkVersion).zip</HidMaestroSdkZipUrl>
+    <HidMaestroSdkZipSha256>59bcd962f7bb5ab7c8c3d793887523d9f992b9ea29ca854d8c60b51b8f58c332</HidMaestroSdkZipSha256>
+    <!-- The release zip holds four identical copies of the DLL (checked by MD5). Use the one at the zip root. -->
+    <HidMaestroSdkZipEntry>HIDMaestro.Core.dll</HidMaestroSdkZipEntry>
+    <HidMaestroSdkDll>$(MSBuildThisFileDirectory)..\.cache\hidmaestro\$(HidMaestroSdkVersion)\HIDMaestro.Core.dll</HidMaestroSdkDll>
+  </PropertyGroup>
+</Project>

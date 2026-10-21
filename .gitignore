@@ -495,3 +495,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Fetched third-party SDK (see build/HidMaestroSdk.props)
+.cache/
