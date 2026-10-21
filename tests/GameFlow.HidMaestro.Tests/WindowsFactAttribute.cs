@@ -18,3 +18,19 @@ public sealed class WindowsFactAttribute : FactAttribute
         }
     }
 }
+
+/// <summary>A theory that is skipped when the OS is not Windows.</summary>
+[AttributeUsage(AttributeTargets.Method)]
+public sealed class WindowsTheoryAttribute : TheoryAttribute
+{
+    public WindowsTheoryAttribute(
+        [CallerFilePath] string? sourceFilePath = null,
+        [CallerLineNumber] int sourceLineNumber = -1)
+        : base(sourceFilePath, sourceLineNumber)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            Skip = "Needs Windows.";
+        }
+    }
+}
