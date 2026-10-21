@@ -7,8 +7,9 @@
   <Target Name="FetchHidMaestroSdk" BeforeTargets="ResolveAssemblyReferences" Condition="!Exists('$(HidMaestroSdkDll)')">
     <PropertyGroup>
       <_HmCache>$([System.IO.Path]::GetDirectoryName('$(HidMaestroSdkDll)'))</_HmCache>
-      <_HmZip>$(_HmCache)\HIDMaestro-v$(HidMaestroSdkVersion).zip</_HmZip>
-      <_HmExtract>$(_HmCache)\extract</_HmExtract>
+      <_HmZip>$([MSBuild]::NormalizePath('$(_HmCache)', 'HIDMaestro-v$(HidMaestroSdkVersion).zip'))</_HmZip>
+      <_HmExtract>$([MSBuild]::NormalizePath('$(_HmCache)', 'extract'))</_HmExtract>
+      <_HmEntry>$([MSBuild]::NormalizePath('$(_HmExtract)', '$(HidMaestroSdkZipEntry)'))</_HmEntry>
     </PropertyGroup>
     <DownloadFile SourceUrl="$(HidMaestroSdkZipUrl)" DestinationFolder="$(_HmCache)" Retries="3" Condition="!Exists('$(_HmZip)')" />
     <GetFileHash Files="$(_HmZip)" Algorithm="SHA256"><Output TaskParameter="Hash" PropertyName="_HmZipHash" /></GetFileHash>
@@ -17,8 +18,8 @@
            Text="HIDMaestro-v$(HidMaestroSdkVersion).zip has SHA-256 $(_HmZipHash), expected $(HidMaestroSdkZipSha256). It was deleted; build again to download it again." />
     <Unzip SourceFiles="$(_HmZip)" DestinationFolder="$(_HmExtract)" />
     <!-- The zip holds several identical copies of the DLL, so a glob is not unique. See HidMaestroSdkZipEntry. -->
-    <Error Condition="!Exists('$(_HmExtract)\$(HidMaestroSdkZipEntry)')" Text="$(HidMaestroSdkZipEntry) is not in the release zip." />
-    <Copy SourceFiles="$(_HmExtract)\$(HidMaestroSdkZipEntry)" DestinationFiles="$(HidMaestroSdkDll)" />
+    <Error Condition="!Exists('$(_HmEntry)')" Text="$(HidMaestroSdkZipEntry) is not in the release zip." />
+    <Copy SourceFiles="$(_HmEntry)" DestinationFiles="$(HidMaestroSdkDll)" />
     <RemoveDir Directories="$(_HmExtract)" />
   </Target>
 </Project>
