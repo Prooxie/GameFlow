@@ -74,6 +74,12 @@ public static class ThemeAssetResolver
     private static string? ResolveUncached(string imagePath, string baseDirectory, string themesRoot)
     {
         var rootFull = string.IsNullOrEmpty(themesRoot) ? null : Path.GetFullPath(themesRoot);
+        var boundary = rootFull ?? Path.GetFullPath(baseDirectory);
+        if (!IsWithin(baseDirectory, boundary) || imagePath.Contains(':') || imagePath.StartsWith("\\\\") || imagePath.StartsWith("//"))
+        {
+            return null;
+        }
+
         var rooted = imagePath.StartsWith('\\') || imagePath.StartsWith('/');
         var relative = imagePath.TrimStart('\\', '/')
             .Replace('/', Path.DirectorySeparatorChar)
@@ -82,12 +88,12 @@ public static class ThemeAssetResolver
         // 1. The path as written.
         if (rooted)
         {
-            if (rootFull is not null && Exists(Path.Combine(rootFull, relative), out var asWritten))
+            if (rootFull is not null && Exists(Path.Combine(rootFull, relative), boundary, out var asWritten))
             {
                 return asWritten;
             }
         }
-        else if (Exists(Path.Combine(baseDirectory, relative), out var direct))
+        else if (Exists(Path.Combine(baseDirectory, relative), boundary, out var direct))
         {
             return direct;
         }
@@ -108,18 +114,17 @@ public static class ThemeAssetResolver
         var probe = baseDirectory;
         for (var depth = 0; depth < MaxAncestorDepth && !string.IsNullOrEmpty(probe); depth++)
         {
-            if (Exists(Path.Combine(probe, relative), out var viaAncestor))
+            if (Exists(Path.Combine(probe, relative), boundary, out var viaAncestor))
             {
                 return viaAncestor;
             }
 
-            if (withoutPack is not null && Exists(Path.Combine(probe, withoutPack), out var viaTrimmed))
+            if (withoutPack is not null && Exists(Path.Combine(probe, withoutPack), boundary, out var viaTrimmed))
             {
                 return viaTrimmed;
             }
 
-            if (rootFull is not null &&
-                string.Equals(Path.GetFullPath(probe), rootFull, StringComparison.OrdinalIgnoreCase))
+            if (Path.GetFullPath(probe).Equals(boundary, PathComparison))
             {
                 break;
             }
@@ -178,8 +183,13 @@ public static class ThemeAssetResolver
             try
             {
                 return Directory
-                    .EnumerateFiles(packRoot, fileName, SearchOption.AllDirectories)
-                    .FirstOrDefault();
+                    .EnumerateFiles(packRoot, fileName, new EnumerationOptions
+                    {
+                        RecurseSubdirectories = true,
+                        AttributesToSkip = FileAttributes.ReparsePoint,
+                        IgnoreInaccessible = true
+                    })
+                    .FirstOrDefault(path => Exists(path, themesRoot ?? baseDirectory, out _));
             }
             catch (Exception)
             {
@@ -190,12 +200,36 @@ public static class ThemeAssetResolver
         });
     }
 
-    private static bool Exists(string candidate, out string resolved)
+    private static StringComparison PathComparison => OperatingSystem.IsWindows()
+        ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+    private static bool IsWithin(string candidate, string boundary)
+    {
+        var full = Path.GetFullPath(candidate);
+        var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(boundary));
+        return full.Equals(root, PathComparison) || full.StartsWith(root + Path.DirectorySeparatorChar, PathComparison);
+    }
+
+    private static bool Exists(string candidate, string boundary, out string resolved)
     {
         try
         {
             resolved = Path.GetFullPath(candidate);
-            return File.Exists(resolved);
+            if (!IsWithin(resolved, boundary) || !File.Exists(resolved))
+            {
+                return false;
+            }
+
+            // A lexical check alone still follows symlinks/junctions outside the tree.
+            var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(boundary));
+            for (var current = resolved; !current.Equals(root, PathComparison); current = Path.GetDirectoryName(current)!)
+            {
+                if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
         catch (Exception)
         {

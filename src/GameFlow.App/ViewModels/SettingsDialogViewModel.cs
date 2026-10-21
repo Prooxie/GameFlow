@@ -28,7 +28,7 @@ namespace GameFlow.App.ViewModels;
 /// reset the active profile.
 /// </para>
 /// </summary>
-public sealed partial class SettingsDialogViewModel : ObservableObject
+public sealed partial class SettingsDialogViewModel : ObservableObject, IDisposable
 {
     private readonly IUserSettingsService userSettings;
     private readonly ILocalizationService localization;
@@ -381,9 +381,7 @@ public sealed partial class SettingsDialogViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Parses an optional integer. Whitespace -> null. Garbage -> null.
-    /// Out-of-range values are clamped into [<paramref name="min"/>,
-    /// <paramref name="max"/>].
+    /// Whitespace selects the automatic rate; invalid input keeps the dialog open.
     /// </summary>
     private static int? ParseOptionalInt(string text, int min, int max)
     {
@@ -392,9 +390,11 @@ public sealed partial class SettingsDialogViewModel : ObservableObject
             return null;
         }
 
-        return int.TryParse(text.Trim(), out var parsed)
-            ? Math.Clamp(parsed, min, max)
-            : (int?)null;
+        if (!int.TryParse(text.Trim(), out var parsed) || parsed < min || parsed > max)
+        {
+            throw new FormatException($"Enter a whole-number rate between {min} and {max} Hz, or leave it empty for automatic.");
+        }
+        return parsed;
     }
 
     /// <summary>

@@ -82,6 +82,19 @@ public sealed class UserSettingsService : IUserSettingsService
                 loaded = new AppSettings();
             }
 
+            if (loaded.WebAccessToken.Length != 64 || !loaded.WebAccessToken.All(Uri.IsHexDigit))
+            {
+                loaded = loaded with { WebAccessToken = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32)).ToLowerInvariant() };
+                try
+                {
+                    await repository.SaveSettingsAsync(loaded, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+                {
+                    logger.LogWarning(exception, "Could not persist browser pairing secret; shared links will change on restart.");
+                }
+            }
+
             ApplySideEffects(loaded);
             current = loaded;
             initialized = true;

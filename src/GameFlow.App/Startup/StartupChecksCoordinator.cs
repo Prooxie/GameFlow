@@ -259,6 +259,11 @@ public sealed class StartupChecksCoordinator
         {
             var dialog = new UpdateAvailableDialog();
             dialog.SetUpdate(available.Update, available.CurrentVersion);
+            dialog.DownloadAsync = async (progress, downloadToken) =>
+            {
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, downloadToken);
+                return await updateInstaller.DownloadAndRevealAsync(available.Update, progress, linked.Token);
+            };
             await dialog.ShowDialog(ownerWindow);
             return dialog.Choice;
         }).ConfigureAwait(false);
@@ -286,26 +291,7 @@ public sealed class StartupChecksCoordinator
 
             case UpdateDialogChoice.DownloadAndInstall:
                 {
-                    logger.LogInformation(
-                        "User accepted update {TagName}; starting background download.",
-                        available.Update.TagName);
-
-                    // Fire-and-forget: don't block the user behind a
-                    // 100 MB download. The installer logs all progress
-                    // and reveals the file when finished.
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            await updateInstaller
-                                .DownloadAndRevealAsync(available.Update, progress: null, cancellationToken)
-                                .ConfigureAwait(false);
-                        }
-                        catch (Exception exception)
-                        {
-                            logger.LogWarning(exception, "Background update download failed.");
-                        }
-                    }, cancellationToken);
+                    logger.LogInformation("Update {TagName} was downloaded and verified.", available.Update.TagName);
 
                     // Clear any previously-skipped version so that if
                     // they install successfully, the next launch

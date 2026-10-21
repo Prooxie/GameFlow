@@ -38,6 +38,7 @@ public partial class SetupWalkthroughWindow : Window
     public SetupWalkthroughWindow()
     {
         InitializeComponent();
+        Opened += (_, _) => WindowSizing.Fit(this);
         DataContextChanged += OnDataContextChanged;
         Closed += OnClosed;
 

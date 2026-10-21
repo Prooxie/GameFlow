@@ -137,6 +137,7 @@ public sealed class ThemeRegistry
         // Image paths are cached until a refresh. A refresh is the moment
         // that art may have been added, moved or removed.
         ThemeAssetResolver.ClearCache();
+        Runtime.Web.Overlay.OverlayProgramBuilder.ClearCache();
 
         var loaded = new List<InstalledTheme>();
         if (!Directory.Exists(dir))
@@ -152,7 +153,12 @@ public sealed class ThemeRegistry
             // tree is shallow (1-3 levels at most) and the file count
             // is tiny relative to a normal source repository.
             foreach (var manifest in Directory.EnumerateFiles(
-                         dir, "theme.json", SearchOption.AllDirectories))
+                         dir, "theme.json", new EnumerationOptions
+                         {
+                             RecurseSubdirectories = true,
+                             AttributesToSkip = FileAttributes.ReparsePoint,
+                             IgnoreInaccessible = true
+                         }))
             {
                 var sub = Path.GetDirectoryName(manifest);
                 if (string.IsNullOrEmpty(sub))

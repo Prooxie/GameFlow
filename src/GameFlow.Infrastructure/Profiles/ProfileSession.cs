@@ -19,6 +19,7 @@ public sealed class ProfileSession(
     IUserSettingsService userSettings,
     ILogger<ProfileSession> logger)
 {
+    public const int MaximumProfileBytes = ProfileValidator.MaximumBytes;
     private readonly IProfileRepository repository = repository;
     private readonly IUserSettingsService userSettings = userSettings;
     private readonly ILogger<ProfileSession> logger = logger;
@@ -54,7 +55,8 @@ public sealed class ProfileSession(
             var current = await repository.LoadAsync(Settings.ActiveProfileId, cancellationToken);
             if (current is null)
             {
-                current = ProfileDefaults.CreateSpeedrunnerDefault();
+                var fallback = ProfileDefaults.CreateSpeedrunnerDefault();
+                current = await repository.LoadAsync(fallback.Id, cancellationToken) ?? fallback;
                 await repository.SaveAsync(current, cancellationToken);
                 if (logger.IsEnabled(LogLevel.Information))
                 {
@@ -76,6 +78,10 @@ public sealed class ProfileSession(
             }
 
             CurrentProfile = current;
+            if (!string.Equals(Settings.ActiveProfileId, current.Id, StringComparison.Ordinal))
+            {
+                await userSettings.UpdateAsync(settings => settings with { ActiveProfileId = current.Id }, cancellationToken);
+            }
             isInitialized = true;
             Changed?.Invoke(this, EventArgs.Empty);
         }
@@ -87,6 +93,7 @@ public sealed class ProfileSession(
 
     public async Task SaveProfileJsonAsync(string json, CancellationToken cancellationToken = default)
     {
+        if (System.Text.Encoding.UTF8.GetByteCount(json) > MaximumProfileBytes) { throw new JsonException("Profile files are limited to 2 MiB."); }
         var profile = JsonSerializer.Deserialize<ProfileDocument>(json, ProfileJsonOptions.Default)
             ?? throw new InvalidOperationException("Profile JSON could not be parsed.");
 
@@ -99,7 +106,9 @@ public sealed class ProfileSession(
     /// </summary>
     public async Task SaveCurrentProfileAsync(ProfileDocument profile, CancellationToken cancellationToken = default)
     {
-        await PersistAsCurrentAsync(profile, cancellationToken);
+        await gate.WaitAsync(cancellationToken);
+        try { await PersistAsCurrentAsync(profile, cancellationToken); }
+        finally { _ = gate.Release(); }
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
@@ -150,9 +159,10 @@ public sealed class ProfileSession(
 
     private async Task PersistAsCurrentAsync(ProfileDocument profile, CancellationToken cancellationToken)
     {
-        CurrentProfile = profile;
+        ProfileValidator.Validate(profile);
         await repository.SaveAsync(profile, cancellationToken);
         await SetActiveProfileIdAsync(profile.Id, cancellationToken);
+        CurrentProfile = profile;
 
         logger.LogInformation(
             "Saved profile {ProfileId} ({ProfileName}) and set as active.",
@@ -166,13 +176,10 @@ public sealed class ProfileSession(
     /// </summary>
     public async Task ResetToDefaultAsync(CancellationToken cancellationToken = default)
     {
-        CurrentProfile = ProfileDefaults.CreateSpeedrunnerDefault();
-        await repository.SaveAsync(CurrentProfile, cancellationToken);
-        await SetActiveProfileIdAsync(CurrentProfile.Id, cancellationToken);
+        await SaveCurrentProfileAsync(ProfileDefaults.CreateSpeedrunnerDefault(), cancellationToken);
 
         logger.LogInformation("Profile reset to speedrunner default.");
 
-        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>
@@ -235,8 +242,10 @@ public sealed class ProfileSession(
             }
 
             var previousId = CurrentProfile.Id;
-            CurrentProfile = MigrateProfile(profile);
+            var migrated = MigrateProfile(profile);
+            ProfileValidator.Validate(migrated);
             await SetActiveProfileIdAsync(profileId, cancellationToken);
+            CurrentProfile = migrated;
 
             logger.LogInformation(
                 "Switched active profile: {PreviousProfileId} -> {NewProfileId} ({ProfileName}).",
@@ -275,8 +284,6 @@ public sealed class ProfileSession(
         var id = $"profile-{Guid.NewGuid():N}";
         var sourceId = CurrentProfile.Id;
         var profile = CurrentProfile with { Id = id, Name = newName };
-        await repository.SaveAsync(profile, cancellationToken);
-
         logger.LogInformation(
             "Duplicated profile {SourceProfileId} -> {NewProfileId} ({NewProfileName}).",
             sourceId,
@@ -293,16 +300,18 @@ public sealed class ProfileSession(
     /// </summary>
     public async Task DeleteProfileAsync(string profileId, CancellationToken cancellationToken = default)
     {
-        if (string.Equals(profileId, CurrentProfile.Id, StringComparison.Ordinal))
+        await gate.WaitAsync(cancellationToken);
+        try
         {
-            logger.LogWarning(
-                "Refused to delete profile {ProfileId} because it is currently active.",
-                profileId);
-            return;  // Never delete the active profile
+            if (string.Equals(profileId, CurrentProfile.Id, StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogWarning("Refused to delete profile {ProfileId} because it is currently active.", profileId);
+                return;
+            }
+            await repository.DeleteAsync(profileId, cancellationToken);
+            logger.LogInformation("Deleted profile {ProfileId}.", profileId);
         }
-
-        await repository.DeleteAsync(profileId, cancellationToken);
-        logger.LogInformation("Deleted profile {ProfileId}.", profileId);
+        finally { _ = gate.Release(); }
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
@@ -312,10 +321,17 @@ public sealed class ProfileSession(
     /// </summary>
     public async Task ImportProfileAsync(string json, CancellationToken cancellationToken = default)
     {
+        if (System.Text.Encoding.UTF8.GetByteCount(json) > ProfileValidator.MaximumBytes) { throw new JsonException("Profile files are limited to 2 MiB."); }
         var profile = JsonSerializer.Deserialize<ProfileDocument>(json, ProfileJsonOptions.Default)
             ?? throw new InvalidOperationException("Could not parse the profile JSON.");
         var id = $"profile-{Guid.NewGuid():N}";
-        profile = profile with { Id = id };
+        profile = profile with
+        {
+            Id = id,
+            Rules = profile.Rules?.Select(rule => rule is GameFlow.Core.Models.Rules.ControlScriptRule script
+                ? script with { Enabled = false } : rule).ToArray()!
+        };
+        ProfileValidator.Validate(profile);
 
         logger.LogInformation(
             "Importing profile (assigned new id {NewProfileId}, original name '{ProfileName}').",

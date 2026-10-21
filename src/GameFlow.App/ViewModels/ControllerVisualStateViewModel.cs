@@ -22,6 +22,7 @@ namespace GameFlow.App.ViewModels;
 /// </summary>
 public sealed partial class ControllerVisualStateViewModel : ViewModelBase
 {
+    public string MissingThemeHint => $"No controller theme is installed for this style. Install a VSCView-compatible theme in {GameFlow.Infrastructure.Configuration.AppPaths.ThemesDirectory}, then restart GameFlow.";
     // ─── Static property-name lists ───────────────────────────────────────────
     private static readonly string[] IdentityProps =
     [

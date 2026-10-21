@@ -58,6 +58,9 @@ public static class HostBuilderFactory
         var loggingLevelSwitch = new LoggingLevelSwitch(LogEventLevel.Information);
 
         return Host.CreateDefaultBuilder(args)
+            // PO catalogs and bundled assets belong to the installation,
+            // even when a shortcut or terminal launches from another folder.
+            .UseContentRoot(AppContext.BaseDirectory)
             .ConfigureAppConfiguration((hostingContext, configurationBuilder) =>
             {
                 _ = configurationBuilder.SetBasePath(AppContext.BaseDirectory);

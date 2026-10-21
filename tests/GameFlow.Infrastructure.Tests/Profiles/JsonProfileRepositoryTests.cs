@@ -90,4 +90,42 @@ public sealed class JsonProfileRepositoryTests : IDisposable
 
         Assert.Null(loaded);
     }
+
+    [Theory]
+    [InlineData("../outside")]
+    [InlineData("..\\outside")]
+    [InlineData("/absolute")]
+    [InlineData("C:\\outside")]
+    [InlineData("file:stream")]
+    [InlineData("bad\0id")]
+    public void ProfileIdsCannotEscapeTheProfilesDirectory(string id)
+    {
+        Assert.Throws<ArgumentException>(() => repository.GetProfilePath(id));
+    }
+
+    [Fact]
+    public async Task InvalidStoredSelectionReadsAsMissingWithoutOpeningAnExternalPath()
+    {
+        Assert.Null(await repository.LoadAsync("../outside", TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task EmbeddedIdCannotRedirectSubsequentWrites()
+    {
+        Directory.CreateDirectory(directory);
+        await File.WriteAllTextAsync(Path.Combine(directory, "racing.json"), "{\"id\":\"../outside\"}", TestContext.Current.CancellationToken);
+        var profile = await repository.LoadAsync("racing", TestContext.Current.CancellationToken);
+        Assert.NotNull(profile);
+        Assert.Equal("racing", profile.Id);
+        await repository.SaveAsync(profile, TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task ExplicitNullRulesAreTreatedAsADamagedProfile()
+    {
+        Directory.CreateDirectory(directory);
+        await File.WriteAllTextAsync(Path.Combine(directory, "racing.json"), "{\"rules\":null}", TestContext.Current.CancellationToken);
+        Assert.Null(await repository.LoadAsync("racing", TestContext.Current.CancellationToken));
+        Assert.True(File.Exists(Path.Combine(directory, "racing.json.damaged")));
+    }
 }

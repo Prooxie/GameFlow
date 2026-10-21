@@ -22,6 +22,7 @@ public partial class PhoneControllerWindow : Window
     public PhoneControllerWindow()
     {
         InitializeComponent();
+        Opened += (_, _) => WindowSizing.Fit(this);
         Opened += OnOpened;
     }
 

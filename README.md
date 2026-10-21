@@ -6,7 +6,7 @@
 
 **Ultimate multi-platform, multi-language controller tool for remapping and compability layering, Any input device in, any virtual controller out: Xbox, PlayStation or Nintendo. third-party gamepad, keyboard or/and mouse.**
 
-**v1.0.6** · Built with **.NET 10** · **Avalonia UI** · **SDL3** · **HIDMaestro**
+**v1.0.7** · Built with **.NET 10** · **Avalonia UI** · **SDL3** · **HIDMaestro**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-informational)](#requirements)
@@ -45,7 +45,7 @@ There is also a project site at **[prooxie.github.io/GameFlow](https://prooxie.g
 | **Multi-source rows**               | Many inputs → one output. Six combine modes (Maximum, Minimum, Sum, Average, Multiply, FirstActive) or a **formula** — a small dependency-free expression compiler (`s1 - s2`, `if(s1>0.5, s2, 0)`, `clamp(...)`), with 10 starter recipes                                                                                                                         |
 | **Gyro aiming**                     | Local / Player / World reference frames, dual-threshold smoothing (kills tremor, keeps flicks sharp), 4 engage modes including a raw-stick gate, drift bias calibration, output to a stick or the mouse                                                                                                                                                            |
 | **Touchpad mapping**                | Finger-anchored virtual stick, 8-way wedge D-pad, frame-to-frame mouse mode — works on any pad with a touch surface                                                                                                                                                                                                                                                |
-| **Custom scripting**                | Sandboxed Lua per control (MoonSharp), for logic the built-in rule types don't cover                                                                                                                                                                                                                                                                               |
+| **Custom scripting**                | Lua per control (restricted APIs; trusted scripts only) (MoonSharp), for logic the built-in rule types don't cover                                                                                                                                                                                                                                                                               |
 | **Button combos**                   | One press → a timed sequence of virtual presses                                                                                                                                                                                                                                                                                                                    |
 | **Freeze macro**                    | Captures the stick vector on the rising edge of a button; optional pulse-while-frozen                                                                                                                                                                                                                                                                              |
 | **Per-device tuning**               | Deadzone, anti-deadzone, full-at, sensitivity, response curve, and invert — per stick, per trigger, **per slot AND per device**, so the same pad feels different on two different slots. Offline slots remain editable through inheritable defaults; rumble, lighting, and adaptive-trigger settings reach assigned supported hardware through the effects thread. |
@@ -66,8 +66,26 @@ There is also a project site at **[prooxie.github.io/GameFlow](https://prooxie.g
 
 | Requirement                                       | Version            |
 | ------------------------------------------------- | ------------------ |
-| [.NET SDK](https://dotnet.microsoft.com/download) | 10.0 or later      |
-| Git                                               | Any recent version |
+| [.NET SDK](https://dotnet.microsoft.com/download) | 10.0.401 or later in the .NET 10 line, for source builds |
+| Git                                               | For source builds only |
+
+The release archives are self-contained and include .NET **10.0.13** and the
+SDL3 native library. Extract the **whole archive** before starting the app;
+`themes/`, `Localization/` and `appsettings.json` must remain beside it.
+Choose `win-x64`, `linux-x64`, `osx-arm64` (Apple Silicon) or `osx-x64` (Intel).
+Use an OS supported by [.NET 10](https://github.com/dotnet/core/blob/main/release-notes/10.0/supported-os.md)
+and Avalonia. The Linux archive targets glibc, not Alpine/musl, and requires a
+graphical desktop with the system libraries required by Avalonia/Skia.
+The macOS archives are unsigned and not notarized.
+
+Each archive has a `.sha256` file for checking download integrity. These hashes
+are not signatures. `dependencies.json`, `licenses/` and
+`THIRD-PARTY-NOTICES.md` identify the third-party components.
+
+The in-app downloader checks GitHub's SHA-256 asset digest and shows progress,
+cancellation and errors. It downloads and reveals the archive; you still need
+to quit GameFlow, extract the archive and replace the application yourself.
+Releases without a digest must be downloaded manually.
 
 ### SDL3 native library (required everywhere)
 
@@ -83,7 +101,7 @@ An optional `gamecontrollerdb.txt` ([SDL\_GameControllerDB](https://github.com/m
 
 ### Windows — virtual controller output
 
-GameFlow uses [**HIDMaestro**](https://github.com/hifihedgehog/HIDMaestro) exclusively: user-mode, no kernel driver, no reboot. Drop **`HIDMaestro.Core.dll`** next to `GameFlow.App.exe` and it activates on next launch. If it isn't available, that slot has no output — GameFlow won't silently substitute something else, and the log and the slot's displayed name both say why. The app runs fine either way; the slot falls back to **Preview** (dashboard-only, no real device).
+GameFlow uses [**HIDMaestro**](https://github.com/hifihedgehog/HIDMaestro) exclusively: user-mode, no kernel driver, no reboot. Obtain **`HIDMaestro.Core.dll`** separately from upstream and place it next to `GameFlow.App.exe`. Run GameFlow as Administrator to let HIDMaestro install its user-mode driver and create virtual controllers. If the SDK is missing or cannot create a device, the slot reports that output is unavailable; the dashboard still works. GameFlow does not substitute a different output backend. Compatibility with a particular HIDMaestro release must be checked against a real game before distributing it with GameFlow.
 
 Windows also has the fullest platform support: keyboard/mouse-as-gamepad, mouse output (`SendInput`), and the only real virtual-**gamepad** output backend.
 
@@ -170,14 +188,25 @@ On the Adaptive tab, **React to rumble** ties a trigger to what the game is actu
 
 ### Phone as a controller
 
-1. Open **Settings → Phone controller** and copy the shown address. The local server starts automatically with GameFlow.
-2. Open that address (for example, `http://10.0.0.5:8080`) on a phone on the same Wi-Fi.
+1. Open **Settings → Phone controller**, choose **Enable phone sharing**, then copy the private connection link. Sharing is off by default; local OBS previews still work.
+2. Open the complete link, including `?token=…`, on a phone on the same trusted Wi-Fi.
 3. Pick a layout, tap **Enable motion** for gyro aiming.
 4. The phone appears under **Physical devices** as an ordinary gamepad — assign it to a slot like any other device.
 
 Up to 16 phones can connect at once. Each browser tab keeps a stable pad number across automatic WebSocket reconnects, and stale sockets cannot overwrite a replacement connection. Game rumble returns through the browser Vibration API when the phone supports it; GameFlow sends an explicit stop when rumble ends or the connection closes.
 
-> **Windows firewall:** when GameFlow runs as administrator, it opens port 8080 to your local network by itself when the server starts. It adds an inbound firewall rule and a URL reservation. The rule accepts only devices on your local network (local subnet and private addresses), on every network profile, so a home network that Windows filed as Public works too. The internet stays blocked. When GameFlow is not elevated, click **Allow through firewall** under **Settings → Phone controller** once and accept the Windows prompt. If the address then still shows `localhost`, restart GameFlow.
+Phone sharing uses a random private link. **Reset private link** disconnects
+remote phones and invalidates old links. Stopping sharing also disconnects
+remote sessions. HTTP is not encrypted: keep links private and use trusted
+networks. Browser requests must use the page's own origin. OBS URLs use
+`localhost` and remain available with sharing off.
+
+DSU is off by default and, when enabled, listens on `127.0.0.1` for local
+emulators. Enable **Allow emulators on other devices** only on a trusted network;
+DSU has no authentication or encryption. Never forward HTTP or DSU ports to the
+internet.
+
+> **Windows firewall:** when GameFlow runs as administrator, it opens port 8080 to your local network when phone sharing is enabled. It adds an inbound firewall rule and a URL reservation. The rule accepts only devices on your local network (local subnet and private addresses), on every network profile, so a home network that Windows filed as Public works too. The internet stays blocked. When GameFlow is not elevated, click **Allow through firewall** under **Settings → Phone controller** once and accept the Windows prompt. If the address then still shows `localhost`, restart GameFlow.
 
 ### Add a controller overlay to OBS
 
@@ -226,6 +255,15 @@ Profiles are JSON in the application data directory (see Quick Start), editable 
 
 Any key above can also be set from the environment, with `__` separating levels — `GAMEFLOW_Runtime__DashboardRefreshHz=120`. The pre-rename `AUTOFIRE_` prefix is still read; `GAMEFLOW_` wins if both are set.
 
+For an isolated or portable data folder, set `GAMEFLOW_DATA_DIRECTORY` to an
+absolute path before starting GameFlow. This includes settings and profiles
+and skips migration from the legacy folder. Back up the chosen folder before
+upgrading. General options save with **Save and close**; language/theme,
+application switching, motion and phone sharing controls save immediately.
+Polling rates accept 30–1000 Hz; an empty input override uses the profile's rate.
+Imported profiles are limited to 2 MiB. Imported Lua starts disabled for review;
+run scripts only from trusted authors.
+
 ---
 
 ## Providers
@@ -260,7 +298,7 @@ These are the things that are hard to find elsewhere, whatever else a tool does 
 
 - **A phone is a controller with nothing installed.** Open a URL in any phone browser on the Wi-Fi. Dual anchored sticks, analog triggers, rumble through the Vibration API, and the phone's own gyroscope feeding the same pipeline a DualSense does. Sixteen at once.
 - **A real expression compiler in the mapping grid.** `s1 - s2`, `if(s1 > 0.5, s2, 0)`, `clamp(...)` — many inputs folded into one output, with a compile error rather than a silent zero when you reference a source that isn't there.
-- **Sandboxed Lua per control**, for the logic no built-in rule type covers.
+- **Lua per control (restricted APIs; trusted scripts only)**, for the logic no built-in rule type covers.
 - **An OBS overlay served by the app itself.** A transparent browser source, no screen capture, no always-on-top window.
 - **Per-device axis calibration.** Not just buttons: each stick binds as two independent axes, and a pad whose L2/R2 are plain switches binds them as on/off triggers. This is what makes third-party pads and PS2-era converters usable.
 - **Deadzone shaping that is radial, not per-axis** — so a diagonal push escapes the deadzone at the same physical distance a straight one does.
@@ -336,7 +374,7 @@ MIT — see [**LICENSE**](LICENSE).
 * [**SDL\_GameControllerDB**](https://github.com/mdqinc/SDL_GameControllerDB) — the community gamepad mapping database SDL3 input builds on.
 * [**VSCView THEMEENGINE**](https://github.com/Nielk1/VSCView/blob/master/THEMEENGINE.md) by Nielk1 — the controller theme format GameFlow's controller surfaces are compatible with.
 * [**AL2009man's Gamepad Asset Pack \& Prompt Asset Pack**](https://github.com/AL2009man/Gamepad-Asset-Pack) — controller and button-prompt art.
-* [**MoonSharp**](https://www.moonsharp.org/) — the sandboxed Lua interpreter behind custom scripting.
+* [**MoonSharp**](https://www.moonsharp.org/) — the Lua interpreter behind custom scripting. Restricted APIs and instruction budgets do not provide process or memory isolation.
 
 Check out my other projects on GitHub, [YouTube](https://www.youtube.com/@ProxyDarkness), and [Twitch](https://www.twitch.tv/ProxyDarkness).
 

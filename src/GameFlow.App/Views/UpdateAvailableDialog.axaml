@@ -33,11 +33,14 @@
               Classes="card"
               Padding="14,12"
               CornerRadius="10">
-        <TextBlock Name="ReleaseName"
+        <StackPanel Spacing="8"><TextBlock Name="ReleaseName"
                    FontSize="13"
                    FontWeight="SemiBold"
                    Foreground="{DynamicResource AppAccentHover}"
                    TextWrapping="Wrap" />
+          <TextBlock Name="DownloadHint" TextWrapping="Wrap" Classes="hint"
+                     Text="Downloads a verified archive. You will extract it and replace the application yourself; GameFlow does not install it automatically." />
+        </StackPanel>
       </Border>
 
       <!-- Release notes link -->
@@ -65,6 +68,7 @@
                   IsVisible="False"
                   Spacing="6">
         <TextBlock Name="ProgressLine"
+                   TextWrapping="Wrap"
                    FontSize="11.5"
                    Foreground="{DynamicResource AppForegroundDim}" />
         <ProgressBar Name="DownloadProgress"
@@ -76,24 +80,29 @@
       <!-- Footer buttons -->
       <Grid Grid.Row="4" ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="10">
         <Button Grid.Column="0"
+                Name="SkipButton"
                 Classes="ghost"
                 Content="Skip this update"
                 Click="OnSkipClick"
                 Padding="14,9" />
 
         <Button Grid.Column="1"
+                Name="DontAskButton"
                 Classes="ghost"
                 Content="Don't ask again"
                 Click="OnDontAskClick"
                 Padding="14,9" />
 
-        <Button Grid.Column="3"
+        <StackPanel Grid.Column="3" Spacing="6">
+        <Button Name="CancelDownloadButton" IsVisible="False" Content="Cancel download" Click="OnCancelDownloadClick" />
+        <Button
                 Name="InstallButton"
                 Classes="primary"
-                Content="Download &amp; install"
+                Content="Download update"
                 IsDefault="True"
                 Click="OnInstallClick"
                 Padding="16,9" />
+        </StackPanel>
       </Grid>
 
     </Grid>

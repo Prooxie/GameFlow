@@ -25,15 +25,14 @@
               Background="{DynamicResource AppSurface1}"
               BorderBrush="{DynamicResource AppBorder0}"
               BorderThickness="0,1,0,0">
-        <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
+        <Grid ColumnDefinitions="*,Auto,Auto,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="8">
 
-          <TextBlock Grid.Column="0"
+          <TextBlock Grid.Row="1" Grid.ColumnSpan="4"
                      Text="{Binding StatusMessage}"
-                     FontSize="11"
-                     Foreground="{DynamicResource AppForegroundDim}"
+                     FontSize="12"
+                     Foreground="{DynamicResource AppForeground}"
                      VerticalAlignment="Center"
-                     TextWrapping="NoWrap"
-                     TextTrimming="CharacterEllipsis" />
+                     TextWrapping="Wrap" />
 
           <Button Grid.Column="1" Classes="ghost"
                   Content="{Binding RestoreDefaultsButtonLabel}"
@@ -93,6 +92,7 @@
           <StackPanel Spacing="10">
             <TextBlock Text="Localization &amp; Appearance"
                        Classes="sectionHeading" />
+            <TextBlock Classes="hint" TextWrapping="Wrap" Text="Language and theme changes save immediately. Cancel does not undo them." />
             <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto" RowSpacing="8">
               <TextBlock Grid.Row="0" Grid.Column="0"
                          Text="{Binding Shell.LanguageLabel}"
@@ -136,6 +136,34 @@
           <Border Classes="divider" />
 
           <!-- Paths section -->
+          <StackPanel Spacing="10">
+            <TextBlock Text="{Binding WindowHeaderLabel}" Classes="sectionHeading" />
+            <CheckBox Content="{Binding RememberWindowSizeLabel}" IsChecked="{Binding RememberWindowSize, Mode=TwoWay}" />
+            <Grid ColumnDefinitions="180,Auto,Auto,Auto" ColumnSpacing="8" IsEnabled="{Binding RememberWindowSize}">
+              <TextBlock Text="{Binding WindowWidthLabel}" VerticalAlignment="Center" />
+              <NumericUpDown Grid.Column="1" Width="100" Minimum="200" Maximum="8000" Increment="50" Value="{Binding WindowWidth, Mode=TwoWay}" />
+              <TextBlock Grid.Column="2" Text="{Binding WindowHeightLabel}" VerticalAlignment="Center" />
+              <NumericUpDown Grid.Column="3" Width="100" Minimum="200" Maximum="8000" Increment="50" Value="{Binding WindowHeight, Mode=TwoWay}" />
+            </Grid>
+          </StackPanel>
+
+          <Border Classes="divider" />
+
+          <StackPanel Spacing="10">
+            <TextBlock Text="{Binding PollingHeaderLabel}" Classes="sectionHeading" />
+            <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto" RowSpacing="8">
+              <TextBlock Text="{Binding DashboardRefreshLabel}" Foreground="{DynamicResource AppForeground}" VerticalAlignment="Center" />
+              <TextBox Grid.Column="1" Width="160" HorizontalAlignment="Left" PlaceholderText="Automatic"
+                       Text="{Binding DashboardRefreshHzText, Mode=TwoWay}" />
+              <TextBlock Grid.Row="1" Text="{Binding PollingRateLabel}" Foreground="{DynamicResource AppForeground}" VerticalAlignment="Center" />
+              <TextBox Grid.Row="1" Grid.Column="1" Width="160" HorizontalAlignment="Left" PlaceholderText="Use profile rate"
+                       Text="{Binding PollingRateHzText, Mode=TwoWay}" />
+            </Grid>
+            <TextBlock Text="{Binding PollingHintLabel}" Classes="hint" TextWrapping="Wrap" />
+          </StackPanel>
+
+          <Border Classes="divider" />
+
           <StackPanel Spacing="10">
             <TextBlock Text="{Binding PathsHeaderLabel}"
                        Classes="sectionHeading" />
@@ -203,6 +231,8 @@
                matching the toggle's own behaviour. -->
           <StackPanel Spacing="6">
             <TextBlock Text="Motion server" Classes="sectionHeading" />
+            <TextBlock Classes="hint" Text="These controls save immediately. Cancel only discards edits above. Local emulators should connect to 127.0.0.1." TextWrapping="Wrap" />
+            <CheckBox IsChecked="{Binding MotionServer.AllowRemote, Mode=TwoWay}" Content="Allow emulators on other devices (trusted network only)" />
             <CheckBox IsChecked="{Binding MotionServer.IsEnabled, Mode=TwoWay}"
                       Content="Enable DSU / Cemuhook motion server"
                       Foreground="{DynamicResource AppForeground}" />
@@ -213,7 +243,7 @@
                          VerticalAlignment="Center"
                          Foreground="{DynamicResource AppForeground}" />
               <TextBox Grid.Column="1" Width="100"
-                       Text="{Binding MotionServer.Port, Mode=TwoWay}" />
+                       Text="{Binding MotionServer.Port, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
             </Grid>
             <TextBlock Classes="hint"
                        Text="Port must be between 1024 and 65535."
@@ -232,6 +262,7 @@
           <StackPanel Spacing="6">
             <TextBlock Text="Per-app profiles" Classes="sectionHeading" />
             <CheckBox IsChecked="{Binding AppProfiles.IsEnabled, Mode=TwoWay}"
+                      ToolTip.Tip="Application switching rules save immediately. Cancel does not undo them."
                       Content="Switch profile automatically when an app comes to the front"
                       Foreground="{DynamicResource AppForeground}" />
             <TextBlock Classes="hint" TextWrapping="Wrap"
@@ -297,6 +328,13 @@
                in the log or infer it from the OBS URL. -->
           <StackPanel Spacing="6">
             <TextBlock Text="Phone controller" Classes="sectionHeading" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="{Binding Overlay.NetworkSharingButtonLabel}" Command="{Binding Overlay.ToggleNetworkSharingCommand}" HorizontalAlignment="Left" />
+            <Button Classes="ghost" Content="Reset private link" Command="{Binding Overlay.ResetPrivateLinkCommand}"
+                    ToolTip.Tip="Disconnects existing phones and invalidates old links. Copy the new link to reconnect." HorizontalAlignment="Left" />
+            </StackPanel>
+            <TextBlock Classes="hint" Text="{Binding Overlay.NetworkSharingStatus}" TextWrapping="Wrap" />
+            <TextBlock Classes="hint" Text="Sharing is saved immediately. Keep this link private; use only trusted networks. OBS on this PC works with sharing off." TextWrapping="Wrap" />
             <TextBlock Classes="hint" TextWrapping="Wrap"
                        Text="Open this address on a phone connected to the same network. It will appear under Physical devices and can be assigned to a controller slot." />
             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">

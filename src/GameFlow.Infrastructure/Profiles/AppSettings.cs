@@ -174,6 +174,14 @@ public sealed record AppSettings
     /// </para>
     /// </summary>
     public bool MotionServerEnabled { get; init; }
+    /// <summary>LAN DSU has no authentication; local emulators are the safe default.</summary>
+    public bool MotionServerAllowRemote { get; init; }
+
+    /// <summary>Explicit opt-in to phone and overlay access from other devices.</summary>
+    public bool WebControllerAllowRemote { get; init; }
+
+    /// <summary>Secret in shared browser URLs. Generated and persisted at initialization.</summary>
+    public string WebAccessToken { get; init; } = string.Empty;
 
     /// <summary>
     /// UDP port the DSU / Cemuhook server binds. 26760 is the port every

@@ -131,7 +131,7 @@
                            HorizontalAlignment="Center" VerticalAlignment="Center"
                            MaxWidth="360" TextWrapping="Wrap" TextAlignment="Center"
                            Foreground="{DynamicResource AppForegroundDim}" FontSize="12"
-                           Text="No controller theme installed for this style. Drop a VSCView-compatible theme folder into %LocalAppData%\GAMEFLOW\themes." />
+                           Text="{Binding MissingThemeHint}" />
                 <views:ThemeSurface x:Name="ThemedSurface"
                                     IsVisible="{Binding IsThemedStyle}"
                                     HorizontalAlignment="Stretch"
