@@ -11,7 +11,7 @@ public partial class ShellWindow : Window
 {
     private readonly DispatcherTimer refreshTimer;
     private DateTime lastTickUtc = DateTime.UtcNow;
-    private DateTime lastTickGapWarnUtc;
+    private DateTime lastTickGapWarnUtc = DateTime.UtcNow;
 
     /// <summary>The rate the user asked for; a ceiling, not a promise. See <see cref="AdaptTickRate"/>.</summary>
     private int configuredRefreshHz = 30;
@@ -256,9 +256,6 @@ public partial class ShellWindow : Window
             shellViewModel.WalkthroughRequested -= OnWalkthroughRequested;
             shellViewModel.PhoneControllerRequested -= OnPhoneControllerRequested;
             shellViewModel.OverlayUrlCopyRequested -= OnOverlayUrlCopyRequested;
-            shellViewModel.WalkthroughRequested -= OnWalkthroughRequested;
-            shellViewModel.PhoneControllerRequested -= OnPhoneControllerRequested;
-            shellViewModel.OverlayUrlCopyRequested -= OnOverlayUrlCopyRequested;
         }
 
         base.OnDataContextChanged(e);
@@ -372,6 +369,15 @@ public partial class ShellWindow : Window
         }
 
         (DataContext as ShellViewModel)?.OpenDeviceSettingsCommand.Execute(slotId);
+    }
+
+    private void OnVirtualPanelKeyDown(object? sender, Avalonia.Input.KeyEventArgs e)
+    {
+        if (e.Key is Avalonia.Input.Key.Enter or Avalonia.Input.Key.Space && sender is Border { Tag: string slotId })
+        {
+            (DataContext as ShellViewModel)?.OpenDeviceSettingsCommand.Execute(slotId);
+            e.Handled = true;
+        }
     }
 
     private async void OnDeviceSettingsRequested(object? sender, DeviceSettingsRequestedEventArgs e)

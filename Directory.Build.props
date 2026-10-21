@@ -8,6 +8,8 @@
   <PropertyGroup>
     <!-- Target framework. .NET 10 is the LTS we ship on. -->
     <TargetFramework>net10.0</TargetFramework>
+    <!-- The SDK's bundled runtime can lag servicing releases. Ship the patched runtime. -->
+    <RuntimeFrameworkVersion>10.0.13</RuntimeFrameworkVersion>
 
     <!-- Modern C# defaults. -->
     <Nullable>enable</Nullable>
@@ -21,6 +23,13 @@
 
     <!-- Reproducible builds: same inputs => same outputs. -->
     <Deterministic>true</Deterministic>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <!-- Publish has a different dependency graph for each RID. Keep its locks
+         separate so publishing cannot rewrite the ordinary solution locks. -->
+    <NuGetLockFilePath Condition="'$(RuntimeIdentifier)' != ''">$(MSBuildProjectDirectory)/packages.$(RuntimeIdentifier).lock.json</NuGetLockFilePath>
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <WarningsAsErrors>$(WarningsAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsAsErrors>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
 
     <!--
@@ -37,7 +46,7 @@
     <Product>GameFlow</Product>
     <Copyright>Copyright (c) GameFlow contributors</Copyright>
     <NeutralLanguage>en</NeutralLanguage>
-    <Version Condition="'$(Version)' == ''">1.0.6</Version>
+    <Version Condition="'$(Version)' == ''">1.0.7</Version>
   </PropertyGroup>
 
   <!--

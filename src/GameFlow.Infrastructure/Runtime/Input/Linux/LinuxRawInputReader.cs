@@ -5,7 +5,7 @@ namespace GameFlow.Infrastructure.Runtime.Input.Linux;
 
 /// <summary>
 /// Linux counterpart to WindowsRawInputReader — one background thread
-/// per classified evdev device, doing a blocking read() loop and
+/// per classified evdev device, doing bounded poll/nonblocking reads and
 /// updating shared state under <see cref="gate"/>. Implements
 /// <see cref="IKeyboardStateSource"/> and <see cref="IMouseStateSource"/>
 /// only; there is no Linux equivalent of <see cref="IRawInputAttacher"/>
@@ -14,12 +14,9 @@ namespace GameFlow.Infrastructure.Runtime.Input.Linux;
 /// is reused for that slot in DI rather than writing a redundant no-op).
 ///
 /// <para>
-/// <b>Scans once, at construction.</b> A keyboard/mouse plugged in
-/// after this reader starts won't be picked up without an app restart —
-/// WindowsRawInputReader's own device-discovery cadence wasn't verified
-/// against this round's time budget, so matching it exactly wasn't
-/// attempted; this is a documented, known scope limit rather than a
-/// silent gap.
+/// Discovers hot-plugged devices once per second. Unplugging or a failed
+/// read clears held keys/buttons; each reader closes its own fd after
+/// observing a stop flag, so disposal never closes an fd under a read.
 /// </para>
 ///
 /// <para>
@@ -37,7 +34,11 @@ public sealed class LinuxRawInputReader : IKeyboardStateSource, IMouseStateSourc
     private readonly Lock gate = new();
     private readonly Dictionary<string, HashSet<int>> pressedKeysByDevice = new(StringComparer.Ordinal);
     private readonly Dictionary<string, MouseAccumulator> mouseByDevice = new(StringComparer.Ordinal);
-    private readonly List<(int Fd, Thread Thread)> readers = [];
+    private readonly Dictionary<string, ReaderSession> readers = [];
+    private readonly HashSet<ReaderSession> liveSessions = [];
+    private readonly IEvdevTransport transport;
+    private readonly ManualResetEventSlim stopWatcher = new();
+    private readonly Thread? watcher;
     private volatile bool disposed;
 
     private static readonly IReadOnlySet<int> EmptyKeys = new HashSet<int>();
@@ -57,9 +58,19 @@ public sealed class LinuxRawInputReader : IKeyboardStateSource, IMouseStateSourc
         public bool Button5;
     }
 
-    public LinuxRawInputReader(ILogger<LinuxRawInputReader> logger)
+    private sealed class ReaderSession(int fd)
+    {
+        internal readonly int Fd = fd;
+        internal Thread Thread = null!;
+        internal volatile bool Stopping;
+    }
+
+    public LinuxRawInputReader(ILogger<LinuxRawInputReader> logger) : this(logger, new EvdevTransport(logger)) { }
+
+    internal LinuxRawInputReader(ILogger<LinuxRawInputReader> logger, IEvdevTransport transport, bool watchForChanges = true)
     {
         this.logger = logger;
+        this.transport = transport;
 
         // Cheap, loud insurance: if struct marshaling ever produced a
         // different size than the verified 24-byte evdev wire format
@@ -75,16 +86,49 @@ public sealed class LinuxRawInputReader : IKeyboardStateSource, IMouseStateSourc
                 "Refusing to start — reading with the wrong struct size would silently corrupt every event.");
         }
 
-        var devices = EvdevDeviceDiscovery.Scan(logger);
+        RefreshDevices();
+        if (watchForChanges)
+        {
+            watcher = new Thread(() =>
+            {
+                while (!stopWatcher.Wait(TimeSpan.FromSeconds(1)))
+                {
+                    try { RefreshDevices(); }
+                    catch (Exception exception) { logger.LogDebug(exception, "evdev: discovery failed; will retry."); }
+                }
+            }) { IsBackground = true, Name = "evdev-discovery" };
+            watcher.Start();
+        }
+    }
+
+    internal void RefreshDevices()
+    {
+        var devices = transport.Scan();
+        var present = new HashSet<string>(StringComparer.Ordinal);
         foreach (var device in devices)
         {
-            if (device.IsKeyboard)
+            if (device.IsKeyboard) { present.Add(EvdevDeviceDiscovery.BuildDeviceId("keyboard", device.Path)); }
+            if (device.IsMouse) { present.Add(EvdevDeviceDiscovery.BuildDeviceId("mouse", device.Path)); }
+        }
+        lock (gate)
+        {
+            if (disposed) { return; }
+            foreach (var id in readers.Keys.Where(id => !present.Contains(id)).ToArray())
+            {
+                readers[id].Stopping = true;
+                readers.Remove(id);
+                pressedKeysByDevice.Remove(id);
+                mouseByDevice.Remove(id);
+            }
+        foreach (var device in devices)
+        {
+            if (device.IsKeyboard && !readers.ContainsKey(EvdevDeviceDiscovery.BuildDeviceId("keyboard", device.Path)))
             {
                 var id = EvdevDeviceDiscovery.BuildDeviceId("keyboard", device.Path);
                 pressedKeysByDevice[id] = [];
                 StartReaderThread(device.Path, id, isKeyboard: true, isMouse: false);
             }
-            if (device.IsMouse)
+            if (device.IsMouse && !readers.ContainsKey(EvdevDeviceDiscovery.BuildDeviceId("mouse", device.Path)))
             {
                 var id = EvdevDeviceDiscovery.BuildDeviceId("mouse", device.Path);
                 mouseByDevice[id] = new MouseAccumulator();
@@ -99,51 +143,64 @@ public sealed class LinuxRawInputReader : IKeyboardStateSource, IMouseStateSourc
             // two different pieces of shared state.
         }
 
-        logger.LogInformation("evdev: {Count} keyboard/mouse reader thread(s) started from {Total} device(s) scanned.",
-            readers.Count, devices.Count);
+        }
     }
 
     private void StartReaderThread(string path, string deviceId, bool isKeyboard, bool isMouse)
     {
-        var fd = EvdevInterop.OpenReadOnly(path);
+        var fd = transport.Open(path);
         if (fd < 0)
         {
             logger.LogDebug("evdev: could not open {Path} for continuous reading (permissions?).", path);
             return;
         }
 
-        var thread = new Thread(() => ReadLoop(fd, deviceId, isKeyboard, isMouse))
+        var session = new ReaderSession(fd);
+        var thread = new Thread(() => ReadLoop(session, deviceId, isKeyboard, isMouse))
         {
             IsBackground = true,
             Name = $"evdev-reader-{System.IO.Path.GetFileName(path)}-{(isKeyboard ? "kbd" : "mouse")}"
         };
-        readers.Add((fd, thread));
+        session.Thread = thread;
+        readers[deviceId] = session;
+        liveSessions.Add(session);
         thread.Start();
     }
 
-    private void ReadLoop(int fd, string deviceId, bool isKeyboard, bool isMouse)
+    private void ReadLoop(ReaderSession session, string deviceId, bool isKeyboard, bool isMouse)
     {
-        var ev = new EvdevInterop.InputEvent();
-        while (!disposed)
+        try
         {
-            var bytesRead = (long)EvdevInterop.read(fd, ref ev, (nuint)EvdevInterop.InputEventSize);
-            if (bytesRead <= 0)
+            while (!disposed && !session.Stopping)
             {
-                // fd closed by Dispose(), or the device was unplugged / errored — either way, stop quietly.
-                return;
+                var ready = transport.WaitForInput(session.Fd);
+                if (ready < 0) { break; }
+                if (ready == 0) { continue; }
+                var read = transport.Read(session.Fd, out var ev);
+                if (read < 0) { break; }
+                if (read == 0) { continue; }
+                lock (gate)
+                {
+                    if (disposed || session.Stopping) { break; }
+                    if (ev.Type == EvdevInterop.EV_KEY) { HandleKeyEvent(deviceId, isKeyboard, isMouse, ev.Code, ev.Value); }
+                    else if (ev.Type == EvdevInterop.EV_REL && isMouse) { HandleRelEvent(deviceId, ev.Code, ev.Value); }
+                }
             }
-            if (bytesRead != EvdevInterop.InputEventSize)
+        }
+        catch (Exception exception) { logger.LogDebug(exception, "evdev: reader stopped for {Device}.", deviceId); }
+        finally
+        {
+            try { transport.Close(session.Fd); }
+            catch (Exception exception) { logger.LogDebug(exception, "evdev: closing reader failed."); }
+            lock (gate)
             {
-                continue; // short/partial read — skip rather than risk misinterpreting a malformed event
-            }
-
-            if (ev.Type == EvdevInterop.EV_KEY)
-            {
-                HandleKeyEvent(deviceId, isKeyboard, isMouse, ev.Code, ev.Value);
-            }
-            else if (ev.Type == EvdevInterop.EV_REL && isMouse)
-            {
-                HandleRelEvent(deviceId, ev.Code, ev.Value);
+                liveSessions.Remove(session);
+                if (readers.TryGetValue(deviceId, out var current) && ReferenceEquals(current, session))
+                {
+                    readers.Remove(deviceId);
+                    pressedKeysByDevice.Remove(deviceId);
+                    mouseByDevice.Remove(deviceId);
+                }
             }
         }
     }
@@ -272,18 +329,18 @@ public sealed class LinuxRawInputReader : IKeyboardStateSource, IMouseStateSourc
         {
             return;
         }
-        disposed = true;
-
-        // Closing the fd is the standard way to unblock a thread stuck in
-        // a blocking read() on Linux — the syscall returns (error/EOF)
-        // and the loop's `while (!disposed)` check then exits it cleanly.
-        foreach (var (fd, _) in readers)
+        ReaderSession[] sessions;
+        lock (gate)
         {
-            _ = EvdevInterop.close(fd);
+            disposed = true;
+            sessions = liveSessions.ToArray();
+            foreach (var session in sessions) { session.Stopping = true; }
+            pressedKeysByDevice.Clear();
+            mouseByDevice.Clear();
         }
-        foreach (var (_, thread) in readers)
-        {
-            _ = thread.Join(TimeSpan.FromSeconds(1));
-        }
+        stopWatcher.Set();
+        watcher?.Join(TimeSpan.FromSeconds(2));
+        foreach (var session in sessions) { session.Thread.Join(TimeSpan.FromSeconds(1)); }
+        // The reader owns close(). Poll is bounded, so no cross-thread fd reuse race.
     }
 }

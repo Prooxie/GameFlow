@@ -448,7 +448,8 @@ motionBtn.addEventListener("click", startMotion);
 // ---- Transport ----
 function connect() {
   var proto = location.protocol === "https:" ? "wss:" : "ws:";
-  ws = new WebSocket(proto + "//" + location.host + "/ws?client=" + encodeURIComponent(clientId));
+  var token = new URLSearchParams(location.search).get("token") || "";
+  ws = new WebSocket(proto + "//" + location.host + "/ws?client=" + encodeURIComponent(clientId) + "&token=" + encodeURIComponent(token));
 
   ws.onopen = function () {
     connected = true;

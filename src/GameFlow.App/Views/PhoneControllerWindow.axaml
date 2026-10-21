@@ -33,6 +33,13 @@
 
           <TextBlock Text="Use a phone as a controller" FontSize="18" FontWeight="Bold"
                      Foreground="{DynamicResource AppForeground}" />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button Content="{Binding NetworkSharingButtonLabel}" Command="{Binding ToggleNetworkSharingCommand}" HorizontalAlignment="Left" />
+          <Button Classes="ghost" Content="Reset private link" Command="{Binding ResetPrivateLinkCommand}"
+                  ToolTip.Tip="Disconnects existing phones and invalidates old links. Copy the new link to reconnect." HorizontalAlignment="Left" />
+          </StackPanel>
+          <TextBlock Classes="hint" Text="{Binding NetworkSharingStatus}" TextWrapping="Wrap" />
+          <TextBlock Classes="hint" Text="Sharing changes take effect immediately. Keep connection links private and use only trusted networks." TextWrapping="Wrap" />
           <TextBlock Classes="hint"
                      Text="Open this address in any browser on a phone connected to the same network. There is no app to install. The phone then appears under Physical devices and can be assigned to a virtual controller like any other pad." />
 

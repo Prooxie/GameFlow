@@ -377,7 +377,7 @@ msgid "SettingsDialogPollingRateLabel"
 msgstr "Frequenza polling"
 
 msgid "SettingsDialogPollingHint"
-msgstr "Lasciare vuoto per usare i valori predefiniti del profilo. Intervallo valido: 30–1000 Hz."
+msgstr "Se vuota, la frequenza del pannello segue lo schermo e quella di ingresso segue il profilo. Intervallo valido: 30–1000 Hz. Frequenze inferiori riducono il carico della CPU."
 
 msgid "SettingsDialogPathsHeader"
 msgstr "Percorsi di archiviazione"
@@ -401,10 +401,10 @@ msgid "SettingsDialogCheckUpdatesLabel"
 msgstr "Verifica aggiornamenti all'avvio"
 
 msgid "SettingsDialogCheckRequirementsLabel"
-msgstr "Verifica requisiti (ViGEm Bus, ecc.) all'avvio"
+msgstr "Verifica i requisiti di sistema all'avvio"
 
 msgid "SettingsDialogApplyButton"
-msgstr "Salva"
+msgstr "Salva e chiudi"
 
 msgid "SettingsDialogCancelButton"
 msgstr "Annulla"

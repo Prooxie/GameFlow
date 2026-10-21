@@ -377,7 +377,7 @@ msgid "SettingsDialogPollingRateLabel"
 msgstr "Частота опроса"
 
 msgid "SettingsDialogPollingHint"
-msgstr "Оставьте пустым для значений по умолчанию из профиля. Диапазон: 30–1000 Гц."
+msgstr "Пустая частота панели следует за экраном, а частота ввода — за профилем. Диапазон: 30–1000 Гц. Низкие частоты снижают нагрузку на процессор."
 
 msgid "SettingsDialogPathsHeader"
 msgstr "Пути хранения"
@@ -401,10 +401,10 @@ msgid "SettingsDialogCheckUpdatesLabel"
 msgstr "Проверять обновления при запуске"
 
 msgid "SettingsDialogCheckRequirementsLabel"
-msgstr "Проверять требования (ViGEm Bus и пр.) при запуске"
+msgstr "Проверять системные требования при запуске"
 
 msgid "SettingsDialogApplyButton"
-msgstr "Сохранить"
+msgstr "Сохранить и закрыть"
 
 msgid "SettingsDialogCancelButton"
 msgstr "Отмена"

@@ -418,6 +418,7 @@ public sealed class SlotRuntime : IAsyncDisposable
             {
                 int fails = slotFailureCounts.TryGetValue(pipeline.SlotId, out var prior) ? prior + 1 : 1;
                 slotFailureCounts[pipeline.SlotId] = fails;
+                await NeutralizePipelineAsync(pipeline, cancellationToken);
                 if (fails == 1 || fails % 100 == 0)
                 {
                     logger.LogWarning(exception, "Slot {SlotId} tick failed (failure #{Count}); other slots continue.", pipeline.SlotId, fails);
@@ -426,6 +427,24 @@ public sealed class SlotRuntime : IAsyncDisposable
         }
 
         return first;
+    }
+
+    internal async ValueTask NeutralizeAsync(CancellationToken cancellationToken)
+    {
+        foreach (var pipeline in pipelines) { await NeutralizePipelineAsync(pipeline, cancellationToken); }
+    }
+
+    private async ValueTask NeutralizePipelineAsync(SlotPipeline pipeline, CancellationToken cancellationToken)
+    {
+        var released = await pipeline.TryNeutralizeAsync(logger, cancellationToken);
+        if (released)
+        {
+            var empty = ControllerSnapshot.Empty("Input unavailable");
+            snapshotStore.Update(pipeline.SlotId, empty, empty);
+        }
+        snapshotStore.SetOutputStatus(pipeline.SlotId, released
+            ? "Input/output error — controls released. Check the log."
+            : "Output error — controls could not be released. Disconnect the virtual controller and check the log.");
     }
 
     /// <summary>

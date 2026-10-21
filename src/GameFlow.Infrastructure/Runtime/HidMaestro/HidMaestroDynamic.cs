@@ -160,7 +160,8 @@ internal static class HidMaestroDynamic
             status = "HIDMaestro.Core.dll not found. Place the SDK assembly next to the executable " +
                      $"(or in a 'HIDMaestro' subfolder, or point {DirectoryOverrideVariable} at its folder) " +
                      "to activate HIDMaestro output. Searched: " + string.Join("; ", searchRoots);
-            logger.LogWarning("HIDMaestro dynamic: {Status}", status);
+            // The output sink emits the actionable warning for its slot.
+            logger.LogDebug("HIDMaestro dynamic: {Status}", status);
             return;
         }
 

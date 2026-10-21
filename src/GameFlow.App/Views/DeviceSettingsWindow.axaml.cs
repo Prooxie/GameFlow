@@ -25,6 +25,7 @@ public partial class DeviceSettingsWindow : Window
     public DeviceSettingsWindow()
     {
         InitializeComponent();
+        Opened += (_, _) => WindowSizing.Fit(this);
         liveTimer.Tick += OnLiveTick;
     }
 

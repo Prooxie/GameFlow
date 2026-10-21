@@ -12,6 +12,23 @@ namespace GameFlow.Infrastructure.Tests.ViewModels;
 public sealed class SettingsDialogThreadingTests
 {
     [Theory]
+    [InlineData("fast")]
+    [InlineData("0")]
+    [InlineData("1001")]
+    [InlineData("30.5")]
+    public async Task InvalidPollingRateStaysVisibleAndDoesNotSave(string text)
+    {
+        var settings = new DeferredSettings();
+        using var host = HostBuilderFactory.Create([])
+            .ConfigureServices(services => services.AddSingleton<IUserSettingsService>(settings)).Build();
+        using var vm = host.Services.GetRequiredService<SettingsDialogViewModel>();
+        vm.PollingRateHzText = text;
+        Assert.False(await vm.ApplyAsync());
+        Assert.Equal(text, vm.PollingRateHzText);
+        Assert.Contains("30", vm.StatusMessage);
+        Assert.Equal(0, settings.Writes);
+    }
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task ApplyPublishesSuccessAndFailureOnCallingContext(bool fail)
@@ -45,10 +62,15 @@ public sealed class SettingsDialogThreadingTests
     private sealed class DeferredSettings : IUserSettingsService
     {
         public TaskCompletionSource Completion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public int Writes;
         public AppSettings Current { get; } = new();
         public event EventHandler<UserSettingsChangedEventArgs>? Changed { add { } remove { } }
         public Task InitializeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
-        public Task UpdateAsync(Func<AppSettings, AppSettings> change, CancellationToken cancellationToken = default) => Completion.Task;
+        public Task UpdateAsync(Func<AppSettings, AppSettings> change, CancellationToken cancellationToken = default)
+        {
+            Writes++;
+            return Completion.Task;
+        }
     }
 
     private sealed class PumpContext : SynchronizationContext, IDisposable

@@ -54,6 +54,31 @@ public sealed class ThemeAssetResolverTests : IDisposable
     }
 
     [Fact]
+    public void TraversalCannotExposeFilesOutsideTheThemesRoot()
+    {
+        Touch("private.png");
+        var themes = Dir("themes");
+        var pack = Dir("themes", "pack");
+        Assert.Null(ThemeAssetResolver.Resolve("../../private.png", pack, themes));
+        Assert.Null(ThemeAssetResolver.Resolve("\\../private.png", pack, themes));
+    }
+
+    [Fact]
+    public void AncestorFallbackStopsAtTheBaseWhenNoThemesRootIsProvided()
+    {
+        Touch("private.png");
+        Assert.Null(ThemeAssetResolver.Resolve("private.png", Dir("pack"), null));
+    }
+
+    [Fact]
+    public void DriveAndNetworkPathsAreRejected()
+    {
+        var file = Touch("private.png");
+        Assert.Null(ThemeAssetResolver.Resolve(file, Dir("pack"), root));
+        Assert.Null(ThemeAssetResolver.Resolve("\\\\server\\share\\private.png", Dir("pack"), root));
+    }
+
+    [Fact]
     public void RootRelativePathSurvivesThePackFolderBeingRenamed()
     {
         // THE regression. Manifests inside dualsense-default still say

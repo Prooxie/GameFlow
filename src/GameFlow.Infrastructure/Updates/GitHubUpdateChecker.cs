@@ -219,11 +219,25 @@ public sealed class GitHubUpdateChecker : IUpdateChecker
             _ = TryGetString(root, "name", out var releaseName);
             _ = TryGetString(root, "html_url", out var htmlUrl);
 
-            var releaseNotesUrl = !string.IsNullOrWhiteSpace(htmlUrl) && Uri.TryCreate(htmlUrl, UriKind.Absolute, out var parsedHtml)
+            var releaseNotesUrl = !string.IsNullOrWhiteSpace(htmlUrl) && Uri.TryCreate(htmlUrl, UriKind.Absolute, out var parsedHtml) && UpdateDownloadPolicy.IsHttps(parsedHtml)
                 ? parsedHtml
                 : new Uri($"https://github.com/{options.RepoOwner}/{options.RepoName}/releases/tag/{tagName}");
 
             var (assetUrl, assetName) = PickAsset(root, tagName);
+            string? digest = null;
+            if (assetName is not null && root.TryGetProperty("assets", out var releaseAssets))
+            {
+                foreach (var asset in releaseAssets.EnumerateArray())
+                {
+                    if (TryGetString(asset, "name", out var name) && name == assetName &&
+                        TryGetString(asset, "digest", out var value) && value.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var hash = value[7..];
+                        if (hash.Length == 64 && hash.All(Uri.IsHexDigit)) { digest = hash; }
+                        break;
+                    }
+                }
+            }
 
             return new UpdateInfo(
                 Version: version,
@@ -231,7 +245,8 @@ public sealed class GitHubUpdateChecker : IUpdateChecker
                 ReleaseName: string.IsNullOrWhiteSpace(releaseName) ? tagName : releaseName!,
                 ReleaseNotesUrl: releaseNotesUrl,
                 DownloadAssetUrl: assetUrl,
-                DownloadAssetName: assetName);
+                DownloadAssetName: assetName,
+                ExpectedSha256: digest);
         }
     }
 
@@ -263,7 +278,7 @@ public sealed class GitHubUpdateChecker : IUpdateChecker
             }
 
             if (string.Equals(name, preferredName, StringComparison.OrdinalIgnoreCase) &&
-                Uri.TryCreate(downloadUrl, UriKind.Absolute, out var url))
+                Uri.TryCreate(downloadUrl, UriKind.Absolute, out var url) && UpdateDownloadPolicy.IsHttps(url) && UpdateDownloadPolicy.IsSafeFileName(name))
             {
                 return (url, name);
             }
@@ -279,8 +294,8 @@ public sealed class GitHubUpdateChecker : IUpdateChecker
                 continue;
             }
 
-            if (name.Contains(rid, StringComparison.OrdinalIgnoreCase) &&
-                Uri.TryCreate(downloadUrl, UriKind.Absolute, out var url))
+            if (name.Contains(rid, StringComparison.OrdinalIgnoreCase) && UpdateDownloadPolicy.IsArchive(name) &&
+                Uri.TryCreate(downloadUrl, UriKind.Absolute, out var url) && UpdateDownloadPolicy.IsHttps(url) && UpdateDownloadPolicy.IsSafeFileName(name))
             {
                 logger.LogDebug(
                     "Strict asset name {PreferredName} not found; using {AssetName} based on RID match.",

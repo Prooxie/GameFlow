@@ -92,6 +92,7 @@ public sealed class UserSettingsServiceTests
 
         await service.InitializeAsync();
 
-        Assert.Equal(new AppSettings(), service.Current);
+        Assert.Equal(new AppSettings(), service.Current with { WebAccessToken = string.Empty });
+        Assert.Equal(64, service.Current.WebAccessToken.Length);
     }
 }

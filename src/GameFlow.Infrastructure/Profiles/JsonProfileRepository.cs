@@ -50,7 +50,16 @@ public sealed class JsonProfileRepository(
 
     public async Task<ProfileDocument?> LoadAsync(string profileId, CancellationToken cancellationToken = default)
     {
-        var path = GetProfilePath(profileId);
+        string path;
+        try
+        {
+            path = GetProfilePath(profileId);
+        }
+        catch (ArgumentException exception)
+        {
+            logger.LogWarning(exception, "Ignoring invalid stored profile ID {ProfileId}.", profileId);
+            return null;
+        }
         if (!File.Exists(path))
         {
             return null;
@@ -59,7 +68,11 @@ public sealed class JsonProfileRepository(
         try
         {
             await using var stream = File.OpenRead(path);
-            return await JsonSerializer.DeserializeAsync<ProfileDocument>(stream, ProfileJsonOptions.Default, cancellationToken);
+            if (stream.Length > ProfileValidator.MaximumBytes) { throw new JsonException("Profile files are limited to 2 MiB."); }
+            var profile = await JsonSerializer.DeserializeAsync<ProfileDocument>(stream, ProfileJsonOptions.Default, cancellationToken);
+            if (profile is not null) { ProfileValidator.Validate(profile); }
+            // The repository filename owns identity; embedded IDs cannot redirect later writes.
+            return profile is null ? null : profile with { Id = profileId };
         }
         catch (JsonException exception)
         {
@@ -70,7 +83,9 @@ public sealed class JsonProfileRepository(
 
     public Task SaveAsync(ProfileDocument profile, CancellationToken cancellationToken = default)
     {
+        ProfileValidator.Validate(profile);
         var json = JsonSerializer.Serialize(profile, ProfileJsonOptions.Default);
+        if (System.Text.Encoding.UTF8.GetByteCount(json) > ProfileValidator.MaximumBytes) { throw new JsonException("Profile files are limited to 2 MiB."); }
         return AtomicFile.WriteAllTextAsync(GetProfilePath(profile.Id), json, cancellationToken);
     }
 
@@ -106,6 +121,13 @@ public sealed class JsonProfileRepository(
 
     public string GetProfilePath(string profileId)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(profileId);
+        if (profileId is "." or ".." || profileId.IndexOfAny(['/', '\\', ':', '<', '>', '"', '|', '?', '*']) >= 0 ||
+            profileId.Any(char.IsControl) || profileId.EndsWith('.') || profileId.EndsWith(' '))
+        {
+            throw new ArgumentException("Profile ID must be a single portable filename.", nameof(profileId));
+        }
+
         return Path.Combine(ProfilesDirectory, $"{profileId}.json");
     }
 

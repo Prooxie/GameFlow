@@ -454,7 +454,10 @@ function connect() {
         // A frame can arrive before the art does; drawing skips images
         // that are not ready yet, so this only needs to ask for a repaint.
         img.onload = function () { dirty = true; };
-        img.src = src;
+        var assetUrl = new URL(src, location.href);
+        var token = new URLSearchParams(location.search).get('token');
+        if (token) { assetUrl.searchParams.set('token', token); }
+        img.src = assetUrl.toString();
         return img;
       });
       say(null);

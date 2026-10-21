@@ -16,8 +16,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 # Never let two deploys race; a half-published site is worse than a stale
 # one, so an in-flight deploy is allowed to finish rather than cancelled.
@@ -26,14 +24,37 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  source:
+    name: Check website source
+    runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.source.outputs.present }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - id: source
+        shell: bash
+        run: |
+          if [ -f docs/index.html ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Website source is not in this checkout. Add docs/index.html to resume Pages deployments."
+          fi
+
   deploy:
     name: Build and deploy site
+    needs: source
+    if: needs.source.outputs.present == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       # The site and the README share one set of brand assets, so `brand/`
       # is assembled into the artifact rather than duplicated under docs/.

@@ -16,6 +16,7 @@ internal sealed class InMemoryProfileRepository : IProfileRepository
 
     /// <summary>When set, <see cref="LoadSettingsAsync"/> throws it, as for a damaged file.</summary>
     public Exception? LoadSettingsFailure { get; init; }
+    public Exception? SaveProfileFailure { get; set; }
 
     public void Add(ProfileDocument profile) => profiles[profile.Id] = profile;
 
@@ -27,6 +28,7 @@ internal sealed class InMemoryProfileRepository : IProfileRepository
 
     public Task SaveAsync(ProfileDocument profile, CancellationToken cancellationToken = default)
     {
+        if (SaveProfileFailure is { } failure) { return Task.FromException(failure); }
         profiles[profile.Id] = profile;
         return Task.CompletedTask;
     }

@@ -41,6 +41,7 @@ public partial class SettingsDialog : Window
     public SettingsDialog()
     {
         InitializeComponent();
+        Opened += (_, _) => WindowSizing.Fit(this);
         Opened += OnOpened;
         Closed += OnClosed;
     }

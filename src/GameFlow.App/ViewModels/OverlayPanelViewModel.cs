@@ -36,6 +36,8 @@ public sealed class OverlayPanelViewModel : ViewModelBase
         this.firewallAccess = firewall ?? throw new ArgumentNullException(nameof(firewall));
 
         AllowThroughFirewallCommand = new AsyncRelayCommand(AllowThroughFirewallAsync);
+        ToggleNetworkSharingCommand = new AsyncRelayCommand(ToggleNetworkSharingAsync);
+        ResetPrivateLinkCommand = new AsyncRelayCommand(ResetPrivateLinkAsync);
 
         Refresh();
     }
@@ -65,6 +67,39 @@ public sealed class OverlayPanelViewModel : ViewModelBase
     /// prompt when GameFlow is not elevated.
     /// </summary>
     public ICommand AllowThroughFirewallCommand { get; }
+    public ICommand ToggleNetworkSharingCommand { get; }
+    public ICommand ResetPrivateLinkCommand { get; }
+    public bool NetworkSharingEnabled => server.AllowsRemote;
+    public string NetworkSharingButtonLabel => server.AllowsRemote ? "Stop phone sharing" : "Enable phone sharing";
+    public string NetworkSharingStatus { get; private set; } = string.Empty;
+
+    private async Task ResetPrivateLinkAsync()
+    {
+        try
+        {
+            await server.ResetAccessTokenAsync();
+            NetworkSharingStatus = "Private link reset. Existing phone connections are closed; open the new link to reconnect.";
+        }
+        catch (Exception exception) { NetworkSharingStatus = "Could not reset the private link: " + exception.Message; }
+        OnPropertyChanged(nameof(NetworkSharingStatus));
+        Refresh();
+    }
+
+    private async Task ToggleNetworkSharingAsync()
+    {
+        try
+        {
+            await server.SetRemoteAccessAsync(!server.AllowsRemote);
+            NetworkSharingStatus = server.AllowsRemote
+                ? "Sharing is on. Keep this link private; use only trusted Wi-Fi. HTTP does not encrypt it."
+                : "Sharing is off. OBS and browser previews on this PC still work.";
+        }
+        catch (Exception exception) { NetworkSharingStatus = "Could not change sharing: " + exception.Message; }
+        OnPropertyChanged(nameof(NetworkSharingStatus));
+        OnPropertyChanged(nameof(NetworkSharingEnabled));
+        OnPropertyChanged(nameof(NetworkSharingButtonLabel));
+        Refresh();
+    }
 
     /// <summary>
     /// Plain-language state of "can a phone actually reach this?".
@@ -73,6 +108,7 @@ public sealed class OverlayPanelViewModel : ViewModelBase
     {
         get
         {
+            if (!server.AllowsRemote) { return "Phone sharing is off. Enable it to allow another device to connect. OBS on this PC remains available."; }
             if (!server.IsRunning)
             {
                 return "The web server is not running.";
@@ -106,7 +142,7 @@ public sealed class OverlayPanelViewModel : ViewModelBase
 
     /// <summary>True while the reachability state is a known problem, so the view can call it out.</summary>
     public bool HasReachabilityWarning =>
-        server.IsRunning &&
+        server.AllowsRemote && server.IsRunning &&
         (firewall is FirewallRuleState.Missing or FirewallRuleState.Stale || IsLocalOnly);
 
     /// <summary>
@@ -114,7 +150,7 @@ public sealed class OverlayPanelViewModel : ViewModelBase
     /// where it can help, and never while a prompt is already open.
     /// </summary>
     public bool CanAllowThroughFirewall =>
-        WindowsFirewallAccess.IsSupported && server.IsRunning && !firewallBusy && !restartNeeded &&
+        WindowsFirewallAccess.IsSupported && server.AllowsRemote && server.IsRunning && !firewallBusy && !restartNeeded &&
         (firewall != FirewallRuleState.Active || IsLocalOnly);
 
     /// <summary>True when the server could bind only to localhost, so no other device can reach it.</summary>
@@ -208,11 +244,11 @@ public sealed class OverlayPanelViewModel : ViewModelBase
     /// duplicating server state in another view-model.
     /// </summary>
     public string PhoneControllerUrl => server.IsRunning && !string.IsNullOrEmpty(server.ListenUrl)
-        ? server.ListenUrl
-        : "The web server is not running, so phones cannot connect yet.";
+        ? (server.AllowsRemote ? server.SharedUrl + "/?token=" + Uri.EscapeDataString(server.AccessToken) : "")
+        : "";
 
     /// <summary>True when <see cref="PhoneControllerUrl"/> is copyable.</summary>
-    public bool CanCopyPhoneControllerUrl => server.IsRunning && !string.IsNullOrEmpty(server.ListenUrl);
+    public bool CanCopyPhoneControllerUrl => server.AllowsRemote && server.IsRunning && !IsLocalOnly && server.AccessToken.Length == 64;
 
     /// <summary>
     /// The URL to paste into OBS, or an explanation of why there isn't
@@ -226,7 +262,7 @@ public sealed class OverlayPanelViewModel : ViewModelBase
         {
             if (!server.IsRunning || string.IsNullOrEmpty(server.ListenUrl))
             {
-                return "The web server is not running, so there is no overlay URL yet.";
+                return string.Empty;
             }
 
             var query = new List<string>();
@@ -234,7 +270,7 @@ public sealed class OverlayPanelViewModel : ViewModelBase
             if (!string.IsNullOrEmpty(SelectedSlot?.Id)) { query.Add("slot=" + Uri.EscapeDataString(SelectedSlot.Id)); }
             if (ShowPhysical) { query.Add("side=physical"); }
 
-            return server.ListenUrl + "/overlay" + (query.Count > 0 ? "?" + string.Join("&", query) : string.Empty);
+            return server.LocalUrl + "/overlay" + (query.Count > 0 ? "?" + string.Join("&", query) : string.Empty);
         }
     }
 
@@ -279,6 +315,8 @@ public sealed class OverlayPanelViewModel : ViewModelBase
         OnPropertyChanged(nameof(CanCopy));
         OnPropertyChanged(nameof(PhoneControllerUrl));
         OnPropertyChanged(nameof(CanCopyPhoneControllerUrl));
+        OnPropertyChanged(nameof(NetworkSharingEnabled));
+        OnPropertyChanged(nameof(NetworkSharingButtonLabel));
         RaiseReachabilityChanged();
     }
 

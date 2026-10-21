@@ -43,6 +43,9 @@ public sealed class SlotPipeline : IAsyncDisposable
 
     public string OutputDisplayName => outputSink.DisplayName;
 
+    internal ValueTask<bool> TryNeutralizeAsync(Microsoft.Extensions.Logging.ILogger logger, CancellationToken cancellationToken) =>
+        OutputSafety.TryNeutralizeAsync(outputSink, logger, cancellationToken);
+
     /// <summary>
     /// (Vid, Pid) of the virtual device this slot's sink advertises to the
     /// OS, if any. The runtime aggregates this across every active slot

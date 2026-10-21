@@ -9,6 +9,31 @@ namespace GameFlow.Infrastructure.Tests.Runtime;
 public sealed class DeviceSettingsStoreTests
 {
     [Fact]
+    public async Task ConcurrentEditsPersistTheCompleteFinalState()
+    {
+        var path = TemporarySettingsPath();
+        try
+        {
+            var store = CreateStore(path);
+            await Task.WhenAll(Enumerable.Range(0, 64).Select(index => Task.Run(() =>
+                store.Set("slot", $"pad-{index}", DeviceSettings.Default with
+                {
+                    LeftStick = new StickSettings { Deadzone = index / 100f }
+                }), TestContext.Current.CancellationToken)));
+
+            var reloaded = CreateStore(path);
+            for (var index = 0; index < 64; index++)
+            {
+                Assert.Equal(index / 100f, reloaded.GetEffective("slot", $"pad-{index}").LeftStick.Deadzone);
+            }
+        }
+        finally
+        {
+            DeleteTemporarySettings(path);
+        }
+    }
+
+    [Fact]
     public void Untuned_device_inherits_slot_defaults()
     {
         var path = TemporarySettingsPath();

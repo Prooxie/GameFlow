@@ -72,7 +72,16 @@ public sealed class ProfileFileDialogService : IProfileFileDialogService
         {
             await using var stream = await file.OpenReadAsync();
             using var reader = new StreamReader(stream, Encoding.UTF8, true);
-            var json = await reader.ReadToEndAsync();
+            var contents = new StringBuilder();
+            var buffer = new char[4096];
+            int read;
+            while ((read = await reader.ReadAsync(buffer.AsMemory())) > 0)
+            {
+                if (contents.Length + read > GameFlow.Infrastructure.Profiles.ProfileSession.MaximumProfileBytes)
+                { throw new InvalidDataException("Profile files are limited to 2 MiB."); }
+                contents.Append(buffer, 0, read);
+            }
+            var json = contents.ToString();
 
             logger.LogInformation(
                 "Imported profile JSON from {Path} ({ByteCount} bytes).",
@@ -83,7 +92,7 @@ public sealed class ProfileFileDialogService : IProfileFileDialogService
         catch (Exception exception)
         {
             logger.LogError(exception, "Failed to read selected profile file {Path}.", file.Path);
-            return null;
+            throw new IOException("Could not import the selected profile: " + exception.Message, exception);
         }
     }
 

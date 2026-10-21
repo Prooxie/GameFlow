@@ -377,7 +377,7 @@ msgid "SettingsDialogPollingRateLabel"
 msgstr "Częstotliwość odpytywania"
 
 msgid "SettingsDialogPollingHint"
-msgstr "Pozostaw puste, aby użyć wartości domyślnych profilu. Zakres: 30–1000 Hz."
+msgstr "Puste pole odświeżania dopasowuje panel do ekranu, a puste pole wejścia używa profilu. Zakres: 30–1000 Hz. Niższe wartości zmniejszają użycie CPU."
 
 msgid "SettingsDialogPathsHeader"
 msgstr "Ścieżki przechowywania"
@@ -401,10 +401,10 @@ msgid "SettingsDialogCheckUpdatesLabel"
 msgstr "Sprawdzaj aktualizacje przy uruchomieniu"
 
 msgid "SettingsDialogCheckRequirementsLabel"
-msgstr "Sprawdzaj wymagania (ViGEm Bus itp.) przy uruchomieniu"
+msgstr "Sprawdzaj wymagania systemowe przy uruchomieniu"
 
 msgid "SettingsDialogApplyButton"
-msgstr "Zapisz"
+msgstr "Zapisz i zamknij"
 
 msgid "SettingsDialogCancelButton"
 msgstr "Anuluj"

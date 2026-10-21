@@ -12,6 +12,24 @@ namespace GameFlow.Infrastructure.Tests.Profiles;
 /// </summary>
 public sealed class ProfileSessionTests
 {
+    [Fact]
+    public async Task FailedSaveLeavesTheActiveProfileUnchanged()
+    {
+        await session.EnsureInitializedAsync(TestContext.Current.CancellationToken);
+        var previous = session.CurrentProfile;
+        repository.SaveProfileFailure = new IOException("disk full");
+        await Assert.ThrowsAsync<IOException>(() => session.SaveCurrentProfileAsync(previous with { Name = "Unsaved" }, TestContext.Current.CancellationToken));
+        Assert.Same(previous, session.CurrentProfile);
+    }
+
+    [Fact]
+    public async Task ImportedScriptsRequireExplicitEnabling()
+    {
+        await session.EnsureInitializedAsync(TestContext.Current.CancellationToken);
+        var profile = new GameFlow.Core.Models.ProfileDocument { Rules = [new GameFlow.Core.Models.Rules.ControlScriptRule { Enabled = true, ScriptCode = "while true do end" }] };
+        await session.ImportProfileAsync(System.Text.Json.JsonSerializer.Serialize(profile, ProfileJsonOptions.Default), TestContext.Current.CancellationToken);
+        Assert.False(Assert.Single(session.CurrentProfile.Rules).Enabled);
+    }
     private readonly InMemoryProfileRepository repository = new();
     private readonly UserSettingsService settings;
     private readonly ProfileSession session;
@@ -32,6 +50,20 @@ public sealed class ProfileSessionTests
 
         Assert.True(repository.SavedSettings.MotionServerEnabled);
         Assert.Equal("racing", repository.SavedSettings.ActiveProfileId);
+    }
+
+    [Fact]
+    public async Task MissingActiveProfileKeepsAnExistingDefaultAndRepairsTheSelection()
+    {
+        var fallback = ProfileDefaults.CreateSpeedrunnerDefault() with { Name = "My saved default" };
+        repository.Add(fallback);
+        await repository.SaveSettingsAsync(new AppSettings { ActiveProfileId = "missing" }, TestContext.Current.CancellationToken);
+
+        await session.EnsureInitializedAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal("My saved default", session.CurrentProfile.Name);
+        Assert.Equal(fallback.Id, settings.Current.ActiveProfileId);
+        Assert.Equal(fallback.Id, repository.SavedSettings.ActiveProfileId);
     }
 
     /// <summary>

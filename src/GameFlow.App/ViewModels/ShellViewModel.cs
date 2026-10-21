@@ -1841,6 +1841,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                 ProfileName = profileSession.CurrentProfile.Name;
                 ReloadAxisInvert();
                 await RefreshRuntimeAsync();
+                var scripts = profileSession.CurrentProfile.Rules.OfType<GameFlow.Core.Models.Rules.ControlScriptRule>().Count();
+                StatusText = scripts > 0
+                    ? $"Profile imported. {scripts} Lua script(s) are disabled; review them in the mapping editor before enabling."
+                    : "Profile imported.";
             }
             finally
             {
