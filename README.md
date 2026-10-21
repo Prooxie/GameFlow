@@ -29,7 +29,7 @@ GameFlow sits between your physical input — a gamepad, keyboard, mouse, or a p
 This project started as a script to spare players from repetitive inputs that were damaging both their controllers and their hands. It was later rebuilt in Python as **Autofire**, then in C#/.NET as the architecture you're looking at now, since renamed GameFlow to separate the *product* from *autofire* the individual *feature*.
 
 For the full feature reference, per-rule mechanics, and platform-by-platform verification notes, see [**WIKI.md**](WIKI.md).
-There is also a project site at **[prooxie.github.io/GameFlow](https://prooxie.github.io/GameFlow/)**.
+[COMING SOON]There is also a project site at **[prooxie.github.io/GameFlow](https://prooxie.github.io/GameFlow/)**.
 
 ---
 
