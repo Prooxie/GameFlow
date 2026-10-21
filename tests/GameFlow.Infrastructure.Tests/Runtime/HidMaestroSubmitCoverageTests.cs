@@ -75,7 +75,7 @@ public sealed class HidMaestroSubmitCoverageTests
         // "Perfectly still" and "no sensor here" are different claims. This
         // is the distinction HasGyro exists for, and the one the battery
         // fields got wrong.
-        var motion = HidMaestroOutputSink.ConvertMotion(ControllerSnapshot.Empty("keyboard"));
+        var motion = HidMaestroSubmission.ConvertMotion(ControllerSnapshot.Empty("keyboard"));
 
         Assert.False(motion.Present);
     }
@@ -90,7 +90,7 @@ public sealed class HidMaestroSubmitCoverageTests
             .WithMotion(gyroPitch: MathF.PI, gyroYaw: -MathF.PI / 2f, gyroRoll: 0f,
                         accelX: 0f, accelY: 0f, accelZ: 0f);
 
-        var motion = HidMaestroOutputSink.ConvertMotion(snapshot);
+        var motion = HidMaestroSubmission.ConvertMotion(snapshot);
 
         Assert.True(motion.Present);
         Assert.Equal(180f, motion.GyroDps.X, precision: 3);
@@ -105,7 +105,7 @@ public sealed class HidMaestroSubmitCoverageTests
         var snapshot = ControllerSnapshot.Empty("pad")
             .WithMotion(0f, 0f, 0f, accelX: 0f, accelY: 9.80665f, accelZ: -19.6133f);
 
-        var motion = HidMaestroOutputSink.ConvertMotion(snapshot);
+        var motion = HidMaestroSubmission.ConvertMotion(snapshot);
 
         Assert.Equal(0f, motion.AccelG.X, precision: 4);
         Assert.Equal(1f, motion.AccelG.Y, precision: 4);
@@ -117,7 +117,7 @@ public sealed class HidMaestroSubmitCoverageTests
     [Fact]
     public void No_touch_submits_no_fingers()
     {
-        var touch = HidMaestroOutputSink.ConvertTouch(ControllerSnapshot.Empty("pad"));
+        var touch = HidMaestroSubmission.ConvertTouch(ControllerSnapshot.Empty("pad"));
 
         Assert.False(touch.Finger0Down);
         Assert.False(touch.Finger1Down);
@@ -132,7 +132,7 @@ public sealed class HidMaestroSubmitCoverageTests
             new TouchContact(FingerIndex: 1, X: 1f, Y: 1f, Pressure: 1f),
         ]);
 
-        var touch = HidMaestroOutputSink.ConvertTouch(snapshot);
+        var touch = HidMaestroSubmission.ConvertTouch(snapshot);
 
         Assert.True(touch.Finger0Down);
         Assert.Equal(0, touch.Finger0X);
@@ -149,7 +149,7 @@ public sealed class HidMaestroSubmitCoverageTests
         var snapshot = ControllerSnapshot.Empty("pad").WithTouchContacts(
             [new TouchContact(FingerIndex: 0, X: 0.5f, Y: 0.5f, Pressure: 1f)]);
 
-        var touch = HidMaestroOutputSink.ConvertTouch(snapshot);
+        var touch = HidMaestroSubmission.ConvertTouch(snapshot);
 
         Assert.Equal(960, touch.Finger0X);
         Assert.Equal(540, touch.Finger0Y);
@@ -165,7 +165,7 @@ public sealed class HidMaestroSubmitCoverageTests
         // silently not on a phone.
         var snapshot = ControllerSnapshot.Empty("phone").WithTouch(down: true, x: 0.25f, y: 0.75f);
 
-        var touch = HidMaestroOutputSink.ConvertTouch(snapshot);
+        var touch = HidMaestroSubmission.ConvertTouch(snapshot);
 
         Assert.True(touch.Finger0Down);
         Assert.Equal(480, touch.Finger0X);
@@ -181,7 +181,7 @@ public sealed class HidMaestroSubmitCoverageTests
         var snapshot = ControllerSnapshot.Empty("pad").WithTouchContacts(
             [new TouchContact(FingerIndex: 200, X: 0.5f, Y: 0.5f, Pressure: 1f)]);
 
-        var touch = HidMaestroOutputSink.ConvertTouch(snapshot);
+        var touch = HidMaestroSubmission.ConvertTouch(snapshot);
 
         Assert.True(touch.Finger0Id < 0x80);
     }
@@ -196,7 +196,7 @@ public sealed class HidMaestroSubmitCoverageTests
             TouchY = float.PositiveInfinity,
         };
 
-        var touch = HidMaestroOutputSink.ConvertTouch(snapshot);
+        var touch = HidMaestroSubmission.ConvertTouch(snapshot);
 
         Assert.Equal(0, touch.Finger0X);
         Assert.Equal(0, touch.Finger0Y);

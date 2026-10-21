@@ -35,7 +35,7 @@ public sealed class BatteryScaleTests
     [InlineData(5, 5)]
     [InlineData(0, 0)]
     public void APercentageTravelsThroughUnscaled(int percent, byte expected) =>
-        Assert.Equal(expected, HidMaestroOutputSink.BatteryLevelFor(WithBattery(percent)));
+        Assert.Equal(expected, HidMaestroSubmission.BatteryLevelFor(WithBattery(percent)));
 
     /// <summary>
     /// A wired pad, a keyboard, or nothing at all. Reporting full is what
@@ -44,7 +44,7 @@ public sealed class BatteryScaleTests
     /// </summary>
     [Fact]
     public void ASourceWithNoBatteryReportsFull() =>
-        Assert.Equal(100, HidMaestroOutputSink.BatteryLevelFor(WithBattery(null)));
+        Assert.Equal(100, HidMaestroSubmission.BatteryLevelFor(WithBattery(null)));
 
     /// <summary>Nothing may exceed the scale, whatever a backend reports.</summary>
     [Theory]
@@ -53,7 +53,7 @@ public sealed class BatteryScaleTests
     [InlineData(-40)]
     public void OutOfRangeInputStaysInsideTheScale(int percent)
     {
-        var level = HidMaestroOutputSink.BatteryLevelFor(WithBattery(percent));
+        var level = HidMaestroSubmission.BatteryLevelFor(WithBattery(percent));
         Assert.InRange(level, (byte)0, (byte)100);
     }
 }

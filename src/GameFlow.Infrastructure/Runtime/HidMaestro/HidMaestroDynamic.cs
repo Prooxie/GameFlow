@@ -1722,35 +1722,6 @@ internal sealed class DynamicHidMaestroController : IDisposable
         }
     }
 
-    /// <summary>
-    /// One frame of motion, already converted to the SDK's units.
-    /// <see cref="Present"/> is false on a pad with no sensor, which is
-    /// what keeps "held perfectly still" distinguishable from "no gyro
-    /// here" — writing zeroes for the latter would claim a reading the
-    /// hardware never produced.
-    /// </summary>
-    /// <param name="Present">False on a pad with no motion sensor; nothing is written.</param>
-    /// <param name="AccelG">Acceleration in g, SDL sensor frame.</param>
-    /// <param name="GyroDps">Angular velocity in degrees per second, same frame.</param>
-    public readonly record struct MotionSubmission(
-        bool Present,
-        (float X, float Y, float Z) AccelG,
-        (float X, float Y, float Z) GyroDps)
-    {
-        public static readonly MotionSubmission None = new(false, default, default);
-    }
-
-    /// <summary>
-    /// One frame of the touch surface, in the Sony native ranges
-    /// (X 0..1919, Y 0..1079) the SDK documents.
-    /// </summary>
-    public readonly record struct TouchSubmission(
-        bool Finger0Down, ushort Finger0X, ushort Finger0Y, byte Finger0Id,
-        bool Finger1Down, ushort Finger1X, ushort Finger1Y, byte Finger1Id)
-    {
-        public static readonly TouchSubmission None = default;
-    }
-
     private void WriteMotion(in MotionSubmission motion)
     {
         if (!HasMotionFields)

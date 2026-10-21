@@ -103,6 +103,7 @@ public static class DependencyInjection
         _ = services.AddSingleton<IInputSourceFactory, DefaultInputSourceFactory>();
         _ = services.AddSingleton<IOutputSinkFactory, DefaultOutputSinkFactory>();
         _ = services.AddSingleton<Runtime.HidMaestro.HidMaestroProfileCatalogService>();
+        services.TryAddSingleton<Runtime.HidMaestro.IHidMaestroBackend, Runtime.HidMaestro.UnavailableHidMaestroBackend>();
         _ = services.AddSingleton<Runtime.Slots.PhysicalPanelPinService>();
         _ = services.AddSingleton<Runtime.DeviceCategoryOverrideStore>();
         _ = services.AddHostedService<RuntimeCoordinator>();
