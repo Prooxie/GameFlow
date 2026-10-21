@@ -10,6 +10,6 @@
     <HidMaestroSdkZipSha256>59bcd962f7bb5ab7c8c3d793887523d9f992b9ea29ca854d8c60b51b8f58c332</HidMaestroSdkZipSha256>
     <!-- The release zip holds four identical copies of the DLL (checked by MD5). Use the one at the zip root. -->
     <HidMaestroSdkZipEntry>HIDMaestro.Core.dll</HidMaestroSdkZipEntry>
-    <HidMaestroSdkDll>$(MSBuildThisFileDirectory)..\.cache\hidmaestro\$(HidMaestroSdkVersion)\HIDMaestro.Core.dll</HidMaestroSdkDll>
+    <HidMaestroSdkDll>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '../.cache/hidmaestro/$(HidMaestroSdkVersion)/HIDMaestro.Core.dll'))</HidMaestroSdkDll>
   </PropertyGroup>
 </Project>
