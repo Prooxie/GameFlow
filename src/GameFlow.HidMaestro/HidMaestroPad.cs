@@ -42,7 +42,7 @@ internal sealed class HidMaestroPad : IHidMaestroPad
         ProfileId = profile.Id;
         ProfileName = profile.Name;
         HardwareSignature = (profile.VendorId, profile.ProductId);
-        CarriesExtendedInput = profile.HasExtendedInput;
+        CarriesExtendedInput = HidMaestroSession.CanArmExtendedInput(profile);
 
         controller.OutputReceived += router.OnOutputReceived;
         controller.OutputDecoded += router.OnOutputDecoded;
@@ -58,6 +58,7 @@ internal sealed class HidMaestroPad : IHidMaestroPad
     public (ushort Vid, ushort Pid) HardwareSignature { get; }
 
     /// <inheritdoc />
+    /// <remarks>True only when the profile can arm its extended report, not when it merely declares one.</remarks>
     public bool CarriesExtendedInput { get; }
 
     /// <inheritdoc />

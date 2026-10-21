@@ -93,7 +93,7 @@ internal sealed class HidMaestroSession
             {
                 profile = HidMaestroGenericProfile.Build(request.ProfileId, shape);
             }
-            else if (context.GetProfile(request.ProfileId) is { } found)
+            else if (GetProfile(request.ProfileId) is { } found)
             {
                 profile = found;
             }
@@ -146,7 +146,14 @@ internal sealed class HidMaestroSession
         }
     }
 
+    /// <summary>The loaded profile with this id, or null when the catalog has none.</summary>
+    internal HMProfile? GetProfile(string id) => context.GetProfile(id);
+
     /// <summary>Maps one SDK profile onto the catalog record the UI uses.</summary>
+    /// <remarks>
+    /// <c>HasExtendedInput</c> is the SDK's literal value: the profile declares an
+    /// extended report. A pad uses <see cref="CanArmExtendedInput"/> instead.
+    /// </remarks>
     internal static HidMaestroCatalogProfile Project(HMProfile profile)
     {
         ArgumentNullException.ThrowIfNull(profile);
@@ -164,6 +171,34 @@ internal sealed class HidMaestroSession
             Type: profile.Type,
             HasExtendedInput: profile.HasExtendedInput);
     }
+
+    /// <summary>
+    /// Tells whether the profile can arm its extended input report. Battery,
+    /// motion and touch reach the wire only through an armed report. A USB
+    /// DualSense or DualShock 4 declares one but never arms it.
+    /// </summary>
+    internal static bool CanArmExtendedInput(HMProfile profile)
+    {
+        ArgumentNullException.ThrowIfNull(profile);
+        try
+        {
+            return ReadArmableExtendedInput(profile);
+        }
+        catch (Exception exception) when (exception is MissingMemberException or TypeLoadException)
+        {
+            // No log: this can run for each pad, and the fallback is a safe answer.
+            return profile.HasExtendedInput;
+        }
+    }
+
+    /// <summary>
+    /// Reads the arm settings from <c>HIDMaestro.Internal.ExtendedReportSpec</c>,
+    /// which the SDK may change in a minor release. Not inlined, so a changed
+    /// member fails here, inside the caller's try block.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool ReadArmableExtendedInput(HMProfile profile) =>
+        profile.ExtendedReport is { } report && (report.AlwaysArmed || report.ArmOn is { Count: > 0 });
 
     /// <summary>
     /// Turns a creation exception into one line for the user. Every text says
