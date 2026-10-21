@@ -364,7 +364,8 @@ public sealed class DeviceTemplateEditorViewModel : ViewModelBase, IDisposable
     public int ButtonCount
     {
         get => template?.ButtonCount ?? 0;
-        set => SetField(t => t.ButtonCount = Math.Clamp(value, 0, 128), template?.ButtonCount, value);
+        // 32: the SDK's button mask is 32 bits wide (HidMaestroGenericProfile.MaxButtons).
+        set => SetField(t => t.ButtonCount = Math.Clamp(value, 0, 32), template?.ButtonCount, value);
     }
 
     public int PovCount
