@@ -559,18 +559,12 @@ public sealed class HidMaestroOutputSink : IOutputSink,
             Math.Clamp(s.RightTrigger, 0f, 1f),
             submitButtonBuffer,
             ResolveHatName(s),
-            BatteryLevelFor(s),
+            HidMaestroSubmission.BatteryLevelFor(s),
             s.BatteryCharging,
             s.BatteryPercent is null or >= 100,
             MotionFor(controller, s),
             TouchFor(controller, s));
     }
-
-    /// <summary>Degrees per radian — the snapshot carries SDL's rad/s, the SDK wants deg/s.</summary>
-    private const float DegreesPerRadian = 57.29577951308232f;
-
-    /// <summary>Standard gravity in m/s² — the snapshot carries SDL's m/s², the SDK wants g.</summary>
-    private const float StandardGravity = 9.80665f;
 
     /// <summary>
     /// This frame's motion, converted into the SDK's units.
@@ -583,7 +577,7 @@ public sealed class HidMaestroOutputSink : IOutputSink,
     /// </para>
     ///
     /// <para>
-    /// A source with no sensor reports <see cref="DynamicHidMaestroController.MotionSubmission.None"/>
+    /// A source with no sensor reports <see cref="MotionSubmission.None"/>
     /// rather than zeroes. That distinction is the whole reason
     /// <see cref="ControllerSnapshot.HasGyro"/> exists: "perfectly still"
     /// and "no gyro here" are not the same claim to make to a game, and
@@ -591,27 +585,9 @@ public sealed class HidMaestroOutputSink : IOutputSink,
     /// unwritten as a flat-battery reading.
     /// </para>
     /// </summary>
-    private static DynamicHidMaestroController.MotionSubmission MotionFor(
+    private static MotionSubmission MotionFor(
         DynamicHidMaestroController controller, ControllerSnapshot s) =>
-        controller.HasMotionFields ? ConvertMotion(s) : DynamicHidMaestroController.MotionSubmission.None;
-
-    /// <summary>The unit conversion alone, split out so it is testable without a deployed SDK.</summary>
-    internal static DynamicHidMaestroController.MotionSubmission ConvertMotion(ControllerSnapshot s)
-    {
-        if (!s.HasGyro
-            || !float.IsFinite(s.AccelX) || !float.IsFinite(s.AccelY) || !float.IsFinite(s.AccelZ)
-            || !float.IsFinite(s.GyroPitch * DegreesPerRadian)
-            || !float.IsFinite(s.GyroYaw * DegreesPerRadian)
-            || !float.IsFinite(s.GyroRoll * DegreesPerRadian))
-        {
-            return DynamicHidMaestroController.MotionSubmission.None;
-        }
-
-        return new DynamicHidMaestroController.MotionSubmission(
-            Present: true,
-            AccelG: (s.AccelX / StandardGravity, s.AccelY / StandardGravity, s.AccelZ / StandardGravity),
-            GyroDps: (s.GyroPitch * DegreesPerRadian, s.GyroYaw * DegreesPerRadian, s.GyroRoll * DegreesPerRadian));
-    }
+        controller.HasMotionFields ? HidMaestroSubmission.ConvertMotion(s) : MotionSubmission.None;
 
     /// <summary>
     /// This frame's touch surface, converted from the snapshot's
@@ -631,93 +607,9 @@ public sealed class HidMaestroOutputSink : IOutputSink,
     /// the firmware "lifted" flag itself when a finger is reported inactive.
     /// </para>
     /// </summary>
-    private static DynamicHidMaestroController.TouchSubmission TouchFor(
+    private static TouchSubmission TouchFor(
         DynamicHidMaestroController controller, ControllerSnapshot s) =>
-        controller.HasTouchpadFields ? ConvertTouch(s) : DynamicHidMaestroController.TouchSubmission.None;
-
-    /// <summary>The coordinate conversion alone, split out so it is testable without a deployed SDK.</summary>
-    internal static DynamicHidMaestroController.TouchSubmission ConvertTouch(ControllerSnapshot s)
-    {
-        var contacts = s.TouchContacts;
-        if (contacts.Count == 0)
-        {
-            return s.TouchDown
-                ? new DynamicHidMaestroController.TouchSubmission(
-                    true, TouchX(s.TouchX), TouchY(s.TouchY), 0,
-                    false, 0, 0, 0)
-                : DynamicHidMaestroController.TouchSubmission.None;
-        }
-
-        var first = contacts[0];
-        var hasSecond = contacts.Count > 1;
-        var second = hasSecond ? contacts[1] : default;
-
-        return new DynamicHidMaestroController.TouchSubmission(
-            true, TouchX(first.X), TouchY(first.Y), (byte)(first.FingerIndex & 0x7F),
-            hasSecond, TouchX(second.X), TouchY(second.Y), (byte)(second.FingerIndex & 0x7F));
-    }
-
-    /// <summary>Touchpad surface width in the DualSense / DS4 native range.</summary>
-    private const int TouchpadMaxX = 1919;
-
-    /// <summary>Touchpad surface height in the DualSense / DS4 native range.</summary>
-    private const int TouchpadMaxY = 1079;
-
-    private static ushort TouchX(float normalized) => ToSurface(normalized, TouchpadMaxX);
-
-    private static ushort TouchY(float normalized) => ToSurface(normalized, TouchpadMaxY);
-
-    private static ushort ToSurface(float normalized, int max)
-    {
-        if (!float.IsFinite(normalized))
-        {
-            return 0;
-        }
-
-        return (ushort)MathF.Round(Math.Clamp(normalized, 0f, 1f) * max);
-    }
-
-    /// <summary>
-    /// Charge to report on the emitted pad, on the SDK's 0..10 scale.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// These fields were never written at all to begin with, and an
-    /// unwritten one is not an absent one: a DualSense or DualShock 4
-    /// report always carries a battery, so it went out as zero and every
-    /// virtual pad announced itself as nearly flat, forever, whatever was
-    /// driving it — a wired pad, a keyboard, or nothing.
-    /// </para>
-    /// <para>
-    /// Writing a percentage was the second half of the same mistake. The
-    /// SDK documents the field as "Battery capacity, 0..10 (Sony firmware
-    /// convention)", and this was read as meaning the SDK's own property
-    /// carries that scale. It does not — it takes a percentage, and
-    /// down-scales into the Sony field itself. Rescaling here divided the
-    /// charge by ten a second time.
-    /// </para>
-    /// <para>
-    /// Settled by measurement rather than by the wording. With the
-    /// division in place a source pad at 25% was submitted as 3 and read
-    /// back as 3%, and a source at 65% as 7 and read back as roughly 7% —
-    /// consumers take the value as a percentage, exactly and without
-    /// rescaling. Two independent readings, both matching the raw number
-    /// rather than a tenth of it, which is not a coincidence available to
-    /// the 0..10 reading.
-    /// </para>
-    /// <para>
-    /// A source with no battery maps to full, which is what a wired
-    /// controller says about itself — the honest answer as well as the
-    /// quiet one, since there is no battery here to be low.
-    /// </para>
-    /// </remarks>
-    internal static byte BatteryLevelFor(ControllerSnapshot s) =>
-        s.BatteryPercent is { } percent
-            ? (byte)Math.Clamp(percent, 0, FullCharge)
-            : FullCharge;
-
-    /// <summary>Full charge, as a percentage.</summary>
-    private const byte FullCharge = 100;
+        controller.HasTouchpadFields ? HidMaestroSubmission.ConvertTouch(s) : TouchSubmission.None;
 
     /// <summary>
     /// Says once, per sink, what charge this slot is actually sending.
@@ -757,8 +649,8 @@ public sealed class HidMaestroOutputSink : IOutputSink,
             known ? "first with a real charge — this is the steady state"
                   : "first submission of all — the source may not have been read yet",
             s.BatteryPercent is { } p ? p + "%" : "<none reported by the source pad>",
-            BatteryLevelFor(s),
-            FullCharge,
+            HidMaestroSubmission.BatteryLevelFor(s),
+            HidMaestroSubmission.FullCharge,
             s.BatteryCharging,
             s.BatteryPercent is null or >= 100);
     }
@@ -768,22 +660,7 @@ public sealed class HidMaestroOutputSink : IOutputSink,
     /// <summary>Whether a submission carrying a real charge has been reported.</summary>
     private bool batteryKnownLogged;
 
-    private static string ResolveHatName(ControllerSnapshot s)
-    {
-        bool up = s.IsPressed(ButtonId.DpadUp);
-        bool down = s.IsPressed(ButtonId.DpadDown);
-        bool left = s.IsPressed(ButtonId.DpadLeft);
-        bool right = s.IsPressed(ButtonId.DpadRight);
-        if (up && right) return "NorthEast";
-        if (down && right) return "SouthEast";
-        if (down && left) return "SouthWest";
-        if (up && left) return "NorthWest";
-        if (up) return "North";
-        if (right) return "East";
-        if (down) return "South";
-        if (left) return "West";
-        return "None";
-    }
+    private static string ResolveHatName(ControllerSnapshot s) => HidMaestroSubmission.ResolveHat(s).ToString();
 
     public ValueTask DisposeAsync()
     {

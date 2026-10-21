@@ -54,6 +54,13 @@ public static class HidMaestroProfiles
     };
 
     /// <summary>
+    /// The verified catalog id for a kind, or null for the generic kind,
+    /// which has no catalog entry and is built from a shape instead.
+    /// </summary>
+    public static string? DefaultProfileId(VirtualControllerKind kind) =>
+        GetCandidateProfileIds(kind) is [var first, ..] ? first : null;
+
+    /// <summary>
     /// Classifies any catalog profile (by id and display name) into the
     /// nearest <see cref="VirtualControllerKind"/> family. Drives the
     /// dashboard theme: pick a DualSense-family profile and the virtual

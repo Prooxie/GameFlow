@@ -172,4 +172,19 @@ public sealed class HidMaestroProfilesTests
         Assert.Equal(0x5678, clone.GenericProductId);
         Assert.True(clone.DemoPreview);
     }
+
+    [Theory]
+    [InlineData(VirtualControllerKind.Xbox360, "xbox-360-wired")]
+    [InlineData(VirtualControllerKind.XboxOne, "xbox-one-s-bt")]
+    [InlineData(VirtualControllerKind.XboxSeries, "xbox-series-xs-bt")]
+    [InlineData(VirtualControllerKind.DualShock4, "dualshock-4-v1-full")]
+    [InlineData(VirtualControllerKind.DualSense, "dualsense")]
+    [InlineData(VirtualControllerKind.SwitchPro, "switch-pro")]
+    [InlineData(VirtualControllerKind.SteamController, "steam-controller")]
+    public void DefaultProfileId_IsTheVerifiedCatalogId(VirtualControllerKind kind, string id) =>
+        Assert.Equal(id, HidMaestroProfiles.DefaultProfileId(kind));
+
+    [Fact]
+    public void DefaultProfileId_Generic_IsNull() =>
+        Assert.Null(HidMaestroProfiles.DefaultProfileId(VirtualControllerKind.GenericDirectInput));
 }

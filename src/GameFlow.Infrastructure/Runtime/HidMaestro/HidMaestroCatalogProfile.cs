@@ -21,4 +21,6 @@ public sealed record HidMaestroCatalogProfile(
     int AxisCount,
     bool HasHat,
     string Connection,
-    bool IsDeployable);
+    bool IsDeployable,
+    string Type = "gamepad",
+    bool HasExtendedInput = false);

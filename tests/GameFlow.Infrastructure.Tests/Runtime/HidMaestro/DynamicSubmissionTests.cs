@@ -69,7 +69,7 @@ public sealed class DynamicSubmissionTests(ITestOutputHelper output)
         typeof(FakeController).GetMethod(nameof(FakeController.SubmitState))!, NullLogger.Instance);
 
     private static bool Submit(DynamicHidMaestroController bridge, float axis,
-        DynamicHidMaestroController.MotionSubmission motion, DynamicHidMaestroController.TouchSubmission touch) =>
+        MotionSubmission motion, TouchSubmission touch) =>
         bridge.Submit(axis, axis, axis, axis, axis, axis, Array.Empty<(string, bool)>(), "None", 10, false, true, motion, touch);
 
     public enum Axis { None, X, Y, Z, Rx, Ry, Rz }
