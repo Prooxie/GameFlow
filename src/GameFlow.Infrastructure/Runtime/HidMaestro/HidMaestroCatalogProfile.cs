@@ -5,11 +5,13 @@ namespace GameFlow.Infrastructure.Runtime.HidMaestro;
 /// Mirrors the public surface of <c>HMProfile</c> that the UI and
 /// theming need (id/name/vendor/identity/shape).
 ///
-/// <para>This is the cross-layer contract between the reflection bridge
-/// (<see cref="HidMaestroDynamic"/>), the UI-facing catalog service
+/// <para>This is the cross-layer contract between the backend that
+/// projects it (<see cref="IHidMaestroBackend.GetCatalog"/>), the output
+/// sink that resolves profile ids and reserved signatures against it,
+/// the UI-facing catalog service
 /// (<see cref="HidMaestroProfileCatalogService"/>), and the template
-/// editor's profile picker — which is why it lives in its own file
-/// rather than alongside the bridge.</para>
+/// editor's profile picker. It names no SDK type, so it can live in
+/// Infrastructure, which builds without the SDK.</para>
 /// </summary>
 public sealed record HidMaestroCatalogProfile(
     string Id,

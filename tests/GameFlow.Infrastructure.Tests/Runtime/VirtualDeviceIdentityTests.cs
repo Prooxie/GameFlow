@@ -12,48 +12,11 @@ namespace GameFlow.Infrastructure.Tests.Runtime;
 /// is a feedback loop, and it gets battery-polled — which is how a
 /// wired-profile virtual pad ended up reporting itself at 10% charge.
 /// </remarks>
-[Collection("VirtualDeviceIdentity")]
-public sealed class VirtualDeviceIdentityTests : IDisposable
+public sealed class VirtualDeviceIdentityTests
 {
-    public VirtualDeviceIdentityTests() => VirtualDeviceIdentity.ReleaseAll();
-
-    public void Dispose() => VirtualDeviceIdentity.ReleaseAll();
-
     /// <summary>
-    /// The instance id the SDK reports and the interface path SDL reports
-    /// name the same device in different spellings. A claim made from one
-    /// has to be found by a lookup from the other, or the claim is inert —
-    /// which is exactly how this failed in practice.
-    /// </summary>
-    [Fact]
-    public void AClaimedInstanceIdMatchesTheInterfacePathSdlReports()
-    {
-        VirtualDeviceIdentity.ClaimPath(@"ROOT\VID_045E&PID_028E&IG_00\0000");
-
-        Assert.True(VirtualDeviceIdentity.IsVirtual(
-            @"\\?\ROOT#VID_045E&PID_028E&IG_00#0000#{4d1e55b2-f16f-11cf-88cb-001111000030}",
-            serial: null));
-    }
-
-    /// <summary>
-    /// Releasing a claim stops it matching. Uses a bus-enumerated path on
-    /// purpose: a ROOT one would still be recognised afterwards by the
-    /// enumerator heuristic, which is correct but would not test the claim.
-    /// </summary>
-    [Fact]
-    public void ReleasingAClaimStopsItMatching()
-    {
-        const string instance = @"HID\VID_045E&PID_028E&IG_00\1&1D40F630&8&0000";
-        VirtualDeviceIdentity.ClaimPath(instance);
-        Assert.True(VirtualDeviceIdentity.IsVirtual(instance, serial: null));
-
-        VirtualDeviceIdentity.Release(serial: null, path: instance);
-        Assert.False(VirtualDeviceIdentity.IsVirtual(instance, serial: null));
-    }
-
-    /// <summary>
-    /// A pad left behind by a run that crashed carries no claim, so the
-    /// enumerator is all that is left to go on.
+    /// A pad left behind by a run that crashed is not covered by any sink's
+    /// published VID/PID, so the enumerator is all that is left to go on.
     /// </summary>
     [Theory]
     [InlineData(@"ROOT\VID_045E&PID_028E&IG_00\0000")]
@@ -92,12 +55,5 @@ public sealed class VirtualDeviceIdentityTests : IDisposable
     {
         Assert.False(VirtualDeviceIdentity.IsVirtual(null, null));
         Assert.False(VirtualDeviceIdentity.IsVirtual("   ", null));
-    }
-
-    [Fact]
-    public void AClaimedSerialMatches()
-    {
-        VirtualDeviceIdentity.ClaimSerial("1305C1BE7CD10002");
-        Assert.True(VirtualDeviceIdentity.IsVirtual(devicePath: null, serial: "1305C1BE7CD10002"));
     }
 }

@@ -1,5 +1,3 @@
-using System.Collections.Concurrent;
-
 namespace GameFlow.Infrastructure.Runtime;
 
 /// <summary>
@@ -17,17 +15,27 @@ namespace GameFlow.Infrastructure.Runtime;
 /// </para>
 ///
 /// <para>
-/// Two independent signals, because neither alone is sufficient:
+/// The decision reads the device path only. Three spellings mark a
+/// software-created pad, because no one of them covers every case:
 /// </para>
 /// <list type="bullet">
-/// <item><b>Claimed serials</b> — the authoritative one. An output sink
-///   registers the serial it stamped on the device it created, so the
-///   match is exact and covers any backend.</item>
-/// <item><b>Device path</b> — the fallback, for pads that were already
-///   present when the app started (a previous run that did not shut down
-///   cleanly leaves them behind). HIDMaestro root-enumerates its devices,
-///   so the OS path carries its name.</item>
+/// <item><b>The HIDMaestro marker</b> — a path that names
+///   <c>hidmaestro</c>, such as the driver's own software node.</item>
+/// <item><b>A HID device with no bus</b> — <c>HID\HIDCLASS\…</c>, the
+///   spelling HIDMaestro's pads actually enumerate under.</item>
+/// <item><b>The ROOT enumerator</b> — any root-enumerated device. This
+///   one also covers pads that a previous run left behind when it did
+///   not shut down cleanly.</item>
 /// </list>
+///
+/// <para>
+/// The pads this process creates are hidden a second way as well: each
+/// output sink publishes its device's VID/PID
+/// (<see cref="IOutputSink.OwnedHardwareSignature"/>). A list of claimed
+/// serials and instance ids used to sit here too, but the SDK never made
+/// a pad's instance id readable, so nothing ever reached the list and it
+/// was removed.
+/// </para>
 /// </summary>
 public static class VirtualDeviceIdentity
 {
@@ -72,34 +80,6 @@ public static class VirtualDeviceIdentity
     /// </remarks>
     private const string SoftwareHidPrefix = @"HID\HIDCLASS\";
 
-    private static readonly ConcurrentDictionary<string, byte> ClaimedSerials =
-        new(StringComparer.OrdinalIgnoreCase);
-
-    private static readonly ConcurrentDictionary<string, byte> ClaimedPaths =
-        new(StringComparer.OrdinalIgnoreCase);
-
-    /// <summary>
-    /// Registers a device this process created, so enumeration can
-    /// recognise it. Called by an output sink once its virtual pad exists.
-    /// </summary>
-    public static void ClaimSerial(string? serial)
-    {
-        if (!string.IsNullOrWhiteSpace(serial))
-        {
-            _ = ClaimedSerials.TryAdd(serial.Trim(), 0);
-        }
-    }
-
-    /// <summary>Registers a created device by its OS path or instance id.</summary>
-    public static void ClaimPath(string? path)
-    {
-        var normalized = NormalizePath(path);
-        if (normalized.Length > 0)
-        {
-            _ = ClaimedPaths.TryAdd(normalized, 0);
-        }
-    }
-
     /// <summary>
     /// Reduces the several spellings Windows uses for one device to a
     /// single comparable form.
@@ -111,8 +91,8 @@ public static class VirtualDeviceIdentity
     /// <c>\\?\ROOT#VID_045E&amp;PID_028E&amp;IG_00#0000#{4d1e55b2-…}</c>.
     /// They describe one device: separators differ, the interface path
     /// carries a prefix and a trailing class GUID. Folding both to
-    /// uppercase, backslash-separated, prefix- and GUID-free lets a claim
-    /// made from one source match a lookup from the other.
+    /// uppercase, backslash-separated, prefix- and GUID-free lets one set
+    /// of prefix checks read either form.
     /// </remarks>
     private static string NormalizePath(string? value)
     {
@@ -140,28 +120,6 @@ public static class VirtualDeviceIdentity
         return text.Trim('\\').ToUpperInvariant();
     }
 
-    /// <summary>Forgets a device this process destroyed.</summary>
-    public static void Release(string? serial, string? path)
-    {
-        if (!string.IsNullOrWhiteSpace(serial))
-        {
-            _ = ClaimedSerials.TryRemove(serial.Trim(), out _);
-        }
-
-        var normalized = NormalizePath(path);
-        if (normalized.Length > 0)
-        {
-            _ = ClaimedPaths.TryRemove(normalized, out _);
-        }
-    }
-
-    /// <summary>Forgets everything. For teardown and tests.</summary>
-    public static void ReleaseAll()
-    {
-        ClaimedSerials.Clear();
-        ClaimedPaths.Clear();
-    }
-
     /// <summary>
     /// True when the device described looks like one of ours.
     ///
@@ -171,13 +129,13 @@ public static class VirtualDeviceIdentity
     /// which is a worse failure than leaving one virtual pad listed.
     /// </para>
     /// </summary>
+    /// <param name="devicePath">The OS path or instance id of the device.</param>
+    /// <param name="serial">
+    /// Not read. Only the removed claim list used it; it stays so the
+    /// callers need no change.
+    /// </param>
     public static bool IsVirtual(string? devicePath, string? serial)
     {
-        if (!string.IsNullOrWhiteSpace(serial) && ClaimedSerials.ContainsKey(serial.Trim()))
-        {
-            return true;
-        }
-
         if (string.IsNullOrWhiteSpace(devicePath))
         {
             return false;
@@ -189,8 +147,7 @@ public static class VirtualDeviceIdentity
             return false;
         }
 
-        if (ClaimedPaths.ContainsKey(path) ||
-            path.Contains(HidMaestroPathMarker, StringComparison.OrdinalIgnoreCase))
+        if (path.Contains(HidMaestroPathMarker, StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
@@ -204,10 +161,11 @@ public static class VirtualDeviceIdentity
 
         // Root-enumerated, and therefore software-created.
         //
-        // This is the signal that survives a crash. A claim only covers
-        // pads THIS process made, so a previous run that did not shut down
-        // cleanly leaves its pads behind, still enumerating, with nothing
-        // claiming them — and the "hidmaestro" name is on a sibling
+        // This is the signal that survives a crash. An output sink's
+        // published VID/PID only covers pads THIS process made, so a
+        // previous run that did not shut down cleanly leaves its pads
+        // behind, still enumerating, with nothing hiding them — and the
+        // "hidmaestro" name is on a sibling
         // software node, not on the HID interface SDL reports. What is
         // left is the enumerator: real pads arrive over a bus (USB, or
         // BTHENUM over Bluetooth) and are named for it, while a device
