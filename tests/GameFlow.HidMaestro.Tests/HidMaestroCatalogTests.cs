@@ -58,4 +58,23 @@ public sealed class HidMaestroCatalogTests
         Assert.Equal("gamepad", Profile("xbox-360-wired").Type);
         Assert.Equal("wheel", Profile("asetek-forte").Type);
     }
+
+    private static bool CanArm(string id)
+    {
+        var profile = Session.Value.GetProfile(id);
+        Assert.NotNull(profile);
+        return HidMaestroSession.CanArmExtendedInput(profile);
+    }
+
+    [WindowsFact]
+    public void CanArmExtendedInput_UsbDualSense_IsFalse() => Assert.False(CanArm("dualsense"));
+
+    [WindowsFact]
+    public void CanArmExtendedInput_BluetoothDualSense_IsTrue() => Assert.True(CanArm("dualsense-bt"));
+
+    [WindowsFact]
+    public void CanArmExtendedInput_UsbDualShock4_IsFalse() => Assert.False(CanArm("dualshock-4-v1-full"));
+
+    [WindowsFact]
+    public void CanArmExtendedInput_Xbox360_IsFalse() => Assert.False(CanArm("xbox-360-wired"));
 }
