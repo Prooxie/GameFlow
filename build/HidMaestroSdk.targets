@@ -11,7 +11,8 @@
       <_HmExtract>$([MSBuild]::NormalizePath('$(_HmCache)', 'extract'))</_HmExtract>
       <_HmEntry>$([MSBuild]::NormalizePath('$(_HmExtract)', '$(HidMaestroSdkZipEntry)'))</_HmEntry>
     </PropertyGroup>
-    <DownloadFile SourceUrl="$(HidMaestroSdkZipUrl)" DestinationFolder="$(_HmCache)" Retries="3" Condition="!Exists('$(_HmZip)')" />
+    <!-- An explicit file name: the name must not depend on GitHub's redirect headers. -->
+    <DownloadFile SourceUrl="$(HidMaestroSdkZipUrl)" DestinationFolder="$(_HmCache)" DestinationFileName="HIDMaestro-v$(HidMaestroSdkVersion).zip" Retries="3" Condition="!Exists('$(_HmZip)')" />
     <GetFileHash Files="$(_HmZip)" Algorithm="SHA256"><Output TaskParameter="Hash" PropertyName="_HmZipHash" /></GetFileHash>
     <Delete Files="$(_HmZip)" Condition="'$(_HmZipHash)' != '$(HidMaestroSdkZipSha256)'" />
     <Error Condition="'$(_HmZipHash)' != '$(HidMaestroSdkZipSha256)'"

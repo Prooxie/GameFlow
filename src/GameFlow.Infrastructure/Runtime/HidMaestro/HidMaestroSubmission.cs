@@ -19,12 +19,12 @@ public enum HatDirection : byte
 
 /// <summary>
 /// One frame of motion, already converted to the SDK's units.
-/// <see cref="Present"/> is false on a pad with no sensor, which is
-/// what keeps "held perfectly still" distinguishable from "no gyro
-/// here" — writing zeroes for the latter would claim a reading the
-/// hardware never produced.
+/// <see cref="Present"/> is false on a pad with no sensor, or when a
+/// reading is not finite. The writer then writes zeros. It must write
+/// something: it reuses one state object for every frame, so a field it
+/// skipped would repeat the last frame's reading.
 /// </summary>
-/// <param name="Present">False on a pad with no motion sensor; nothing is written.</param>
+/// <param name="Present">False on a pad with no motion sensor or with a non-finite reading; the writer then writes zeros.</param>
 /// <param name="AccelG">Acceleration in g, SDL sensor frame.</param>
 /// <param name="GyroDps">Angular velocity in degrees per second, same frame.</param>
 internal readonly record struct MotionSubmission(
