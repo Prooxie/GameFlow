@@ -14,10 +14,9 @@ namespace GameFlow.Infrastructure.Configuration;
 /// </para>
 ///
 /// <para>
-/// <b>Important:</b> <see cref="BaseDirectory"/> is intentionally not
-/// overridable. The settings file lives there, so an overrideable base would
-/// require the app to know where to read its own settings before it could
-/// load them — a chicken-and-egg problem we avoid by fixing the base path.
+/// <see cref="BaseDirectory"/> may be selected before startup using the
+/// absolute <c>GAMEFLOW_DATA_DIRECTORY</c> environment variable. Settings
+/// cannot change that root; an explicit root also skips legacy migration.
 /// </para>
 /// </summary>
 public static class AppPaths
@@ -46,6 +45,13 @@ public static class AppPaths
     {
         get
         {
+            // Explicit process-level override for portable runs and isolated UI validation.
+            var isolatedRoot = Environment.GetEnvironmentVariable("GAMEFLOW_DATA_DIRECTORY");
+            if (!string.IsNullOrWhiteSpace(isolatedRoot))
+            {
+                if (!Path.IsPathFullyQualified(isolatedRoot)) { throw new InvalidOperationException("GAMEFLOW_DATA_DIRECTORY must be an absolute path."); }
+                return Ensure(Path.GetFullPath(isolatedRoot));
+            }
             var path = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "GAMEFLOW");

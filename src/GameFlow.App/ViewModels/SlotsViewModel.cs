@@ -436,7 +436,7 @@ public sealed class SlotsViewModel : ViewModelBase, IDisposable
 
     /// <summary>
     /// Row label for a slot's output: the explicit HIDMaestro catalog id
-    /// when one is chosen (any of the 225 profiles), the kind label
+    /// when one is chosen (any catalog profile), the kind label
     /// otherwise.
     /// </summary>
     public static string KindLabelFor(DeviceOutputTemplate template) =>

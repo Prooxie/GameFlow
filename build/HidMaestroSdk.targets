@@ -1,0 +1,26 @@
+<Project>
+  <!--
+    Downloads the pinned HIDMaestro release zip, checks its SHA-256 and
+    extracts HIDMaestro.Core.dll into .cache/hidmaestro/<version>/.
+    Runs only when the DLL is missing from the cache.
+  -->
+  <Target Name="FetchHidMaestroSdk" BeforeTargets="ResolveAssemblyReferences" Condition="!Exists('$(HidMaestroSdkDll)')">
+    <PropertyGroup>
+      <_HmCache>$([System.IO.Path]::GetDirectoryName('$(HidMaestroSdkDll)'))</_HmCache>
+      <_HmZip>$([MSBuild]::NormalizePath('$(_HmCache)', 'HIDMaestro-v$(HidMaestroSdkVersion).zip'))</_HmZip>
+      <_HmExtract>$([MSBuild]::NormalizePath('$(_HmCache)', 'extract'))</_HmExtract>
+      <_HmEntry>$([MSBuild]::NormalizePath('$(_HmExtract)', '$(HidMaestroSdkZipEntry)'))</_HmEntry>
+    </PropertyGroup>
+    <!-- An explicit file name: the name must not depend on GitHub's redirect headers. -->
+    <DownloadFile SourceUrl="$(HidMaestroSdkZipUrl)" DestinationFolder="$(_HmCache)" DestinationFileName="HIDMaestro-v$(HidMaestroSdkVersion).zip" Retries="3" Condition="!Exists('$(_HmZip)')" />
+    <GetFileHash Files="$(_HmZip)" Algorithm="SHA256"><Output TaskParameter="Hash" PropertyName="_HmZipHash" /></GetFileHash>
+    <Delete Files="$(_HmZip)" Condition="'$(_HmZipHash)' != '$(HidMaestroSdkZipSha256)'" />
+    <Error Condition="'$(_HmZipHash)' != '$(HidMaestroSdkZipSha256)'"
+           Text="HIDMaestro-v$(HidMaestroSdkVersion).zip has SHA-256 $(_HmZipHash), expected $(HidMaestroSdkZipSha256). It was deleted; build again to download it again." />
+    <Unzip SourceFiles="$(_HmZip)" DestinationFolder="$(_HmExtract)" />
+    <!-- The zip holds several identical copies of the DLL, so a glob is not unique. See HidMaestroSdkZipEntry. -->
+    <Error Condition="!Exists('$(_HmEntry)')" Text="$(HidMaestroSdkZipEntry) is not in the release zip." />
+    <Copy SourceFiles="$(_HmEntry)" DestinationFiles="$(HidMaestroSdkDll)" />
+    <RemoveDir Directories="$(_HmExtract)" />
+  </Target>
+</Project>

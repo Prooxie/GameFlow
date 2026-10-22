@@ -38,9 +38,22 @@ public static class ThemeAssetResolver
     private static readonly ConcurrentDictionary<string, string?> PackFileCache = new();
 
     /// <summary>
-    /// Resolves <paramref name="imagePath"/> to an existing file, or
-    /// <see langword="null"/> when nothing matches.
+    /// Every answer of <see cref="Resolve"/>, misses too. The dashboard asks for
+    /// each image of each panel on every frame — about 47 images per panel at
+    /// the display rate — and each uncached answer costs path normalisation and
+    /// a disk check. The tuple key needs no string per call.
     /// </summary>
+    private static readonly ConcurrentDictionary<(string ImagePath, string BaseDirectory, string ThemesRoot), string?> ResolvedCache = new();
+
+    /// <summary>
+    /// Resolves <paramref name="imagePath"/> to the full path of an existing
+    /// file, or <see langword="null"/> when nothing matches.
+    /// </summary>
+    /// <remarks>
+    /// The answer is cached until <see cref="ClearCache"/>, which the theme
+    /// registry calls on each refresh. A file that appears or goes away is
+    /// therefore noticed at the next refresh, not on the next frame.
+    /// </remarks>
     /// <param name="imagePath">The raw value from the manifest.</param>
     /// <param name="baseDirectory">Folder holding the theme.json.</param>
     /// <param name="themesRoot">The themes root; <c>\</c>-prefixed paths are relative to this.</param>
@@ -51,7 +64,22 @@ public static class ThemeAssetResolver
             return null;
         }
 
+        return ResolvedCache.GetOrAdd(
+            (imagePath, baseDirectory, themesRoot ?? string.Empty),
+            static key => ResolveUncached(key.ImagePath, key.BaseDirectory, key.ThemesRoot) is { } found
+                ? Path.GetFullPath(found)
+                : null);
+    }
+
+    private static string? ResolveUncached(string imagePath, string baseDirectory, string themesRoot)
+    {
         var rootFull = string.IsNullOrEmpty(themesRoot) ? null : Path.GetFullPath(themesRoot);
+        var boundary = rootFull ?? Path.GetFullPath(baseDirectory);
+        if (!IsWithin(baseDirectory, boundary) || imagePath.Contains(':') || imagePath.StartsWith("\\\\") || imagePath.StartsWith("//"))
+        {
+            return null;
+        }
+
         var rooted = imagePath.StartsWith('\\') || imagePath.StartsWith('/');
         var relative = imagePath.TrimStart('\\', '/')
             .Replace('/', Path.DirectorySeparatorChar)
@@ -60,12 +88,12 @@ public static class ThemeAssetResolver
         // 1. The path as written.
         if (rooted)
         {
-            if (rootFull is not null && Exists(Path.Combine(rootFull, relative), out var asWritten))
+            if (rootFull is not null && Exists(Path.Combine(rootFull, relative), boundary, out var asWritten))
             {
                 return asWritten;
             }
         }
-        else if (Exists(Path.Combine(baseDirectory, relative), out var direct))
+        else if (Exists(Path.Combine(baseDirectory, relative), boundary, out var direct))
         {
             return direct;
         }
@@ -86,18 +114,17 @@ public static class ThemeAssetResolver
         var probe = baseDirectory;
         for (var depth = 0; depth < MaxAncestorDepth && !string.IsNullOrEmpty(probe); depth++)
         {
-            if (Exists(Path.Combine(probe, relative), out var viaAncestor))
+            if (Exists(Path.Combine(probe, relative), boundary, out var viaAncestor))
             {
                 return viaAncestor;
             }
 
-            if (withoutPack is not null && Exists(Path.Combine(probe, withoutPack), out var viaTrimmed))
+            if (withoutPack is not null && Exists(Path.Combine(probe, withoutPack), boundary, out var viaTrimmed))
             {
                 return viaTrimmed;
             }
 
-            if (rootFull is not null &&
-                string.Equals(Path.GetFullPath(probe), rootFull, StringComparison.OrdinalIgnoreCase))
+            if (Path.GetFullPath(probe).Equals(boundary, PathComparison))
             {
                 break;
             }
@@ -156,8 +183,13 @@ public static class ThemeAssetResolver
             try
             {
                 return Directory
-                    .EnumerateFiles(packRoot, fileName, SearchOption.AllDirectories)
-                    .FirstOrDefault();
+                    .EnumerateFiles(packRoot, fileName, new EnumerationOptions
+                    {
+                        RecurseSubdirectories = true,
+                        AttributesToSkip = FileAttributes.ReparsePoint,
+                        IgnoreInaccessible = true
+                    })
+                    .FirstOrDefault(path => Exists(path, themesRoot ?? baseDirectory, out _));
             }
             catch (Exception)
             {
@@ -168,12 +200,36 @@ public static class ThemeAssetResolver
         });
     }
 
-    private static bool Exists(string candidate, out string resolved)
+    private static StringComparison PathComparison => OperatingSystem.IsWindows()
+        ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+    private static bool IsWithin(string candidate, string boundary)
+    {
+        var full = Path.GetFullPath(candidate);
+        var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(boundary));
+        return full.Equals(root, PathComparison) || full.StartsWith(root + Path.DirectorySeparatorChar, PathComparison);
+    }
+
+    private static bool Exists(string candidate, string boundary, out string resolved)
     {
         try
         {
             resolved = Path.GetFullPath(candidate);
-            return File.Exists(resolved);
+            if (!IsWithin(resolved, boundary) || !File.Exists(resolved))
+            {
+                return false;
+            }
+
+            // A lexical check alone still follows symlinks/junctions outside the tree.
+            var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(boundary));
+            for (var current = resolved; !current.Equals(root, PathComparison); current = Path.GetDirectoryName(current)!)
+            {
+                if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
         catch (Exception)
         {
@@ -184,6 +240,10 @@ public static class ThemeAssetResolver
         }
     }
 
-    /// <summary>Drops cached pack lookups. For tests and theme reinstalls.</summary>
-    public static void ClearCache() => PackFileCache.Clear();
+    /// <summary>Drops every cached lookup. The theme registry calls this on each refresh.</summary>
+    public static void ClearCache()
+    {
+        PackFileCache.Clear();
+        ResolvedCache.Clear();
+    }
 }

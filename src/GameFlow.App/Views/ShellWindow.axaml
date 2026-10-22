@@ -119,12 +119,13 @@
               every page below jumped a line each time a status appeared or
               expired. Reserving the line keeps the shell still.
           -->
-          <TextBlock Text="{Binding StatusText}" FontSize="10"
-                     Height="13"
-                     Foreground="{DynamicResource AppForegroundDim}"
+          <TextBlock Text="{Binding StatusText}" FontSize="12"
+                     Height="34"
+                     ToolTip.Tip="{Binding StatusText}"
+                     Foreground="{DynamicResource AppForeground}"
                      HorizontalAlignment="Left"
                      MaxWidth="1000"
-                     TextWrapping="NoWrap"
+                     TextWrapping="Wrap"
                      TextTrimming="CharacterEllipsis" />
         </StackPanel>
 
@@ -155,6 +156,7 @@
           <!-- Section navigation -->
           <StackPanel Grid.Row="0" Margin="10,14,10,0" Spacing="6">
             <ListBox SelectedIndex="{Binding OuterNavSelectedIndex, Mode=TwoWay}"
+                     SelectionMode="AlwaysSelected"
                      Background="Transparent" BorderThickness="0" Padding="0">
               <ListBox.Styles>
                 <Style Selector="ListBoxItem">
@@ -331,11 +333,10 @@
           <Style Selector="TabControl#OuterNavTabs /template/ ItemsPresenter">
             <Setter Property="IsVisible" Value="False" />
           </Style>
-          <!-- Belt and braces: even if a theme renames the presenter
-               part, zero-size invisible items leave no strip. Child
-               combinator keeps this off the nested Devices TabControl. -->
+          <!-- Keep the items selectable. Hiding TabItems themselves makes
+               Avalonia clear SelectedIndex and leaves the content blank.
+               Only the header presenter above should be hidden. -->
           <Style Selector="TabControl#OuterNavTabs > TabItem">
-            <Setter Property="IsVisible" Value="False" />
             <Setter Property="MinHeight" Value="0" />
             <Setter Property="Padding" Value="0" />
           </Style>
@@ -528,6 +529,10 @@
                                   IsVisible="{Binding ShowVirtual}"
                                   Name="VirtualPanelBorder"
                                   Cursor="Hand"
+                                  Focusable="True"
+                                  KeyDown="OnVirtualPanelKeyDown"
+                                  AutomationProperties.Name="Controller tuning"
+                                  AutomationProperties.HelpText="Press Enter or Space to open tuning for this virtual controller."
                                   BorderThickness="2"
                                   CornerRadius="6"
                                   BorderBrush="Transparent"
@@ -539,6 +544,9 @@
                                    panel gives, but here it means "editable"
                                    rather than "selectable". -->
                               <Style Selector="Border#VirtualPanelBorder:pointerover">
+                                <Setter Property="BorderBrush" Value="{DynamicResource AppAccent}" />
+                              </Style>
+                              <Style Selector="Border#VirtualPanelBorder:focus-visible">
                                 <Setter Property="BorderBrush" Value="{DynamicResource AppAccent}" />
                               </Style>
                             </Border.Styles>
@@ -1499,7 +1507,7 @@
                          pick — the old provider combo box was one item of
                          dead choice. -->
 
-                    <!-- Full HIDMaestro catalog (225 profiles) — lets this
+                    <!-- Full HIDMaestro catalog — lets this
                          slot emit ANY supported controller, not just the
                          four curated kinds above. Hidden until the catalog
                          has been enumerated. -->

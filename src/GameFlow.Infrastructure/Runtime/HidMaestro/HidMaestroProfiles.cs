@@ -4,53 +4,38 @@ using GameFlow.Infrastructure.Runtime.Templates;
 namespace GameFlow.Infrastructure.Runtime.HidMaestro;
 
 /// <summary>
-/// Maps a <see cref="VirtualControllerKind"/> to HIDMaestro catalog
-/// profile ids, and classifies arbitrary catalog profiles back into a
+/// Maps a <see cref="VirtualControllerKind"/> to its HIDMaestro catalog
+/// profile id, and classifies arbitrary catalog profiles back into a
 /// kind family for theming.
 ///
 /// <para>
-/// Slugs are matched against the SDK's actual embedded catalog at
-/// runtime (see <see cref="HidMaestroDynamic.TryResolveExistingProfileId"/>),
-/// so each kind carries an ordered CANDIDATE list rather than one
-/// hardcoded guess: the first id that actually exists in the loaded
-/// catalog wins. This is what fixed "no virtual controller for
-/// DualShock 4": the old single guess (<c>"dualshock4"</c>) does not
-/// exist in the catalog — the shipped id is
-/// <c>"dualshock-4-v1-full"</c> (verified against the SDK's own
-/// example/SdkDemo/Program.cs) — so GetProfile returned null and
-/// creation failed every time.
+/// Each kind has exactly one default id, checked against the SDK's
+/// shipped catalog by the adapter tests. The sink looks that id up in
+/// the loaded catalog and nothing else: no alternative spellings, no
+/// keyword search. A renamed profile then fails with the backend's own
+/// error instead of quietly deploying a different pad. Exact ids matter
+/// here — the old guess for DualShock 4 (<c>"dualshock4"</c>) was not a
+/// catalog id at all (the shipped id is <c>"dualshock-4-v1-full"</c>),
+/// which is why DS4 slots once never created a device.
 /// </para>
 /// </summary>
 public static class HidMaestroProfiles
 {
     /// <summary>
-    /// Ordered catalog-profile candidates for a kind; the first id
-    /// present in the SDK's loaded catalog is used. Verified ids
-    /// (SdkDemo / repo profiles/) come first; the rest are defensive
-    /// aliases so a future SDK rename or an unverified generation slug
-    /// degrades to the nearest family member instead of failing.
+    /// The verified catalog id for a kind, or null for the generic kind,
+    /// which has no catalog entry and is built from a shape instead.
     /// </summary>
-    public static IReadOnlyList<string> GetCandidateProfileIds(VirtualControllerKind kind) => kind switch
+    public static string? DefaultProfileId(VirtualControllerKind kind) => kind switch
     {
-        VirtualControllerKind.Xbox360 => ["xbox-360-wired", "xbox-360", "xbox360"],
-        VirtualControllerKind.XboxOne => ["xbox-one-s-bt", "xbox-one-s", "xbox-one", "xbox-one-elite-series-2", "xbox-series-xs-bt"],
-        VirtualControllerKind.XboxSeries => ["xbox-series-xs-bt", "xbox-series-x", "xbox-series", "xbox-one-s-bt"],
-        VirtualControllerKind.DualShock4 => ["dualshock-4-v1-full", "dualshock-4-v2", "dualshock-4", "dualshock4", "ds4"],
-        VirtualControllerKind.DualSense => ["dualsense", "dual-sense", "ds5"],
-        // GenericDirectInput has no catalog slug at all: the profile is
-        // BUILT at runtime via HMProfileBuilder + HidDescriptorBuilder
-        // from the template's axis/button/POV counts. Returning an empty
-        // list here is the signal for that path (the old code returned
-        // "custom", a slug that does not exist, so GetProfile failed and
-        // the generic kind could never create a device).
-        // Verified slug for the Pro; the rest are plausible spellings —
-        // the dynamic resolver also falls back to a keyword search over
-        // the full 225-profile catalog, so slug drift degrades to a
-        // slower lookup instead of a failure.
-        VirtualControllerKind.SwitchPro => ["switch-pro", "nintendo-switch-pro", "switch-pro-controller", "pro-controller"],
-        VirtualControllerKind.SteamController => ["steam-controller", "valve-steam-controller", "steam-controller-2015", "steam-controller-gordon"],
-        VirtualControllerKind.GenericDirectInput => [],
-        _ => ["xbox-360-wired"],
+        VirtualControllerKind.Xbox360 => "xbox-360-wired",
+        VirtualControllerKind.XboxOne => "xbox-one-s-bt",
+        VirtualControllerKind.XboxSeries => "xbox-series-xs-bt",
+        VirtualControllerKind.DualShock4 => "dualshock-4-v1-full",
+        VirtualControllerKind.DualSense => "dualsense",
+        VirtualControllerKind.SwitchPro => "switch-pro",
+        VirtualControllerKind.SteamController => "steam-controller",
+        VirtualControllerKind.GenericDirectInput => null,
+        _ => "xbox-360-wired",
     };
 
     /// <summary>
@@ -121,26 +106,6 @@ public static class HidMaestroProfiles
         VirtualControllerKind.SteamController => ControllerVisualStyle.SteamController,
         VirtualControllerKind.GenericDirectInput => ControllerVisualStyle.SimpleGamepad,
         _ => ControllerVisualStyle.Auto,
-    };
-
-    /// <summary>
-    /// Pre-activation (Vid, Pid) guess for a kind — the well-known pairs
-    /// the corresponding catalog profiles advertise. Used only until a
-    /// controller is actually created; once live, the sink reports the
-    /// REAL identity read from the deployed profile (which also covers
-    /// all 225 catalog profiles, not just these). Null for
-    /// GenericDirectInput, whose identity comes from the template.
-    /// </summary>
-    public static (ushort Vid, ushort Pid)? ResolveHardwareSignature(VirtualControllerKind kind) => kind switch
-    {
-        VirtualControllerKind.Xbox360 => (0x045E, 0x028E),
-        VirtualControllerKind.XboxOne => (0x045E, 0x02EA),
-        VirtualControllerKind.XboxSeries => (0x045E, 0x0B13),
-        VirtualControllerKind.DualShock4 => (0x054C, 0x09CC),
-        VirtualControllerKind.DualSense => (0x054C, 0x0CE6),
-        VirtualControllerKind.SwitchPro => (0x057E, 0x2009),
-        VirtualControllerKind.SteamController => (0x28DE, 0x1102),
-        _ => null,
     };
 
     /// <summary>Human label for a kind — single source for every kind combo box and slot row.</summary>

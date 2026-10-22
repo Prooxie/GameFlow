@@ -8,6 +8,7 @@ public partial class ControlMappingWindow : Window
     public ControlMappingWindow()
     {
         InitializeComponent();
+        Opened += (_, _) => WindowSizing.Fit(this);
         Closed += OnClosed;
     }
 

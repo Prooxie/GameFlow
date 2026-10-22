@@ -55,7 +55,8 @@ public sealed class RuntimeCoordinator(
     DeviceSettingsStore deviceSettingsStore,
     Effects.RumbleFeedbackStore rumbleFeedbackStore,
     IOptions<Configuration.AppRuntimeOptions> runtimeOptions,
-    ILogger<RuntimeCoordinator> logger) : BackgroundService
+    ILogger<RuntimeCoordinator> logger,
+    TimeProvider? timeProvider = null) : BackgroundService
 {
     private readonly IInputSourceFactory inputSourceFactory = inputSourceFactory;
     private readonly IOutputSinkFactory outputSinkFactory = outputSinkFactory;
@@ -71,6 +72,7 @@ public sealed class RuntimeCoordinator(
     private readonly Effects.RumbleFeedbackStore rumbleFeedbackStore = rumbleFeedbackStore;
     private readonly Configuration.AppRuntimeOptions runtimeOptions = runtimeOptions.Value;
     private readonly ILogger<RuntimeCoordinator> logger = logger;
+    private readonly RuntimeClock clock = new(timeProvider);
     private readonly SemaphoreSlim providerGate = new(1, 1);
 
     private IInputSource? currentInputSource;
@@ -133,8 +135,9 @@ public sealed class RuntimeCoordinator(
 
             var activeProfile = profileSession.CurrentProfile;
             pipeline = new ControllerMappingPipeline(activeProfile);
-            var interval = GetPollingInterval(activeProfile.PollingRateHz);
-            var nextTickAt = DateTimeOffset.UtcNow;
+            var effectivePollingRate = profileSession.Settings.PollingRateHz ?? activeProfile.PollingRateHz;
+            var interval = GetPollingInterval(effectivePollingRate);
+            var nextTickAt = clock.Now;
 
             await ActivateProvidersAsync(activeProfile, stoppingToken);
 
@@ -160,9 +163,9 @@ public sealed class RuntimeCoordinator(
                     interval = GetPollingInterval(activeProfile.PollingRateHz);
                     if (currentInputSource is IPollRateAware rateAware)
                     {
-                        rateAware.TargetPollingHz = activeProfile.PollingRateHz;
+                        rateAware.TargetPollingHz = Math.Clamp(profileSession.Settings.PollingRateHz ?? activeProfile.PollingRateHz, 30, 1000);
                     }
-                    nextTickAt = DateTimeOffset.UtcNow;
+                    nextTickAt = clock.Now;
 
                     if (logger.IsEnabled(LogLevel.Information))
                     {
@@ -179,11 +182,21 @@ public sealed class RuntimeCoordinator(
                     }
                 }
 
-                interval = GetPollingInterval(activeProfile.PollingRateHz);
+                var requestedPollingRate = profileSession.Settings.PollingRateHz ?? activeProfile.PollingRateHz;
+                interval = GetPollingInterval(requestedPollingRate);
+                if (requestedPollingRate != effectivePollingRate)
+                {
+                    effectivePollingRate = requestedPollingRate;
+                    nextTickAt = clock.Now;
+                    if (currentInputSource is IPollRateAware rateAware)
+                    {
+                        rateAware.TargetPollingHz = Math.Clamp(effectivePollingRate, 30, 1000);
+                    }
+                }
 
                 try
                 {
-                    var now = DateTimeOffset.UtcNow;
+                    var now = clock.Now;
 
                     if (!await TryTickSlotsAsync(activeProfile, now, stoppingToken))
                     {
@@ -236,15 +249,27 @@ public sealed class RuntimeCoordinator(
                     // Outer catch will handle the cancellation message.
                     throw;
                 }
-                catch (ObjectDisposedException)
+                catch (ObjectDisposedException exception) when (IsShutdownDisposal(exception, stoppingToken.IsCancellationRequested))
                 {
-                    // Provider was torn down out from under us (e.g. profile
-                    // switch in flight). Outer catch logs at Debug.
+                    // Shutdown disposes the providers under a running tick.
+                    // Outer catch logs at Debug. A disposal at any other time
+                    // falls through to the tick-failure handler below, so the
+                    // loop keeps running and the log says why.
                     throw;
                 }
                 catch (Exception exception)
                 {
                     consecutiveTickFailures++;
+                    // A failed read must not leave the last successful press held.
+                    if (slotRuntime is { HasEnabledSlots: true }) { await slotRuntime.NeutralizeAsync(stoppingToken); }
+                    else if (currentOutputSink is { } sink)
+                    {
+                        var released = await OutputSafety.TryNeutralizeAsync(sink, logger, stoppingToken);
+                        var empty = ControllerSnapshot.Empty("Input unavailable");
+                        snapshotStore.Update(currentInputSource?.DisplayName ?? "Input error", sink.DisplayName,
+                            new ControllerFrameResult(empty, released ? empty : snapshotStore.Current.VirtualSnapshot,
+                                [released ? "Input/output error — controls released." : "Output error — could not release controls."]));
+                    }
 
                     // First failure after a stretch of healthy ticks gets a
                     // full Warning with stack; repeated failures collapse to
@@ -274,12 +299,12 @@ public sealed class RuntimeCoordinator(
                 }
 
                 nextTickAt += interval;
-                var delay = nextTickAt - DateTimeOffset.UtcNow;
+                var delay = nextTickAt - clock.Now;
                 if (delay <= TimeSpan.Zero)
                 {
                     if (-delay > interval)
                     {
-                        nextTickAt = DateTimeOffset.UtcNow;
+                        nextTickAt = clock.Now;
                     }
 
                     continue;
@@ -299,7 +324,7 @@ public sealed class RuntimeCoordinator(
         {
             logger.LogDebug("Runtime coordinator cancellation requested.");
         }
-        catch (ObjectDisposedException exception)
+        catch (ObjectDisposedException exception) when (IsShutdownDisposal(exception, stoppingToken.IsCancellationRequested))
         {
             logger.LogDebug(exception, "Runtime coordinator observed provider disposal during shutdown.");
         }
@@ -385,7 +410,7 @@ public sealed class RuntimeCoordinator(
             // a user could feel.
             if (currentInputSource is IPollRateAware pollRateAware)
             {
-                pollRateAware.TargetPollingHz = profile.PollingRateHz;
+                pollRateAware.TargetPollingHz = Math.Clamp(profileSession.Settings.PollingRateHz ?? profile.PollingRateHz, 30, 1000);
             }
 
             _ = await currentInputSource.ReadAsync(cancellationToken);
@@ -655,6 +680,15 @@ public sealed class RuntimeCoordinator(
             var byPid = left.Pid.CompareTo(right.Pid);
             return byPid != 0 ? byPid : left.ActivatedAt.CompareTo(right.ActivatedAt);
         };
+
+    /// <summary>
+    /// True when <paramref name="exception"/> is a provider disposal during shutdown,
+    /// the one disposal that may end the runtime loop quietly. Before this check,
+    /// a disposal while the app ran ended the loop with only a Debug line, and
+    /// mapping stopped until the next start.
+    /// </summary>
+    internal static bool IsShutdownDisposal(Exception exception, bool isStopping) =>
+        exception is ObjectDisposedException && isStopping;
 
     internal static bool ShouldRebuildSlots(
         bool hasEnabledSlots,

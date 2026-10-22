@@ -15,7 +15,7 @@ namespace GameFlow.Infrastructure.Configuration;
 ///
 /// <para>
 /// Thread-safe: read access to <see cref="Current"/> is lock-free thanks to
-/// <c>volatile</c>; <see cref="ApplyAsync"/> and <see cref="InitializeAsync"/>
+/// <c>volatile</c>; <see cref="UpdateAsync"/> and <see cref="InitializeAsync"/>
 /// serialise on a single async semaphore.
 /// </para>
 /// </summary>
@@ -82,6 +82,19 @@ public sealed class UserSettingsService : IUserSettingsService
                 loaded = new AppSettings();
             }
 
+            if (loaded.WebAccessToken.Length != 64 || !loaded.WebAccessToken.All(Uri.IsHexDigit))
+            {
+                loaded = loaded with { WebAccessToken = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32)).ToLowerInvariant() };
+                try
+                {
+                    await repository.SaveSettingsAsync(loaded, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+                {
+                    logger.LogWarning(exception, "Could not persist browser pairing secret; shared links will change on restart.");
+                }
+            }
+
             ApplySideEffects(loaded);
             current = loaded;
             initialized = true;
@@ -99,15 +112,23 @@ public sealed class UserSettingsService : IUserSettingsService
     }
 
     /// <inheritdoc />
-    public async Task ApplyAsync(AppSettings updated, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(Func<AppSettings, AppSettings> change, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(updated);
+        ArgumentNullException.ThrowIfNull(change);
+
+        await InitializeAsync(cancellationToken).ConfigureAwait(false);
 
         AppSettings previous;
+        AppSettings updated;
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             previous = current;
+            updated = change(previous) ?? throw new InvalidOperationException("A settings change returned null.");
+            if (updated == previous)
+            {
+                return;
+            }
 
             await repository.SaveSettingsAsync(updated, cancellationToken).ConfigureAwait(false);
             ApplySideEffects(updated);
@@ -129,7 +150,7 @@ public sealed class UserSettingsService : IUserSettingsService
         }
 
         // Raised outside the lock so a misbehaving handler cannot deadlock
-        // a subsequent ApplyAsync call.
+        // a subsequent UpdateAsync call.
         try
         {
             Changed?.Invoke(this, new UserSettingsChangedEventArgs(previous, updated));

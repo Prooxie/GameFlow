@@ -109,6 +109,19 @@ internal static partial class EvdevInterop
 
     // ─── libc ───
     private const int O_RDONLY = 0;
+    private const int O_NONBLOCK = 0x800;
+    private const int O_CLOEXEC = 0x80000;
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct PollFd
+    {
+        public int Fd;
+        public short Events;
+        public short ReturnedEvents;
+    }
+
+    [LibraryImport("libc", SetLastError = true)]
+    internal static partial int poll(ref PollFd descriptor, nuint count, int timeoutMilliseconds);
 
     [LibraryImport("libc", SetLastError = true, StringMarshalling = StringMarshalling.Utf8)]
     internal static partial int open(string pathname, int flags);
@@ -129,4 +142,5 @@ internal static partial class EvdevInterop
     internal static partial int ioctl_name(int fd, nuint request, [Out] byte[] argp);
 
     internal static int OpenReadOnly(string path) => open(path, O_RDONLY);
+    internal static int OpenNonBlocking(string path) => open(path, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
 }

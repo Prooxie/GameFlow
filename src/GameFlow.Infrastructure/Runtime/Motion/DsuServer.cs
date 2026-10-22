@@ -45,6 +45,7 @@ public sealed class DsuServer(
     /// samples only burns bandwidth on a shared Wi-Fi network.
     /// </summary>
     private const int BroadcastHz = 60;
+    private const int MaxClients = 64;
 
     /// <summary>
     /// How long a client stays subscribed without saying anything.
@@ -98,7 +99,7 @@ public sealed class DsuServer(
             }
 
             var port = settings.MotionServerPort;
-            await RunSessionAsync(port, stoppingToken).ConfigureAwait(false);
+            await RunSessionAsync(port, settings.MotionServerAllowRemote, stoppingToken).ConfigureAwait(false);
 
             // A session ends either because the user turned the server off
             // or changed the port (clean, loop straight back round), or
@@ -115,12 +116,12 @@ public sealed class DsuServer(
     /// One bound-socket session. Returns when the user disables the
     /// server, changes the port, the host shuts down, or the bind fails.
     /// </summary>
-    private async Task RunSessionAsync(int port, CancellationToken stoppingToken)
+    private async Task RunSessionAsync(int port, bool allowRemote, CancellationToken stoppingToken)
     {
         UdpClient? socket;
         try
         {
-            socket = new UdpClient(new IPEndPoint(IPAddress.Any, port));
+            socket = new UdpClient(new IPEndPoint(allowRemote ? IPAddress.Any : IPAddress.Loopback, port));
             LastError = null;
         }
         catch (SocketException exception)
@@ -144,7 +145,7 @@ public sealed class DsuServer(
         clients.Clear();
         packetCounter.ResetAll();
         IsRunning = true;
-        ListenEndpoint = $"0.0.0.0:{port}";
+        ListenEndpoint = $"{(allowRemote ? "0.0.0.0" : "127.0.0.1")}:{port}";
         logger.LogInformation(
             "DSU motion server: listening on UDP {Port}. Point Cemu / Dolphin / Yuzu / Ryujinx at this PC on that port.",
             port);
@@ -155,10 +156,15 @@ public sealed class DsuServer(
 
         try
         {
-            await Task.WhenAll(
+            var loops = new[]
+            {
                 ReceiveLoopAsync(socket, session.Token),
                 BroadcastLoopAsync(socket, session.Token),
-                WatchSettingsAsync(port, session)).ConfigureAwait(false);
+                WatchSettingsAsync(port, allowRemote, session)
+            };
+            await Task.WhenAny(loops).ConfigureAwait(false);
+            await session.CancelAsync().ConfigureAwait(false);
+            await Task.WhenAll(loops).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -193,12 +199,12 @@ public sealed class DsuServer(
     /// the poll is every 500 ms against a volatile field, and it means
     /// there is no subscription to leak if a session unwinds abnormally.
     /// </summary>
-    private async Task WatchSettingsAsync(int boundPort, CancellationTokenSource session)
+    private async Task WatchSettingsAsync(int boundPort, bool allowRemote, CancellationTokenSource session)
     {
         while (!session.IsCancellationRequested)
         {
             var settings = userSettings.Current;
-            if (!settings.MotionServerEnabled || settings.MotionServerPort != boundPort)
+            if (!settings.MotionServerEnabled || settings.MotionServerPort != boundPort || settings.MotionServerAllowRemote != allowRemote)
             {
                 await session.CancelAsync().ConfigureAwait(false);
                 return;
@@ -289,6 +295,10 @@ public sealed class DsuServer(
                 break;
 
             case DsuMessageType.ControllerData:
+                if (!clients.ContainsKey(endpoint) && clients.Count >= MaxClients)
+                {
+                    break;
+                }
                 // Re-registering refreshes the timestamp, which is what
                 // keeps a live client from ageing out.
                 clients[endpoint] = new ClientRegistration(

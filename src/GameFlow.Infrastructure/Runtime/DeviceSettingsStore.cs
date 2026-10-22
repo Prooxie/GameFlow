@@ -34,6 +34,7 @@ public sealed class DeviceSettingsStore
     public const string SlotDefaultsDeviceId = "$slot-defaults";
 
     private readonly Lock gate = new();
+    private readonly Lock persistenceGate = new();
     private readonly Dictionary<string, DeviceSettings> settings = new(StringComparer.Ordinal);
     private readonly Dictionary<EffectiveSettingsKey, DeviceSettings> effectiveSettingsCache = [];
     private readonly string filePath;
@@ -259,6 +260,16 @@ public sealed class DeviceSettingsStore
 
     private void Persist()
     {
+        // Serialize the snapshot and replace together. Atomic rename prevents
+        // partial JSON, but alone cannot stop an older snapshot winning a race.
+        lock (persistenceGate)
+        {
+            PersistCurrentSnapshot();
+        }
+    }
+
+    private void PersistCurrentSnapshot()
+    {
         try
         {
             Dictionary<string, DeviceSettings> snapshot;
@@ -267,17 +278,7 @@ public sealed class DeviceSettingsStore
                 snapshot = new Dictionary<string, DeviceSettings>(settings, StringComparer.Ordinal);
             }
 
-            var directory = Path.GetDirectoryName(filePath);
-            if (!string.IsNullOrEmpty(directory))
-            {
-                _ = Directory.CreateDirectory(directory);
-            }
-
-            // Write to a temp file then move: a crash mid-write leaves
-            // the previous good file intact instead of a truncated one.
-            var temp = filePath + ".tmp";
-            File.WriteAllText(temp, JsonSerializer.Serialize(snapshot, JsonOptions));
-            File.Move(temp, filePath, overwrite: true);
+            AtomicFile.WriteAllText(filePath, JsonSerializer.Serialize(snapshot, JsonOptions));
         }
         catch (Exception exception)
         {

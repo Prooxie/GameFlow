@@ -36,6 +36,7 @@ public partial class RequirementsDialog : Window
     public RequirementsDialog()
     {
         InitializeComponent();
+        Opened += (_, _) => WindowSizing.Fit(this);
     }
 
     private void InitializeComponent()

@@ -11,7 +11,7 @@ public partial class ShellWindow : Window
 {
     private readonly DispatcherTimer refreshTimer;
     private DateTime lastTickUtc = DateTime.UtcNow;
-    private DateTime lastTickGapWarnUtc;
+    private DateTime lastTickGapWarnUtc = DateTime.UtcNow;
 
     /// <summary>The rate the user asked for; a ceiling, not a promise. See <see cref="AdaptTickRate"/>.</summary>
     private int configuredRefreshHz = 30;
@@ -33,7 +33,7 @@ public partial class ShellWindow : Window
     /// <para>
     /// Startup is the one moment the UI thread is guaranteed to be busy
     /// with something other than the dashboard: theme artwork decoding,
-    /// the first device enumeration, and HIDMaestro walking its 231-entry
+    /// the first device enumeration, and HIDMaestro walking its
     /// profile catalog. Ticking at the display's full rate straight into
     /// that contention did not just drop frames, it made the panels look
     /// like they had vanished — and then the adaptive backoff read the
@@ -256,9 +256,6 @@ public partial class ShellWindow : Window
             shellViewModel.WalkthroughRequested -= OnWalkthroughRequested;
             shellViewModel.PhoneControllerRequested -= OnPhoneControllerRequested;
             shellViewModel.OverlayUrlCopyRequested -= OnOverlayUrlCopyRequested;
-            shellViewModel.WalkthroughRequested -= OnWalkthroughRequested;
-            shellViewModel.PhoneControllerRequested -= OnPhoneControllerRequested;
-            shellViewModel.OverlayUrlCopyRequested -= OnOverlayUrlCopyRequested;
         }
 
         base.OnDataContextChanged(e);
@@ -372,6 +369,15 @@ public partial class ShellWindow : Window
         }
 
         (DataContext as ShellViewModel)?.OpenDeviceSettingsCommand.Execute(slotId);
+    }
+
+    private void OnVirtualPanelKeyDown(object? sender, Avalonia.Input.KeyEventArgs e)
+    {
+        if (e.Key is Avalonia.Input.Key.Enter or Avalonia.Input.Key.Space && sender is Border { Tag: string slotId })
+        {
+            (DataContext as ShellViewModel)?.OpenDeviceSettingsCommand.Execute(slotId);
+            e.Handled = true;
+        }
     }
 
     private async void OnDeviceSettingsRequested(object? sender, DeviceSettingsRequestedEventArgs e)

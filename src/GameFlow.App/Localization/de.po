@@ -377,7 +377,7 @@ msgid "SettingsDialogPollingRateLabel"
 msgstr "Abfragerate"
 
 msgid "SettingsDialogPollingHint"
-msgstr "Leer lassen, um die Profilstandards zu verwenden. Gültiger Bereich: 30–1000 Hz."
+msgstr "Ohne Angabe folgt die Übersicht dem Display und die Eingaberate dem Profil. Gültiger Bereich: 30–1000 Hz. Niedrigere Raten senken die CPU-Last."
 
 msgid "SettingsDialogPathsHeader"
 msgstr "Speicherpfade"
@@ -401,10 +401,10 @@ msgid "SettingsDialogCheckUpdatesLabel"
 msgstr "Beim Start nach Updates suchen"
 
 msgid "SettingsDialogCheckRequirementsLabel"
-msgstr "Beim Start Voraussetzungen (ViGEm Bus usw.) prüfen"
+msgstr "Systemvoraussetzungen beim Start prüfen"
 
 msgid "SettingsDialogApplyButton"
-msgstr "Speichern"
+msgstr "Speichern und schließen"
 
 msgid "SettingsDialogCancelButton"
 msgstr "Abbrechen"

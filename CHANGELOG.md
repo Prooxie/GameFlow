@@ -8,6 +8,176 @@ GitHub's auto-generated commit list appended below it.
 Format: one `## vX.Y.Z` heading per release, newest first. The heading
 text must match the tag exactly — that is what the extraction keys on.
 
+## v1.0.8
+
+GameFlow 1.0.8 updates the Windows HIDMaestro integration, improves profile
+and settings reliability, and hardens scripting, network sharing and update
+downloads. It also fixes navigation, localization and update-dialog behavior.
+See the downloads and requirements below before upgrading from 1.0.6.
+
+### Stability and security
+
+- Settings, profiles, slots and device stores are written through temporary
+  files and atomically replaced, reducing damage from interrupted saves.
+  Damaged profile JSON is preserved as `.json.damaged` and startup uses a
+  default profile. Settings changes use one writer, and an edit cannot be
+  saved into a profile selected after the edit began.
+- Concurrent device-tuning saves cannot let an older snapshot overwrite a
+  newer one. Recovering a missing active profile preserves an existing
+  customized default and repairs the saved profile selection.
+- Unexpected provider disposal no longer terminates input processing.
+  Unhandled and unobserved exceptions are logged for diagnosis.
+- Lua initialization and tick functions have a 100,000-instruction budget.
+  A script that exceeds it is disabled until edited and its output for the
+  current tick is discarded. Scripts are limited to 64 KiB of source. Import
+  scripts only from trusted authors; this is not process or memory isolation.
+- Profile IDs must be portable filenames. An embedded profile ID cannot
+  redirect subsequent writes. Explicit null values in required JSON fields
+  are rejected. Theme images stay inside the themes directory, including
+  checks against symlinks and junctions.
+- Phone sharing is off by default. Remote browsers need the private connection
+  link; stopping sharing closes remote sessions, and **Reset private link**
+  revokes old links. Local OBS sources remain available. DSU starts on loopback
+  unless remote emulators are explicitly allowed. HTTP and DSU are unencrypted;
+  use trusted networks. Origin checks, bounded connections and route validation
+  provide additional protection.
+- Update metadata requires HTTPS and safe filenames. Each download uses its
+  own temporary directory, a 15-minute deadline including the response body,
+  and a 1 GiB size limit. Archives must match the SHA-256 digest in GitHub's
+  release metadata before being saved. A release without a digest requires
+  manual download. Archive selection ignores checksum files.
+- Profiles are limited to 2 MiB and checked for required nested values, valid
+  enums, finite numbers and unique rule IDs. Imported Lua scripts start disabled
+  for review. Failed saves leave the running profile unchanged, and profile
+  save/switch/delete operations are serialized.
+- Failed input reads attempt to release previously held virtual controls and
+  show an error on the affected controller. A failed output write cannot be
+  guaranteed to release a disconnected or unresponsive device.
+- The self-contained runtime is updated to .NET 10.0.13. Dependencies include
+  Avalonia 12.1.4 and Microsoft.Extensions 10.0.13.
+
+### Performance and reliability
+
+- Lua reuses its coroutine stack between ticks while preserving instruction
+  limits and script state. A local simple-script check dropped allocation from
+  about 2 MiB to 8 KiB per tick; actual device latency was not measured.
+- Mapping durations use monotonic elapsed time, so changing the system clock
+  does not extend autofire phases or pause the runtime loop.
+- Linux keyboard/mouse capture detects hot-plugged devices, clears held input
+  on reader failure/unplug and uses bounded polling for shutdown.
+- Cached theme paths avoid repeated filesystem checks while drawing.
+  A theme refresh now also clears compiled OBS layouts, so changed artwork
+  and expressions appear after refresh.
+- Removed per-read device-status updates that churned the device catalog.
+- A missing HIDMaestro SDK produces one actionable warning per slot retry,
+  without an extra warning from the initial probe.
+- HIDMaestro SDK searches and controller retries use monotonic cooldowns,
+  so changing the system clock cannot skip a delay or postpone recovery.
+- A failing rumble subscriber no longer interrupts controller reconfiguration
+  or shutdown; other subscribers still receive the final motor-stop signal.
+- A DSU loop ending cancels its sibling loops so the server can shut down
+  or retry instead of waiting indefinitely.
+
+### HIDMaestro integration
+
+- GameFlow now talks to HIDMaestro through a typed adapter built against
+  HIDMaestro 2.0.1. It needs HIDMaestro 2.0.1 or a later 2.x release.
+  A 1.x DLL or any other version is refused with a status message that names
+  the version found and the range needed. It is never loaded.
+- HIDMaestro installs or upgrades its driver when GameFlow first creates a
+  virtual controller while running as Administrator. If another running
+  program still uses the 1.x driver, HIDMaestro installs its driver beside the
+  old one. The log reports the driver install outcome.
+- All slots share one SDK backend and session. Driver initialization runs at
+  most once; a failed installation is remembered until GameFlow restarts,
+  preventing repeated installation sweeps while other slots are active.
+- The DLL is still not shipped. Place `HIDMaestro.Core.dll` next to
+  `GameFlow.App.exe`, in a `HIDMaestro` subfolder beside it, or in the folder
+  named by the `GAMEFLOW_HIDMAESTRO_DIR` environment variable.
+- The profile picker lists only gamepad and arcade-stick profiles. Wheels,
+  flight gear, pedals, mice and keyboards are hidden. Mice and keyboards used
+  to appear.
+- Fixed the VID/PID used to hide GameFlow's own virtual pad from the input
+  list before it activates. It was wrong for DualShock 4 and Xbox One, and now
+  comes from the HIDMaestro catalog.
+- Fixed trigger axes for profiles that declare no sticks or triggers, such as
+  the Switch 2 Pro.
+- The generic DirectInput controller is limited to 32 buttons. The template
+  editor clamps to 32.
+- Removed a hiding path that claimed the virtual pad by device instance ID.
+  It never worked.
+- Source builds download the pinned HIDMaestro release once to compile the
+  adapter, so the first build needs network access.
+- SDK searches and output retries keep their cooldowns across system-clock
+  changes. Rumble teardown isolates failing subscribers and still delivers
+  the final stop to other listeners before removing the virtual controller.
+
+### Build and release quality
+
+- Fixed 44 xUnit cancellation-token warnings without disabling the analyzer.
+- Added regression coverage for clock changes and rumble teardown failures.
+- CI builds with warnings treated as errors. Releases include four platform
+  archives and their SHA-256 files; publishing checks every checksum and
+  rejects missing or unexpected assets before creating the GitHub release.
+
+### Interface fixes
+
+- Main navigation keeps a selected page. Hiding tab headers no longer clears
+  selection and leaves the main content blank.
+- Resource lookup uses the installation directory, so launching from a shortcut
+  or another working directory still finds translations.
+- **Download update** shows progress, cancellation, retry and completion. It
+  clearly explains that the archive must be extracted and installed manually.
+- Settings distinguish immediate changes from pending edits. **Save and close**
+  validates polling rates and keeps errors readable. Window and polling controls
+  are available again, and the input-rate override now reaches the live runtime.
+- Dialog sizes fit the owner's monitor. Virtual-controller tuning can be opened
+  with Enter/Space and has a visible keyboard focus indicator. Missing-theme
+  instructions show the actual data path on every platform.
+
+### Downloads and requirements
+
+| Archive suffix | Platform | Virtual gamepad output |
+| --- | --- | --- |
+| `win-x64.zip` | Windows x64 | HIDMaestro 2.0.1 or a later 2.x release, obtained separately; Administrator required |
+| `linux-x64.tar.gz` | Linux x64 with glibc and a graphical desktop | Preview only |
+| `osx-arm64.tar.gz` | Apple Silicon macOS | Preview only |
+| `osx-x64.tar.gz` | Intel macOS | Preview only |
+
+Extract the complete archive, keeping `themes/`, `Localization/` and
+`appsettings.json` beside the executable. .NET and SDL3 are included; no .NET
+SDK is required to run a release. Source builds require .NET SDK 10.0.401 or
+later within the .NET 10 line. Use an OS supported by
+[.NET 10](https://github.com/dotnet/core/blob/main/release-notes/10.0/supported-os.md)
+and Avalonia; Linux also needs the desktop's native graphics libraries.
+
+Linux keyboard/mouse capture requires access to `/dev/input`; mouse output
+requires `/dev/uinput` access. macOS capture requires Input Monitoring and
+mouse output may require Accessibility permission. macOS binaries are unsigned
+and not notarized. HIDMaestro is not bundled or modified by this release.
+
+Before upgrading, close GameFlow and back up the `GAMEFLOW` user-data folder
+(Windows: `%LOCALAPPDATA%/GAMEFLOW`, Linux: `~/.local/share/GAMEFLOW`,
+macOS: `~/Library/Application Support/GAMEFLOW`). Extract into a new folder
+and retain any separately installed HIDMaestro SDK. Profiles keep schema
+version 6. Older profiles continue through the existing migration path.
+
+Archives now include release documentation, dependency metadata and available
+upstream notices. Compare the archive's SHA-256 against its `.sha256` file
+before extracting. Checksums detect corruption; the archives are not signed,
+and are not proof of publisher identity. The in-app downloader verifies the
+SHA-256 digest supplied by GitHub's release API.
+
+### Known limitations
+
+- Linux and macOS virtual gamepad output remains Preview only.
+- HTTP private links are bearer secrets over unencrypted transport. DSU remote
+  mode has no authentication or encryption. Never expose these ports to the
+  internet or use them on untrusted networks.
+- Lua instruction budgets do not bound native library calls or total memory.
+- Real controller, Bluetooth, rumble, OBS and HIDMaestro compatibility still
+  require hardware validation for the release candidate.
+
 ## v1.0.6
 
 ### Added

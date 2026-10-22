@@ -1,4 +1,3 @@
-using GameFlow.Core.Enums;
 using GameFlow.Core.Models;
 using GameFlow.Infrastructure.Runtime.HidMaestro;
 using Xunit;
@@ -6,67 +5,22 @@ using Xunit;
 namespace GameFlow.Infrastructure.Tests.Runtime;
 
 /// <summary>
-/// The HIDMaestro sink builds one <c>HMGamepadState</c> per frame, and any
+/// A HIDMaestro pad builds one <c>HMGamepadState</c> per frame, and any
 /// field it leaves unwritten still goes out on the wire — as zero, which the
 /// consuming game believes. That is how every virtual pad once announced
 /// itself at ~10% charge: the battery members were simply never set, and an
 /// unwritten battery is not the same as no battery.
 ///
 /// <para>
-/// These tests cover the fields that were in that same state afterwards —
-/// motion, the touch surface, and the buttons the submit list did not carry
-/// — so a dropped field fails here rather than in a game.
+/// These tests cover the conversions for the fields that were in that same
+/// state afterwards — motion and the touch surface — so a dropped field
+/// fails here rather than in a game. The button table moved into the
+/// adapter with the pad that uses it, and <c>HidMaestroStateWriterTests</c>
+/// covers it there.
 /// </para>
 /// </summary>
 public sealed class HidMaestroSubmitCoverageTests
 {
-    // ── Buttons ──────────────────────────────────────────────────────────
-
-    [Fact]
-    public void The_touchpad_click_is_submitted_as_Touchpad_not_Share()
-    {
-        // HMButton has both. Sony profiles map Touchpad (bit 11) onto a real
-        // descriptor button and mark Share (bit 12) as -1, the SDK's
-        // explicit "this pad does not carry this button" sentinel — so
-        // sending Share meant the touchpad click was silently DROPPED on
-        // every virtual DualSense and DualShock 4.
-        var index = Array.IndexOf(HidMaestroOutputSink.SubmitButtonSourcesForTests, ButtonId.Touchpad);
-
-        Assert.True(index >= 0, "ButtonId.Touchpad must be submitted at all.");
-        Assert.Equal("Touchpad", HidMaestroOutputSink.SubmitButtonNamesForTests[index]);
-    }
-
-    [Theory]
-    [InlineData(ButtonId.Paddle1, "LeftPaddle")]
-    [InlineData(ButtonId.Paddle2, "RightPaddle")]
-    [InlineData(ButtonId.Paddle3, "LeftPaddle2")]
-    [InlineData(ButtonId.Paddle4, "RightPaddle2")]
-    [InlineData(ButtonId.Misc1, "Misc1")]
-    public void Every_extra_button_reaches_its_HMButton_counterpart(ButtonId source, string expected)
-    {
-        // These were absent from the submit list entirely, so a paddle or a
-        // mic-mute mapped onto a virtual pad did nothing at all. The paddles
-        // pair by SIDE, matching how the SDL reader fills them in.
-        var index = Array.IndexOf(HidMaestroOutputSink.SubmitButtonSourcesForTests, source);
-
-        Assert.True(index >= 0, $"{source} is never submitted.");
-        Assert.Equal(expected, HidMaestroOutputSink.SubmitButtonNamesForTests[index]);
-    }
-
-    [Fact]
-    public void The_button_name_and_source_tables_line_up()
-    {
-        // They are indexed in lockstep at submit time, so a length mismatch
-        // would send the wrong button rather than fail loudly.
-        Assert.Equal(
-            HidMaestroOutputSink.SubmitButtonNamesForTests.Length,
-            HidMaestroOutputSink.SubmitButtonSourcesForTests.Length);
-
-        Assert.Equal(
-            HidMaestroOutputSink.SubmitButtonSourcesForTests.Length,
-            HidMaestroOutputSink.SubmitButtonSourcesForTests.Distinct().Count());
-    }
-
     // ── Motion ───────────────────────────────────────────────────────────
 
     [Fact]
@@ -75,7 +29,7 @@ public sealed class HidMaestroSubmitCoverageTests
         // "Perfectly still" and "no sensor here" are different claims. This
         // is the distinction HasGyro exists for, and the one the battery
         // fields got wrong.
-        var motion = HidMaestroOutputSink.ConvertMotion(ControllerSnapshot.Empty("keyboard"));
+        var motion = HidMaestroSubmission.ConvertMotion(ControllerSnapshot.Empty("keyboard"));
 
         Assert.False(motion.Present);
     }
@@ -90,7 +44,7 @@ public sealed class HidMaestroSubmitCoverageTests
             .WithMotion(gyroPitch: MathF.PI, gyroYaw: -MathF.PI / 2f, gyroRoll: 0f,
                         accelX: 0f, accelY: 0f, accelZ: 0f);
 
-        var motion = HidMaestroOutputSink.ConvertMotion(snapshot);
+        var motion = HidMaestroSubmission.ConvertMotion(snapshot);
 
         Assert.True(motion.Present);
         Assert.Equal(180f, motion.GyroDps.X, precision: 3);
@@ -105,7 +59,7 @@ public sealed class HidMaestroSubmitCoverageTests
         var snapshot = ControllerSnapshot.Empty("pad")
             .WithMotion(0f, 0f, 0f, accelX: 0f, accelY: 9.80665f, accelZ: -19.6133f);
 
-        var motion = HidMaestroOutputSink.ConvertMotion(snapshot);
+        var motion = HidMaestroSubmission.ConvertMotion(snapshot);
 
         Assert.Equal(0f, motion.AccelG.X, precision: 4);
         Assert.Equal(1f, motion.AccelG.Y, precision: 4);
@@ -117,7 +71,7 @@ public sealed class HidMaestroSubmitCoverageTests
     [Fact]
     public void No_touch_submits_no_fingers()
     {
-        var touch = HidMaestroOutputSink.ConvertTouch(ControllerSnapshot.Empty("pad"));
+        var touch = HidMaestroSubmission.ConvertTouch(ControllerSnapshot.Empty("pad"));
 
         Assert.False(touch.Finger0Down);
         Assert.False(touch.Finger1Down);
@@ -132,7 +86,7 @@ public sealed class HidMaestroSubmitCoverageTests
             new TouchContact(FingerIndex: 1, X: 1f, Y: 1f, Pressure: 1f),
         ]);
 
-        var touch = HidMaestroOutputSink.ConvertTouch(snapshot);
+        var touch = HidMaestroSubmission.ConvertTouch(snapshot);
 
         Assert.True(touch.Finger0Down);
         Assert.Equal(0, touch.Finger0X);
@@ -149,7 +103,7 @@ public sealed class HidMaestroSubmitCoverageTests
         var snapshot = ControllerSnapshot.Empty("pad").WithTouchContacts(
             [new TouchContact(FingerIndex: 0, X: 0.5f, Y: 0.5f, Pressure: 1f)]);
 
-        var touch = HidMaestroOutputSink.ConvertTouch(snapshot);
+        var touch = HidMaestroSubmission.ConvertTouch(snapshot);
 
         Assert.Equal(960, touch.Finger0X);
         Assert.Equal(540, touch.Finger0Y);
@@ -165,7 +119,7 @@ public sealed class HidMaestroSubmitCoverageTests
         // silently not on a phone.
         var snapshot = ControllerSnapshot.Empty("phone").WithTouch(down: true, x: 0.25f, y: 0.75f);
 
-        var touch = HidMaestroOutputSink.ConvertTouch(snapshot);
+        var touch = HidMaestroSubmission.ConvertTouch(snapshot);
 
         Assert.True(touch.Finger0Down);
         Assert.Equal(480, touch.Finger0X);
@@ -181,7 +135,7 @@ public sealed class HidMaestroSubmitCoverageTests
         var snapshot = ControllerSnapshot.Empty("pad").WithTouchContacts(
             [new TouchContact(FingerIndex: 200, X: 0.5f, Y: 0.5f, Pressure: 1f)]);
 
-        var touch = HidMaestroOutputSink.ConvertTouch(snapshot);
+        var touch = HidMaestroSubmission.ConvertTouch(snapshot);
 
         Assert.True(touch.Finger0Id < 0x80);
     }
@@ -196,7 +150,7 @@ public sealed class HidMaestroSubmitCoverageTests
             TouchY = float.PositiveInfinity,
         };
 
-        var touch = HidMaestroOutputSink.ConvertTouch(snapshot);
+        var touch = HidMaestroSubmission.ConvertTouch(snapshot);
 
         Assert.Equal(0, touch.Finger0X);
         Assert.Equal(0, touch.Finger0Y);

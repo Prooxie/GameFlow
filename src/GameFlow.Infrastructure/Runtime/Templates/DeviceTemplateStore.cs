@@ -103,7 +103,7 @@ public sealed class DeviceTemplateStore
         try
         {
             var json = JsonSerializer.Serialize(templates, ProfileJsonOptions.Default);
-            File.WriteAllText(AppPaths.DeviceTemplatesFile, json);
+            AtomicFile.WriteAllText(AppPaths.DeviceTemplatesFile, json);
         }
         catch (Exception exception)
         {

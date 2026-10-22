@@ -32,10 +32,12 @@ namespace GameFlow.Infrastructure.Updates;
 /// progress UI). May be <see langword="null"/> when
 /// <see cref="DownloadAssetUrl"/> is.
 /// </param>
+/// <param name="ExpectedSha256">GitHub's SHA-256 digest for the selected asset. Missing digests require a manual download.</param>
 public sealed record UpdateInfo(
     Version Version,
     string TagName,
     string ReleaseName,
     Uri ReleaseNotesUrl,
     Uri? DownloadAssetUrl,
-    string? DownloadAssetName);
+    string? DownloadAssetName,
+    string? ExpectedSha256 = null);
