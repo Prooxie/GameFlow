@@ -143,7 +143,8 @@ jobs:
         run: |
           $archive = Get-Item "GameFlow-${env:GITHUB_REF_NAME}-${{ matrix.rid }}.${{ matrix.ext }}"
           $hash = (Get-FileHash -LiteralPath $archive.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
-          "$hash  $($archive.Name)" | Set-Content -Encoding utf8NoBOM "$($archive.FullName).sha256"
+          # The release verifier runs on Linux; use LF even on Windows.
+          [IO.File]::WriteAllText("$($archive.FullName).sha256", "$hash  $($archive.Name)`n", [Text.UTF8Encoding]::new($false))
 
       - name: Upload artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
