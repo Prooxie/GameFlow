@@ -8,7 +8,12 @@ GitHub's auto-generated commit list appended below it.
 Format: one `## vX.Y.Z` heading per release, newest first. The heading
 text must match the tag exactly — that is what the extraction keys on.
 
-## v1.0.7
+## v1.0.8
+
+GameFlow 1.0.8 updates the Windows HIDMaestro integration, improves profile
+and settings reliability, and hardens scripting, network sharing and update
+downloads. It also fixes navigation, localization and update-dialog behavior.
+See the downloads and requirements below before upgrading from 1.0.6.
 
 ### Stability and security
 
@@ -66,6 +71,10 @@ text must match the tag exactly — that is what the extraction keys on.
 - Removed per-read device-status updates that churned the device catalog.
 - A missing HIDMaestro SDK produces one actionable warning per slot retry,
   without an extra warning from the initial probe.
+- HIDMaestro SDK searches and controller retries use monotonic cooldowns,
+  so changing the system clock cannot skip a delay or postpone recovery.
+- A failing rumble subscriber no longer interrupts controller reconfiguration
+  or shutdown; other subscribers still receive the final motor-stop signal.
 - A DSU loop ending cancels its sibling loops so the server can shut down
   or retry instead of waiting indefinitely.
 
@@ -79,6 +88,9 @@ text must match the tag exactly — that is what the extraction keys on.
   virtual controller while running as Administrator. If another running
   program still uses the 1.x driver, HIDMaestro installs its driver beside the
   old one. The log reports the driver install outcome.
+- All slots share one SDK backend and session. Driver initialization runs at
+  most once; a failed installation is remembered until GameFlow restarts,
+  preventing repeated installation sweeps while other slots are active.
 - The DLL is still not shipped. Place `HIDMaestro.Core.dll` next to
   `GameFlow.App.exe`, in a `HIDMaestro` subfolder beside it, or in the folder
   named by the `GAMEFLOW_HIDMAESTRO_DIR` environment variable.
@@ -96,6 +108,17 @@ text must match the tag exactly — that is what the extraction keys on.
   It never worked.
 - Source builds download the pinned HIDMaestro release once to compile the
   adapter, so the first build needs network access.
+- SDK searches and output retries keep their cooldowns across system-clock
+  changes. Rumble teardown isolates failing subscribers and still delivers
+  the final stop to other listeners before removing the virtual controller.
+
+### Build and release quality
+
+- Fixed 44 xUnit cancellation-token warnings without disabling the analyzer.
+- Added regression coverage for clock changes and rumble teardown failures.
+- CI builds with warnings treated as errors. Releases include four platform
+  archives and their SHA-256 files; publishing checks every checksum and
+  rejects missing or unexpected assets before creating the GitHub release.
 
 ### Interface fixes
 

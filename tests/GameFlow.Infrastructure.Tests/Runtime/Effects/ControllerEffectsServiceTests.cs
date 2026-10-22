@@ -15,7 +15,7 @@ public sealed class ControllerEffectsServiceTests
             writer,
             NullLogger<ControllerEffectsService>.Instance);
 
-        await service.StartAsync(CancellationToken.None);
+        await service.StartAsync(TestContext.Current.CancellationToken);
         service.Queue.Publish("pad-1", new ControllerEffectState
         {
             LowFrequencyRumble = 0.75,
@@ -23,17 +23,17 @@ public sealed class ControllerEffectsServiceTests
                 AdaptiveTriggerEffect.Constant, 20, 180, 200),
         });
 
-        await writer.NonSilentDelivered.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        await writer.NonSilentDelivered.Task.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
 
         // The state is steady now: the dispatch queue has no changed write
         // due. Shutdown must use the service's successfully-delivered state,
         // not TakeDueWrites(), or this pad would never receive its stop.
-        var stopTask = service.StopAsync(CancellationToken.None);
-        await writer.SilenceStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        var stopTask = service.StopAsync(TestContext.Current.CancellationToken);
+        await writer.SilenceStarted.Task.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
         Assert.False(stopTask.IsCompleted);
 
         writer.AllowSilence.Set();
-        await stopTask.WaitAsync(TimeSpan.FromSeconds(2));
+        await stopTask.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
 
         var writes = writer.Writes.Where(write => write.DeviceId == "pad-1").ToList();
         Assert.True(writes.Count >= 2);

@@ -54,9 +54,9 @@ public sealed class AtomicFileTests : IDisposable
     {
         AtomicFile.WriteAllText(FilePath, "old");
 
-        await AtomicFile.WriteAllTextAsync(FilePath, "new", CancellationToken.None);
+        await AtomicFile.WriteAllTextAsync(FilePath, "new", TestContext.Current.CancellationToken);
 
-        Assert.Equal("new", await File.ReadAllTextAsync(FilePath));
+        Assert.Equal("new", await File.ReadAllTextAsync(FilePath, TestContext.Current.CancellationToken));
     }
 
     /// <summary>
@@ -67,13 +67,15 @@ public sealed class AtomicFileTests : IDisposable
     public async Task WriteAllTextAsyncReaderHoldsFileBrieflyStillReplacesAsync()
     {
         AtomicFile.WriteAllText(FilePath, "old");
-        var reader = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-        var release = Task.Delay(60).ContinueWith(_ => reader.Dispose(), TaskScheduler.Default);
+        using var reader = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        // Always release the file, including when the test cancels the delay.
+        var release = Task.Delay(60, TestContext.Current.CancellationToken).ContinueWith(
+            _ => reader.Dispose(), CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
 
-        await AtomicFile.WriteAllTextAsync(FilePath, "new", CancellationToken.None);
+        await AtomicFile.WriteAllTextAsync(FilePath, "new", TestContext.Current.CancellationToken);
         await release;
 
-        Assert.Equal("new", await File.ReadAllTextAsync(FilePath));
+        Assert.Equal("new", await File.ReadAllTextAsync(FilePath, TestContext.Current.CancellationToken));
     }
 
     [Fact]

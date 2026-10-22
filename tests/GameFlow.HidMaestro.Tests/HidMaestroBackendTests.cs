@@ -25,8 +25,8 @@ public sealed class HidMaestroBackendTests : IDisposable
     }
 
     private static HidMaestroBackend Backend(
-        Func<IReadOnlyList<string>> roots, bool elevated = true, Func<DateTimeOffset>? now = null) =>
-        new(NullLogger.Instance, roots, () => elevated, now ?? (() => Start));
+        Func<IReadOnlyList<string>> roots, bool elevated = true, AdjustableTime? time = null) =>
+        new(NullLogger.Instance, roots, () => elevated, time ?? new AdjustableTime());
 
     [WindowsFact]
     public void GetStatus_NoSdkInRoots_IsSdkMissing()
@@ -41,15 +41,15 @@ public sealed class HidMaestroBackendTests : IDisposable
     public void GetStatus_SdkMissing_SearchesAtMostEvery10Seconds()
     {
         var calls = 0;
-        var now = Start;
-        var backend = Backend(() => { calls++; return [temp]; }, now: () => now);
+        var time = new AdjustableTime();
+        var backend = Backend(() => { calls++; return [temp]; }, time: time);
 
         _ = backend.GetStatus();
-        now = Start.AddSeconds(9);
+        time.Advance(TimeSpan.FromSeconds(9));
         _ = backend.GetStatus();
         Assert.Equal(1, calls);
 
-        now = Start.AddSeconds(10);
+        time.Advance(TimeSpan.FromSeconds(1));
         _ = backend.GetStatus();
         Assert.Equal(2, calls);
     }
@@ -58,15 +58,35 @@ public sealed class HidMaestroBackendTests : IDisposable
     public void GetStatus_LookupThrows_IsFailedAndSearchesAgainLater()
     {
         var calls = 0;
-        var now = Start;
-        var backend = Backend(() => { calls++; throw new IOException("disk gone"); }, now: () => now);
+        var time = new AdjustableTime();
+        var backend = Backend(() => { calls++; throw new IOException("disk gone"); }, time: time);
 
         var status = backend.GetStatus();
-        now = Start.AddSeconds(10);
+        time.Advance(TimeSpan.FromSeconds(10));
         _ = backend.GetStatus();
 
         Assert.Equal(HidMaestroState.Failed, status.State);
         Assert.Equal("HIDMaestro failed to start: disk gone", status.Description);
+        Assert.Equal(2, calls);
+    }
+
+    [WindowsTheory]
+    [InlineData(-3600)]
+    [InlineData(86400)]
+    public void GetStatus_ClockAdjustment_DoesNotChangeTheSearchCooldown(int wallClockJumpSeconds)
+    {
+        var calls = 0;
+        var time = new AdjustableTime();
+        var backend = Backend(() => { calls++; return [temp]; }, time: time);
+        _ = backend.GetStatus();
+
+        time.WallTime += TimeSpan.FromSeconds(wallClockJumpSeconds);
+        time.Advance(TimeSpan.FromMilliseconds(9999));
+        _ = backend.GetStatus();
+        Assert.Equal(1, calls);
+
+        time.Advance(TimeSpan.FromMilliseconds(1));
+        _ = backend.GetStatus();
         Assert.Equal(2, calls);
     }
 
@@ -135,5 +155,21 @@ public sealed class HidMaestroBackendTests : IDisposable
         Assert.Contains(nameof(TimeoutException), text);
         Assert.Contains("failed", text);
         Assert.Contains("too slow", text);
+    }
+
+    private sealed class AdjustableTime : TimeProvider
+    {
+        public DateTimeOffset WallTime { get; set; } = Start;
+        private long timestamp;
+
+        public override DateTimeOffset GetUtcNow() => WallTime;
+        public override long GetTimestamp() => timestamp;
+        public override long TimestampFrequency => TimeSpan.TicksPerSecond;
+
+        public void Advance(TimeSpan elapsed)
+        {
+            timestamp += elapsed.Ticks;
+            WallTime += elapsed;
+        }
     }
 }

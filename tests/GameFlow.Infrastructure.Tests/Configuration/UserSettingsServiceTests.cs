@@ -18,9 +18,9 @@ public sealed class UserSettingsServiceTests
     public async Task UpdateAsyncChangeSavesNewSettingsAsync()
     {
         var service = CreateService();
-        await service.InitializeAsync();
+        await service.InitializeAsync(TestContext.Current.CancellationToken);
 
-        await service.UpdateAsync(settings => settings with { MotionServerEnabled = true });
+        await service.UpdateAsync(settings => settings with { MotionServerEnabled = true }, TestContext.Current.CancellationToken);
 
         Assert.True(repository.SavedSettings.MotionServerEnabled);
         Assert.True(service.Current.MotionServerEnabled);
@@ -30,10 +30,10 @@ public sealed class UserSettingsServiceTests
     public async Task UpdateAsyncTwoChangesKeepBothFieldsAsync()
     {
         var service = CreateService();
-        await service.InitializeAsync();
+        await service.InitializeAsync(TestContext.Current.CancellationToken);
 
-        await service.UpdateAsync(settings => settings with { MotionServerEnabled = true });
-        await service.UpdateAsync(settings => settings with { ActiveProfileId = "racing" });
+        await service.UpdateAsync(settings => settings with { MotionServerEnabled = true }, TestContext.Current.CancellationToken);
+        await service.UpdateAsync(settings => settings with { ActiveProfileId = "racing" }, TestContext.Current.CancellationToken);
 
         Assert.True(repository.SavedSettings.MotionServerEnabled);
         Assert.Equal("racing", repository.SavedSettings.ActiveProfileId);
@@ -46,11 +46,11 @@ public sealed class UserSettingsServiceTests
     public async Task UpdateAsyncConcurrentChangesKeepBothFieldsAsync()
     {
         var service = CreateService();
-        await service.InitializeAsync();
+        await service.InitializeAsync(TestContext.Current.CancellationToken);
 
         await Task.WhenAll(
-            Task.Run(() => service.UpdateAsync(settings => settings with { MotionServerEnabled = true })),
-            Task.Run(() => service.UpdateAsync(settings => settings with { SelectedCulture = "cs" })));
+            Task.Run(() => service.UpdateAsync(settings => settings with { MotionServerEnabled = true }, TestContext.Current.CancellationToken), TestContext.Current.CancellationToken),
+            Task.Run(() => service.UpdateAsync(settings => settings with { SelectedCulture = "cs" }, TestContext.Current.CancellationToken), TestContext.Current.CancellationToken));
 
         Assert.True(repository.SavedSettings.MotionServerEnabled);
         Assert.Equal("cs", repository.SavedSettings.SelectedCulture);
@@ -60,11 +60,11 @@ public sealed class UserSettingsServiceTests
     public async Task UpdateAsyncChangeRaisesChangedWithBothValuesAsync()
     {
         var service = CreateService();
-        await service.InitializeAsync();
+        await service.InitializeAsync(TestContext.Current.CancellationToken);
         UserSettingsChangedEventArgs? raised = null;
         service.Changed += (_, args) => raised = args;
 
-        await service.UpdateAsync(settings => settings with { MotionServerEnabled = true });
+        await service.UpdateAsync(settings => settings with { MotionServerEnabled = true }, TestContext.Current.CancellationToken);
 
         Assert.NotNull(raised);
         Assert.False(raised.Previous.MotionServerEnabled);
@@ -75,11 +75,11 @@ public sealed class UserSettingsServiceTests
     public async Task UpdateAsyncNoChangeDoesNotSaveAsync()
     {
         var service = CreateService();
-        await service.InitializeAsync();
+        await service.InitializeAsync(TestContext.Current.CancellationToken);
         var raised = false;
         service.Changed += (_, _) => raised = true;
 
-        await service.UpdateAsync(settings => settings);
+        await service.UpdateAsync(settings => settings, TestContext.Current.CancellationToken);
 
         Assert.False(raised);
     }
@@ -90,7 +90,7 @@ public sealed class UserSettingsServiceTests
         var damaged = new InMemoryProfileRepository { LoadSettingsFailure = new System.Text.Json.JsonException("bad") };
         var service = CreateService(damaged);
 
-        await service.InitializeAsync();
+        await service.InitializeAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(new AppSettings(), service.Current with { WebAccessToken = string.Empty });
         Assert.Equal(64, service.Current.WebAccessToken.Length);

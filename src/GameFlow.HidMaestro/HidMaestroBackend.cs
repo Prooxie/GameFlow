@@ -49,12 +49,12 @@ public sealed class HidMaestroBackend : IHidMaestroBackend
     private readonly ILogger logger;
     private readonly Func<IReadOnlyList<string>> roots;
     private readonly Func<bool> isElevated;
-    private readonly Func<DateTimeOffset> now;
+    private readonly TimeProvider timeProvider;
 
     private HidMaestroSession? session;
     private HidMaestroStatus? settledStatus;
     private HidMaestroStatus? searchStatus;
-    private DateTimeOffset lastSearchAt;
+    private long lastSearchAt;
 
     /// <summary>
     /// Creates the backend that the app uses. It searches the real roots and
@@ -67,23 +67,23 @@ public sealed class HidMaestroBackend : IHidMaestroBackend
                 Environment.GetEnvironmentVariable(HidMaestroSdkLocator.DirectoryOverrideVariable),
                 AppContext.BaseDirectory),
             static () => Environment.IsPrivilegedProcess,
-            static () => DateTimeOffset.UtcNow)
+            TimeProvider.System)
     {
     }
 
     /// <summary>Creates a backend with injected roots, elevation and clock, for tests.</summary>
     internal HidMaestroBackend(
-        ILogger logger, Func<IReadOnlyList<string>> roots, Func<bool> isElevated, Func<DateTimeOffset> now)
+        ILogger logger, Func<IReadOnlyList<string>> roots, Func<bool> isElevated, TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(roots);
         ArgumentNullException.ThrowIfNull(isElevated);
-        ArgumentNullException.ThrowIfNull(now);
+        ArgumentNullException.ThrowIfNull(timeProvider);
 
         this.logger = logger;
         this.roots = roots;
         this.isElevated = isElevated;
-        this.now = now;
+        this.timeProvider = timeProvider;
     }
 
     /// <inheritdoc />
@@ -181,8 +181,8 @@ public sealed class HidMaestroBackend : IHidMaestroBackend
             return settledStatus;
         }
 
-        var at = now();
-        if (searchStatus is not null && at - lastSearchAt < MissingSdkReprobeInterval)
+        var at = timeProvider.GetTimestamp();
+        if (searchStatus is not null && timeProvider.GetElapsedTime(lastSearchAt, at) < MissingSdkReprobeInterval)
         {
             return searchStatus;
         }
