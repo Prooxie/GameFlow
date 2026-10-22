@@ -21,6 +21,12 @@ internal sealed class FakeHidMaestroBackend : IHidMaestroBackend
     public Func<HidMaestroPadRequest, FakeHidMaestroPad?> CreatePad { get; set; } =
         request => new FakeHidMaestroPad { ProfileId = request.ProfileId };
 
+    /// <summary>
+    /// When set, <see cref="TryCreatePad"/> throws it after it records the
+    /// request. This breaks the seam's no-throw contract on purpose.
+    /// </summary>
+    public Exception? ThrowOnCreate { get; set; }
+
     public int FinalizeNamesCalls { get; private set; }
 
     public HidMaestroStatus GetStatus() => Status;
@@ -30,6 +36,11 @@ internal sealed class FakeHidMaestroBackend : IHidMaestroBackend
     public bool TryCreatePad(HidMaestroPadRequest request, [NotNullWhen(true)] out IHidMaestroPad? pad, out string? failure)
     {
         Requests.Add(request);
+
+        if (ThrowOnCreate is { } exception)
+        {
+            throw exception;
+        }
 
         if (!Status.CanCreatePads)
         {
@@ -52,7 +63,7 @@ internal sealed class FakeHidMaestroBackend : IHidMaestroBackend
     public void FinalizeNames() => FinalizeNamesCalls++;
 }
 
-/// <summary>A pad that counts frames and can be told to fail or to raise rumble.</summary>
+/// <summary>A pad that counts frames and can be told to fail, to fail its disposal or to raise rumble.</summary>
 internal sealed class FakeHidMaestroPad : IHidMaestroPad
 {
     public string ProfileId { get; init; } = "xbox-360-wired";
@@ -66,6 +77,9 @@ internal sealed class FakeHidMaestroPad : IHidMaestroPad
     public int Submits { get; private set; }
 
     public bool ThrowOnSubmit { get; set; }
+
+    /// <summary>When true, <see cref="Dispose"/> marks the pad disposed and then throws.</summary>
+    public bool ThrowOnDispose { get; set; }
 
     public bool Disposed { get; private set; }
 
@@ -82,5 +96,12 @@ internal sealed class FakeHidMaestroPad : IHidMaestroPad
         }
     }
 
-    public void Dispose() => Disposed = true;
+    public void Dispose()
+    {
+        Disposed = true;
+        if (ThrowOnDispose)
+        {
+            throw new InvalidOperationException("fake dispose failure");
+        }
+    }
 }

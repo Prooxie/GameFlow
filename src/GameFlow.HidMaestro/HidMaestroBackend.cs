@@ -105,6 +105,13 @@ public sealed class HidMaestroBackend : IHidMaestroBackend
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// The session already turns creation exceptions into a failure text.
+    /// The catch here keeps the seam's no-throw contract for anything that
+    /// escapes it. The text is built here, not with
+    /// <see cref="HidMaestroSession.DescribeFailure"/>: its type tests would
+    /// put SDK types into this method.
+    /// </remarks>
     public bool TryCreatePad(HidMaestroPadRequest request, [NotNullWhen(true)] out IHidMaestroPad? pad, out string? failure)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -118,17 +125,29 @@ public sealed class HidMaestroBackend : IHidMaestroBackend
                 return false;
             }
 
-            return session.TryCreatePad(request, out pad, out failure);
+            try
+            {
+                return session.TryCreatePad(request, out pad, out failure);
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "HIDMaestro controller creation failed for profile {Profile}.", request.ProfileId);
+                pad = null;
+                failure = $"HIDMaestro controller creation failed: {exception.GetType().Name}: {exception.Message}";
+                return false;
+            }
         }
     }
 
     /// <summary>
     /// Gives the pads created so far their final Windows names. Does nothing
-    /// before the SDK is loaded.
+    /// before the SDK is loaded. Never throws.
     /// </summary>
     /// <remarks>
     /// The call runs outside the lock. It can wait up to 5 seconds for
     /// Windows, and the status and catalog callers must not wait with it.
+    /// A failure only leaves the names that Windows chose, so it is logged
+    /// at Debug.
     /// </remarks>
     public void FinalizeNames()
     {
@@ -138,7 +157,15 @@ public sealed class HidMaestroBackend : IHidMaestroBackend
             current = session;
         }
 
-        current?.FinalizeNames();
+        try
+        {
+            current?.FinalizeNames();
+        }
+        catch (Exception exception)
+        {
+            logger.LogDebug(
+                exception, "HIDMaestro: FinalizeNames() failed; virtual controller names may show the driver default.");
+        }
     }
 
     /// <summary>Callers must hold <see cref="gate"/>.</summary>
