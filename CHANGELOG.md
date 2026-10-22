@@ -75,8 +75,10 @@ text must match the tag exactly — that is what the extraction keys on.
   HIDMaestro 2.0.1. It needs HIDMaestro 2.0.1 or a later 2.x release.
   A 1.x DLL or any other version is refused with a status message that names
   the version found and the range needed. It is never loaded.
-- The first elevated start with 2.0.1 upgrades an installed 1.x HIDMaestro
-  driver. The log reports the driver install outcome.
+- HIDMaestro installs or upgrades its driver when GameFlow first creates a
+  virtual controller while running as Administrator. If another running
+  program still uses the 1.x driver, HIDMaestro installs its driver beside the
+  old one. The log reports the driver install outcome.
 - The DLL is still not shipped. Place `HIDMaestro.Core.dll` next to
   `GameFlow.App.exe`, in a `HIDMaestro` subfolder beside it, or in the folder
   named by the `GAMEFLOW_HIDMAESTRO_DIR` environment variable.

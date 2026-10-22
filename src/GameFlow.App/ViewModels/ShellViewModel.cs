@@ -2751,7 +2751,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             [
                 new OutputProviderOption("hidmaestro",
                     Localized("OutputProviderHidMaestroLabel",         "HIDMaestro virtual controller"),
-                    Localized("OutputProviderHidMaestroDescription",   "User-mode virtual controller platform — no kernel driver or reboot. Presents as real hardware to XInput, DirectInput, SDL3 and WGI, with 225 controller profiles plus custom devices. Activates when HIDMaestro.Core.dll is next to the executable and GameFlow runs as Administrator. The sole output backend — if it can't activate, the slot has no output.")),
+                    Localized("OutputProviderHidMaestroDescription",   "User-mode virtual controller platform — no kernel driver or reboot. Presents as real hardware to XInput, DirectInput, SDL3 and WGI. Needs HIDMaestro 2.0.1 or a later 2.x. Activates when HIDMaestro.Core.dll is next to the executable, in a 'HIDMaestro' subfolder or in GAMEFLOW_HIDMAESTRO_DIR, and GameFlow runs as Administrator. The sole output backend — if it can't activate, the slot has no output.")),
             ];
         }
 
