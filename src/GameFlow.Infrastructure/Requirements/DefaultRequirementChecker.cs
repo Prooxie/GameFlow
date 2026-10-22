@@ -6,7 +6,8 @@ namespace GameFlow.Infrastructure.Requirements;
 /// <summary>
 /// Default <see cref="IRequirementChecker"/>. Knows about a single
 /// requirement: HIDMaestro, the sole output backend (ViGEm Bus was
-/// retired as a dependency). Windows-only, like the requirement itself.
+/// retired as a dependency). Reads availability from
+/// <see cref="IHidMaestroBackend"/>, so it needs no platform check of its own.
 ///
 /// <para>
 /// The checker always returns one entry per known requirement, even on
@@ -24,13 +25,15 @@ public sealed class DefaultRequirementChecker : IRequirementChecker
     private static readonly Uri HidMaestroInfoUrl = new("https://github.com/hifihedgehog/HIDMaestro");
 
     private readonly ILogger<DefaultRequirementChecker> logger;
+    private readonly IHidMaestroBackend backend;
 
     /// <summary>
     /// Constructs the checker.
     /// </summary>
-    public DefaultRequirementChecker(ILogger<DefaultRequirementChecker> logger)
+    public DefaultRequirementChecker(ILogger<DefaultRequirementChecker> logger, IHidMaestroBackend backend)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.backend = backend ?? throw new ArgumentNullException(nameof(backend));
     }
 
     /// <inheritdoc />
@@ -59,12 +62,11 @@ public sealed class DefaultRequirementChecker : IRequirementChecker
     }
 
     /// <summary>
-    /// Probes for HIDMaestro.Core.dll next to the executable, reusing
-    /// the same detection logic the output sink itself uses to decide
-    /// whether to activate — one source of truth for "is HIDMaestro
-    /// available," not a second, potentially-divergent probe. On
-    /// non-Windows platforms returns an inapplicable status so the
-    /// dialog hides it from the user.
+    /// Maps the backend status onto the requirement: not applicable off
+    /// Windows, satisfied when ready, and unsatisfied otherwise. A refused
+    /// version or a failed start also shows the backend's reason. One source
+    /// of truth for "is HIDMaestro available" is the backend, not a second,
+    /// potentially divergent probe.
     /// </summary>
     private RequirementStatus CheckHidMaestro()
     {
@@ -75,7 +77,9 @@ public sealed class DefaultRequirementChecker : IRequirementChecker
             "Without it, physical controllers will be read normally, but the transformed output " +
             "won't be visible to games or other apps.";
 
-        if (!OperatingSystem.IsWindows())
+        var status = backend.GetStatus();
+
+        if (status.State == HidMaestroState.NotWindows)
         {
             return new RequirementStatus(
                 Id: id,
@@ -86,37 +90,41 @@ public sealed class DefaultRequirementChecker : IRequirementChecker
                 IsApplicable: false);
         }
 
-        var isSatisfied = HidMaestroDynamic.IsAvailable(logger);
+        var isSatisfied = status.State == HidMaestroState.Ready;
 
-        // Elevation is the other half of "available": the bridge can
-        // resolve every type and still be unable to create a single
-        // device, because HIDMaestro's driver install and device
-        // creation need administrator rights (SeLoadDriverPrivilege).
-        // Surface that as an explicit, actionable failure instead of
-        // letting the first CreateController produce an opaque access
-        // error minutes later.
-        var elevationDescription = description;
-        if (isSatisfied && !HidMaestroDynamic.IsProcessElevated)
+        // Elevation is the other half of "available": the SDK can load
+        // and still be unable to create a single device, because
+        // HIDMaestro's driver install and device creation need
+        // administrator rights (SeLoadDriverPrivilege). Surface that as
+        // an explicit, actionable failure instead of letting the first
+        // pad creation produce an opaque access error minutes later.
+        //
+        // A refused version and a failed start add the backend's own text,
+        // which names the version found or the error. Without it the dialog
+        // cannot say why a DLL that is present does not count. A missing
+        // SDK keeps the base text, which already says what to do.
+        var dialogDescription = status.State switch
         {
-            isSatisfied = false;
-            elevationDescription =
+            HidMaestroState.NotElevated =>
                 "HIDMaestro is present, but GameFlow is not running as Administrator. " +
                 "HIDMaestro needs administrator rights to install its driver and create virtual " +
-                "controllers — restart GameFlow as Administrator (right-click → Run as administrator).";
-        }
+                "controllers — restart GameFlow as Administrator (right-click → Run as administrator).",
+            HidMaestroState.SdkVersionUnsupported or HidMaestroState.Failed => description + " " + status.Description,
+            _ => description,
+        };
 
         if (!isSatisfied)
         {
             logger.LogInformation(
                 "HIDMaestro requirement unsatisfied ({Status}). User will be offered {InfoUrl}.",
-                HidMaestroDynamic.IsProcessElevated ? HidMaestroDynamic.StatusDescription : "process not elevated",
+                status.Description,
                 HidMaestroInfoUrl);
         }
 
         return new RequirementStatus(
             Id: id,
             DisplayName: displayName,
-            Description: elevationDescription,
+            Description: dialogDescription,
             IsSatisfied: isSatisfied,
             InstallerUrl: HidMaestroInfoUrl,
             IsApplicable: true);

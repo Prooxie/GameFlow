@@ -1,8 +1,8 @@
-using Autofire.Infrastructure.Theming;
-using Autofire.Infrastructure.Theming.Models;
+using GameFlow.Infrastructure.Theming;
+using GameFlow.Infrastructure.Theming.Models;
 using Xunit;
 
-namespace Autofire.Infrastructure.Tests.Theming;
+namespace GameFlow.Infrastructure.Tests.Theming;
 
 /// <summary>
 /// Theme loader contract: turn a JSON string into a parsed

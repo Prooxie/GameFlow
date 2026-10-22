@@ -1,9 +1,9 @@
-using Autofire.Core.Enums;
-using Autofire.Core.Models;
-using Autofire.Infrastructure.Theming;
+using GameFlow.Core.Enums;
+using GameFlow.Core.Models;
+using GameFlow.Infrastructure.Theming;
 using Xunit;
 
-namespace Autofire.Infrastructure.Tests.Theming;
+namespace GameFlow.Infrastructure.Tests.Theming;
 
 /// <summary>
 /// Verifies the mapping from <see cref="ControllerSnapshot"/> fields to
@@ -25,18 +25,19 @@ public sealed class ControllerStateSymbolsTests
         float lt = 0f, float rt = 0f,
         float lx = 0f, float ly = 0f, float rx = 0f, float ry = 0f)
     {
-        var s = ControllerSnapshot.Empty();
-        if (pressA)     { s = s.WithButton(ButtonId.South, true); }
-        if (pressB)     { s = s.WithButton(ButtonId.East,  true); }
-        if (pressX)     { s = s.WithButton(ButtonId.West,  true); }
-        if (pressY)     { s = s.WithButton(ButtonId.North, true); }
-        if (dpadUp)     { s = s.WithButton(ButtonId.DpadUp,    true); }
-        if (dpadDown)   { s = s.WithButton(ButtonId.DpadDown,  true); }
-        if (dpadLeft)   { s = s.WithButton(ButtonId.DpadLeft,  true); }
-        if (dpadRight)  { s = s.WithButton(ButtonId.DpadRight, true); }
-        if (ls)         { s = s.WithButton(ButtonId.LeftStick,  true); }
-        if (rs)         { s = s.WithButton(ButtonId.RightStick, true); }
-        if (guide)      { s = s.WithButton(ButtonId.Guide,      true); }
+        var buttons = ButtonMask.Empty;
+        buttons[ButtonId.South] = pressA;
+        buttons[ButtonId.East] = pressB;
+        buttons[ButtonId.West] = pressX;
+        buttons[ButtonId.North] = pressY;
+        buttons[ButtonId.DpadUp] = dpadUp;
+        buttons[ButtonId.DpadDown] = dpadDown;
+        buttons[ButtonId.DpadLeft] = dpadLeft;
+        buttons[ButtonId.DpadRight] = dpadRight;
+        buttons[ButtonId.LeftStick] = ls;
+        buttons[ButtonId.RightStick] = rs;
+        buttons[ButtonId.Guide] = guide;
+        var s = ControllerSnapshot.Empty().WithButtons(buttons);
         s = s with
         {
             LeftTrigger = lt,

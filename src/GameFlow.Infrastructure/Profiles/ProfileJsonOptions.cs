@@ -11,7 +11,8 @@ public static class ProfileJsonOptions
     {
         var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
         {
-            WriteIndented = true
+            WriteIndented = true,
+            RespectNullableAnnotations = true
         };
 
         options.Converters.Add(new JsonStringEnumConverter());

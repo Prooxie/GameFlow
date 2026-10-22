@@ -333,7 +333,7 @@ netsh advfirewall firewall add rule name="GameFlow web controller" dir=in action
 
 **The game responds to my input twice.** Both the physical and the virtual pad are visible to it. GameFlow does not hide devices from games and has no [HidHide](https://github.com/nefarius/HidHide) integration — that is a separate tool. If you use one, whitelist `GameFlow.App.exe` in it, or GameFlow loses the physical pad along with every other application.
 
-**HIDMaestro output isn't appearing.** Confirm `HIDMaestro.Core.dll` is next to `GameFlow.App.exe`. If it's genuinely missing, GameFlow says so explicitly in the log and the slot's display name — it will not silently fall back to a different backend without telling you.
+**HIDMaestro output isn't appearing.** Confirm `HIDMaestro.Core.dll` is next to `GameFlow.App.exe`, in a `HIDMaestro` subfolder beside it, or in the folder named by `GAMEFLOW_HIDMAESTRO_DIR`. GameFlow needs HIDMaestro 2.0.1 or a later 2.x release and refuses any other version with a status message. If it's genuinely missing, GameFlow says so explicitly in the log and the slot's display name — it will not silently fall back to a different backend without telling you.
 
 ---
 

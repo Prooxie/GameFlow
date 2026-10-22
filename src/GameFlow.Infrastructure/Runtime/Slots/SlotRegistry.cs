@@ -389,7 +389,7 @@ public sealed class SlotRegistry
         try
         {
             var json = JsonSerializer.Serialize(slots, ProfileJsonOptions.Default);
-            File.WriteAllText(filePath, json);
+            AtomicFile.WriteAllText(filePath, json);
         }
         catch (Exception exception)
         {

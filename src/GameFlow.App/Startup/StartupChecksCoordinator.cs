@@ -159,8 +159,8 @@ public sealed class StartupChecksCoordinator
 
     private async Task MarkWalkthroughSeenAsync(CancellationToken cancellationToken)
     {
-        var updated = userSettings.Current with { SetupWalkthroughCompleted = true };
-        await userSettings.ApplyAsync(updated, cancellationToken).ConfigureAwait(false);
+        await userSettings.UpdateAsync(
+            settings => settings with { SetupWalkthroughCompleted = true }, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -203,8 +203,8 @@ public sealed class StartupChecksCoordinator
 
         if (dontAskAgain)
         {
-            var updated = userSettings.Current with { CheckRequirementsOnStartup = false };
-            await userSettings.ApplyAsync(updated, cancellationToken).ConfigureAwait(false);
+            await userSettings.UpdateAsync(
+                settings => settings with { CheckRequirementsOnStartup = false }, cancellationToken).ConfigureAwait(false);
             logger.LogInformation("User opted out of further startup requirement checks.");
         }
     }
@@ -259,6 +259,11 @@ public sealed class StartupChecksCoordinator
         {
             var dialog = new UpdateAvailableDialog();
             dialog.SetUpdate(available.Update, available.CurrentVersion);
+            dialog.DownloadAsync = async (progress, downloadToken) =>
+            {
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, downloadToken);
+                return await updateInstaller.DownloadAndRevealAsync(available.Update, progress, linked.Token);
+            };
             await dialog.ShowDialog(ownerWindow);
             return dialog.Choice;
         }).ConfigureAwait(false);
@@ -267,8 +272,9 @@ public sealed class StartupChecksCoordinator
         {
             case UpdateDialogChoice.SkipThisUpdate:
                 {
-                    var updated = userSettings.Current with { SkippedUpdateVersion = available.Update.TagName };
-                    await userSettings.ApplyAsync(updated, cancellationToken).ConfigureAwait(false);
+                    await userSettings.UpdateAsync(
+                        settings => settings with { SkippedUpdateVersion = available.Update.TagName },
+                        cancellationToken).ConfigureAwait(false);
                     logger.LogInformation(
                         "User chose to skip update {TagName}.",
                         available.Update.TagName);
@@ -277,43 +283,21 @@ public sealed class StartupChecksCoordinator
 
             case UpdateDialogChoice.DontAskAgain:
                 {
-                    var updated = userSettings.Current with { CheckForUpdatesOnStartup = false };
-                    await userSettings.ApplyAsync(updated, cancellationToken).ConfigureAwait(false);
+                    await userSettings.UpdateAsync(
+                        settings => settings with { CheckForUpdatesOnStartup = false }, cancellationToken).ConfigureAwait(false);
                     logger.LogInformation("User opted out of further startup update checks.");
                     break;
                 }
 
             case UpdateDialogChoice.DownloadAndInstall:
                 {
-                    logger.LogInformation(
-                        "User accepted update {TagName}; starting background download.",
-                        available.Update.TagName);
-
-                    // Fire-and-forget: don't block the user behind a
-                    // 100 MB download. The installer logs all progress
-                    // and reveals the file when finished.
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            await updateInstaller
-                                .DownloadAndRevealAsync(available.Update, progress: null, cancellationToken)
-                                .ConfigureAwait(false);
-                        }
-                        catch (Exception exception)
-                        {
-                            logger.LogWarning(exception, "Background update download failed.");
-                        }
-                    }, cancellationToken);
+                    logger.LogInformation("Update {TagName} was downloaded and verified.", available.Update.TagName);
 
                     // Clear any previously-skipped version so that if
                     // they install successfully, the next launch
                     // doesn't keep telling them about the same release.
-                    if (!string.IsNullOrEmpty(userSettings.Current.SkippedUpdateVersion))
-                    {
-                        var cleared = userSettings.Current with { SkippedUpdateVersion = null };
-                        await userSettings.ApplyAsync(cleared, cancellationToken).ConfigureAwait(false);
-                    }
+                    await userSettings.UpdateAsync(
+                        settings => settings with { SkippedUpdateVersion = null }, cancellationToken).ConfigureAwait(false);
 
                     break;
                 }

@@ -225,13 +225,14 @@ public sealed class AppProfilePanelViewModel : ViewModelBase
             return;
         }
 
-        var settings = userSettings.Current with
-        {
-            AutoSwitchProfilesByApp = IsEnabled,
-            AppProfileRules = [.. Rules.Select(r => new AppProfileRule(r.ProcessName, r.ProfileId, r.Enabled))]
-        };
+        var isEnabled = IsEnabled;
+        AppProfileRule[] rules = [.. Rules.Select(r => new AppProfileRule(r.ProcessName, r.ProfileId, r.Enabled))];
 
-        _ = userSettings.ApplyAsync(settings).ContinueWith(
+        _ = userSettings.UpdateAsync(settings => settings with
+        {
+            AutoSwitchProfilesByApp = isEnabled,
+            AppProfileRules = rules
+        }).ContinueWith(
             task => logger.LogWarning(task.Exception, "Per-app profiles: saving the rules failed."),
             TaskContinuationOptions.OnlyOnFaulted);
     }

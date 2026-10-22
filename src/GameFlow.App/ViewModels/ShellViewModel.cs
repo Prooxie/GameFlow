@@ -650,7 +650,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     /// <summary>
     /// Resolves a slot's output template to the dashboard style that
     /// represents it: the explicit HIDMaestro catalog profile's family
-    /// when one is chosen (any of the 225 profiles classify), the
+    /// when one is chosen (any catalog profile classifies), the
     /// template's kind otherwise.
     /// </summary>
     /// <summary>
@@ -1841,6 +1841,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                 ProfileName = profileSession.CurrentProfile.Name;
                 ReloadAxisInvert();
                 await RefreshRuntimeAsync();
+                var scripts = profileSession.CurrentProfile.Rules.OfType<GameFlow.Core.Models.Rules.ControlScriptRule>().Count();
+                StatusText = scripts > 0
+                    ? $"Profile imported. {scripts} Lua script(s) are disabled; review them in the mapping editor before enabling."
+                    : "Profile imported.";
             }
             finally
             {
@@ -2349,14 +2353,22 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             return;
         }
 
+        // Read before the first await: the edit belongs to the profile on
+        // screen now, not to the one that is current after the wait.
+        var profileId = profileSession.CurrentProfile.Id;
+
         // Shares the rule gate deliberately: both write the whole
         // profile document, so letting them overlap would let one
         // clobber the other's edit.
         await rulesSaveGate.WaitAsync();
         try
         {
-            var profile = profileSession.CurrentProfile with { Invert = invert };
-            await profileSession.SaveCurrentProfileAsync(profile);
+            if (!await profileSession.UpdateCurrentProfileAsync(profileId, profile => profile with { Invert = invert }))
+            {
+                StatusText = DroppedEditStatus;
+                return;
+            }
+
             ProfileJson = profileSession.SerializeCurrentProfile();
         }
         catch (Exception exception)
@@ -2370,6 +2382,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         }
     }
 
+    /// <summary>Status line when a profile switch came between an edit and its save.</summary>
+    private const string DroppedEditStatus =
+        "The profile changed before the last edit was saved, so that edit was not applied.";
+
     private async Task SaveRulesAsync(IReadOnlyList<MappingRule> rules)
     {
         if (disposed)
@@ -2377,11 +2393,20 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             return;
         }
 
+        // Read before the first await, as in SaveAxisInvertAsync. Before
+        // this, a profile switch during the wait wrote these rules over the
+        // rules of the new profile.
+        var profileId = profileSession.CurrentProfile.Id;
+
         await rulesSaveGate.WaitAsync();
         try
         {
-            var profile = profileSession.CurrentProfile with { Rules = [.. rules] };
-            await profileSession.SaveCurrentProfileAsync(profile);
+            if (!await profileSession.UpdateCurrentProfileAsync(profileId, profile => profile with { Rules = [.. rules] }))
+            {
+                StatusText = DroppedEditStatus;
+                return;
+            }
+
             ProfileJson      = profileSession.SerializeCurrentProfile();
             ruleSummaryDirty = true;
             RebuildControlConfigurationCards();
@@ -2726,7 +2751,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             [
                 new OutputProviderOption("hidmaestro",
                     Localized("OutputProviderHidMaestroLabel",         "HIDMaestro virtual controller"),
-                    Localized("OutputProviderHidMaestroDescription",   "User-mode virtual controller platform — no kernel driver or reboot. Presents as real hardware to XInput, DirectInput, SDL3 and WGI, with 225 controller profiles plus custom devices. Activates when HIDMaestro.Core.dll is next to the executable and GameFlow runs as Administrator. The sole output backend — if it can't activate, the slot has no output.")),
+                    Localized("OutputProviderHidMaestroDescription",   "User-mode virtual controller platform — no kernel driver or reboot. Presents as real hardware to XInput, DirectInput, SDL3 and WGI. Needs HIDMaestro 2.0.1 or a later 2.x. Activates when HIDMaestro.Core.dll is next to the executable, in a 'HIDMaestro' subfolder or in GAMEFLOW_HIDMAESTRO_DIR, and GameFlow runs as Administrator. The sole output backend — if it can't activate, the slot has no output.")),
             ];
         }
 

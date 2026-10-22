@@ -1,19 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <IsPackable>false</IsPackable>
+    <!-- xUnit v3 test projects are executables. -->
+    <OutputType>Exe</OutputType>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
-
-  <!--
-    The Theming test files predate the Autofire → GameFlow rename (they
-    still target Autofire.Infrastructure.* namespaces) and do not compile
-    against the current API. They are excluded here rather than deleted so
-    they can be revived deliberately; new Infrastructure tests live under
-    Runtime/.
-  -->
-  <ItemGroup>
-    <Compile Remove="Theming/**" />
-    <None Include="Theming/**" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\GameFlow.App\GameFlow.App.csproj" />
@@ -21,11 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.visualstudio">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="Moq" />
   </ItemGroup>
 </Project>

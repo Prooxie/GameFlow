@@ -2,6 +2,7 @@ using GameFlow.App.Services;
 using GameFlow.App.Startup;
 using GameFlow.App.ViewModels;
 using GameFlow.App.Views;
+using GameFlow.HidMaestro;
 using GameFlow.Infrastructure;
 using GameFlow.Infrastructure.Configuration;
 using Microsoft.Extensions.Configuration;
@@ -58,6 +59,9 @@ public static class HostBuilderFactory
         var loggingLevelSwitch = new LoggingLevelSwitch(LogEventLevel.Information);
 
         return Host.CreateDefaultBuilder(args)
+            // PO catalogs and bundled assets belong to the installation,
+            // even when a shortcut or terminal launches from another folder.
+            .UseContentRoot(AppContext.BaseDirectory)
             .ConfigureAppConfiguration((hostingContext, configurationBuilder) =>
             {
                 _ = configurationBuilder.SetBasePath(AppContext.BaseDirectory);
@@ -106,6 +110,7 @@ public static class HostBuilderFactory
                 _ = services.AddSingleton<ILogLevelSwitch>(_ => new SerilogLogLevelSwitch(loggingLevelSwitch));
 
                 _ = services.AddGameFlowInfrastructure(hostingContext.Configuration);
+                _ = services.AddGameFlowHidMaestro();
                 _ = services.AddSingleton<IProfileFileDialogService, ProfileFileDialogService>();
                 _ = services.AddSingleton<StartupChecksCoordinator>();
                 _ = services.AddTransient<SettingsDialogViewModel>();

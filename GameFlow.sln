@@ -12,6 +12,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFlow.Core.Tests", "test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFlow.Infrastructure.Tests", "tests\GameFlow.Infrastructure.Tests\GameFlow.Infrastructure.Tests.csproj", "{4A1D9C6E-8B27-4F3A-9C51-2E6B0D7F8A19}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFlow.HidMaestro", "src\GameFlow.HidMaestro\GameFlow.HidMaestro.csproj", "{C91414CC-7ED9-452A-9206-C98DB0BDEDBB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFlow.HidMaestro.Tests", "tests\GameFlow.HidMaestro.Tests\GameFlow.HidMaestro.Tests.csproj", "{77E5F72B-854C-4BF4-B68E-5E3C7B4BCEAE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +42,14 @@ Global
 		{4A1D9C6E-8B27-4F3A-9C51-2E6B0D7F8A19}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A1D9C6E-8B27-4F3A-9C51-2E6B0D7F8A19}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A1D9C6E-8B27-4F3A-9C51-2E6B0D7F8A19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C91414CC-7ED9-452A-9206-C98DB0BDEDBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C91414CC-7ED9-452A-9206-C98DB0BDEDBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C91414CC-7ED9-452A-9206-C98DB0BDEDBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C91414CC-7ED9-452A-9206-C98DB0BDEDBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77E5F72B-854C-4BF4-B68E-5E3C7B4BCEAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77E5F72B-854C-4BF4-B68E-5E3C7B4BCEAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77E5F72B-854C-4BF4-B68E-5E3C7B4BCEAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77E5F72B-854C-4BF4-B68E-5E3C7B4BCEAE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

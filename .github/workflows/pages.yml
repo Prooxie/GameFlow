@@ -1,0 +1,80 @@
+name: pages
+
+# The project site at https://prooxie.github.io/GameFlow/.
+#
+# Only redeploys when something the site actually renders changes — the
+# page itself, the brand assets it references, or this workflow. A push
+# that only touches C# does not need to rebuild a static page.
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'docs/**'
+      - 'brand/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never let two deploys race; a half-published site is worse than a stale
+# one, so an in-flight deploy is allowed to finish rather than cancelled.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  source:
+    name: Check website source
+    runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.source.outputs.present }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - id: source
+        shell: bash
+        run: |
+          if [ -f docs/index.html ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Website source is not in this checkout. Add docs/index.html to resume Pages deployments."
+          fi
+
+  deploy:
+    name: Build and deploy site
+    needs: source
+    if: needs.source.outputs.present == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      # The site and the README share one set of brand assets, so `brand/`
+      # is assembled into the artifact rather than duplicated under docs/.
+      # Keeping one copy in git is what stops the site's logo and the
+      # README's logo drifting apart.
+      - name: Assemble site
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          cp -r docs/. _site/
+          cp -r brand _site/brand
+          # Plain HTML — tell Pages not to look for a Jekyll build.
+          touch _site/.nojekyll
+          test -f _site/index.html
+          test -f _site/brand/logo-mark-256.png
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using GameFlow.Infrastructure.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -23,6 +24,7 @@ public sealed class DefaultUpdateInstaller : IUpdateInstaller
 {
     /// <summary>How long the whole download is allowed to take.</summary>
     private static readonly TimeSpan DownloadTimeout = TimeSpan.FromMinutes(15);
+    private const long MaxDownloadBytes = 1024L * 1024 * 1024;
 
     private readonly UpdateOptions options;
     private readonly ILogger<DefaultUpdateInstaller> logger;
@@ -46,13 +48,17 @@ public sealed class DefaultUpdateInstaller : IUpdateInstaller
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(update);
-
-        // Always open the release notes — regardless of whether the
-        // asset download succeeds, the user knows what changed.
-        TryOpenInBrowser(update.ReleaseNotesUrl);
+        if (!UpdateDownloadPolicy.IsHttps(update.ReleaseNotesUrl) ||
+            (update.DownloadAssetUrl is not null && !UpdateDownloadPolicy.IsHttps(update.DownloadAssetUrl)) ||
+            (update.DownloadAssetName is not null && !UpdateDownloadPolicy.IsSafeFileName(update.DownloadAssetName)))
+        {
+            logger.LogWarning("Update metadata contains an unsafe URL or filename; update rejected.");
+            return false;
+        }
 
         if (update.DownloadAssetUrl is null || string.IsNullOrEmpty(update.DownloadAssetName))
         {
+            TryOpenInBrowser(update.ReleaseNotesUrl);
             logger.LogInformation(
                 "Update {TagName} has no asset for the current platform; opened release notes only.",
                 update.TagName);
@@ -90,18 +96,27 @@ public sealed class DefaultUpdateInstaller : IUpdateInstaller
     /// Downloads the asset to a fresh temp folder. Streams to disk so
     /// large self-contained zips don't pin a hundred megabytes in RAM.
     /// </summary>
-    private async Task<string> DownloadAssetAsync(
+    internal async Task<string> DownloadAssetAsync(
         UpdateInfo update,
         IProgress<double>? progress,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        HttpClient? httpClient = null)
     {
-        var targetDir = Path.Combine(Path.GetTempPath(), "GAMEFLOW-update");
-        _ = Directory.CreateDirectory(targetDir);
+        if (update.DownloadAssetUrl is null || !UpdateDownloadPolicy.IsHttps(update.DownloadAssetUrl) ||
+            update.DownloadAssetName is null || !UpdateDownloadPolicy.IsSafeFileName(update.DownloadAssetName))
+        { throw new InvalidDataException("The update asset URL or filename is invalid."); }
+        if (update.ExpectedSha256 is not { Length: 64 } hash || !hash.All(Uri.IsHexDigit))
+        { throw new InvalidDataException("This release has no SHA-256 digest. Download it manually from the release page."); }
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        deadline.CancelAfter(DownloadTimeout);
+        cancellationToken = deadline.Token;
+        // Isolate attempts; never truncate another download or follow a pre-created partial file.
+        var targetDir = Directory.CreateTempSubdirectory("GAMEFLOW-update-").FullName;
 
         var targetPath = Path.Combine(targetDir, update.DownloadAssetName!);
         var partialPath = targetPath + ".partial";
 
-        using var client = new HttpClient(new SocketsHttpHandler
+        using var client = httpClient ?? new HttpClient(new SocketsHttpHandler
         {
             AllowAutoRedirect = true,
             AutomaticDecompression = DecompressionMethods.None,
@@ -127,13 +142,18 @@ public sealed class DefaultUpdateInstaller : IUpdateInstaller
         _ = response.EnsureSuccessStatusCode();
 
         var totalBytes = response.Content.Headers.ContentLength;
+        if (totalBytes > MaxDownloadBytes)
+        {
+            throw new HttpRequestException("Update archive exceeds the 1 GiB download limit.");
+        }
 
         try
         {
+            using var checksum = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
             await using (var sourceStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
             await using (var fileStream = new FileStream(
                 partialPath,
-                FileMode.Create,
+                FileMode.CreateNew,
                 FileAccess.Write,
                 FileShare.None,
                 bufferSize: 81920,
@@ -145,7 +165,12 @@ public sealed class DefaultUpdateInstaller : IUpdateInstaller
                 while ((read = await sourceStream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
                 {
                     await fileStream.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+                    checksum.AppendData(buffer, 0, read);
                     readSoFar += read;
+                    if (readSoFar > MaxDownloadBytes)
+                    {
+                        throw new HttpRequestException("Update archive exceeds the 1 GiB download limit.");
+                    }
 
                     if (progress is not null && totalBytes is > 0)
                     {
@@ -154,14 +179,15 @@ public sealed class DefaultUpdateInstaller : IUpdateInstaller
                 }
 
                 await fileStream.FlushAsync(cancellationToken).ConfigureAwait(false);
+                if (totalBytes is { } expectedLength && expectedLength != readSoFar)
+                { throw new InvalidDataException("The update archive is incomplete."); }
             }
+
+            if (!CryptographicOperations.FixedTimeEquals(checksum.GetHashAndReset(), Convert.FromHexString(hash)))
+            { throw new InvalidDataException("The update archive failed SHA-256 verification. It was not saved."); }
 
             // Atomic-ish rename: only commit the final filename once
             // the bytes are fully on disk.
-            if (File.Exists(targetPath))
-            {
-                File.Delete(targetPath);
-            }
             File.Move(partialPath, targetPath);
 
             progress?.Report(1.0);

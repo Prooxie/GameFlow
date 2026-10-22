@@ -16,20 +16,23 @@ namespace GameFlow.Infrastructure.Configuration;
 ///
 /// <para>
 /// This is a singleton — there is only one settings file on disk and one
-/// in-memory copy of it.
+/// in-memory copy of it. It is also the only writer of that file:
+/// <see cref="ProfileSession"/> writes the active profile and the culture
+/// through <see cref="UpdateAsync"/> too. Two writers with two copies put
+/// each other's old values back on every save.
 /// </para>
 /// </summary>
 public interface IUserSettingsService
 {
     /// <summary>
     /// The currently in-effect settings. Always non-null. Replaced by a new
-    /// instance every time <see cref="ApplyAsync"/> succeeds, so callers
+    /// instance every time <see cref="UpdateAsync"/> succeeds, so callers
     /// should treat the returned reference as a snapshot.
     /// </summary>
     AppSettings Current { get; }
 
     /// <summary>
-    /// Raised after <see cref="ApplyAsync"/> persists a new settings value.
+    /// Raised after <see cref="UpdateAsync"/> persists a new settings value.
     /// Fires on a thread-pool thread; UI subscribers must marshal to the
     /// dispatcher themselves.
     /// </summary>
@@ -44,13 +47,21 @@ public interface IUserSettingsService
     Task InitializeAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Persists <paramref name="updated"/> to disk, applies any side-effects
-    /// (log-level switch, path overrides), updates <see cref="Current"/>,
-    /// and raises <see cref="Changed"/>.
+    /// Applies <paramref name="change"/> to the latest settings, persists the
+    /// result, applies its side-effects (log-level switch, path overrides),
+    /// updates <see cref="Current"/>, and raises <see cref="Changed"/>.
     /// </summary>
-    /// <param name="updated">The new settings value, fully populated.</param>
+    /// <remarks>
+    /// The change runs under the write lock, on the settings as they are at
+    /// that moment. Change only the fields that you own, for example
+    /// <c>settings =&gt; settings with { MotionServerEnabled = true }</c>.
+    /// A change that returns an equal value writes nothing. Loads the file
+    /// first when <see cref="InitializeAsync"/> did not run yet, so an early
+    /// change cannot write defaults over the saved settings.
+    /// </remarks>
+    /// <param name="change">Makes the new settings from the current ones. Must not have side effects.</param>
     /// <param name="cancellationToken">Cancellation for the disk write.</param>
-    Task ApplyAsync(AppSettings updated, CancellationToken cancellationToken = default);
+    Task UpdateAsync(Func<AppSettings, AppSettings> change, CancellationToken cancellationToken = default);
 }
 
 /// <summary>

@@ -27,6 +27,8 @@ public sealed class MotionServerPanelViewModel : ViewModelBase
     // would look like a user edit and write straight back — harmless for
     // the value, but it churns the settings file on every tick.
     private bool suppressPersist;
+    private long saveRevision;
+    private string? saveError;
 
     public MotionServerPanelViewModel(
         IUserSettingsService userSettings,
@@ -60,9 +62,8 @@ public sealed class MotionServerPanelViewModel : ViewModelBase
 
     /// <summary>
     /// UDP port, as text because it is edited in a TextBox. Kept as a
-    /// string rather than an int so a half-typed value ("267") does not
-    /// get committed as a real port on every keystroke — it is validated
-    /// and only persisted when it parses into the legal range.
+    /// string so validation can explain an invalid edit. The view commits
+    /// the text on focus loss, rather than rebinding on every keystroke.
     /// </summary>
     public string Port
     {
@@ -75,6 +76,12 @@ public sealed class MotionServerPanelViewModel : ViewModelBase
             }
         }
     } = "26760";
+
+    public bool AllowRemote
+    {
+        get;
+        set { if (SetProperty(ref field, value)) { Persist(); } }
+    }
 
     /// <summary>Live one-line status, refreshed by the shell's tick.</summary>
     public string Status
@@ -97,6 +104,8 @@ public sealed class MotionServerPanelViewModel : ViewModelBase
     /// </summary>
     public void Refresh()
     {
+        if (saveError is not null) { Status = saveError; return; }
+        if (HasPortError) { Status = "Port is not valid. The previous saved port is still in use."; return; }
         if (!IsEnabled)
         {
             Status = "Stopped";
@@ -131,6 +140,7 @@ public sealed class MotionServerPanelViewModel : ViewModelBase
         try
         {
             IsEnabled = settings.MotionServerEnabled;
+            AllowRemote = settings.MotionServerAllowRemote;
             Port = settings.MotionServerPort.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
         finally
@@ -146,37 +156,37 @@ public sealed class MotionServerPanelViewModel : ViewModelBase
             return;
         }
 
-        if (!TryParsePort(Port, out var port))
-        {
-            // Leave the previous port in settings and flag the box. The
-            // user is mid-edit; refusing to save is better than saving a
-            // port the server cannot bind.
-            HasPortError = true;
-            return;
-        }
+        HasPortError = !TryParsePort(Port, out var port);
+        // A bad port must never prevent disabling the server or remote access.
+        if (HasPortError) { port = userSettings.Current.MotionServerPort; }
 
-        HasPortError = false;
+        var isEnabled = IsEnabled;
+        var allowRemote = AllowRemote;
+        var revision = Interlocked.Increment(ref saveRevision);
+        _ = SaveAsync();
 
-        var updated = userSettings.Current with
-        {
-            MotionServerEnabled = IsEnabled,
-            MotionServerPort = port
-        };
-
-        // Fire-and-forget with an explicit continuation: this is a UI
-        // setter, so it cannot await, but a failed settings write must not
-        // vanish silently.
-        _ = Task.Run(async () =>
+        async Task SaveAsync()
         {
             try
             {
-                await userSettings.ApplyAsync(updated).ConfigureAwait(false);
+                await userSettings.UpdateAsync(settings => revision != Volatile.Read(ref saveRevision) ? settings : settings with
+                {
+                    MotionServerEnabled = isEnabled,
+                    MotionServerPort = port,
+                    MotionServerAllowRemote = allowRemote
+                });
+                if (revision == Volatile.Read(ref saveRevision)) { saveError = null; Refresh(); }
             }
             catch (Exception exception)
             {
                 logger.LogError(exception, "Could not save the motion server settings.");
+                if (revision == Volatile.Read(ref saveRevision))
+                {
+                    saveError = "Changes were not saved: " + exception.Message;
+                    Refresh();
+                }
             }
-        });
+        }
     }
 
     /// <summary>

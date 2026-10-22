@@ -352,6 +352,7 @@
 
             <!-- ── Script rule fields ──────────────────────────────── -->
             <StackPanel Spacing="12" IsVisible="{Binding IsScriptRule}">
+              <TextBlock Classes="hint" Text="Lua runs inside GameFlow. Review scripts before enabling them. Imported scripts start disabled; only run code from authors you trust." TextWrapping="Wrap" Foreground="{DynamicResource AppWarning}" />
               <Border Classes="divider" />
               <StackPanel Spacing="5">
                 <TextBlock Text="{Binding #EditorRoot.DataContext.SectionTargetControlKeyLabel}" FontSize="10" FontWeight="SemiBold"

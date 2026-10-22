@@ -1,12 +1,27 @@
 using System.Text.Json;
 using GameFlow.Core.Models;
+using GameFlow.Infrastructure.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace GameFlow.Infrastructure.Profiles;
 
-public sealed class ProfileSession(IProfileRepository repository, ILogger<ProfileSession> logger)
+/// <summary>
+/// The active profile, and the profile operations of the UI: save, switch,
+/// create, duplicate, import and delete.
+/// </summary>
+/// <remarks>
+/// The active profile id and the UI culture live in the settings file. The
+/// session writes them through <see cref="IUserSettingsService.UpdateAsync"/>,
+/// which is the only writer of that file. See <see cref="IUserSettingsService"/>.
+/// </remarks>
+public sealed class ProfileSession(
+    IProfileRepository repository,
+    IUserSettingsService userSettings,
+    ILogger<ProfileSession> logger)
 {
+    public const int MaximumProfileBytes = ProfileValidator.MaximumBytes;
     private readonly IProfileRepository repository = repository;
+    private readonly IUserSettingsService userSettings = userSettings;
     private readonly ILogger<ProfileSession> logger = logger;
     private readonly SemaphoreSlim gate = new(1, 1);
     private bool isInitialized;
@@ -15,7 +30,8 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
 
     public ProfileDocument CurrentProfile { get; private set; } = ProfileDefaults.CreateSpeedrunnerDefault();
 
-    public AppSettings Settings { get; private set; } = new();
+    /// <summary>The shared settings. Read-only here; see <see cref="IUserSettingsService.UpdateAsync"/>.</summary>
+    public AppSettings Settings => userSettings.Current;
 
     public string CurrentProfilePath => repository.GetProfilePath(CurrentProfile.Id);
 
@@ -34,12 +50,13 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
                 return;
             }
 
-            Settings = await repository.LoadSettingsAsync(cancellationToken);
+            await userSettings.InitializeAsync(cancellationToken);
 
             var current = await repository.LoadAsync(Settings.ActiveProfileId, cancellationToken);
             if (current is null)
             {
-                current = ProfileDefaults.CreateSpeedrunnerDefault();
+                var fallback = ProfileDefaults.CreateSpeedrunnerDefault();
+                current = await repository.LoadAsync(fallback.Id, cancellationToken) ?? fallback;
                 await repository.SaveAsync(current, cancellationToken);
                 if (logger.IsEnabled(LogLevel.Information))
                 {
@@ -61,6 +78,10 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
             }
 
             CurrentProfile = current;
+            if (!string.Equals(Settings.ActiveProfileId, current.Id, StringComparison.Ordinal))
+            {
+                await userSettings.UpdateAsync(settings => settings with { ActiveProfileId = current.Id }, cancellationToken);
+            }
             isInitialized = true;
             Changed?.Invoke(this, EventArgs.Empty);
         }
@@ -72,6 +93,7 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
 
     public async Task SaveProfileJsonAsync(string json, CancellationToken cancellationToken = default)
     {
+        if (System.Text.Encoding.UTF8.GetByteCount(json) > MaximumProfileBytes) { throw new JsonException("Profile files are limited to 2 MiB."); }
         var profile = JsonSerializer.Deserialize<ProfileDocument>(json, ProfileJsonOptions.Default)
             ?? throw new InvalidOperationException("Profile JSON could not be parsed.");
 
@@ -84,18 +106,68 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
     /// </summary>
     public async Task SaveCurrentProfileAsync(ProfileDocument profile, CancellationToken cancellationToken = default)
     {
-        CurrentProfile = profile;
-        await repository.SaveAsync(profile, cancellationToken);
+        await gate.WaitAsync(cancellationToken);
+        try { await PersistAsCurrentAsync(profile, cancellationToken); }
+        finally { _ = gate.Release(); }
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
 
-        Settings = Settings with { ActiveProfileId = profile.Id };
-        await repository.SaveSettingsAsync(Settings, cancellationToken);
+    /// <summary>
+    /// Applies <paramref name="change"/> to the current profile and saves it, but only
+    /// while <paramref name="expectedProfileId"/> is still the current profile.
+    /// Raises <see cref="Changed"/> after a save.
+    /// </summary>
+    /// <remarks>
+    /// Use this for an edit that waits before it saves, for example behind a save lock.
+    /// A profile switch in that wait would otherwise put the edit into the new
+    /// profile. The check and the save hold the lock that
+    /// <see cref="SwitchToProfileAsync"/> holds, so no switch can come between them.
+    /// </remarks>
+    /// <param name="expectedProfileId">Id of the profile that the user edited.</param>
+    /// <param name="change">Makes the saved profile from the current one.</param>
+    /// <param name="cancellationToken">Cancels the wait and the write.</param>
+    /// <returns>True when the change was saved. False when another profile is current now.</returns>
+    public async Task<bool> UpdateCurrentProfileAsync(
+        string expectedProfileId,
+        Func<ProfileDocument, ProfileDocument> change,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(change);
+
+        await gate.WaitAsync(cancellationToken);
+        try
+        {
+            if (!string.Equals(CurrentProfile.Id, expectedProfileId, StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogInformation(
+                    "Dropped an edit of profile {EditedProfileId}: profile {CurrentProfileId} became current before the save.",
+                    expectedProfileId,
+                    CurrentProfile.Id);
+                return false;
+            }
+
+            await PersistAsCurrentAsync(change(CurrentProfile), cancellationToken);
+        }
+        finally
+        {
+            _ = gate.Release();
+        }
+
+        Changed?.Invoke(this, EventArgs.Empty);
+        return true;
+    }
+
+    private async Task PersistAsCurrentAsync(ProfileDocument profile, CancellationToken cancellationToken)
+    {
+        ProfileValidator.Validate(profile);
+        await repository.SaveAsync(profile, cancellationToken);
+        await SetActiveProfileIdAsync(profile.Id, cancellationToken);
+        CurrentProfile = profile;
 
         logger.LogInformation(
             "Saved profile {ProfileId} ({ProfileName}) and set as active.",
             profile.Id,
             profile.Name);
-
-        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>
@@ -104,15 +176,10 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
     /// </summary>
     public async Task ResetToDefaultAsync(CancellationToken cancellationToken = default)
     {
-        CurrentProfile = ProfileDefaults.CreateSpeedrunnerDefault();
-        await repository.SaveAsync(CurrentProfile, cancellationToken);
-
-        Settings = Settings with { ActiveProfileId = CurrentProfile.Id };
-        await repository.SaveSettingsAsync(Settings, cancellationToken);
+        await SaveCurrentProfileAsync(ProfileDefaults.CreateSpeedrunnerDefault(), cancellationToken);
 
         logger.LogInformation("Profile reset to speedrunner default.");
 
-        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>
@@ -121,8 +188,7 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
     public async Task SetCultureAsync(string cultureCode, CancellationToken cancellationToken = default)
     {
         var previous = Settings.SelectedCulture;
-        Settings = Settings with { SelectedCulture = cultureCode };
-        await repository.SaveSettingsAsync(Settings, cancellationToken);
+        await userSettings.UpdateAsync(settings => settings with { SelectedCulture = cultureCode }, cancellationToken);
 
         if (!string.Equals(previous, cultureCode, StringComparison.OrdinalIgnoreCase))
         {
@@ -134,6 +200,10 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
 
         Changed?.Invoke(this, EventArgs.Empty);
     }
+
+    /// <summary>Points the settings at <paramref name="profileId"/> and keeps every other setting.</summary>
+    private Task SetActiveProfileIdAsync(string profileId, CancellationToken cancellationToken) =>
+        userSettings.UpdateAsync(settings => settings with { ActiveProfileId = profileId }, cancellationToken);
 
     public string SerializeCurrentProfile()
     {
@@ -172,9 +242,10 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
             }
 
             var previousId = CurrentProfile.Id;
-            CurrentProfile = MigrateProfile(profile);
-            Settings = Settings with { ActiveProfileId = profileId };
-            await repository.SaveSettingsAsync(Settings, cancellationToken);
+            var migrated = MigrateProfile(profile);
+            ProfileValidator.Validate(migrated);
+            await SetActiveProfileIdAsync(profileId, cancellationToken);
+            CurrentProfile = migrated;
 
             logger.LogInformation(
                 "Switched active profile: {PreviousProfileId} -> {NewProfileId} ({ProfileName}).",
@@ -213,8 +284,6 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
         var id = $"profile-{Guid.NewGuid():N}";
         var sourceId = CurrentProfile.Id;
         var profile = CurrentProfile with { Id = id, Name = newName };
-        await repository.SaveAsync(profile, cancellationToken);
-
         logger.LogInformation(
             "Duplicated profile {SourceProfileId} -> {NewProfileId} ({NewProfileName}).",
             sourceId,
@@ -231,16 +300,18 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
     /// </summary>
     public async Task DeleteProfileAsync(string profileId, CancellationToken cancellationToken = default)
     {
-        if (string.Equals(profileId, CurrentProfile.Id, StringComparison.Ordinal))
+        await gate.WaitAsync(cancellationToken);
+        try
         {
-            logger.LogWarning(
-                "Refused to delete profile {ProfileId} because it is currently active.",
-                profileId);
-            return;  // Never delete the active profile
+            if (string.Equals(profileId, CurrentProfile.Id, StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogWarning("Refused to delete profile {ProfileId} because it is currently active.", profileId);
+                return;
+            }
+            await repository.DeleteAsync(profileId, cancellationToken);
+            logger.LogInformation("Deleted profile {ProfileId}.", profileId);
         }
-
-        await repository.DeleteAsync(profileId, cancellationToken);
-        logger.LogInformation("Deleted profile {ProfileId}.", profileId);
+        finally { _ = gate.Release(); }
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
@@ -250,10 +321,17 @@ public sealed class ProfileSession(IProfileRepository repository, ILogger<Profil
     /// </summary>
     public async Task ImportProfileAsync(string json, CancellationToken cancellationToken = default)
     {
+        if (System.Text.Encoding.UTF8.GetByteCount(json) > ProfileValidator.MaximumBytes) { throw new JsonException("Profile files are limited to 2 MiB."); }
         var profile = JsonSerializer.Deserialize<ProfileDocument>(json, ProfileJsonOptions.Default)
             ?? throw new InvalidOperationException("Could not parse the profile JSON.");
         var id = $"profile-{Guid.NewGuid():N}";
-        profile = profile with { Id = id };
+        profile = profile with
+        {
+            Id = id,
+            Rules = profile.Rules?.Select(rule => rule is GameFlow.Core.Models.Rules.ControlScriptRule script
+                ? script with { Enabled = false } : rule).ToArray()!
+        };
+        ProfileValidator.Validate(profile);
 
         logger.LogInformation(
             "Importing profile (assigned new id {NewProfileId}, original name '{ProfileName}').",

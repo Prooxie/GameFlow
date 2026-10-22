@@ -1,18 +1,46 @@
 using System.Text.Json;
 using GameFlow.Core.Models;
 using GameFlow.Infrastructure.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace GameFlow.Infrastructure.Profiles;
 
-public sealed class JsonProfileRepository : IProfileRepository
+/// <summary>
+/// Stores each profile as <c>{id}.json</c> in the profiles folder, and the app
+/// settings in <see cref="AppPaths.SettingsFile"/>. All writes are atomic, see
+/// <see cref="AtomicFile"/>.
+/// </summary>
+/// <remarks>
+/// A profile file that does not parse is moved to <c>{id}.json.damaged</c> and
+/// reads as missing. The caller then uses the default profile, the file list
+/// no longer shows the damaged file, and the user can repair the copy by hand.
+/// Before this, one damaged file stopped the start-up and the profile list.
+/// </remarks>
+/// <param name="logger">Logs a damaged file.</param>
+/// <param name="profilesDirectory">
+/// Profiles folder for tests. Null uses <see cref="AppPaths.ProfilesDirectory"/>,
+/// which follows the folder chosen in the settings.
+/// </param>
+public sealed class JsonProfileRepository(
+    ILogger<JsonProfileRepository> logger,
+    string? profilesDirectory = null) : IProfileRepository
 {
+    /// <summary>Suffix of a profile file that did not parse.</summary>
+    private const string DamagedSuffix = ".damaged";
+
+    private readonly ILogger<JsonProfileRepository> logger = logger;
+    private readonly string? profilesDirectory = profilesDirectory;
+
+    private string ProfilesDirectory => profilesDirectory ?? AppPaths.ProfilesDirectory;
+
     public async Task<IReadOnlyList<string>> ListAsync(CancellationToken cancellationToken = default)
     {
-        _ = Directory.CreateDirectory(AppPaths.ProfilesDirectory);
+        var folder = ProfilesDirectory;
+        _ = Directory.CreateDirectory(folder);
 
         return await Task.Run<IReadOnlyList<string>>(
             () => [.. Directory
-                .EnumerateFiles(AppPaths.ProfilesDirectory, "*.json", SearchOption.TopDirectoryOnly)
+                .EnumerateFiles(folder, "*.json", SearchOption.TopDirectoryOnly)
                 .Select(Path.GetFileNameWithoutExtension)
                 .Where(name => !string.IsNullOrWhiteSpace(name))
                 .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
@@ -22,23 +50,43 @@ public sealed class JsonProfileRepository : IProfileRepository
 
     public async Task<ProfileDocument?> LoadAsync(string profileId, CancellationToken cancellationToken = default)
     {
-        var path = GetProfilePath(profileId);
+        string path;
+        try
+        {
+            path = GetProfilePath(profileId);
+        }
+        catch (ArgumentException exception)
+        {
+            logger.LogWarning(exception, "Ignoring invalid stored profile ID {ProfileId}.", profileId);
+            return null;
+        }
         if (!File.Exists(path))
         {
             return null;
         }
 
-        await using var stream = File.OpenRead(path);
-        return await JsonSerializer.DeserializeAsync<ProfileDocument>(stream, ProfileJsonOptions.Default, cancellationToken);
+        try
+        {
+            await using var stream = File.OpenRead(path);
+            if (stream.Length > ProfileValidator.MaximumBytes) { throw new JsonException("Profile files are limited to 2 MiB."); }
+            var profile = await JsonSerializer.DeserializeAsync<ProfileDocument>(stream, ProfileJsonOptions.Default, cancellationToken);
+            if (profile is not null) { ProfileValidator.Validate(profile); }
+            // The repository filename owns identity; embedded IDs cannot redirect later writes.
+            return profile is null ? null : profile with { Id = profileId };
+        }
+        catch (JsonException exception)
+        {
+            MoveAside(profileId, path, exception);
+            return null;
+        }
     }
 
-    public async Task SaveAsync(ProfileDocument profile, CancellationToken cancellationToken = default)
+    public Task SaveAsync(ProfileDocument profile, CancellationToken cancellationToken = default)
     {
-        var path = GetProfilePath(profile.Id);
-        _ = Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-
-        await using var stream = File.Create(path);
-        await JsonSerializer.SerializeAsync(stream, profile, ProfileJsonOptions.Default, cancellationToken);
+        ProfileValidator.Validate(profile);
+        var json = JsonSerializer.Serialize(profile, ProfileJsonOptions.Default);
+        if (System.Text.Encoding.UTF8.GetByteCount(json) > ProfileValidator.MaximumBytes) { throw new JsonException("Profile files are limited to 2 MiB."); }
+        return AtomicFile.WriteAllTextAsync(GetProfilePath(profile.Id), json, cancellationToken);
     }
 
     public async Task<AppSettings> LoadSettingsAsync(CancellationToken cancellationToken = default)
@@ -53,12 +101,10 @@ public sealed class JsonProfileRepository : IProfileRepository
         return settings ?? new AppSettings();
     }
 
-    public async Task SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default)
+    public Task SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default)
     {
-        _ = Directory.CreateDirectory(Path.GetDirectoryName(AppPaths.SettingsFile)!);
-
-        await using var stream = File.Create(AppPaths.SettingsFile);
-        await JsonSerializer.SerializeAsync(stream, settings, ProfileJsonOptions.Default, cancellationToken);
+        var json = JsonSerializer.Serialize(settings, ProfileJsonOptions.Default);
+        return AtomicFile.WriteAllTextAsync(AppPaths.SettingsFile, json, cancellationToken);
     }
 
     public Task DeleteAsync(string profileId, CancellationToken cancellationToken = default)
@@ -75,6 +121,40 @@ public sealed class JsonProfileRepository : IProfileRepository
 
     public string GetProfilePath(string profileId)
     {
-        return AppPaths.GetProfileFile(profileId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(profileId);
+        if (profileId is "." or ".." || profileId.IndexOfAny(['/', '\\', ':', '<', '>', '"', '|', '?', '*']) >= 0 ||
+            profileId.Any(char.IsControl) || profileId.EndsWith('.') || profileId.EndsWith(' '))
+        {
+            throw new ArgumentException("Profile ID must be a single portable filename.", nameof(profileId));
+        }
+
+        return Path.Combine(ProfilesDirectory, $"{profileId}.json");
+    }
+
+    /// <summary>
+    /// Moves a profile file that does not parse to <c>{path}.damaged</c>. An older
+    /// damaged copy is replaced, because the newest one is the one to repair.
+    /// </summary>
+    private void MoveAside(string profileId, string path, JsonException exception)
+    {
+        var damagedPath = path + DamagedSuffix;
+        try
+        {
+            File.Move(path, damagedPath, overwrite: true);
+            logger.LogWarning(
+                exception,
+                "Profile {ProfileId} could not be read and was moved to {DamagedPath}. GameFlow uses the default profile.",
+                profileId,
+                damagedPath);
+        }
+        catch (Exception moveException) when (moveException is IOException or UnauthorizedAccessException)
+        {
+            logger.LogWarning(
+                exception,
+                "Profile {ProfileId} at {Path} could not be read, and it could not be moved aside ({Reason}).",
+                profileId,
+                path,
+                moveException.Message);
+        }
     }
 }

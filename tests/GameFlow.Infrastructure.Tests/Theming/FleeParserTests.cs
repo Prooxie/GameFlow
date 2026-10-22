@@ -1,10 +1,10 @@
-using Autofire.Infrastructure.Theming.Flee;
+using GameFlow.Infrastructure.Theming.Flee;
 using Xunit;
 
-namespace Autofire.Infrastructure.Tests.Theming;
+namespace GameFlow.Infrastructure.Tests.Theming;
 
 /// <summary>
-/// Tests for the Flee parser. Every theme that ships with Autofire — and
+/// Tests for the Flee parser. Every theme that ships with GameFlow — and
 /// every theme a user drops in via the VSCView format — comes through
 /// these productions, so the surface area covered here equals the
 /// vocabulary actually authored in real theme.json files.

@@ -41,6 +41,8 @@ namespace GameFlow.Core.Scripting;
 /// </summary>
 public sealed class LuaScriptEngine : IDisposable
 {
+    private const int InstructionBudget = 100_000;
+    private const int MaxScriptLength = 64 * 1024;
     private readonly ILogger<LuaScriptEngine> logger;
     private readonly Dictionary<string, LoadedScript> scripts = new(StringComparer.Ordinal);
     private readonly Lock gate = new();
@@ -66,16 +68,21 @@ public sealed class LuaScriptEngine : IDisposable
         }
 
         ArgumentNullException.ThrowIfNull(rule);
+        var source = rule.ScriptCode ?? string.Empty;
 
         lock (gate)
         {
-            if (scripts.TryGetValue(rule.Id, out var existing) && existing.SourceHash == rule.ScriptCode.GetHashCode())
+            if (scripts.TryGetValue(rule.Id, out var existing) && existing.Source == source)
             {
                 return;
             }
 
             try
             {
+                if (System.Text.Encoding.UTF8.GetByteCount(source) > MaxScriptLength)
+                {
+                    throw new ScriptRuntimeException("Lua scripts are limited to 64 KiB of source.");
+                }
                 var script = new Script(CoreModules.Preset_HardSandbox)
                 {
                     Options =
@@ -84,21 +91,23 @@ public sealed class LuaScriptEngine : IDisposable
                     }
                 };
 
-                script.DoString(rule.ScriptCode ?? string.Empty);
+                RunBounded(script, script.LoadString(source));
 
                 var onTick = script.Globals.Get("on_tick");
                 if (onTick.Type != DataType.Function)
                 {
                     logger.LogWarning("Lua script {RuleId} ({Name}) does not define an on_tick(ctx) function — disabling.",
                         rule.Id, rule.Name);
-                    scripts[rule.Id] = LoadedScript.Disabled(rule.ScriptCode?.GetHashCode() ?? 0);
+                    scripts[rule.Id] = LoadedScript.Disabled(source);
                     return;
                 }
 
                 scripts[rule.Id] = new LoadedScript(
                     Script: script,
                     OnTick: onTick,
-                    SourceHash: rule.ScriptCode?.GetHashCode() ?? 0,
+                    Runner: null,
+                    Completion: DynValue.NewTable(script),
+                    Source: source,
                     State: DynValue.NewTable(script),
                     LastError: null,
                     LastErrorAtUtc: null,
@@ -108,12 +117,12 @@ public sealed class LuaScriptEngine : IDisposable
             {
                 logger.LogWarning("Lua compile error in script {RuleId} ({Name}): {Error}",
                     rule.Id, rule.Name, ex.DecoratedMessage);
-                scripts[rule.Id] = LoadedScript.Disabled(rule.ScriptCode?.GetHashCode() ?? 0);
+                scripts[rule.Id] = LoadedScript.Disabled(source);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to load Lua script {RuleId} ({Name}).", rule.Id, rule.Name);
-                scripts[rule.Id] = LoadedScript.Disabled(rule.ScriptCode?.GetHashCode() ?? 0);
+                scripts[rule.Id] = LoadedScript.Disabled(source);
             }
         }
     }
@@ -145,7 +154,17 @@ public sealed class LuaScriptEngine : IDisposable
                 ? 0
                 : (now - loaded.LastInvokeAtUtc).TotalMilliseconds;
 
-            // Build ctx table fresh each tick — cheap because Lua tables are pooled internally.
+            // A failed coroutine is dead. Retry transient script errors at most
+            // once per five seconds, rather than reallocating its VM stack per tick.
+            if (loaded.Runner?.State == CoroutineState.Dead && loaded.LastErrorAtUtc is { } failedAt &&
+                now - failedAt < TimeSpan.FromSeconds(5)) { return; }
+            if (loaded.Runner is null || loaded.Runner.State == CoroutineState.Dead)
+            {
+                loaded = loaded with { Runner = CreateTickRunner(loaded.Script, loaded.OnTick, loaded.Completion) };
+                lock (gate) { scripts[rule.Id] = loaded; }
+            }
+
+            // Context is isolated per tick so a retained table never reads a later frame.
             var ctx = DynValue.NewTable(loaded.Script);
             var t   = ctx.Table;
             t.Set("now_ms", DynValue.NewNumber((now - DateTimeOffset.UnixEpoch).TotalMilliseconds));
@@ -175,7 +194,7 @@ public sealed class LuaScriptEngine : IDisposable
             t.Set("press", DynValue.NewCallback((_, args) =>
             {
                 if (args.Count <= 0) return DynValue.Nil;
-                if (Enum.TryParse<ButtonId>(args[0].CastToString(), true, out var b))
+                if (Enum.TryParse<ButtonId>(args[0].CastToString(), true, out var b) && (uint)b < (uint)localButtons.Length)
                 {
                     localButtons[(int)b] = true;
                 }
@@ -185,7 +204,7 @@ public sealed class LuaScriptEngine : IDisposable
             t.Set("release", DynValue.NewCallback((_, args) =>
             {
                 if (args.Count <= 0) return DynValue.Nil;
-                if (Enum.TryParse<ButtonId>(args[0].CastToString(), true, out var b))
+                if (Enum.TryParse<ButtonId>(args[0].CastToString(), true, out var b) && (uint)b < (uint)localButtons.Length)
                 {
                     localButtons[(int)b] = false;
                 }
@@ -216,7 +235,10 @@ public sealed class LuaScriptEngine : IDisposable
                 return DynValue.Nil;
             }));
 
-            _ = loaded.Script.Call(loaded.OnTick, ctx);
+            var completion = loaded.Runner.Resume(ctx);
+            if (loaded.Runner.State != CoroutineState.Suspended || completion.Type != DataType.Table ||
+                !ReferenceEquals(completion.Table, loaded.Completion.Table))
+            { throw new InstructionBudgetException(); }
 
             // Commit.
             for (var i = 0; i < virtualButtons.Length; i++)
@@ -238,6 +260,14 @@ public sealed class LuaScriptEngine : IDisposable
                     scripts[rule.Id] = s with { LastInvokeAtUtc = now };
                 }
             }
+        }
+        catch (InstructionBudgetException ex)
+        {
+            lock (gate)
+            {
+                scripts[rule.Id] = LoadedScript.Disabled(loaded.Source);
+            }
+            logger.LogWarning("Lua script {RuleId} disabled: {Error}", rule.Id, ex.Message);
         }
         catch (ScriptRuntimeException ex)
         {
@@ -268,6 +298,45 @@ public sealed class LuaScriptEngine : IDisposable
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    private static void RunBounded(Script script, DynValue function, params DynValue[] args)
+    {
+        var coroutine = script.CreateCoroutine(function).Coroutine;
+        coroutine.AutoYieldCounter = InstructionBudget;
+        var result = coroutine.Resume(args);
+        if (result.Type == DataType.YieldRequest || coroutine.State != CoroutineState.Dead)
+        {
+            throw new InstructionBudgetException();
+        }
+    }
+
+    private sealed class InstructionBudgetException() : Exception("Lua instruction budget exceeded; script disabled until edited.");
+
+    private static Coroutine CreateTickRunner(Script script, DynValue onTick, DynValue completion)
+    {
+        // Keep one coroutine stack per rule. Creating a coroutine on every
+        // tick allocates about 2 MiB in MoonSharp 2.0. The private pause
+        // callback yields an unforgeable completion marker after each call;
+        // forced suspension or a script's own yield cannot commit partial output.
+        var factory = script.DoString("""
+            return function(tick, pause)
+                return function()
+                    local ctx = pause()
+                    while true do
+                        tick(ctx)
+                        ctx = pause()
+                    end
+                end
+            end
+            """);
+        var pause = DynValue.NewCallback((_, _) => DynValue.NewYieldReq([completion]));
+        var runner = script.CreateCoroutine(script.Call(factory, onTick, pause)).Coroutine;
+        runner.AutoYieldCounter = InstructionBudget;
+        var initial = runner.Resume();
+        if (initial.Type != DataType.Table || !ReferenceEquals(initial.Table, completion.Table))
+        { throw new InstructionBudgetException(); }
+        return runner;
+    }
 
     private static DynValue Stick(Script s, StickVector v)
     {
@@ -314,7 +383,9 @@ public sealed class LuaScriptEngine : IDisposable
     private sealed record LoadedScript(
         Script Script,
         DynValue OnTick,
-        int SourceHash,
+        Coroutine? Runner,
+        DynValue Completion,
+        string Source,
         DynValue State,
         string? LastError,
         DateTimeOffset? LastErrorAtUtc,
@@ -322,10 +393,12 @@ public sealed class LuaScriptEngine : IDisposable
     {
         public bool IsRunnable => Script is not null && OnTick.Type == DataType.Function;
 
-        public static LoadedScript Disabled(int sourceHash) => new(
+        public static LoadedScript Disabled(string source) => new(
             Script: null!,
             OnTick: DynValue.Nil,
-            SourceHash: sourceHash,
+            Runner: null,
+            Completion: DynValue.Nil,
+            Source: source,
             State: DynValue.Nil,
             LastError: "compile failed",
             LastErrorAtUtc: DateTimeOffset.UtcNow,

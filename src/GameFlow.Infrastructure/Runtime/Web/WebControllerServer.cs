@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
+using GameFlow.Infrastructure.Configuration;
 using GameFlow.Infrastructure.Theming;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -43,7 +44,8 @@ public sealed class WebControllerServer(
     WebControllerHub hub,
     Overlay.OverlayFeed overlay,
     WindowsFirewallAccess firewall,
-    ILogger<WebControllerServer> logger) : BackgroundService
+    ILogger<WebControllerServer> logger,
+    IUserSettingsService? userSettings = null) : BackgroundService
 {
     private readonly WebControllerHub hub = hub;
     private readonly Overlay.OverlayFeed overlay = overlay;
@@ -75,6 +77,7 @@ public sealed class WebControllerServer(
 
     /// <summary>Hard bound for one phone input frame, including fragments.</summary>
     private const int MaxPhoneMessageBytes = 4096;
+    private const int MaxConnections = 64;
 
     /// <summary>Default matches the port shown on the Dashboard's Web Controller card.</summary>
     public int Port { get; set; } = 8080;
@@ -84,6 +87,24 @@ public sealed class WebControllerServer(
 
     /// <summary>The URL to type into a phone browser, or null when not running.</summary>
     public string? ListenUrl { get; private set; }
+    public bool AllowsRemote => userSettings?.Current.WebControllerAllowRemote == true;
+    public string AccessToken => userSettings?.Current.WebAccessToken ?? string.Empty;
+    public string LocalUrl => $"http://localhost:{Port}";
+    public string SharedUrl => $"http://{GetLocalAddress()}:{Port}";
+
+    public async Task SetRemoteAccessAsync(bool enabled)
+    {
+        if (userSettings is null) { throw new InvalidOperationException("Network settings are unavailable."); }
+        await userSettings.UpdateAsync(settings => settings with { WebControllerAllowRemote = enabled });
+        if (enabled) { await EnsureFirewallRuleAsync(CancellationToken.None); }
+    }
+
+    public async Task ResetAccessTokenAsync()
+    {
+        if (userSettings is null) { throw new InvalidOperationException("Network settings are unavailable."); }
+        var secret = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32)).ToLowerInvariant();
+        await userSettings.UpdateAsync(settings => settings with { WebAccessToken = secret });
+    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -102,7 +123,8 @@ public sealed class WebControllerServer(
         IsRunning = true;
 
         // Off the accept loop: the COM query and netsh can take a second.
-        _ = EnsureFirewallRuleAsync(stoppingToken);
+        if (AllowsRemote) { _ = EnsureFirewallRuleAsync(stoppingToken); }
+        var requests = new List<Task>();
 
         try
         {
@@ -122,9 +144,14 @@ public sealed class WebControllerServer(
                     break; // listener stopped from under us
                 }
 
-                // Each connection runs independently: one phone's slow
-                // network must never stall the accept loop for everyone else.
-                _ = Task.Run(() => HandleContextAsync(context, stoppingToken), CancellationToken.None);
+                requests.RemoveAll(task => task.IsCompleted);
+                if (requests.Count >= MaxConnections)
+                {
+                    context.Response.StatusCode = 503;
+                    context.Response.Close();
+                    continue;
+                }
+                requests.Add(Task.Run(() => HandleContextAsync(context, stoppingToken), CancellationToken.None));
             }
         }
         finally
@@ -132,6 +159,14 @@ public sealed class WebControllerServer(
             IsRunning = false;
             ListenUrl = null;
             listener.Close();
+            try
+            {
+                await Task.WhenAll(requests).WaitAsync(TimeSpan.FromSeconds(5));
+            }
+            catch (TimeoutException)
+            {
+                logger.LogDebug("Web controller: timed out waiting for connections to close.");
+            }
         }
     }
 
@@ -165,6 +200,7 @@ public sealed class WebControllerServer(
         }
         catch (HttpListenerException exception)
         {
+            candidate.Close();
             logger.LogWarning(
                 "Web controller: could not bind all interfaces on port {Port} ({Message}). " +
                 "On Windows this needs a URL reservation. Click 'Allow through firewall' in Options, " +
@@ -185,6 +221,7 @@ public sealed class WebControllerServer(
         }
         catch (HttpListenerException exception)
         {
+            localOnly.Close();
             logger.LogError(exception, "Web controller: could not start on port {Port} at all.", Port);
             return null;
         }
@@ -194,8 +231,31 @@ public sealed class WebControllerServer(
     {
         try
         {
+            context.Response.Headers["Referrer-Policy"] = "no-referrer";
+            context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+            if (!IsAuthorized(context))
+            {
+                context.Response.StatusCode = AllowsRemote ? 401 : 403;
+                await WriteHtmlAsync(context, "Open the private connection link from GameFlow. Phone sharing must be enabled first.", stoppingToken);
+                context.Response.Close();
+                return;
+            }
+
+            if (!WebRequestPolicy.Allows(context.Request.Url, context.Request.Headers["Origin"], context.Request.LocalEndPoint.Address))
+            {
+                context.Response.StatusCode = 403;
+                context.Response.Close();
+                return;
+            }
+
             if (context.Request.IsWebSocketRequest)
             {
+                if (context.Request.Url?.AbsolutePath is not ("/ws" or "/overlay/ws"))
+                {
+                    context.Response.StatusCode = 404;
+                    context.Response.Close();
+                    return;
+                }
                 await HandleWebSocketAsync(context, stoppingToken);
                 return;
             }
@@ -335,7 +395,7 @@ public sealed class WebControllerServer(
 
             using var session = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
             var receiveTask = ReceivePhoneInputAsync(socket, lease, session.Token);
-            var feedbackTask = SendPhoneFeedbackAsync(socket, lease, session.Token);
+            var feedbackTask = SendPhoneFeedbackAsync(socket, lease, session.Token, () => IsAuthorized(context));
 
             _ = await Task.WhenAny(receiveTask, feedbackTask);
             await session.CancelAsync();
@@ -434,13 +494,14 @@ public sealed class WebControllerServer(
     private async Task SendPhoneFeedbackAsync(
         WebSocket socket,
         WebPadLease lease,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Func<bool> isAuthorized)
     {
         using var timer = new PeriodicTimer(PhoneFeedbackInterval);
         while (socket.State == WebSocketState.Open
                && await timer.WaitForNextTickAsync(cancellationToken))
         {
-            if (!hub.IsLeaseCurrent(lease))
+            if (!hub.IsLeaseCurrent(lease) || !isAuthorized())
             {
                 return;
             }
@@ -525,6 +586,7 @@ public sealed class WebControllerServer(
 
             while (socket.State == WebSocketState.Open && await ticker.WaitForNextTickAsync(stoppingToken))
             {
+                if (!IsAuthorized(context)) { break; }
                 if (++framesSinceThemeCheck >= OverlayThemeCheckFrames)
                 {
                     framesSinceThemeCheck = 0;
@@ -587,6 +649,9 @@ public sealed class WebControllerServer(
         var bytes = Encoding.UTF8.GetBytes(json);
         return socket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
     }
+
+    private bool IsAuthorized(HttpListenerContext context) => WebAccessPolicy.IsAuthorized(
+        IPAddress.IsLoopback(context.Request.RemoteEndPoint.Address), AllowsRemote, AccessToken, context.Request.QueryString["token"]);
 
     /// <summary>
     /// Best-effort LAN address to show the user. Opening a UDP socket to
