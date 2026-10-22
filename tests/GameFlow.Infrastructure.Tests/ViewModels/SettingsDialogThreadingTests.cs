@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using GameFlow.App.Bootstrap;
 using GameFlow.App.ViewModels;
 using GameFlow.Infrastructure.Configuration;
@@ -18,15 +19,26 @@ public sealed class SettingsDialogThreadingTests
     [InlineData("30.5")]
     public async Task InvalidPollingRateStaysVisibleAndDoesNotSave(string text)
     {
-        var settings = new DeferredSettings();
-        using var host = HostBuilderFactory.Create([])
-            .ConfigureServices(services => services.AddSingleton<IUserSettingsService>(settings)).Build();
-        using var vm = host.Services.GetRequiredService<SettingsDialogViewModel>();
-        vm.PollingRateHzText = text;
-        Assert.False(await vm.ApplyAsync());
-        Assert.Equal(text, vm.PollingRateHzText);
-        Assert.Contains("30", vm.StatusMessage);
-        Assert.Equal(0, settings.Writes);
+        // This host does not run App's saved-culture initialization. Select
+        // a real catalog explicitly, including on invariant-culture runners.
+        var previousCulture = CultureInfo.CurrentUICulture;
+        try
+        {
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en");
+            var settings = new DeferredSettings();
+            using var host = HostBuilderFactory.Create([])
+                .ConfigureServices(services => services.AddSingleton<IUserSettingsService>(settings)).Build();
+            using var vm = host.Services.GetRequiredService<SettingsDialogViewModel>();
+            vm.PollingRateHzText = text;
+            Assert.False(await vm.ApplyAsync());
+            Assert.Equal(text, vm.PollingRateHzText);
+            Assert.Contains("30", vm.StatusMessage);
+            Assert.Equal(0, settings.Writes);
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = previousCulture;
+        }
     }
     [Theory]
     [InlineData(false)]
