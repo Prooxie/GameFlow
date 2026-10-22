@@ -83,6 +83,18 @@ public sealed class HidMaestroBackendTests : IDisposable
     }
 
     [WindowsFact]
+    public void GetStatus_ReadableSdkOutsideTheRange_IsUnsupportedAndNamesBothVersions()
+    {
+        _ = FakeSdkAssembly.Emit(temp, new Version(1, 6, 1, 0));
+
+        var status = Backend(() => [temp]).GetStatus();
+
+        Assert.Equal(HidMaestroState.SdkVersionUnsupported, status.State);
+        Assert.Contains("1.6.1.0", status.Description);
+        Assert.Contains("2.0.1 or a later 2.x", status.Description);
+    }
+
+    [WindowsFact]
     public void GetStatus_NotElevated_StillListsTheCatalog()
     {
         var backend = Backend(() => [AppContext.BaseDirectory], elevated: false);

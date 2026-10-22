@@ -104,6 +104,20 @@ public sealed class HidMaestroSdkLocatorTests : IDisposable
     }
 
     [WindowsFact]
+    public void Find_ReadableSdkOutsideTheRange_IsUnsupportedWithItsVersion()
+    {
+        var a = MakeDirectory("a");
+        var path = FakeSdkAssembly.Emit(a, new Version(1, 6, 1, 0));
+
+        var lookup = HidMaestroSdkLocator.Find([a]);
+
+        Assert.Equal(SdkLookupResult.Unsupported, lookup.Result);
+        Assert.Equal(new Version(1, 6, 1, 0), lookup.Version);
+        Assert.Equal(path, lookup.Path);
+        Assert.Equal(a, Path.GetDirectoryName(lookup.Path));
+    }
+
+    [WindowsFact]
     public void Load_ReturnsTheAlreadyLoadedSdk()
     {
         var copy = CopySdkInto(MakeDirectory("a"));
