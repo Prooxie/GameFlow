@@ -33,7 +33,7 @@ namespace GameFlow.Infrastructure.Runtime.HidMaestro;
 /// report: the process not running elevated, and a profile id that
 /// doesn't exist in the SDK's catalog. What the sink deploys is decided
 /// by the slot's <see cref="DeviceOutputTemplate"/>: an explicit catalog
-/// profile id when the loaded catalog has it, the verified default
+/// profile id when the loaded catalog has it and can deploy it, the verified default
 /// profile for the template's <see cref="VirtualControllerKind"/>
 /// otherwise, or — for <see cref="VirtualControllerKind.GenericDirectInput"/>
 /// — a profile BUILT at runtime from the template's axis/button/POV
@@ -384,13 +384,36 @@ public sealed class HidMaestroOutputSink : IOutputSink,
         activatedAtUtc = DateTimeOffset.UtcNow;
         reservedSignature = signature;
 
-        if (!backend.TryCreatePad(request, out var pad, out var creationFailure))
+        IHidMaestroPad? pad;
+        string? creationFailure;
+        Exception? creationException = null;
+        try
+        {
+            if (!backend.TryCreatePad(request, out pad, out creationFailure))
+            {
+                pad = null;
+            }
+        }
+        catch (Exception exception)
+        {
+            // The seam promises false with a reason. The sink does not rely
+            // on it: a throw that escaped here left the signature reserved and
+            // the cooldown unarmed, so every tick tried to create again.
+            pad = null;
+            creationFailure = exception.Message;
+            creationException = exception;
+        }
+
+        // A throw and a returned failure take the same path.
+        if (pad is null)
         {
             reservedSignature = null;
+            activatedAtUtc = default;
             unavailableReason = creationFailure;
             retryCreateAfterUtc = DateTimeOffset.UtcNow + UnavailableRetryInterval;
             activeState = "unavailable";
             logger.LogError(
+                creationException,
                 "HIDMaestro controller creation failed ({Failure}) — this slot has no output until this is " +
                 "resolved. There is no fallback output provider.",
                 creationFailure);
@@ -452,7 +475,7 @@ public sealed class HidMaestroOutputSink : IOutputSink,
 
     /// <summary>
     /// The catalog profile this template resolves to: the explicit pick
-    /// when the loaded catalog has it, otherwise the kind's verified
+    /// when the loaded catalog has it and can deploy it, otherwise the kind's verified
     /// default. Null when the catalog does not list the resolved id.
     /// </summary>
     /// <remarks>
@@ -469,14 +492,17 @@ public sealed class HidMaestroOutputSink : IOutputSink,
         var chosen = template.OutputProfileId?.Trim();
         if (!string.IsNullOrEmpty(chosen))
         {
-            if (FindInCatalog(catalog, chosen) is { } picked)
+            // A profile the SDK lists but cannot deploy counts as not listed.
+            // The kind default below has no such check: its failure text is clearer.
+            if (FindInCatalog(catalog, chosen) is { } picked && picked.IsDeployable)
             {
                 profileId = picked.Id;
                 return picked;
             }
 
             logger.LogWarning(
-                "HIDMaestro: this slot's chosen profile '{Chosen}' is not in the loaded catalog — using '{Resolved}' instead.",
+                "HIDMaestro: this slot's chosen profile '{Chosen}' is not in the loaded catalog or cannot be deployed — " +
+                "using '{Resolved}' instead.",
                 template.OutputProfileId, fallback);
         }
 
@@ -546,13 +572,29 @@ public sealed class HidMaestroOutputSink : IOutputSink,
     private void OnRumbleReceived(double lowFrequency, double highFrequency) =>
         RumbleReceived?.Invoke(lowFrequency, highFrequency);
 
+    /// <summary>
+    /// Sends the rumble stop, then removes the pad. A pad that fails to
+    /// dispose is logged and dropped: <see cref="Configure"/> and
+    /// <see cref="DisposeAsync"/> must not throw because of it.
+    /// </summary>
     private void TeardownPad(IHidMaestroPad pad) =>
         HidMaestroRumbleLifecycle.StopAndTeardown(
             RumbleReceived,
             () =>
             {
                 pad.RumbleReceived -= OnRumbleReceived;
-                pad.Dispose();
+                try
+                {
+                    pad.Dispose();
+                }
+                catch (Exception exception)
+                {
+                    logger.LogWarning(
+                        exception,
+                        "HIDMaestro: removing the virtual controller for profile {ProfileId} failed. It may stay " +
+                        "visible to Windows until GameFlow exits.",
+                        pad.ProfileId);
+                }
             });
 
     /// <inheritdoc />

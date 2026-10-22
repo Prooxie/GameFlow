@@ -99,7 +99,7 @@ internal sealed class HidMaestroSession
             }
             else
             {
-                failure = $"profile '{request.ProfileId}' is not in the HIDMaestro catalog";
+                failure = $"{FailurePrefix}profile '{request.ProfileId}' is not in the HIDMaestro catalog";
                 return false;
             }
 
@@ -184,8 +184,10 @@ internal sealed class HidMaestroSession
         {
             return ReadArmableExtendedInput(profile);
         }
-        catch (Exception exception) when (exception is MissingMemberException or TypeLoadException)
+        catch (Exception exception) when (exception is MemberAccessException or TypeLoadException)
         {
+            // MemberAccessException covers a removed member (MissingMemberException)
+            // and one made less visible (MethodAccessException, FieldAccessException).
             // No log: this can run for each pad, and the fallback is a safe answer.
             return profile.HasExtendedInput;
         }

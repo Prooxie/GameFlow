@@ -76,6 +76,19 @@ public sealed class HidMaestroOutputSinkTests
     }
 
     [Fact]
+    public async Task Write_ExplicitProfileNotDeployable_FallsBackToTheKindDefault()
+    {
+        var backend = CreateBackend();
+        backend.Catalog.Add(new HidMaestroCatalogProfile(
+            "wheel-only", "Catalog-only wheel", "Test", 0x1234, 0x5678, 10, 4, true, "usb", IsDeployable: false));
+        await using var sink = CreateSink(backend, Template(VirtualControllerKind.Xbox360, "wheel-only"));
+
+        await WriteAsync(sink);
+
+        Assert.Equal(new HidMaestroPadRequest("xbox-360-wired"), Assert.Single(backend.Requests));
+    }
+
+    [Fact]
     public async Task Write_ExplicitProfileInAnotherCase_RequestsTheCatalogSpelling()
     {
         var backend = CreateBackend();
@@ -193,6 +206,25 @@ public sealed class HidMaestroOutputSinkTests
     }
 
     [Fact]
+    public async Task Write_CreateThrows_ClearsReservationAndWaitsForTheCooldown()
+    {
+        var backend = CreateBackend();
+        backend.ThrowOnCreate = new InvalidOperationException("fake create crash");
+        var logger = new HidMaestroUnavailableLoggingTests.CountingLogger();
+        await using var sink = CreateSink(backend, Template(VirtualControllerKind.Xbox360), logger);
+
+        await WriteAsync(sink);
+        await WriteAsync(sink);
+
+        Assert.Single(backend.Requests);
+        Assert.Null(sink.OwnedSignatureActivatedAt);
+        Assert.Null(sink.OwnedHardwareSignature);
+        Assert.StartsWith("HIDMaestro unavailable — no output (", sink.DisplayName, StringComparison.Ordinal);
+        Assert.Contains("fake create crash", sink.DisplayName, StringComparison.Ordinal);
+        Assert.Equal(1, logger.Problems);
+    }
+
+    [Fact]
     public async Task Write_SdkMissing_NeverRequestsAPad()
     {
         var backend = CreateBackend();
@@ -274,6 +306,50 @@ public sealed class HidMaestroOutputSinkTests
         sink.Configure(Template(VirtualControllerKind.DualSense));
 
         Assert.False(disposedAtStop);
+        Assert.True(pad.Disposed);
+    }
+
+    [Fact]
+    public async Task Configure_PadDisposeThrows_StillReconfigures()
+    {
+        var backend = CreateBackend();
+        var first = new FakeHidMaestroPad { ThrowOnDispose = true };
+        var pads = new Queue<FakeHidMaestroPad>([first, new FakeHidMaestroPad { ProfileName = "Second pad" }]);
+        backend.CreatePad = _ => pads.Dequeue();
+        var logger = new HidMaestroUnavailableLoggingTests.CountingLogger();
+        await using var sink = CreateSink(backend, Template(VirtualControllerKind.Xbox360), logger);
+        await WriteAsync(sink);
+
+        bool? disposedAtStop = null;
+        sink.RumbleReceived += (low, high) =>
+        {
+            if (low == 0d && high == 0d)
+            {
+                disposedAtStop = first.Disposed;
+            }
+        };
+
+        sink.Configure(Template(VirtualControllerKind.DualSense));
+        await WriteAsync(sink);
+
+        Assert.False(disposedAtStop);
+        Assert.True(first.Disposed);
+        Assert.Equal(1, logger.Problems);
+        Assert.Equal(2, backend.Requests.Count);
+        Assert.Equal("HIDMaestro — Second pad", sink.DisplayName);
+    }
+
+    [Fact]
+    public async Task DisposeAsync_PadDisposeThrows_DoesNotThrow()
+    {
+        var backend = CreateBackend();
+        var pad = new FakeHidMaestroPad { ThrowOnDispose = true };
+        backend.CreatePad = _ => pad;
+        var sink = CreateSink(backend, Template(VirtualControllerKind.Xbox360));
+        await WriteAsync(sink);
+
+        await sink.DisposeAsync();
+
         Assert.True(pad.Disposed);
     }
 
