@@ -63,7 +63,8 @@ public sealed class DefaultRequirementChecker : IRequirementChecker
 
     /// <summary>
     /// Maps the backend status onto the requirement: not applicable off
-    /// Windows, satisfied when ready, and unsatisfied otherwise. One source
+    /// Windows, satisfied when ready, and unsatisfied otherwise. A refused
+    /// version or a failed start also shows the backend's reason. One source
     /// of truth for "is HIDMaestro available" is the backend, not a second,
     /// potentially divergent probe.
     /// </summary>
@@ -97,14 +98,20 @@ public sealed class DefaultRequirementChecker : IRequirementChecker
         // administrator rights (SeLoadDriverPrivilege). Surface that as
         // an explicit, actionable failure instead of letting the first
         // pad creation produce an opaque access error minutes later.
-        var elevationDescription = description;
-        if (status.State == HidMaestroState.NotElevated)
+        //
+        // A refused version and a failed start add the backend's own text,
+        // which names the version found or the error. Without it the dialog
+        // cannot say why a DLL that is present does not count. A missing
+        // SDK keeps the base text, which already says what to do.
+        var dialogDescription = status.State switch
         {
-            elevationDescription =
+            HidMaestroState.NotElevated =>
                 "HIDMaestro is present, but GameFlow is not running as Administrator. " +
                 "HIDMaestro needs administrator rights to install its driver and create virtual " +
-                "controllers — restart GameFlow as Administrator (right-click → Run as administrator).";
-        }
+                "controllers — restart GameFlow as Administrator (right-click → Run as administrator).",
+            HidMaestroState.SdkVersionUnsupported or HidMaestroState.Failed => description + " " + status.Description,
+            _ => description,
+        };
 
         if (!isSatisfied)
         {
@@ -117,7 +124,7 @@ public sealed class DefaultRequirementChecker : IRequirementChecker
         return new RequirementStatus(
             Id: id,
             DisplayName: displayName,
-            Description: elevationDescription,
+            Description: dialogDescription,
             IsSatisfied: isSatisfied,
             InstallerUrl: HidMaestroInfoUrl,
             IsApplicable: true);

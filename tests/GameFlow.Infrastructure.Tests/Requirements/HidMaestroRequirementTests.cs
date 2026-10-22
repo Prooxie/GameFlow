@@ -8,9 +8,12 @@ namespace GameFlow.Infrastructure.Tests.Requirements;
 
 public sealed class HidMaestroRequirementTests
 {
+    /// <summary>The status text the fake backend gives. The dialog must show it only where it says why.</summary>
+    private const string StatusText = "backend status text";
+
     private static async Task<RequirementStatus> CheckAsync(HidMaestroState state)
     {
-        var backend = new FakeHidMaestroBackend { Status = new(state, "reason") };
+        var backend = new FakeHidMaestroBackend { Status = new(state, StatusText) };
         var checker = new DefaultRequirementChecker(NullLogger<DefaultRequirementChecker>.Instance, backend);
 
         var results = await checker.CheckAsync();
@@ -47,18 +50,32 @@ public sealed class HidMaestroRequirementTests
         Assert.NotNull(status.InstallerUrl);
     }
 
+    [Fact]
+    public async Task SdkMissing_IsUnsatisfiedWithTheBaseDescriptionOnly()
+    {
+        var status = await CheckAsync(HidMaestroState.SdkMissing);
+
+        Assert.True(status.IsApplicable);
+        Assert.False(status.IsSatisfied);
+        Assert.DoesNotContain("Administrator", status.Description);
+        Assert.Contains("only output backend", status.Description);
+        Assert.DoesNotContain(StatusText, status.Description);
+        Assert.NotNull(status.InstallerUrl);
+    }
+
     [Theory]
-    [InlineData(HidMaestroState.SdkMissing)]
     [InlineData(HidMaestroState.SdkVersionUnsupported)]
     [InlineData(HidMaestroState.Failed)]
-    public async Task OtherStates_AreUnsatisfiedWithTheBaseDescription(HidMaestroState state)
+    public async Task UnsupportedAndFailed_AreUnsatisfiedAndAppendTheStatusDescription(HidMaestroState state)
     {
         var status = await CheckAsync(state);
 
         Assert.True(status.IsApplicable);
         Assert.False(status.IsSatisfied);
         Assert.DoesNotContain("Administrator", status.Description);
+        Assert.StartsWith("Required to create a virtual controller", status.Description);
         Assert.Contains("only output backend", status.Description);
+        Assert.EndsWith("apps. " + StatusText, status.Description);
         Assert.NotNull(status.InstallerUrl);
     }
 }
