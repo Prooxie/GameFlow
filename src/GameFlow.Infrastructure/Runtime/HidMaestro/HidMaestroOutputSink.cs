@@ -62,6 +62,7 @@ public sealed class HidMaestroOutputSink : IOutputSink,
 
     private readonly ILogger<HidMaestroOutputSink> logger;
     private readonly IHidMaestroBackend backend;
+    private readonly TimeProvider timeProvider;
     private readonly object gate = new();
 
     private DeviceOutputTemplate template = new();
@@ -85,9 +86,16 @@ public sealed class HidMaestroOutputSink : IOutputSink,
     /// HIDMaestro, so a test can stand in for the SDK.
     /// </summary>
     public HidMaestroOutputSink(ILogger<HidMaestroOutputSink> logger, IHidMaestroBackend backend)
+        : this(logger, backend, TimeProvider.System)
+    {
+    }
+
+    internal HidMaestroOutputSink(
+        ILogger<HidMaestroOutputSink> logger, IHidMaestroBackend backend, TimeProvider timeProvider)
     {
         this.logger = logger;
         this.backend = backend;
+        this.timeProvider = timeProvider;
     }
 
     public event Action<double, double>? RumbleReceived;
@@ -162,8 +170,10 @@ public sealed class HidMaestroOutputSink : IOutputSink,
     /// </remarks>
     private (ushort Vid, ushort Pid)? reservedSignature;
 
-    /// <summary>When the next creation attempt may run after an "unavailable" verdict.</summary>
-    private DateTimeOffset retryCreateAfterUtc;
+    // Cooldowns use elapsed time; activation identity timestamps remain UTC
+    // because the input catalog compares them with device discovery times.
+    private long retryStartedAt;
+    private TimeSpan retryInterval;
 
     /// <summary>
     /// How long an "unavailable" verdict is held before it is re-checked.
@@ -314,7 +324,7 @@ public sealed class HidMaestroOutputSink : IOutputSink,
                 reservedSignature = null;
                 activeState = "unavailable";
                 unavailableReason = "submit failed repeatedly — see log";
-                retryCreateAfterUtc = DateTimeOffset.UtcNow + SubmitGiveUpRetryInterval;
+                DelayRetry(SubmitGiveUpRetryInterval);
                 detached = true;
             }
         }
@@ -348,7 +358,7 @@ public sealed class HidMaestroOutputSink : IOutputSink,
             // read as "no controller is ever created". One retry per
             // 45 s window recovers automatically once the blocker is
             // gone and cannot read as a creation storm.
-            if (DateTimeOffset.UtcNow < retryCreateAfterUtc)
+            if (timeProvider.GetElapsedTime(retryStartedAt) < retryInterval)
             {
                 return;
             }
@@ -367,7 +377,7 @@ public sealed class HidMaestroOutputSink : IOutputSink,
             // on every tick: dropping HIDMaestro.Core.dll in beside a
             // running app still recovers within the window, without the
             // log flood.
-            retryCreateAfterUtc = DateTimeOffset.UtcNow + UnavailableRetryInterval;
+            DelayRetry(UnavailableRetryInterval);
             activeState = "unavailable";
             logger.LogWarning(
                 "HIDMaestro is not available ({Status}) — this slot has no output. There is no fallback output " +
@@ -381,7 +391,7 @@ public sealed class HidMaestroOutputSink : IOutputSink,
 
         // Reserved before the device can exist, not after it does — see
         // the note on reservedSignature.
-        activatedAtUtc = DateTimeOffset.UtcNow;
+        activatedAtUtc = timeProvider.GetUtcNow();
         reservedSignature = signature;
 
         IHidMaestroPad? pad;
@@ -410,7 +420,7 @@ public sealed class HidMaestroOutputSink : IOutputSink,
             reservedSignature = null;
             activatedAtUtc = default;
             unavailableReason = creationFailure;
-            retryCreateAfterUtc = DateTimeOffset.UtcNow + UnavailableRetryInterval;
+            DelayRetry(UnavailableRetryInterval);
             activeState = "unavailable";
             logger.LogError(
                 creationException,
@@ -430,6 +440,13 @@ public sealed class HidMaestroOutputSink : IOutputSink,
         logger.LogInformation(
             "HIDMaestro active: profile {ProfileId} ('{ProfileName}', VID/PID {Signature}).",
             pad.ProfileId, pad.ProfileName, $"{pad.HardwareSignature.Vid:X4}:{pad.HardwareSignature.Pid:X4}");
+    }
+
+    /// <summary>Starts a monotonic cooldown. Callers must hold <see cref="gate"/>.</summary>
+    private void DelayRetry(TimeSpan interval)
+    {
+        retryStartedAt = timeProvider.GetTimestamp();
+        retryInterval = interval;
     }
 
     /// <summary>
@@ -595,7 +612,9 @@ public sealed class HidMaestroOutputSink : IOutputSink,
                         "visible to Windows until GameFlow exits.",
                         pad.ProfileId);
                 }
-            });
+            },
+            exception => logger.LogWarning(
+                exception, "HIDMaestro: a rumble subscriber failed while stopping feedback during controller teardown."));
 
     /// <inheritdoc />
     public void FinalizeAfterRebuild()

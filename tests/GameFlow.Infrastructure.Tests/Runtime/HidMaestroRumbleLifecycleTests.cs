@@ -18,15 +18,19 @@ public sealed class HidMaestroRumbleLifecycleTests
     }
 
     [Fact]
-    public void StopAndTeardown_StillReleasesControllerWhenFeedbackHandlerFails()
+    public void StopAndTeardown_StillStopsOtherSubscribersAndReleasesControllerWhenFeedbackHandlerFails()
     {
         var tornDown = false;
+        var stopped = false;
+        Exception? failure = null;
+        Action<double, double> feedback = (_, _) => throw new InvalidOperationException("subscriber failed");
+        feedback += (low, high) => stopped = low == 0d && high == 0d;
 
-        Assert.Throws<InvalidOperationException>(() =>
-            HidMaestroRumbleLifecycle.StopAndTeardown(
-                (_, _) => throw new InvalidOperationException("subscriber failed"),
-                () => tornDown = true));
+        HidMaestroRumbleLifecycle.StopAndTeardown(
+            feedback, () => tornDown = true, exception => failure = exception);
 
+        Assert.True(stopped);
         Assert.True(tornDown);
+        Assert.IsType<InvalidOperationException>(failure);
     }
 }

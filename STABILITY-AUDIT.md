@@ -1,5 +1,37 @@
 # GameFlow stability and release audit
 
+## Follow-up: HIDMaestro adapter and warnings, 22 October 2026
+
+Reviewed the typed HIDMaestro 2.0.1 adapter at `50966ff` and its output sink.
+The SDK remains separately supplied. This pass changed only GameFlow; the
+sibling HIDMaestro checkout was not edited or rebuilt.
+
+| Finding | Fix and evidence |
+| --- | --- |
+| The SDK search cooldown, unavailable-output retry and broken-pad replacement used wall-clock deadlines. Moving the clock forward could skip a cooldown; moving it backward could postpone recovery for hours. | Use `TimeProvider` monotonic timestamps for the 10-second, 45-second and 5-minute delays. Keep device activation timestamps in UTC for input-catalog ownership matching. Eight regression cases cover forward/backward jumps and the exact retry boundaries. |
+| A throwing rumble subscriber escaped `Configure`/`DisposeAsync` and prevented later subscribers from receiving the final motor stop. | Attempt each subscriber separately, log its failure and still remove the pad. Two sink regression cases cover reconfiguration and disposal; the lifecycle test also checks that later subscribers receive zero. |
+| 44 xUnit1051 warnings reported asynchronous operations that omitted the test cancellation token. | Pass `TestContext.Current.CancellationToken` through settings/profile operations, file reads, scheduled tasks and effect-service waits. File-handle cleanup still runs when cancellation occurs. No analyzer suppression was added. |
+
+The 10 new regression cases failed against the previous behavior, with the
+original 1,267 cases still passing. After the fixes, all **1,277 tests pass**
+on Windows x64 with SDK 10.0.401, and the Release solution build passes with
+warnings treated as errors: **0 warnings, 0 errors**. TRX reports are in
+`TestResults/`.
+
+The adapter's driver-install guard still latches both success and failure;
+unchanged output templates still retain their pad or failure cooldown. The
+existing tests for these behaviors, SDK absence/version handling, catalog
+projection, state writing and rumble routing pass. These are automated tests
+using read-only SDK discovery and fake pads, not a live driver-install or
+USB/Bluetooth/rumble check. Hosted CI and native Linux/macOS execution were
+not run by this follow-up.
+
+The broader persistence, Lua isolation, transport, signing and hardware risks
+listed below and in [UI-AND-RISK-REVIEW.md](UI-AND-RISK-REVIEW.md) remain open.
+The earlier validation counts below describe the 21 October review.
+
+## Original release audit, 21 October 2026
+
 Reviewed on 21 October 2026 against `dev` at `229ca2f`, with the local patch
 for **v1.0.7**. The patch is ready for code review and CI submission. A public
 release still requires the hosted OS matrix and hardware checks below.

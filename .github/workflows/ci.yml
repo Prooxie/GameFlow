@@ -63,7 +63,7 @@ jobs:
         run: dotnet restore GameFlow.sln --locked-mode
 
       - name: Build
-        run: dotnet build GameFlow.sln --configuration Release --no-restore
+        run: dotnet build GameFlow.sln --configuration Release --no-restore -warnaserror
 
       - name: Test
         run: dotnet test --solution GameFlow.sln --configuration Release --no-build --report-trx --results-directory TestResults
@@ -169,6 +169,25 @@ jobs:
           pattern: GameFlow-*
           path: artifacts
 
+      - name: Verify release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          for rid in win-x64 linux-x64 osx-arm64 osx-x64; do
+            extension=tar.gz
+            if [ "$rid" = win-x64 ]; then extension=zip; fi
+            directory="artifacts/GameFlow-${rid}"
+            archive="GameFlow-${GITHUB_REF_NAME}-${rid}.${extension}"
+            test -s "${directory}/${archive}"
+            test -s "${directory}/${archive}.sha256"
+            (cd "$directory" && sha256sum --check --strict "${archive}.sha256")
+          done
+          count=$(find artifacts -type f | wc -l)
+          if [ "$count" -ne 8 ]; then
+            echo "::error::Expected four release archives and four checksum files; found $count files."
+            exit 1
+          fi
+
       # The tag's own notes, if CHANGELOG.md has a section for it. Kept
       # out of the release step so a missing or renamed section is a
       # visible failure in the log rather than a release that quietly ships
@@ -204,5 +223,6 @@ jobs:
           # appends the commit and contributor list underneath them.
           body_path: ${{ steps.notes.outputs.path }}
           generate_release_notes: true
+          make_latest: true
           fail_on_unmatched_files: true
           files: artifacts/**/*

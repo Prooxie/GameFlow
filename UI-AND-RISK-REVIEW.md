@@ -5,6 +5,12 @@ HIDMaestro's separate repository was not edited or rebuilt. This review adds
 concrete fixes and a prioritized backlog; it does not certify that every
 possible defect has been found.
 
+The [22 October adapter follow-up](STABILITY-AUDIT.md#follow-up-hidmaestro-adapter-and-warnings-22-october-2026)
+fixes HIDMaestro retry timing and rumble teardown exceptions, and removes the
+44 xUnit cancellation-token warnings. Its updated validation is 1,277 passing
+tests and a Release build with zero warnings/errors; the original counts below
+describe this earlier review. The broader backlog remains applicable.
+
 ## Fixed in this follow-up
 
 | Finding | Result |

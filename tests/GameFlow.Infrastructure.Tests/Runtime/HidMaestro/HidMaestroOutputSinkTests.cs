@@ -27,9 +27,11 @@ public sealed class HidMaestroOutputSinkTests
     private static HidMaestroOutputSink CreateSink(
         FakeHidMaestroBackend backend,
         DeviceOutputTemplate template,
-        ILogger<HidMaestroOutputSink>? logger = null)
+        ILogger<HidMaestroOutputSink>? logger = null,
+        TimeProvider? timeProvider = null)
     {
-        var sink = new HidMaestroOutputSink(logger ?? NullLogger<HidMaestroOutputSink>.Instance, backend);
+        var sink = new HidMaestroOutputSink(
+            logger ?? NullLogger<HidMaestroOutputSink>.Instance, backend, timeProvider ?? TimeProvider.System);
         sink.Configure(template);
         return sink;
     }
@@ -238,6 +240,64 @@ public sealed class HidMaestroOutputSinkTests
         Assert.Contains("HIDMaestro.Core.dll not found", sink.DisplayName, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData(false, -3600)]
+    [InlineData(false, 86400)]
+    [InlineData(true, -3600)]
+    [InlineData(true, 86400)]
+    public async Task Write_Unavailable_ClockAdjustmentDoesNotChangeTheRetryCooldown(
+        bool creationFails, int wallClockJumpSeconds)
+    {
+        var backend = CreateBackend();
+        var ready = backend.Status;
+        backend.Status = creationFails ? ready : new HidMaestroStatus(HidMaestroState.SdkMissing, "missing SDK");
+        backend.CreatePad = _ => null;
+        var time = new AdjustableTime();
+        await using var sink = CreateSink(backend, Template(VirtualControllerKind.Xbox360), timeProvider: time);
+        await WriteAsync(sink);
+        var initialRequests = backend.Requests.Count;
+
+        backend.Status = ready;
+        backend.CreatePad = request => new FakeHidMaestroPad { ProfileId = request.ProfileId };
+        time.WallTime += TimeSpan.FromSeconds(wallClockJumpSeconds);
+        time.Advance(TimeSpan.FromMilliseconds(44999));
+        await WriteAsync(sink);
+        Assert.Contains("unavailable", sink.DisplayName, StringComparison.Ordinal);
+        Assert.Equal(initialRequests, backend.Requests.Count);
+
+        time.Advance(TimeSpan.FromMilliseconds(1));
+        await WriteAsync(sink);
+        Assert.Equal("HIDMaestro — Fake pad", sink.DisplayName);
+        Assert.Equal(initialRequests + 1, backend.Requests.Count);
+    }
+
+    [Theory]
+    [InlineData(-3600)]
+    [InlineData(86400)]
+    public async Task Write_BrokenPad_ClockAdjustmentDoesNotChangeTheReplacementCooldown(int wallClockJumpSeconds)
+    {
+        var backend = CreateBackend();
+        var broken = new FakeHidMaestroPad { ThrowOnSubmit = true };
+        backend.CreatePad = _ => backend.Requests.Count == 1 ? broken : new FakeHidMaestroPad();
+        var time = new AdjustableTime();
+        await using var sink = CreateSink(backend, Template(VirtualControllerKind.Xbox360), timeProvider: time);
+        for (var frame = 0; frame < HidMaestroOutputSink.MaxConsecutiveSubmitFailures; frame++)
+        {
+            await WriteAsync(sink);
+        }
+        Assert.True(broken.Disposed);
+
+        time.WallTime += TimeSpan.FromSeconds(wallClockJumpSeconds);
+        time.Advance(TimeSpan.FromMilliseconds(299999));
+        await WriteAsync(sink);
+        Assert.Single(backend.Requests);
+
+        time.Advance(TimeSpan.FromMilliseconds(1));
+        await WriteAsync(sink);
+        Assert.Equal(2, backend.Requests.Count);
+        Assert.Equal("HIDMaestro — Fake pad", sink.DisplayName);
+    }
+
     [Fact]
     public async Task Write_ConsecutiveSubmitFailures_DetachAtTheLimit()
     {
@@ -353,6 +413,35 @@ public sealed class HidMaestroOutputSinkTests
         Assert.True(pad.Disposed);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Teardown_RumbleSubscriberThrows_StillStopsOtherSubscribersAndReleasesThePad(bool dispose)
+    {
+        var backend = CreateBackend();
+        var pad = new FakeHidMaestroPad();
+        backend.CreatePad = _ => pad;
+        var logger = new HidMaestroUnavailableLoggingTests.CountingLogger();
+        await using var sink = CreateSink(backend, Template(VirtualControllerKind.Xbox360), logger);
+        await WriteAsync(sink);
+        sink.RumbleReceived += (_, _) => throw new InvalidOperationException("subscriber failed");
+        (double Low, double High)? received = null;
+        sink.RumbleReceived += (low, high) => received = (low, high);
+
+        if (dispose)
+        {
+            await sink.DisposeAsync();
+        }
+        else
+        {
+            sink.Configure(Template(VirtualControllerKind.DualSense));
+        }
+
+        Assert.True(pad.Disposed);
+        Assert.Equal((0d, 0d), received);
+        Assert.Equal(1, logger.Problems);
+    }
+
     [Fact]
     public async Task PadRumble_IsForwarded()
     {
@@ -411,5 +500,21 @@ public sealed class HidMaestroOutputSinkTests
         await WriteAsync(sink);
 
         Assert.Equal(0, logger.Problems);
+    }
+
+    private sealed class AdjustableTime : TimeProvider
+    {
+        public DateTimeOffset WallTime { get; set; } = DateTimeOffset.UnixEpoch;
+        private long timestamp;
+
+        public override DateTimeOffset GetUtcNow() => WallTime;
+        public override long GetTimestamp() => timestamp;
+        public override long TimestampFrequency => TimeSpan.TicksPerSecond;
+
+        public void Advance(TimeSpan elapsed)
+        {
+            timestamp += elapsed.Ticks;
+            WallTime += elapsed;
+        }
     }
 }

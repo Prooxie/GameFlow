@@ -36,8 +36,8 @@ public sealed class JsonProfileRepositoryTests : IDisposable
     {
         var profile = ProfileDefaults.CreateSpeedrunnerDefault() with { Id = "racing", Name = "Racing" };
 
-        await repository.SaveAsync(profile);
-        var loaded = await repository.LoadAsync("racing");
+        await repository.SaveAsync(profile, TestContext.Current.CancellationToken);
+        var loaded = await repository.LoadAsync("racing", TestContext.Current.CancellationToken);
 
         Assert.NotNull(loaded);
         Assert.Equal("Racing", loaded.Name);
@@ -52,7 +52,7 @@ public sealed class JsonProfileRepositoryTests : IDisposable
     {
         WriteDamagedProfile();
 
-        var loaded = await repository.LoadAsync("racing");
+        var loaded = await repository.LoadAsync("racing", TestContext.Current.CancellationToken);
 
         Assert.Null(loaded);
     }
@@ -66,19 +66,19 @@ public sealed class JsonProfileRepositoryTests : IDisposable
     {
         WriteDamagedProfile();
 
-        _ = await repository.LoadAsync("racing");
+        _ = await repository.LoadAsync("racing", TestContext.Current.CancellationToken);
 
         Assert.False(File.Exists(Path.Combine(directory, "racing.json")));
-        Assert.Equal(DamagedJson, await File.ReadAllTextAsync(Path.Combine(directory, "racing.json.damaged")));
+        Assert.Equal(DamagedJson, await File.ReadAllTextAsync(Path.Combine(directory, "racing.json.damaged"), TestContext.Current.CancellationToken));
     }
 
     [Fact]
     public async Task ListAsyncDamagedFileMovedAsideIsNotListedAsync()
     {
         WriteDamagedProfile();
-        _ = await repository.LoadAsync("racing");
+        _ = await repository.LoadAsync("racing", TestContext.Current.CancellationToken);
 
-        var ids = await repository.ListAsync();
+        var ids = await repository.ListAsync(TestContext.Current.CancellationToken);
 
         Assert.Empty(ids);
     }
@@ -86,7 +86,7 @@ public sealed class JsonProfileRepositoryTests : IDisposable
     [Fact]
     public async Task LoadAsyncMissingFileReturnsNullAsync()
     {
-        var loaded = await repository.LoadAsync("not-here");
+        var loaded = await repository.LoadAsync("not-here", TestContext.Current.CancellationToken);
 
         Assert.Null(loaded);
     }

@@ -43,10 +43,10 @@ public sealed class ProfileSessionTests
     [Fact]
     public async Task SaveCurrentProfileAsyncOtherSettingsAreKeptAsync()
     {
-        await session.EnsureInitializedAsync();
-        await settings.UpdateAsync(current => current with { MotionServerEnabled = true });
+        await session.EnsureInitializedAsync(TestContext.Current.CancellationToken);
+        await settings.UpdateAsync(current => current with { MotionServerEnabled = true }, TestContext.Current.CancellationToken);
 
-        await session.SaveCurrentProfileAsync(ProfileDefaults.CreateSpeedrunnerDefault() with { Id = "racing" });
+        await session.SaveCurrentProfileAsync(ProfileDefaults.CreateSpeedrunnerDefault() with { Id = "racing" }, TestContext.Current.CancellationToken);
 
         Assert.True(repository.SavedSettings.MotionServerEnabled);
         Assert.Equal("racing", repository.SavedSettings.ActiveProfileId);
@@ -74,9 +74,9 @@ public sealed class ProfileSessionTests
     public async Task SwitchToProfileAsyncSharedSettingsSeeNewProfileAsync()
     {
         repository.Add(ProfileDefaults.CreateSpeedrunnerDefault() with { Id = "racing", Name = "Racing" });
-        await session.EnsureInitializedAsync();
+        await session.EnsureInitializedAsync(TestContext.Current.CancellationToken);
 
-        await session.SwitchToProfileAsync("racing");
+        await session.SwitchToProfileAsync("racing", TestContext.Current.CancellationToken);
 
         Assert.Equal("racing", settings.Current.ActiveProfileId);
         Assert.Equal("racing", session.Settings.ActiveProfileId);
@@ -85,10 +85,10 @@ public sealed class ProfileSessionTests
     [Fact]
     public async Task SetCultureAsyncOtherSettingsAreKeptAsync()
     {
-        await session.EnsureInitializedAsync();
-        await settings.UpdateAsync(current => current with { MotionServerEnabled = true });
+        await session.EnsureInitializedAsync(TestContext.Current.CancellationToken);
+        await settings.UpdateAsync(current => current with { MotionServerEnabled = true }, TestContext.Current.CancellationToken);
 
-        await session.SetCultureAsync("cs");
+        await session.SetCultureAsync("cs", TestContext.Current.CancellationToken);
 
         Assert.True(repository.SavedSettings.MotionServerEnabled);
         Assert.Equal("cs", repository.SavedSettings.SelectedCulture);
@@ -97,14 +97,14 @@ public sealed class ProfileSessionTests
     [Fact]
     public async Task UpdateCurrentProfileAsyncSameProfileSavesChangeAsync()
     {
-        await session.EnsureInitializedAsync();
+        await session.EnsureInitializedAsync(TestContext.Current.CancellationToken);
         var id = session.CurrentProfile.Id;
 
-        var saved = await session.UpdateCurrentProfileAsync(id, profile => profile with { Name = "Renamed" });
+        var saved = await session.UpdateCurrentProfileAsync(id, profile => profile with { Name = "Renamed" }, TestContext.Current.CancellationToken);
 
         Assert.True(saved);
         Assert.Equal("Renamed", session.CurrentProfile.Name);
-        Assert.Equal("Renamed", (await repository.LoadAsync(id))!.Name);
+        Assert.Equal("Renamed", (await repository.LoadAsync(id, TestContext.Current.CancellationToken))!.Name);
     }
 
     /// <summary>
@@ -115,24 +115,24 @@ public sealed class ProfileSessionTests
     public async Task UpdateCurrentProfileAsyncProfileSwitchedSkipsChangeAsync()
     {
         repository.Add(ProfileDefaults.CreateSpeedrunnerDefault() with { Id = "racing", Name = "Racing" });
-        await session.EnsureInitializedAsync();
+        await session.EnsureInitializedAsync(TestContext.Current.CancellationToken);
         var editedId = session.CurrentProfile.Id;
-        await session.SwitchToProfileAsync("racing");
+        await session.SwitchToProfileAsync("racing", TestContext.Current.CancellationToken);
 
-        var saved = await session.UpdateCurrentProfileAsync(editedId, profile => profile with { Name = "Overwritten" });
+        var saved = await session.UpdateCurrentProfileAsync(editedId, profile => profile with { Name = "Overwritten" }, TestContext.Current.CancellationToken);
 
         Assert.False(saved);
         Assert.Equal("Racing", session.CurrentProfile.Name);
-        Assert.Equal("Racing", (await repository.LoadAsync("racing"))!.Name);
+        Assert.Equal("Racing", (await repository.LoadAsync("racing", TestContext.Current.CancellationToken))!.Name);
     }
 
     [Fact]
     public async Task EnsureInitializedAsyncSavedActiveProfileIsLoadedAsync()
     {
         repository.Add(ProfileDefaults.CreateSpeedrunnerDefault() with { Id = "racing", Name = "Racing" });
-        await settings.UpdateAsync(current => current with { ActiveProfileId = "racing" });
+        await settings.UpdateAsync(current => current with { ActiveProfileId = "racing" }, TestContext.Current.CancellationToken);
 
-        await session.EnsureInitializedAsync();
+        await session.EnsureInitializedAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal("racing", session.CurrentProfile.Id);
     }
