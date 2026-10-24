@@ -114,7 +114,7 @@ public static class ThemeHitTester
 
             case ImageNode image:
                 {
-                    var rectX = nx - (image.Center ? image.Width  / 2 : 0);
+                    var rectX = nx - (image.Center ? image.Width / 2 : 0);
                     var rectY = ny - (image.Center ? image.Height / 2 : 0);
                     if (image.Width > 0 && image.Height > 0 &&
                         x >= rectX && x < rectX + image.Width &&
@@ -147,7 +147,7 @@ public static class ThemeHitTester
                 // trigger button. We treat the entire bar rect as the
                 // hit area regardless of the current pull state.
                 {
-                    var rectX = nx - (bar.Center ? bar.Width  / 2 : 0);
+                    var rectX = nx - (bar.Center ? bar.Width / 2 : 0);
                     var rectY = ny - (bar.Center ? bar.Height / 2 : 0);
                     if (bar.Width > 0 && bar.Height > 0 &&
                         x >= rectX && x < rectX + bar.Width &&
@@ -246,7 +246,7 @@ public static class ThemeHitTester
             "home:mute" => "Misc1",
 
             // Stick clicks (analog axes handled by HitTestSlider below)
-            "stick_left:click"  => "LeftStick.Button",
+            "stick_left:click" => "LeftStick.Button",
             "stick_right:click" => "RightStick.Button",
 
             // Touchpad
@@ -268,7 +268,7 @@ public static class ThemeHitTester
         var probe = x ?? y;
         if (probe is null) { return null; }
 
-        if (probe.Contains("stick_left",  StringComparison.OrdinalIgnoreCase))
+        if (probe.Contains("stick_left", StringComparison.OrdinalIgnoreCase))
         {
             return "stick_left:click";
         }
@@ -312,11 +312,11 @@ public static class ThemeHitTester
         }
         if (primary is null) { return; }
 
-        var rectX = offsetX + primary.X - (primary.Center ? primary.Width  / 2 : 0);
+        var rectX = offsetX + primary.X - (primary.Center ? primary.Width / 2 : 0);
         var rectY = offsetY + primary.Y - (primary.Center ? primary.Height / 2 : 0);
 
         if (primary.Width <= 0 || primary.Height <= 0) { return; }
-        if (x < rectX || x >= rectX + primary.Width)  { return; }
+        if (x < rectX || x >= rectX + primary.Width) { return; }
         if (y < rectY || y >= rectY + primary.Height) { return; }
 
         // Determine which stick this is from the slider's InputX/Y
@@ -327,9 +327,9 @@ public static class ThemeHitTester
         // Normalised distance from the centre of the well's ellipse.
         // Distance is measured in unit-circle space so non-square
         // wells still get a sensible "inner 30 %" zone.
-        var cx = rectX + primary.Width  / 2;
+        var cx = rectX + primary.Width / 2;
         var cy = rectY + primary.Height / 2;
-        var dx = (x - cx) / (primary.Width  / 2);
+        var dx = (x - cx) / (primary.Width / 2);
         var dy = (y - cy) / (primary.Height / 2);
         var distNorm = Math.Sqrt(dx * dx + dy * dy);
 

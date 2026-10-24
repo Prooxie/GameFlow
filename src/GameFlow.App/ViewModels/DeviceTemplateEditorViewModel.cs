@@ -159,8 +159,8 @@ public sealed class DeviceTemplateEditorViewModel : ViewModelBase, IDisposable
     public bool HasTemplate => template is not null;
 
     // ─── Localized labels ───
-    public string EmitLabel        => localization["TemplateEmitLabel"];
-    public string EmitTooltip      => localization["TemplateEmitTooltip"];
+    public string EmitLabel => localization["TemplateEmitLabel"];
+    public string EmitTooltip => localization["TemplateEmitTooltip"];
     public string OutputDeviceLabel => localization["TemplateOutputDeviceLabel"];
     public string OutputProfileLabel => Loc("TemplateOutputProfileLabel", "HIDMaestro profile");
     public string OutputProfileTooltip => Loc("TemplateOutputProfileTooltip",

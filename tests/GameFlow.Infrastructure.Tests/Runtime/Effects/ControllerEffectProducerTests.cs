@@ -1,9 +1,9 @@
 using GameFlow.Core.Models;
 using GameFlow.Core.Pipeline;
-using GameFlow.Infrastructure.Runtime.Effects;
-using GameFlow.Infrastructure.Runtime;
-using GameFlow.Infrastructure.Runtime.Slots;
 using GameFlow.Infrastructure.Localization;
+using GameFlow.Infrastructure.Runtime;
+using GameFlow.Infrastructure.Runtime.Effects;
+using GameFlow.Infrastructure.Runtime.Slots;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;

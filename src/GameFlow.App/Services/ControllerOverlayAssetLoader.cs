@@ -1,8 +1,8 @@
-using GameFlow.Core.Enums;
-using GameFlow.Infrastructure.Configuration;
 using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using GameFlow.Core.Enums;
+using GameFlow.Infrastructure.Configuration;
 using Serilog;
 
 namespace GameFlow.App.Services;

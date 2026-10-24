@@ -85,8 +85,8 @@ public sealed class ButtonComboExecutor
                 ? step.PreDelayMs
                 : cumulativeOffset;
 
-            var holdMs  = step.HoldMs > 0 ? step.HoldMs : 60;
-            var endMs   = startMs + holdMs;
+            var holdMs = step.HoldMs > 0 ? step.HoldMs : 60;
+            var endMs = startMs + holdMs;
 
             if (elapsed >= startMs && elapsed < endMs && step.Button != ButtonId.None)
             {

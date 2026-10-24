@@ -1,8 +1,8 @@
-using Avalonia.Input.Platform;
-using GameFlow.App.ViewModels;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using GameFlow.App.ViewModels;
 using Serilog;
 
 namespace GameFlow.App.Views;
@@ -130,9 +130,9 @@ public partial class ShellWindow : Window
         };
 
         refreshTimer.Tick += RefreshTimerOnTick;
-        Opened  += OnOpened;
+        Opened += OnOpened;
         Closing += OnClosing;
-        Closed  += OnClosed;
+        Closed += OnClosed;
     }
 
     private void InitializeComponent()
@@ -558,9 +558,9 @@ public partial class ShellWindow : Window
     {
         refreshTimer.Stop();
         refreshTimer.Tick -= RefreshTimerOnTick;
-        Opened  -= OnOpened;
+        Opened -= OnOpened;
         Closing -= OnClosing;
-        Closed  -= OnClosed;
+        Closed -= OnClosed;
         if (shellViewModel is not null)
         {
             // Same reason as OnDataContextChanged above: `?.` is not

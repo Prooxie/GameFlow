@@ -139,7 +139,7 @@ public sealed class FleeParserTests
     [InlineData("math.max(1.5, 2.5)", 2.5)]
     [InlineData("math.pow(2, 3)", 8)]
     [InlineData("math.pi", Math.PI)]
-    [InlineData("math.e",  Math.E)]
+    [InlineData("math.e", Math.E)]
     public void Parses_function_calls(string src, double expected)
     {
         var node = FleeParser.ParseUncached(src);

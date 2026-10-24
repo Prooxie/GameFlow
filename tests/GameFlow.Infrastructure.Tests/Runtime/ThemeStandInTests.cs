@@ -1,7 +1,7 @@
 using GameFlow.Core.Enums;
 using GameFlow.Infrastructure.Configuration;
-using GameFlow.Infrastructure.Theming;
 using GameFlow.Infrastructure.Tests.Theming;
+using GameFlow.Infrastructure.Theming;
 using Xunit;
 
 namespace GameFlow.Infrastructure.Tests.Runtime;

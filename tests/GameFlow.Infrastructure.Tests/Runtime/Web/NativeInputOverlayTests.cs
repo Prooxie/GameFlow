@@ -15,8 +15,15 @@ public sealed class NativeInputOverlayTests
 {
     private static OverlayProgram Program(ControllerVisualStyle style) => new()
     {
-        ThemeId = "native", ThemeName = "native", Width = 1096, Height = 300,
-        Nodes = [], ImagePaths = [], ValueSlots = [], TrailPads = [], MissingImages = [],
+        ThemeId = "native",
+        ThemeName = "native",
+        Width = 1096,
+        Height = 300,
+        Nodes = [],
+        ImagePaths = [],
+        ValueSlots = [],
+        TrailPads = [],
+        MissingImages = [],
         InputSurface = InputSurfaceLayout.Create(style, CompiledKeyboardMouseMap.Default, CompiledKeyboardMouseMap.Default)
     };
 

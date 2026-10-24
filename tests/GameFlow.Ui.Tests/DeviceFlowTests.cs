@@ -3,23 +3,23 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Headless;
 using Avalonia.Input;
-using Avalonia.Threading;
-using Avalonia.VisualTree;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using GameFlow.App.Converters;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using GameFlow.App.Bootstrap;
+using GameFlow.App.Converters;
 using GameFlow.App.Services;
 using GameFlow.App.ViewModels;
 using GameFlow.App.Views;
 using GameFlow.Core.Enums;
 using GameFlow.Core.Models;
-using GameFlow.Infrastructure.Localization;
 using GameFlow.Infrastructure.Configuration;
+using GameFlow.Infrastructure.Localization;
 using GameFlow.Infrastructure.Profiles;
 using GameFlow.Infrastructure.Runtime;
-using GameFlow.Infrastructure.Runtime.Slots;
 using GameFlow.Infrastructure.Runtime.Input;
+using GameFlow.Infrastructure.Runtime.Slots;
 using GameFlow.Infrastructure.Runtime.Web.Overlay;
 using GameFlow.Infrastructure.Theming;
 using GameFlow.Infrastructure.Theming.Flee;
@@ -319,7 +319,8 @@ public sealed class DeviceFlowTests(UiFixture fixture) : IClassFixture<UiFixture
     {
         var document = new ThemeDocument
         {
-            Width = 400, Height = 300,
+            Width = 400,
+            Height = 300,
             Children = [new ShowHideNode
             {
                 Input = FleeParser.Parse("touch_center:click"),

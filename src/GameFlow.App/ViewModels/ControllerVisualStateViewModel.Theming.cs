@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using GameFlow.Core.Models;
 using GameFlow.Infrastructure.Theming;
 using GameFlow.Infrastructure.Theming.Models;
-using CommunityToolkit.Mvvm.Input;
 using Serilog;
 
 namespace GameFlow.App.ViewModels;

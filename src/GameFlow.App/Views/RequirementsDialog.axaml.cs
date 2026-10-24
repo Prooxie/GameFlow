@@ -1,8 +1,8 @@
 using System.Diagnostics;
-using GameFlow.Infrastructure.Requirements;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using GameFlow.Infrastructure.Requirements;
 using Serilog;
 
 namespace GameFlow.App.Views;

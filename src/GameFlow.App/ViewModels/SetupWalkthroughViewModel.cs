@@ -2,14 +2,14 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
-using GameFlow.Infrastructure.Runtime.Templates;
-using GameFlow.Infrastructure.Runtime;
-using GameFlow.Infrastructure.Runtime.Slots;
-using GameFlow.Infrastructure.Runtime.HidMaestro;
-using GameFlow.Infrastructure.Runtime.Input;
-using GameFlow.Infrastructure.Localization;
 using GameFlow.Core.Enums;
 using GameFlow.Core.Models;
+using GameFlow.Infrastructure.Localization;
+using GameFlow.Infrastructure.Runtime;
+using GameFlow.Infrastructure.Runtime.HidMaestro;
+using GameFlow.Infrastructure.Runtime.Input;
+using GameFlow.Infrastructure.Runtime.Slots;
+using GameFlow.Infrastructure.Runtime.Templates;
 
 namespace GameFlow.App.ViewModels;
 

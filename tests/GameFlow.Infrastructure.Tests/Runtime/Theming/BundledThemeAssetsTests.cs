@@ -1,7 +1,7 @@
 using GameFlow.Core.Enums;
 using GameFlow.Infrastructure.Runtime.Web.Overlay;
-using GameFlow.Infrastructure.Theming;
 using GameFlow.Infrastructure.Tests.Theming;
+using GameFlow.Infrastructure.Theming;
 using Xunit;
 
 namespace GameFlow.Infrastructure.Tests.Runtime.Theming;

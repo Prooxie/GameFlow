@@ -428,40 +428,60 @@ public sealed class DeviceSettingsEditorViewModel : ViewModelBase
         {
             LeftStick = new StickSettings
             {
-                Deadzone = leftDeadzone, AntiDeadzone = leftAntiDeadzone, FullAt = leftFullAt,
-                Sensitivity = leftSensitivity, Curve = leftCurve,
-                InvertX = leftInvertX, InvertY = leftInvertY,
+                Deadzone = leftDeadzone,
+                AntiDeadzone = leftAntiDeadzone,
+                FullAt = leftFullAt,
+                Sensitivity = leftSensitivity,
+                Curve = leftCurve,
+                InvertX = leftInvertX,
+                InvertY = leftInvertY,
             },
             RightStick = new StickSettings
             {
-                Deadzone = rightDeadzone, AntiDeadzone = rightAntiDeadzone, FullAt = rightFullAt,
-                Sensitivity = rightSensitivity, Curve = rightCurve,
-                InvertX = rightInvertX, InvertY = rightInvertY,
+                Deadzone = rightDeadzone,
+                AntiDeadzone = rightAntiDeadzone,
+                FullAt = rightFullAt,
+                Sensitivity = rightSensitivity,
+                Curve = rightCurve,
+                InvertX = rightInvertX,
+                InvertY = rightInvertY,
             },
             LeftTrigger = new TriggerSettings { Deadzone = leftTriggerDeadzone, FullAt = leftTriggerFullAt },
             RightTrigger = new TriggerSettings { Deadzone = rightTriggerDeadzone, FullAt = rightTriggerFullAt },
             Rumble = new RumbleSettings
             {
-                Enabled = rumbleEnabled, Gain = rumbleGain,
-                LowFrequencyGain = rumbleLowGain, HighFrequencyGain = rumbleHighGain,
+                Enabled = rumbleEnabled,
+                Gain = rumbleGain,
+                LowFrequencyGain = rumbleLowGain,
+                HighFrequencyGain = rumbleHighGain,
                 SwapMotors = rumbleSwapMotors,
             },
             Lighting = new LightingSettings
             {
-                Mode = lightbarMode, Color = lightbarColor,
-                Brightness = lightbarBrightness, IndicatorBrightness = indicatorBrightness,
+                Mode = lightbarMode,
+                Color = lightbarColor,
+                Brightness = lightbarBrightness,
+                IndicatorBrightness = indicatorBrightness,
             },
             LeftAdaptiveTrigger = new AdaptiveTriggerSettings
             {
-                Mode = leftAdaptiveMode, StartPosition = leftAdaptiveStart, EndPosition = leftAdaptiveEnd,
-                Strength = leftAdaptiveStrength, FrequencyHz = leftAdaptiveFrequency,
-                FeedbackLink = leftFeedbackLink, FeedbackAmount = leftFeedbackAmount,
+                Mode = leftAdaptiveMode,
+                StartPosition = leftAdaptiveStart,
+                EndPosition = leftAdaptiveEnd,
+                Strength = leftAdaptiveStrength,
+                FrequencyHz = leftAdaptiveFrequency,
+                FeedbackLink = leftFeedbackLink,
+                FeedbackAmount = leftFeedbackAmount,
             },
             RightAdaptiveTrigger = new AdaptiveTriggerSettings
             {
-                Mode = rightAdaptiveMode, StartPosition = rightAdaptiveStart, EndPosition = rightAdaptiveEnd,
-                Strength = rightAdaptiveStrength, FrequencyHz = rightAdaptiveFrequency,
-                FeedbackLink = rightFeedbackLink, FeedbackAmount = rightFeedbackAmount,
+                Mode = rightAdaptiveMode,
+                StartPosition = rightAdaptiveStart,
+                EndPosition = rightAdaptiveEnd,
+                Strength = rightAdaptiveStrength,
+                FrequencyHz = rightAdaptiveFrequency,
+                FeedbackLink = rightFeedbackLink,
+                FeedbackAmount = rightFeedbackAmount,
             },
         });
     }

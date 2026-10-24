@@ -8,7 +8,7 @@ namespace GameFlow.App.Converters;
 public sealed class BoolToActiveBrushConverter : IValueConverter
 {
     public IBrush Active { get; set; } = new SolidColorBrush(Color.FromRgb(0x65, 0xD3, 0x84));
-    public IBrush Idle   { get; set; } = new SolidColorBrush(Color.FromArgb(0x20, 0xFF, 0xFF, 0xFF));
+    public IBrush Idle { get; set; } = new SolidColorBrush(Color.FromArgb(0x20, 0xFF, 0xFF, 0xFF));
 
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         => value is bool b && b ? Active : Idle;

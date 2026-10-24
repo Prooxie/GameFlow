@@ -410,7 +410,8 @@ public sealed class MotionTargetOption(MouseMotionTarget target) : ViewModelBase
     public string Label => UiTextResources.Get(Target switch
     {
         MouseMotionTarget.LeftStick => "InputMapLeftStick",
-        MouseMotionTarget.RightStick => "InputMapRightStick", _ => "InputMapNothing"
+        MouseMotionTarget.RightStick => "InputMapRightStick",
+        _ => "InputMapNothing"
     });
 }
 

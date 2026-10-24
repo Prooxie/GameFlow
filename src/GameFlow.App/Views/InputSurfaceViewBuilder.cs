@@ -17,11 +17,13 @@ internal static class InputSurfaceViewBuilder
 {
     private static readonly VkPressedToBrushConverter Keys = new()
     {
-        Active = Brush.Parse(InputSurfaceLayout.Active), Idle = Brush.Parse(InputSurfaceLayout.Idle)
+        Active = Brush.Parse(InputSurfaceLayout.Active),
+        Idle = Brush.Parse(InputSurfaceLayout.Idle)
     };
     private static readonly BoolToActiveBrushConverter Buttons = new()
     {
-        Active = Brush.Parse(InputSurfaceLayout.Active), Idle = Brush.Parse(InputSurfaceLayout.Idle)
+        Active = Brush.Parse(InputSurfaceLayout.Active),
+        Idle = Brush.Parse(InputSurfaceLayout.Idle)
     };
     private static readonly VkPressedToBrushConverter KeyText = new()
     { Active = Brush.Parse("#102418"), Idle = Brush.Parse(InputSurfaceLayout.Foreground) };
@@ -52,13 +54,17 @@ internal static class InputSurfaceViewBuilder
     {
         var cap = new Border
         {
-            Width = item.Width, Height = item.Height, CornerRadius = new CornerRadius(item.Radius),
+            Width = item.Width,
+            Height = item.Height,
+            CornerRadius = new CornerRadius(item.Radius),
             BorderBrush = Brush.Parse(item.Bound ? InputSurfaceLayout.Accent : InputSurfaceLayout.Border),
             BorderThickness = new Thickness(item.Kind == "label" || item.Kind == "motion" ? 0 : 1),
             Background = Brush.Parse(item.Kind switch
             {
-                "panel" => InputSurfaceLayout.Surface, "body" => InputSurfaceLayout.Body,
-                "label" or "motion" => "Transparent", _ => InputSurfaceLayout.Idle
+                "panel" => InputSurfaceLayout.Surface,
+                "body" => InputSurfaceLayout.Body,
+                "label" or "motion" => "Transparent",
+                _ => InputSurfaceLayout.Idle
             })
         };
         if (item.Kind == "panel") { return cap; }
@@ -93,8 +99,10 @@ internal static class InputSurfaceViewBuilder
         {
             var arrow = new Line
             {
-                StartPoint = new Point(30, 30), Stroke = Brush.Parse(InputSurfaceLayout.Accent),
-                StrokeThickness = 3, StrokeLineCap = PenLineCap.Round
+                StartPoint = new Point(30, 30),
+                Stroke = Brush.Parse(InputSurfaceLayout.Accent),
+                StrokeThickness = 3,
+                StrokeLineCap = PenLineCap.Round
             };
             arrow.Bind(Line.EndPointProperty, new Binding(nameof(IKeyboardMouseVisualState.MouseAimEndPoint)));
             var compass = new Canvas { Width = 60, Height = 60 };
@@ -110,10 +118,13 @@ internal static class InputSurfaceViewBuilder
             var small = item.Kind == "key" && item.Width <= KeyboardPhysicalLayout.KeyWidth && item.Label.Length >= 5;
             var title = new TextBlock
             {
-                Text = item.Label, FontSize = small ? 8.25 : 10.5, FontWeight = FontWeight.SemiBold,
+                Text = item.Label,
+                FontSize = small ? 8.25 : 10.5,
+                FontWeight = FontWeight.SemiBold,
                 LineHeight = (small ? 8.25 : 10.5) * 1.2,
                 Foreground = Brush.Parse(InputSurfaceLayout.Foreground),
-                FontFamily = new FontFamily("Consolas, monospace"), HorizontalAlignment = HorizontalAlignment.Center
+                FontFamily = new FontFamily("Consolas, monospace"),
+                HorizontalAlignment = HorizontalAlignment.Center
             };
             BindTextColor(title, item, false);
             labels.Children.Add(title);
@@ -121,11 +132,14 @@ internal static class InputSurfaceViewBuilder
             {
                 var hint = new TextBlock
                 {
-                    Text = item.Hint, FontSize = 7.5, LineHeight = 8,
+                    Text = item.Hint,
+                    FontSize = 7.5,
+                    LineHeight = 8,
                     FontFamily = new FontFamily("Consolas, monospace"),
                     Foreground = Brush.Parse(item.Bound ? InputSurfaceLayout.Accent : InputSurfaceLayout.Foreground),
                     TextTrimming = TextTrimming.CharacterEllipsis,
-                    MaxWidth = item.Width - 4, HorizontalAlignment = HorizontalAlignment.Center
+                    MaxWidth = item.Width - 4,
+                    HorizontalAlignment = HorizontalAlignment.Center
                 };
                 BindTextColor(hint, item, true);
                 labels.Children.Add(hint);

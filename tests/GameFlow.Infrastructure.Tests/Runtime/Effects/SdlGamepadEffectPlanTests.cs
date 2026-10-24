@@ -1,5 +1,5 @@
-using GameFlow.Infrastructure.Runtime.Effects;
 using GameFlow.Core.Pipeline;
+using GameFlow.Infrastructure.Runtime.Effects;
 using Xunit;
 
 namespace GameFlow.Infrastructure.Tests.Runtime.Effects;

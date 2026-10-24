@@ -1,10 +1,10 @@
 using System.ComponentModel;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
-using GameFlow.Infrastructure.Runtime.Web.Overlay;
 using GameFlow.App.Services;
 using GameFlow.Core.Enums;
 using GameFlow.Infrastructure.Runtime.Input;
+using GameFlow.Infrastructure.Runtime.Web.Overlay;
 
 namespace GameFlow.App.ViewModels;
 
@@ -122,8 +122,16 @@ public sealed class DashboardControllerPanelViewModel : ViewModelBase, IDisposab
             var layout = InputSurfacePresentation.Create(style, visual.KeyboardDeviceId, visual.MouseDeviceId);
             program = new OverlayProgram
             {
-                ThemeId = "native-" + style, ThemeName = style.ToString(), Width = layout.Width, Height = layout.Height,
-                Nodes = [], ImagePaths = [], ValueSlots = [], TrailPads = [], MissingImages = [], InputSurface = layout
+                ThemeId = "native-" + style,
+                ThemeName = style.ToString(),
+                Width = layout.Width,
+                Height = layout.Height,
+                Nodes = [],
+                ImagePaths = [],
+                ValueSlots = [],
+                TrailPads = [],
+                MissingImages = [],
+                InputSurface = layout
             };
         }
         overlayThemes.SetInput(SlotId, physical, program);

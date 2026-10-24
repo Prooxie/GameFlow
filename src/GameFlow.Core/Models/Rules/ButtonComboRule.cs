@@ -1,5 +1,5 @@
-using GameFlow.Core.Enums;
 using System.Text.Json.Serialization;
+using GameFlow.Core.Enums;
 
 namespace GameFlow.Core.Models.Rules;
 

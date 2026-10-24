@@ -14,7 +14,8 @@ public sealed class RuntimeClockTests
         var clock = new RuntimeClock(time);
         var pulse = new BinaryPulseScheduler(new PulseTimingOptions
         {
-            HoldMs = 30, ReleaseMs = 30
+            HoldMs = 30,
+            ReleaseMs = 30
         });
         pulse.SetDesired(true, clock.Now);
         Assert.True(pulse.Tick(clock.Now).IsPressed);

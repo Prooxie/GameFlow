@@ -53,10 +53,10 @@ public sealed class ControllerStateSymbolsTests
     /// north→Y/△ regardless of controller family.
     /// </summary>
     [Theory]
-    [InlineData("quad_right:s", true,  false, false, false, 1)]
-    [InlineData("quad_right:e", false, true,  false, false, 1)]
-    [InlineData("quad_right:w", false, false, true,  false, 1)]
-    [InlineData("quad_right:n", false, false, false, true,  1)]
+    [InlineData("quad_right:s", true, false, false, false, 1)]
+    [InlineData("quad_right:e", false, true, false, false, 1)]
+    [InlineData("quad_right:w", false, false, true, false, 1)]
+    [InlineData("quad_right:n", false, false, false, true, 1)]
     [InlineData("quad_right:s", false, false, false, false, 0)]
     public void Resolves_face_buttons(string name, bool a, bool b, bool x, bool y, double expected)
     {
@@ -105,7 +105,7 @@ public sealed class ControllerStateSymbolsTests
     {
         var symbols = new ControllerStateSymbols();
         symbols.UpdateSnapshot(MakeSnapshot(lx: 0.3f, ly: 0.5f));
-        Assert.Equal( 0.3, symbols.Resolve("stick_left:x"), 5);
+        Assert.Equal(0.3, symbols.Resolve("stick_left:x"), 5);
         Assert.Equal(-0.5, symbols.Resolve("stick_left:y"), 5);
     }
 

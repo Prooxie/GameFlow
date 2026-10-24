@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using GameFlow.Infrastructure.Configuration;
 using GameFlow.Infrastructure.Profiles;
 using GameFlow.Infrastructure.Runtime.Profiles;
-using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 
 namespace GameFlow.App.ViewModels;

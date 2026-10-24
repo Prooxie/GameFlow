@@ -1,11 +1,11 @@
 using System;
-using GameFlow.App.ViewModels;
-using GameFlow.Core.Enums;
-using GameFlow.Infrastructure.Theming;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using GameFlow.App.ViewModels;
+using GameFlow.Core.Enums;
+using GameFlow.Infrastructure.Theming;
 
 namespace GameFlow.App.Views;
 
@@ -89,8 +89,8 @@ public partial class ControllerSurface : UserControl
     {
         base.OnAttachedToVisualTree(e);
 
-        surface         = this.FindControl<ThemeSurface>("ThemedSurface");
-        noThemeMessage  = this.FindControl<TextBlock>("NoThemeMessage");
+        surface = this.FindControl<ThemeSurface>("ThemedSurface");
+        noThemeMessage = this.FindControl<TextBlock>("NoThemeMessage");
 
         if (surface is not null)
         {
@@ -198,7 +198,7 @@ public partial class ControllerSurface : UserControl
 
         // The VM has already resolved its visual style and theme via
         // RefreshActiveTheme(); we just need to push the result.
-        surface.ActiveTheme    = vm.ActiveTheme;
+        surface.ActiveTheme = vm.ActiveTheme;
         surface.IsPhysicalView = vm.IsPhysicalView;
         surface.UpdateLightColor(vm.LightColor);
         surface.UpdateState(vm.RawSnapshot);

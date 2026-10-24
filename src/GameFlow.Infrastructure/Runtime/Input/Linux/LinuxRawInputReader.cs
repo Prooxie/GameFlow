@@ -97,7 +97,8 @@ public sealed class LinuxRawInputReader : IKeyboardStateSource, IMouseStateSourc
                     try { RefreshDevices(); }
                     catch (Exception exception) { logger.LogDebug(exception, "evdev: discovery failed; will retry."); }
                 }
-            }) { IsBackground = true, Name = "evdev-discovery" };
+            })
+            { IsBackground = true, Name = "evdev-discovery" };
             watcher.Start();
         }
     }
@@ -121,28 +122,28 @@ public sealed class LinuxRawInputReader : IKeyboardStateSource, IMouseStateSourc
                 pressedKeysByDevice.Remove(id);
                 mouseByDevice.Remove(id);
             }
-        foreach (var device in devices)
-        {
-            if (device.IsKeyboard && !readers.ContainsKey(EvdevDeviceDiscovery.BuildDeviceId("keyboard", device.Path)))
+            foreach (var device in devices)
             {
-                var id = EvdevDeviceDiscovery.BuildDeviceId("keyboard", device.Path);
-                pressedKeysByDevice[id] = [];
-                StartReaderThread(device.Path, id, isKeyboard: true, isMouse: false);
+                if (device.IsKeyboard && !readers.ContainsKey(EvdevDeviceDiscovery.BuildDeviceId("keyboard", device.Path)))
+                {
+                    var id = EvdevDeviceDiscovery.BuildDeviceId("keyboard", device.Path);
+                    pressedKeysByDevice[id] = [];
+                    StartReaderThread(device.Path, id, isKeyboard: true, isMouse: false);
+                }
+                if (device.IsMouse && !readers.ContainsKey(EvdevDeviceDiscovery.BuildDeviceId("mouse", device.Path)))
+                {
+                    var id = EvdevDeviceDiscovery.BuildDeviceId("mouse", device.Path);
+                    mouseByDevice[id] = new MouseAccumulator();
+                    StartReaderThread(device.Path, id, isKeyboard: false, isMouse: true);
+                }
+                // A device classifying as BOTH (rare composite hardware) gets
+                // two independent fds/threads on the same device file — evdev
+                // fans its full event stream out to every open fd
+                // independently, and each thread here filters for only the
+                // event kind it cares about. Slightly wasteful for the
+                // uncommon composite case; simpler than one thread updating
+                // two different pieces of shared state.
             }
-            if (device.IsMouse && !readers.ContainsKey(EvdevDeviceDiscovery.BuildDeviceId("mouse", device.Path)))
-            {
-                var id = EvdevDeviceDiscovery.BuildDeviceId("mouse", device.Path);
-                mouseByDevice[id] = new MouseAccumulator();
-                StartReaderThread(device.Path, id, isKeyboard: false, isMouse: true);
-            }
-            // A device classifying as BOTH (rare composite hardware) gets
-            // two independent fds/threads on the same device file — evdev
-            // fans its full event stream out to every open fd
-            // independently, and each thread here filters for only the
-            // event kind it cares about. Slightly wasteful for the
-            // uncommon composite case; simpler than one thread updating
-            // two different pieces of shared state.
-        }
 
         }
     }

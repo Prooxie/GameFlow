@@ -166,22 +166,22 @@ public sealed class LuaScriptEngine : IDisposable
 
             // Context is isolated per tick so a retained table never reads a later frame.
             var ctx = DynValue.NewTable(loaded.Script);
-            var t   = ctx.Table;
+            var t = ctx.Table;
             t.Set("now_ms", DynValue.NewNumber((now - DateTimeOffset.UnixEpoch).TotalMilliseconds));
-            t.Set("dt_ms",  DynValue.NewNumber(dtMs));
-            t.Set("state",  loaded.State);
+            t.Set("dt_ms", DynValue.NewNumber(dtMs));
+            t.Set("state", loaded.State);
 
-            t.Set("left",  Stick(loaded.Script, physical.LeftStick));
+            t.Set("left", Stick(loaded.Script, physical.LeftStick));
             t.Set("right", Stick(loaded.Script, physical.RightStick));
-            t.Set("lt",    DynValue.NewNumber(physical.LeftTrigger));
-            t.Set("rt",    DynValue.NewNumber(physical.RightTrigger));
+            t.Set("lt", DynValue.NewNumber(physical.LeftTrigger));
+            t.Set("rt", DynValue.NewNumber(physical.RightTrigger));
 
             // Local copies that get written back after the script returns.
             var localButtons = (bool[])virtualButtons.Clone();
-            var localLeft    = virtualLeft;
-            var localRight   = virtualRight;
-            var localLt      = virtualLt;
-            var localRt      = virtualRt;
+            var localLeft = virtualLeft;
+            var localRight = virtualRight;
+            var localLt = virtualLt;
+            var localRt = virtualRt;
 
             t.Set("is_pressed", DynValue.NewCallback((_, args) =>
             {
@@ -248,10 +248,10 @@ public sealed class LuaScriptEngine : IDisposable
                     virtualButtons[i] = localButtons[i];
                 }
             }
-            virtualLeft  = localLeft;
+            virtualLeft = localLeft;
             virtualRight = localRight;
-            virtualLt    = localLt;
-            virtualRt    = localRt;
+            virtualLt = localLt;
+            virtualRt = localRt;
 
             lock (gate)
             {

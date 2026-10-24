@@ -1,10 +1,4 @@
 using System.Collections.Concurrent;
-using GameFlow.App.ViewModels;
-using GameFlow.Core.Models;
-using GameFlow.Core.Enums;
-using GameFlow.Infrastructure.Theming;
-using GameFlow.Infrastructure.Theming.Flee;
-using GameFlow.Infrastructure.Theming.Models;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -13,6 +7,12 @@ using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
+using GameFlow.App.ViewModels;
+using GameFlow.Core.Enums;
+using GameFlow.Core.Models;
+using GameFlow.Infrastructure.Theming;
+using GameFlow.Infrastructure.Theming.Flee;
+using GameFlow.Infrastructure.Theming.Models;
 using Serilog;
 
 namespace GameFlow.App.Views;
@@ -601,7 +601,7 @@ public sealed class ThemeSurface : Control
         // control wants that much space, which in an unconstrained
         // panel makes the whole window overflow. Stretch alignment in
         // the parent then gives us whatever space is actually free.
-        var w = double.IsInfinity(availableSize.Width)  ? 480 : availableSize.Width;
+        var w = double.IsInfinity(availableSize.Width) ? 480 : availableSize.Width;
         var h = double.IsInfinity(availableSize.Height) ? 280 : availableSize.Height;
         return new Size(w, h);
     }
@@ -618,211 +618,211 @@ public sealed class ThemeSurface : Control
         var renderTimer = System.Diagnostics.Stopwatch.StartNew();
         try
         {
-        base.Render(context);
+            base.Render(context);
 
-        // Transparent fill: gives the control a hit-test surface so
-        // OnPointerPressed fires on clicks anywhere in Bounds, not
-        // just on rendered theme art. Zero visual cost.
-        context.FillRectangle(Brushes.Transparent, new Rect(Bounds.Size));
+            // Transparent fill: gives the control a hit-test surface so
+            // OnPointerPressed fires on clicks anywhere in Bounds, not
+            // just on rendered theme art. Zero visual cost.
+            context.FillRectangle(Brushes.Transparent, new Rect(Bounds.Size));
 
-        var theme = activeTheme;
-        if (theme is null) { return; }
+            var theme = activeTheme;
+            if (theme is null) { return; }
 
-        symbols.UpdateSnapshot(snapshot);
+            symbols.UpdateSnapshot(snapshot);
 
-        // One-shot diagnostic: confirm the first time we see live
-        // button data flow into the surface. Useful for debugging
-        // "no feedback" reports — if this never fires while the user
-        // is actively pressing buttons, the bug is upstream in the
-        // input pipeline / VM update chain, NOT in the theme engine.
-        if (!firstButtonPressLogged)
-        {
-            var pressedNow = snapshot.Buttons.PressedCount;
-            if (pressedNow > 0)
+            // One-shot diagnostic: confirm the first time we see live
+            // button data flow into the surface. Useful for debugging
+            // "no feedback" reports — if this never fires while the user
+            // is actively pressing buttons, the bug is upstream in the
+            // input pipeline / VM update chain, NOT in the theme engine.
+            if (!firstButtonPressLogged)
             {
-                firstButtonPressLogged = true;
-                Log.Information(
-                    "ThemeSurface[{Mode}] first live button press: device={Device} pressed={Pressed}",
-                    isPhysicalView ? "physical" : "virtual",
-                    snapshot.DeviceName,
-                    pressedNow);
-            }
-        }
-
-        // Throttled feedback diagnostic: once per second per surface, log
-        // snapshot state + showhide eval results so the input → symbols →
-        // expression chain can be confirmed.
-        //
-        // Debug level, and gated on Debug being ENABLED before any of the
-        // work is done. Both matter. At Information this ran for every
-        // surface on screen — two per slot, up to sixteen slots — and each
-        // pass walks the node tree, evaluates an expression per ShowHide
-        // node, and builds a string. That produced 60+ MB of log per day
-        // and, worse, buried real warnings: diagnosing the theme artwork
-        // regression meant grepping past hundreds of thousands of these
-        // lines. A diagnostic that drowns the log it writes to has
-        // negative value.
-        //
-        // The IsEnabled check is not redundant with the level: Serilog
-        // evaluates arguments eagerly, so without it the tree walk and
-        // string building would still happen on every tick and simply be
-        // discarded.
-        var now = DateTime.UtcNow;
-        if ((now - lastFeedbackDiagnostic).TotalSeconds >= 1.0 &&
-            Log.IsEnabled(Serilog.Events.LogEventLevel.Debug))
-        {
-            lastFeedbackDiagnostic = now;
-            var pressed = snapshot.Buttons.PressedCount;
-            var samples = new System.Text.StringBuilder();
-            foreach (var node in theme.Document.Children)
-            {
-                if (node is ShowHideNode show && samples.Length < 200)
+                var pressedNow = snapshot.Buttons.PressedCount;
+                if (pressedNow > 0)
                 {
-                    var val = show.Input.Evaluate(symbols);
-                    if (samples.Length > 0) { samples.Append(", "); }
-                    var ast = show.Input;
-                    var varName = ast is VariableNode v ? v.Name : ast.GetType().Name;
-                    samples.Append(varName).Append('=').Append(val);
+                    firstButtonPressLogged = true;
+                    Log.Information(
+                        "ThemeSurface[{Mode}] first live button press: device={Device} pressed={Pressed}",
+                        isPhysicalView ? "physical" : "virtual",
+                        snapshot.DeviceName,
+                        pressedNow);
                 }
             }
-            Log.Debug(
-                "ThemeSurface[{Mode}] tick: device={Device} pressed={Pressed}/{Total} L=({LX:F2},{LY:F2}) R=({RX:F2},{RY:F2}) LT={LT:F2} RT={RT:F2} showhide=[{Samples}]",
-                isPhysicalView ? "physical" : "virtual",
-                snapshot.DeviceName,
-                pressed, ButtonState.Count,
-                snapshot.LeftStick.X, snapshot.LeftStick.Y,
-                snapshot.RightStick.X, snapshot.RightStick.Y,
-                snapshot.LeftTrigger, snapshot.RightTrigger,
-                samples.ToString());
-        }
 
-        var doc = theme.Document;
-        if (doc.Width <= 0 || doc.Height <= 0) { return; }
-
-        var scaleX = Bounds.Width / doc.Width;
-        var scaleY = Bounds.Height / doc.Height;
-        var uniform = Math.Min(scaleX, scaleY);
-        if (uniform <= 0) { return; }
-
-        var renderedW = doc.Width * uniform;
-        var renderedH = doc.Height * uniform;
-        var offsetX = (Bounds.Width - renderedW) / 2;
-        var offsetY = (Bounds.Height - renderedH) / 2;
-
-        // Snap the origin to a whole DEVICE pixel.
-        //
-        // Centring produces a fractional offset almost always, and a
-        // fractional origin means every bitmap in the theme is resampled
-        // across pixel boundaries and every thin outline lands between two
-        // pixels — so the art looks soft and the outlines look slightly
-        // misplaced. It varies with DPI, resolution and aspect ratio
-        // because all three change how a fractional control coordinate
-        // maps onto the device grid: at 125% scaling an offset of x.5
-        // control units is x.625 device pixels, which cannot be drawn
-        // crisply at any filter quality.
-        //
-        // Rounding in DEVICE space and converting back is what makes this
-        // correct at fractional scalings; rounding the control coordinate
-        // alone would still leave a fractional device offset.
-        var scaling = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1.0;
-        if (scaling > 0)
-        {
-            offsetX = Math.Round(offsetX * scaling, MidpointRounding.AwayFromZero) / scaling;
-            offsetY = Math.Round(offsetY * scaling, MidpointRounding.AwayFromZero) / scaling;
-        }
-
-        // Capture transform so OnPointerPressed can invert it without
-        // re-walking the document. Stored in display (control) pixels.
-        lastTransform = (uniform, offsetX, offsetY);
-
-        // Device pixels per theme unit, for the display-sized bitmap cache.
-        // Uses the same scaling the origin snap above rounds against, so a
-        // cached copy is built for the size the art is genuinely rasterised
-        // at rather than for its size in control coordinates.
-        frameDeviceScale = uniform * (scaling > 0 ? scaling : 1.0);
-
-        // The frame's default filter is the CHEAP one. This is the single
-        // largest lever on repaint cost, and the earlier note in
-        // docs/known-issues.md — that HighQuality versus LowQuality made no
-        // measurable difference — is wrong. Measured directly on
-        // 2026-08-11 against the seven layers an idle DualSense panel
-        // composites, drawing into a RenderTargetBitmap the size of a real
-        // panel:
-        //
-        //   panel width          430      700     1100
-        //   authored + High     2.98     7.79    10.66  ms/frame
-        //   authored + Low      0.35     0.89     2.03
-        //   prescaled + High    1.60     4.32    10.60
-        //   prescaled + Low     0.34     0.83     2.08
-        //
-        // Three things follow. The cost is the high-quality FILTER, per
-        // DESTINATION pixel — 1100-wide costs 3.5x what 430-wide does off
-        // identical sources, so it is not the source size and not the layer
-        // count. Pre-scaling alone buys under 2x and nothing at all once
-        // the panel is large. And pre-scaling plus the cheap filter is
-        // indistinguishable from the cheap filter alone.
-        //
-        // So the filter is what makes it fast, and ScaledCache is what
-        // makes the filter safe: a cheap filter aliases when it is doing a
-        // 3x downscale, which is exactly what the authored art needs.
-        // Drawing a display-sized copy instead leaves it doing almost
-        // nothing, where cheap and expensive look the same. DrawImage
-        // pushes HighQuality back for the frame or two before a copy
-        // exists, so the art never passes through a cheap large downscale.
-        //
-        // EdgeMode.Antialias stays: it smooths the implicit transform edges
-        // that the PNG's alpha channel crosses at non-1:1 scales, and it is
-        // not what costs.
-        using (context.PushRenderOptions(new RenderOptions
-        {
-            BitmapInterpolationMode = BitmapInterpolationMode.LowQuality,
-            EdgeMode = EdgeMode.Antialias,
-        }))
-        using (context.PushTransform(Matrix.CreateScale(uniform, uniform) *
-                                     Matrix.CreateTranslation(offsetX, offsetY)))
-        {
-            // Both physical and virtual panels render the full theme.
-            // Each surface independently consumes its own snapshot
-            // (physical = input source, virtual = output emitted to
-            // HIDMaestro), so feedback animates naturally in each panel from
-            // its respective source. The IsPhysicalView flag is kept
-            // on the surface for potential future use (e.g. a
-            // "passive view" toggle) but it no longer gates render
-            // output — users have asked for live feedback on both
-            // sides.
-            foreach (var node in doc.Children)
-            {
-                RenderNode(context, node, theme);
-            }
-
-            // Click-to-map highlights painted on top so they're never
-            // occluded by overlay images. While the pointer is held down
-            // on an element only the stronger pressed tint paints,
-            // otherwise the lighter hover tint — one shape, two alphas.
-            // Nothing persists once the pointer releases or leaves.
-            if (pressedHit is not null)
-            {
-                DrawElementHighlight(context, pressedHit, pressed: true);
-            }
-            else if (hoveredHit is not null)
-            {
-                DrawElementHighlight(context, hoveredHit, pressed: false);
-            }
-
-            // Touch contacts, drawn last so nothing occludes them.
+            // Throttled feedback diagnostic: once per second per surface, log
+            // snapshot state + showhide eval results so the input → symbols →
+            // expression chain can be confirmed.
             //
-            // This used to happen only inside a TrailPad node and only for
-            // the SECOND finger onward, which meant it drew nothing at all
-            // on a theme without that node and nothing for a single touch —
-            // the reported "no dots". Falling back to the touchpad's own
-            // hit region makes it independent of how a pack is authored.
-            if (!sawTrailPadThisFrame)
+            // Debug level, and gated on Debug being ENABLED before any of the
+            // work is done. Both matter. At Information this ran for every
+            // surface on screen — two per slot, up to sixteen slots — and each
+            // pass walks the node tree, evaluates an expression per ShowHide
+            // node, and builds a string. That produced 60+ MB of log per day
+            // and, worse, buried real warnings: diagnosing the theme artwork
+            // regression meant grepping past hundreds of thousands of these
+            // lines. A diagnostic that drowns the log it writes to has
+            // negative value.
+            //
+            // The IsEnabled check is not redundant with the level: Serilog
+            // evaluates arguments eagerly, so without it the tree walk and
+            // string building would still happen on every tick and simply be
+            // discarded.
+            var now = DateTime.UtcNow;
+            if ((now - lastFeedbackDiagnostic).TotalSeconds >= 1.0 &&
+                Log.IsEnabled(Serilog.Events.LogEventLevel.Debug))
             {
-                DrawContactsOverTouchRegion(context);
+                lastFeedbackDiagnostic = now;
+                var pressed = snapshot.Buttons.PressedCount;
+                var samples = new System.Text.StringBuilder();
+                foreach (var node in theme.Document.Children)
+                {
+                    if (node is ShowHideNode show && samples.Length < 200)
+                    {
+                        var val = show.Input.Evaluate(symbols);
+                        if (samples.Length > 0) { samples.Append(", "); }
+                        var ast = show.Input;
+                        var varName = ast is VariableNode v ? v.Name : ast.GetType().Name;
+                        samples.Append(varName).Append('=').Append(val);
+                    }
+                }
+                Log.Debug(
+                    "ThemeSurface[{Mode}] tick: device={Device} pressed={Pressed}/{Total} L=({LX:F2},{LY:F2}) R=({RX:F2},{RY:F2}) LT={LT:F2} RT={RT:F2} showhide=[{Samples}]",
+                    isPhysicalView ? "physical" : "virtual",
+                    snapshot.DeviceName,
+                    pressed, ButtonState.Count,
+                    snapshot.LeftStick.X, snapshot.LeftStick.Y,
+                    snapshot.RightStick.X, snapshot.RightStick.Y,
+                    snapshot.LeftTrigger, snapshot.RightTrigger,
+                    samples.ToString());
             }
 
-            sawTrailPadThisFrame = false;
-        }
+            var doc = theme.Document;
+            if (doc.Width <= 0 || doc.Height <= 0) { return; }
+
+            var scaleX = Bounds.Width / doc.Width;
+            var scaleY = Bounds.Height / doc.Height;
+            var uniform = Math.Min(scaleX, scaleY);
+            if (uniform <= 0) { return; }
+
+            var renderedW = doc.Width * uniform;
+            var renderedH = doc.Height * uniform;
+            var offsetX = (Bounds.Width - renderedW) / 2;
+            var offsetY = (Bounds.Height - renderedH) / 2;
+
+            // Snap the origin to a whole DEVICE pixel.
+            //
+            // Centring produces a fractional offset almost always, and a
+            // fractional origin means every bitmap in the theme is resampled
+            // across pixel boundaries and every thin outline lands between two
+            // pixels — so the art looks soft and the outlines look slightly
+            // misplaced. It varies with DPI, resolution and aspect ratio
+            // because all three change how a fractional control coordinate
+            // maps onto the device grid: at 125% scaling an offset of x.5
+            // control units is x.625 device pixels, which cannot be drawn
+            // crisply at any filter quality.
+            //
+            // Rounding in DEVICE space and converting back is what makes this
+            // correct at fractional scalings; rounding the control coordinate
+            // alone would still leave a fractional device offset.
+            var scaling = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1.0;
+            if (scaling > 0)
+            {
+                offsetX = Math.Round(offsetX * scaling, MidpointRounding.AwayFromZero) / scaling;
+                offsetY = Math.Round(offsetY * scaling, MidpointRounding.AwayFromZero) / scaling;
+            }
+
+            // Capture transform so OnPointerPressed can invert it without
+            // re-walking the document. Stored in display (control) pixels.
+            lastTransform = (uniform, offsetX, offsetY);
+
+            // Device pixels per theme unit, for the display-sized bitmap cache.
+            // Uses the same scaling the origin snap above rounds against, so a
+            // cached copy is built for the size the art is genuinely rasterised
+            // at rather than for its size in control coordinates.
+            frameDeviceScale = uniform * (scaling > 0 ? scaling : 1.0);
+
+            // The frame's default filter is the CHEAP one. This is the single
+            // largest lever on repaint cost, and the earlier note in
+            // docs/known-issues.md — that HighQuality versus LowQuality made no
+            // measurable difference — is wrong. Measured directly on
+            // 2026-08-11 against the seven layers an idle DualSense panel
+            // composites, drawing into a RenderTargetBitmap the size of a real
+            // panel:
+            //
+            //   panel width          430      700     1100
+            //   authored + High     2.98     7.79    10.66  ms/frame
+            //   authored + Low      0.35     0.89     2.03
+            //   prescaled + High    1.60     4.32    10.60
+            //   prescaled + Low     0.34     0.83     2.08
+            //
+            // Three things follow. The cost is the high-quality FILTER, per
+            // DESTINATION pixel — 1100-wide costs 3.5x what 430-wide does off
+            // identical sources, so it is not the source size and not the layer
+            // count. Pre-scaling alone buys under 2x and nothing at all once
+            // the panel is large. And pre-scaling plus the cheap filter is
+            // indistinguishable from the cheap filter alone.
+            //
+            // So the filter is what makes it fast, and ScaledCache is what
+            // makes the filter safe: a cheap filter aliases when it is doing a
+            // 3x downscale, which is exactly what the authored art needs.
+            // Drawing a display-sized copy instead leaves it doing almost
+            // nothing, where cheap and expensive look the same. DrawImage
+            // pushes HighQuality back for the frame or two before a copy
+            // exists, so the art never passes through a cheap large downscale.
+            //
+            // EdgeMode.Antialias stays: it smooths the implicit transform edges
+            // that the PNG's alpha channel crosses at non-1:1 scales, and it is
+            // not what costs.
+            using (context.PushRenderOptions(new RenderOptions
+            {
+                BitmapInterpolationMode = BitmapInterpolationMode.LowQuality,
+                EdgeMode = EdgeMode.Antialias,
+            }))
+            using (context.PushTransform(Matrix.CreateScale(uniform, uniform) *
+                                         Matrix.CreateTranslation(offsetX, offsetY)))
+            {
+                // Both physical and virtual panels render the full theme.
+                // Each surface independently consumes its own snapshot
+                // (physical = input source, virtual = output emitted to
+                // HIDMaestro), so feedback animates naturally in each panel from
+                // its respective source. The IsPhysicalView flag is kept
+                // on the surface for potential future use (e.g. a
+                // "passive view" toggle) but it no longer gates render
+                // output — users have asked for live feedback on both
+                // sides.
+                foreach (var node in doc.Children)
+                {
+                    RenderNode(context, node, theme);
+                }
+
+                // Click-to-map highlights painted on top so they're never
+                // occluded by overlay images. While the pointer is held down
+                // on an element only the stronger pressed tint paints,
+                // otherwise the lighter hover tint — one shape, two alphas.
+                // Nothing persists once the pointer releases or leaves.
+                if (pressedHit is not null)
+                {
+                    DrawElementHighlight(context, pressedHit, pressed: true);
+                }
+                else if (hoveredHit is not null)
+                {
+                    DrawElementHighlight(context, hoveredHit, pressed: false);
+                }
+
+                // Touch contacts, drawn last so nothing occludes them.
+                //
+                // This used to happen only inside a TrailPad node and only for
+                // the SECOND finger onward, which meant it drew nothing at all
+                // on a theme without that node and nothing for a single touch —
+                // the reported "no dots". Falling back to the touchpad's own
+                // hit region makes it independent of how a pack is authored.
+                if (!sawTrailPadThisFrame)
+                {
+                    DrawContactsOverTouchRegion(context);
+                }
+
+                sawTrailPadThisFrame = false;
+            }
         }
         finally
         {
@@ -1224,60 +1224,60 @@ public sealed class ThemeSurface : Control
                 return;
 
             case SliderNode slider:
-            {
-                LogSliderDiagnosticsOnce(slider, symbols, transform);
-                // Deflection ONLY: the walker's preamble at the top of
-                // this method already applied the node's own X/Y (every
-                // node renders inside its translated frame — that IS the
-                // VSCView contract). Adding slider.X here again was a
-                // double-translation that displaced every stick.
-                var t =
-                    Matrix.CreateTranslation(slider.InputX.Evaluate(symbols),
-                                             slider.InputY.Evaluate(symbols)) *
-                    transform;
-                var rotR = slider.InputR.Evaluate(symbols);
-                if (rotR != 0)
                 {
-                    t = Matrix.CreateRotation(rotR * Math.PI / 180.0) * t;
+                    LogSliderDiagnosticsOnce(slider, symbols, transform);
+                    // Deflection ONLY: the walker's preamble at the top of
+                    // this method already applied the node's own X/Y (every
+                    // node renders inside its translated frame — that IS the
+                    // VSCView contract). Adding slider.X here again was a
+                    // double-translation that displaced every stick.
+                    var t =
+                        Matrix.CreateTranslation(slider.InputX.Evaluate(symbols),
+                                                 slider.InputY.Evaluate(symbols)) *
+                        transform;
+                    var rotR = slider.InputR.Evaluate(symbols);
+                    if (rotR != 0)
+                    {
+                        t = Matrix.CreateRotation(rotR * Math.PI / 180.0) * t;
+                    }
+                    using (ctx.PushTransform(t))
+                    {
+                        foreach (var child in slider.Children) { RenderNode(ctx, child, owner); }
+                    }
+                    return;
                 }
-                using (ctx.PushTransform(t))
-                {
-                    foreach (var child in slider.Children) { RenderNode(ctx, child, owner); }
-                }
-                return;
-            }
 
             case TrailPadNode trailPad:
-            {
-                if (trailPad.Input.Evaluate(symbols) == 0) { return; }
-
-                var t =
-                    Matrix.CreateTranslation(trailPad.InputX.Evaluate(symbols),
-                                             trailPad.InputY.Evaluate(symbols)) *
-                    transform;
-                using (ctx.PushTransform(t))
                 {
-                    DrawTrailPadMarker(ctx, trailPad, owner);
-                    foreach (var child in trailPad.Children) { RenderNode(ctx, child, owner); }
-                }
+                    if (trailPad.Input.Evaluate(symbols) == 0) { return; }
 
-                DrawAdditionalContacts(ctx, trailPad, transform);
-                sawTrailPadThisFrame = true;
-                return;
-            }
+                    var t =
+                        Matrix.CreateTranslation(trailPad.InputX.Evaluate(symbols),
+                                                 trailPad.InputY.Evaluate(symbols)) *
+                        transform;
+                    using (ctx.PushTransform(t))
+                    {
+                        DrawTrailPadMarker(ctx, trailPad, owner);
+                        foreach (var child in trailPad.Children) { RenderNode(ctx, child, owner); }
+                    }
+
+                    DrawAdditionalContacts(ctx, trailPad, transform);
+                    sawTrailPadThisFrame = true;
+                    return;
+                }
 
             case ImageNode image:
-            {
-                // See the static path's note: one frame, no extra child
-                // translation — the preamble is the single application
-                // of this node's X/Y.
-                using (ctx.PushTransform(transform))
                 {
-                    DrawImage(ctx, image, owner);
-                    foreach (var child in image.Children) { RenderNode(ctx, child, owner); }
+                    // See the static path's note: one frame, no extra child
+                    // translation — the preamble is the single application
+                    // of this node's X/Y.
+                    using (ctx.PushTransform(transform))
+                    {
+                        DrawImage(ctx, image, owner);
+                        foreach (var child in image.Children) { RenderNode(ctx, child, owner); }
+                    }
+                    return;
                 }
-                return;
-            }
 
             case LightbarNode lightbar:
                 using (ctx.PushTransform(transform))
@@ -1321,8 +1321,8 @@ public sealed class ThemeSurface : Control
         var bmp = LoadBitmap(image.ImagePath, owner);
         if (bmp is null) { return; }
 
-        var w  = image.Width  > 0 ? image.Width  : bmp.PixelSize.Width;
-        var h  = image.Height > 0 ? image.Height : bmp.PixelSize.Height;
+        var w = image.Width > 0 ? image.Width : bmp.PixelSize.Width;
+        var h = image.Height > 0 ? image.Height : bmp.PixelSize.Height;
         var dx = image.Center ? -w / 2 : 0;
         var dy = image.Center ? -h / 2 : 0;
         DrawFitted(ctx, bmp, owner, image.ImagePath, new Rect(dx, dy, w, h));
@@ -1875,8 +1875,8 @@ public sealed class ThemeSurface : Control
     private void RenderPBar(DrawingContext ctx, PBarNode bar, InstalledTheme owner)
     {
         var value = bar.Input.Evaluate(symbols);
-        var min   = bar.Min.Evaluate(symbols);
-        var max   = bar.Max.Evaluate(symbols);
+        var min = bar.Min.Evaluate(symbols);
+        var max = bar.Max.Evaluate(symbols);
         var range = max - min;
         var ratio = range == 0 ? 0 : Math.Clamp((value - min) / range, 0, 1);
 
@@ -1887,11 +1887,11 @@ public sealed class ThemeSurface : Control
 
         Rect fillRect = bar.Direction switch
         {
-            PBarDirection.Right => new Rect(dx,             dy,             w * ratio, h),
-            PBarDirection.Left  => new Rect(dx + w * (1-ratio), dy,         w * ratio, h),
-            PBarDirection.Up    => new Rect(dx,             dy + h * (1-ratio), w,     h * ratio),
-            PBarDirection.Down  => new Rect(dx,             dy,             w,         h * ratio),
-            _                   => new Rect(dx,             dy,             w * ratio, h),
+            PBarDirection.Right => new Rect(dx, dy, w * ratio, h),
+            PBarDirection.Left => new Rect(dx + w * (1 - ratio), dy, w * ratio, h),
+            PBarDirection.Up => new Rect(dx, dy + h * (1 - ratio), w, h * ratio),
+            PBarDirection.Down => new Rect(dx, dy, w, h * ratio),
+            _ => new Rect(dx, dy, w * ratio, h),
         };
 
         if (!string.IsNullOrEmpty(bar.ImagePath))

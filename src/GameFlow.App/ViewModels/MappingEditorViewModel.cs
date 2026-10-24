@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using GameFlow.Core.Models;
 using GameFlow.Infrastructure.Localization;
-using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 
 namespace GameFlow.App.ViewModels;
@@ -139,21 +139,21 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
 
     // ─── Localised labels for AXAML bindings ──────────────────────────────────
 
-    public string AddRuleButtonLabel          => Localized("MappingEditorAddRule",          "+ Add rule");
-    public string RuleNameLabel               => Localized("MappingEditorRuleName",         "RULE NAME");
-    public string RuleTypeLabel               => Localized("MappingEditorRuleType",         "RULE TYPE");
-    public string RuleModeLabel               => Localized("MappingEditorMode",             "MODE");
-    public string SourceButtonLabel           => Localized("MappingEditorSourceButton",     "SOURCE BUTTON");
-    public string TargetButtonLabel           => Localized("MappingEditorTargetButton",     "TARGET BUTTON");
-    public string SuppressSourceButtonLabel   => Localized("MappingEditorSuppressSource",   "Suppress source button");
-    public string EnabledLabel                => Localized("MappingEditorEnabled",          "Enabled");
-    public string DeadzoneLabel               => Localized("MappingEditorDeadzoneLabel",    "Deadzone and threshold");
-    public string StoreScriptLabel            => Localized("MappingEditorStoreScript",      "The script runs on every update while the rule is on.");
-    public string SelectRuleToEditLabel       => Localized("MappingEditorSelectRuleToEdit", "Select a rule to edit");
-    public string OrUseAddRuleLabel           => Localized("MappingEditorOrUseAddRule",     "Or use 'Add rule' to create a new mapping.");
-    public string SaveButtonLabel             => Localized("MappingEditorSaveButton",       "Save");
-    public string CancelButtonLabel           => Localized("MappingEditorCancelButton",     "Cancel");
-    public string MappingRulesHeaderLabel     => Localized("MappingEditorRulesHeader",      "MAPPING RULES");
+    public string AddRuleButtonLabel => Localized("MappingEditorAddRule", "+ Add rule");
+    public string RuleNameLabel => Localized("MappingEditorRuleName", "RULE NAME");
+    public string RuleTypeLabel => Localized("MappingEditorRuleType", "RULE TYPE");
+    public string RuleModeLabel => Localized("MappingEditorMode", "MODE");
+    public string SourceButtonLabel => Localized("MappingEditorSourceButton", "SOURCE BUTTON");
+    public string TargetButtonLabel => Localized("MappingEditorTargetButton", "TARGET BUTTON");
+    public string SuppressSourceButtonLabel => Localized("MappingEditorSuppressSource", "Suppress source button");
+    public string EnabledLabel => Localized("MappingEditorEnabled", "Enabled");
+    public string DeadzoneLabel => Localized("MappingEditorDeadzoneLabel", "Deadzone and threshold");
+    public string StoreScriptLabel => Localized("MappingEditorStoreScript", "The script runs on every update while the rule is on.");
+    public string SelectRuleToEditLabel => Localized("MappingEditorSelectRuleToEdit", "Select a rule to edit");
+    public string OrUseAddRuleLabel => Localized("MappingEditorOrUseAddRule", "Or use 'Add rule' to create a new mapping.");
+    public string SaveButtonLabel => Localized("MappingEditorSaveButton", "Save");
+    public string CancelButtonLabel => Localized("MappingEditorCancelButton", "Cancel");
+    public string MappingRulesHeaderLabel => Localized("MappingEditorRulesHeader", "MAPPING RULES");
 
     // ── Section / checkbox labels for the rule editors ──
     public string SectionTriggerButtonLabel => Localized("MEV_SectionTriggerButton", "TRIGGER BUTTON");

@@ -1,5 +1,5 @@
-using System.Text.Json;
 using System.Collections.Frozen;
+using System.Text.Json;
 using GameFlow.Infrastructure.Configuration;
 using GameFlow.Infrastructure.Profiles;
 using Microsoft.Extensions.Logging;
@@ -160,8 +160,11 @@ public sealed class KeyboardMouseMapStore
     {
         try
         {
-            var file = new MapFile { Defaults = map,
-                Devices = perDevice.ToDictionary(pair => pair.Key, pair => pair.Value.Source, StringComparer.Ordinal) };
+            var file = new MapFile
+            {
+                Defaults = map,
+                Devices = perDevice.ToDictionary(pair => pair.Key, pair => pair.Value.Source, StringComparer.Ordinal)
+            };
             AtomicFile.WriteAllText(filePath, JsonSerializer.Serialize(file, ProfileJsonOptions.Default));
         }
         catch (Exception exception)
