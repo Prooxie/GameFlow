@@ -292,6 +292,20 @@
           ]
         }
       ]
+    },
+    {
+      "type": "showhide",
+      "input": "touch_center:click",
+      "children": [
+        {
+          "type": "image",
+          "image": "\\ds4\\Image Assets\\DS4-Touchpad-Cick.png",
+          "x": 492,
+          "y": 150,
+          "width": 482,
+          "height": 289
+        }
+      ]
     }
   ]
 }

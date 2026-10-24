@@ -1,0 +1,89 @@
+{
+  "name": "Generic wheel (schematic)",
+  "version": 1,
+  "width": 800,
+  "height": 520,
+  "_comment": "Original GameFlow schematic. Hardware appearance is illustrative; input and output support depend on the backend.",
+  "children": [
+    {
+      "type": "image",
+      "image": "base.png",
+      "x": 0,
+      "y": 0,
+      "width": 800,
+      "height": 520
+    },
+    {
+      "type": "slider",
+      "x": 400,
+      "y": 240,
+      "inputR": "stick_left:x * 130",
+      "children": [
+        {
+          "type": "image",
+          "image": "wheel.png",
+          "x": -180,
+          "y": -180,
+          "width": 360,
+          "height": 360
+        }
+      ]
+    },
+    {
+      "type": "showhide",
+      "input": "quad_right:s",
+      "children": [
+        {
+          "type": "image",
+          "image": "active.png",
+          "x": 246,
+          "y": 396,
+          "width": 48,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "type": "showhide",
+      "input": "quad_right:e",
+      "children": [
+        {
+          "type": "image",
+          "image": "active.png",
+          "x": 306,
+          "y": 396,
+          "width": 48,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "type": "showhide",
+      "input": "quad_right:w",
+      "children": [
+        {
+          "type": "image",
+          "image": "active.png",
+          "x": 446,
+          "y": 396,
+          "width": 48,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "type": "showhide",
+      "input": "quad_right:n",
+      "children": [
+        {
+          "type": "image",
+          "image": "active.png",
+          "x": 506,
+          "y": 396,
+          "width": 48,
+          "height": 48
+        }
+      ]
+    }
+  ]
+}

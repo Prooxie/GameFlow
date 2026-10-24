@@ -1,0 +1,115 @@
+{
+  "name": "Generic joystick (schematic)",
+  "version": 1,
+  "width": 800,
+  "height": 520,
+  "_comment": "Original GameFlow schematic. Hardware appearance is illustrative; input and output support depend on the backend.",
+  "children": [
+    {
+      "type": "image",
+      "image": "base.png",
+      "x": 0,
+      "y": 0,
+      "width": 800,
+      "height": 520
+    },
+    {
+      "type": "slider",
+      "x": 400,
+      "y": 190,
+      "inputX": "stick_left:x * 16",
+      "inputY": "stick_left:y * 16",
+      "children": [
+        {
+          "type": "image",
+          "image": "stick.png",
+          "x": -36,
+          "y": -36,
+          "width": 72,
+          "height": 72
+        },
+        {
+          "type": "showhide",
+          "input": "stick_left:click",
+          "children": [
+            {
+              "type": "image",
+              "image": "active.png",
+              "x": -24,
+              "y": -24,
+              "width": 48,
+              "height": 48
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "showhide",
+      "input": "quad_right:s",
+      "children": [
+        {
+          "type": "image",
+          "image": "active.png",
+          "x": 458,
+          "y": 136,
+          "width": 48,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "type": "showhide",
+      "input": "quad_right:e",
+      "children": [
+        {
+          "type": "image",
+          "image": "active.png",
+          "x": 476,
+          "y": 196,
+          "width": 48,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "type": "showhide",
+      "input": "quad_right:w",
+      "children": [
+        {
+          "type": "image",
+          "image": "active.png",
+          "x": 211,
+          "y": 326,
+          "width": 48,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "type": "showhide",
+      "input": "quad_right:n",
+      "children": [
+        {
+          "type": "image",
+          "image": "active.png",
+          "x": 541,
+          "y": 326,
+          "width": 48,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "type": "pbar",
+      "x": 552,
+      "y": 144,
+      "width": 28,
+      "height": 178,
+      "input": "triggers:r:analog",
+      "direction": "up",
+      "foreground": "FF6BE4D5",
+      "background": "22111B29"
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "name": "Arcade stick (schematic)",
+  "version": 1,
+  "width": 800,
+  "height": 520,
+  "_comment": "Original GameFlow schematic. Hardware appearance is illustrative; input and output support depend on the backend.",
+  "children": [
+    {
+      "type": "image",
+      "image": "base.png",
+      "x": 0,
+      "y": 0,
+      "width": 800,
+      "height": 520
+    },
+    {
+      "type": "slider",
+      "x": 235,
+      "y": 300,
+      "inputX": "stick_left:x * 16",
+      "inputY": "stick_left:y * 16",
+      "children": [
+        {
+          "type": "image",
+          "image": "stick.png",
+          "x": -36,
+          "y": -36,
+          "width": 72,
+          "height": 72
+        },
+        {
+          "type": "showhide",
+          "input": "stick_left:click",
+          "children": [
+            {
+              "type": "image",
+              "image": "active.png",
+              "x": -24,
+              "y": -24,
+              "width": 48,
+              "height": 48
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "showhide",
+      "input": "quad_right:w",
+      "children": [
+        {
+          "type": "image",
+          "image": "active.png",
+          "x": 416,
+          "y": 244,
+          "width": 48,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "type": "showhide",
+      "input": "quad_right:n",
+      "children": [
+        {
+          "type": "image",
+          "image": "active.png",
+          "x": 504,
+          "y": 244,
+          "width": 48,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "type": "showhide",
+      "input": "bumpers:r",
+      "children": [
+        {
+          "type": "image",
+          "image": "active.png",
+          "x": 592,
+          "y": 244,
+          "width": 48,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "type": "showhide",
+      "input": "quad_right:s",
+      "children": [
+        {
+          "type": "image",
+          "image": "active.png",
+          "x": 416,
+          "y": 332,
+          "width": 48,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "type": "showhide",
+      "input": "quad_right:e",
+      "children": [
+        {
+          "type": "image",
+          "image": "active.png",
+          "x": 504,
+          "y": 332,
+          "width": 48,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "type": "showhide",
+      "input": "triggers:r:stage2",
+      "children": [
+        {
+          "type": "image",
+          "image": "active.png",
+          "x": 592,
+          "y": 332,
+          "width": 48,
+          "height": 48
+        }
+      ]
+    }
+  ]
+}
