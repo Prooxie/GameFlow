@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="320" viewBox="0 0 1120 320" role="img" aria-labelledby="title desc">
+<title id="title">GameFlow source projects</title><desc id="desc">Four projects separate presentation, mapping logic, platform services, and the optional HIDMaestro SDK adapter.</desc>
+<rect width="1120" height="320" rx="18" fill="#07101d"/>
+<g font-family="system-ui,Segoe UI,sans-serif" fill="#e2e8f0">
+<text x="32" y="47" font-size="25" font-weight="700">Four source projects</text>
+<g fill="#0e1b2e" stroke="#1e3a5a"><rect x="28" y="77" width="250" height="205" rx="12"/><rect x="298" y="77" width="250" height="205" rx="12"/><rect x="568" y="77" width="250" height="205" rx="12"/><rect x="838" y="77" width="250" height="205" rx="12"/></g>
+<g fill="#00d4ff" font-size="20" font-weight="700"><text x="48" y="115">App</text><text x="318" y="115">Core</text><text x="588" y="115">Infrastructure</text><text x="858" y="115">HidMaestro</text></g>
+<g font-size="16"><text x="48" y="153">Avalonia views</text><text x="48" y="183">View models</text><text x="48" y="213">Translation resources</text><text x="48" y="243">Application startup</text>
+<text x="318" y="153">Profiles and rules</text><text x="318" y="183">Mapping pipeline</text><text x="318" y="213">Input transformations</text><text x="318" y="243">Effect resolution</text>
+<text x="588" y="153">Device and OS services</text><text x="588" y="183">Persistence</text><text x="588" y="213">Phone and OBS server</text><text x="588" y="243">Effect transport</text>
+<text x="858" y="153">Typed SDK adapter</text><text x="858" y="183">Runtime version checks</text><text x="858" y="213">Virtual controller state</text><text x="858" y="243">Optional Windows output</text></g></g></svg>

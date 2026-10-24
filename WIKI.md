@@ -37,7 +37,7 @@ Deep reference for every system in GameFlow. For install/quick-start, see [READM
 
 ## Rule Reference
 
-All 14 rule types, in the order their passes run each tick.
+All 15 rule types, in the order their passes run each tick.
 
 | # | Rule | What it does |
 |---|---|---|
@@ -53,8 +53,15 @@ All 14 rule types, in the order their passes run each tick.
 | 10 | `GyroMapRule` | See [Gyro Aiming](#gyro-aiming). |
 | 11 | `TouchpadMapRule` | See [Touchpad Mapping](#touchpad-mapping). |
 | 12 | `MultiSourceMapRule` | Many sources → one target, via a combine mode or formula. See below. |
-| 13 | `ControlScriptRule` | Sandboxed Lua (MoonSharp) per control, for anything the built-in types don't cover. |
+| 13 | `ControlScriptRule` | Restricted Lua (MoonSharp) per control, for anything the built-in types don't cover. |
 | 14 | `StickThresholdRule` | Deadzone / full-at shaping, applied directly to the *virtual* output (distinct from the *physical*-side shaping in [Per-Device Tuning](#per-device-tuning)). |
+| 15 | `AxisInvertRule` | Overrides selected output-axis directions. |
+
+### Axis inversion
+
+`AxisInvertRule` overrides selected output axes after device tuning.
+An omitted axis retains its earlier setting.
+The editor preserves these nullable axis choices when it saves a profile.
 
 ### Multi-Source Rows — combine modes
 
@@ -277,7 +284,7 @@ A tiny embedded HTTP + WebSocket server (`.NET`'s built-in `HttpListener` — no
 
 ## OBS Browser Overlay
 
-GameFlow serves a transparent controller layout from the same HTTP listener as the phone controller. Open **Settings → Stream overlay**, choose a slot and skin, then copy the generated URL into an OBS **Browser** source. No screen capture, QR scan, or always-on-top native window is involved.
+GameFlow serves a transparent controller layout from the same HTTP listener as the phone controller. Open the dashboard panel, select its skin, and select **Copy OBS link**. Paste that URL into an OBS **Browser** source. No screen capture, QR scan, or always-on-top native window is involved.
 
 The route is `/overlay` with optional query parameters:
 
@@ -301,7 +308,8 @@ The Browser source receives a compiled theme when it connects, then controller f
 
 Controller visuals use the [VSCView THEMEENGINE](https://github.com/Nielk1/VSCView/blob/master/THEMEENGINE.md) format: a JSON tree of image/slider/showhide nodes, each with an input expression evaluated against a symbol table (`stick_left:x`, `key:f7`, `triggers:l:analog`, etc.) built from the current controller snapshot.
 
-**Keyboard themes** bake keys and legends directly into the body image (matching how the bundled default theme works) — a theme with only geometry and no rendered artwork will show nothing. `keyboard-100-default` is a full ANSI-104 layout with all keys individually addressable via `key:<name>` symbols.
+Keyboard and mouse views use shared native geometry. Their OBS views use the same geometry and snapshot data.
+The keyboard picture has 104 ANSI keys. Extra supported keys remain available in the editor and optional OBS text.
 
 **Stand-ins.** A controller style with no theme pack installed draws with the closest family member instead of drawing nothing: PlayStation 3 borrows the DualShock 4 layout, and the legacy generic Xbox style (which older persisted preferences still carry) borrows Xbox One. Both ship no pack of their own, so both previously rendered an empty panel — a DualShock 3, and anything presenting itself as one, had no artwork at all.
 
@@ -317,7 +325,7 @@ Stand-ins are restricted to controllers whose button complement is a superset of
 
 **A phone or the OBS PC cannot reach the web controller.** Windows needs two things: a URL reservation, so GameFlow can listen on the network, and an inbound firewall rule for the port. An elevated GameFlow adds both when the server starts. When GameFlow is not elevated, **Settings → Phone controller** shows a warning and an **Allow through firewall** button. If the address shows `localhost`, restart GameFlow after you click it.
 
-The rule has no program filter on purpose. GameFlow serves through HTTP.sys, which accepts each connection in the Windows System process, so a rule for `GameFlow.App.exe` never matches. Older versions made such a rule; GameFlow now reports it as stale and replaces it. To set it up by hand from an administrator prompt (`WD` is the SID form of "Everyone", which works on every Windows language):
+The rule has no program filter on purpose. GameFlow serves through HTTP.sys, which accepts each connection in the Windows System process, so a rule for `GameFlow.exe` never matches. Older versions made such a rule; GameFlow now reports it as stale and replaces it. To set it up by hand from an administrator prompt (`WD` is the SID form of "Everyone", which works on every Windows language):
 ```
 netsh http add urlacl url=http://+:8080/ sddl="D:(A;;GX;;;WD)"
 netsh advfirewall firewall add rule name="GameFlow web controller" dir=in action=allow protocol=TCP localport=8080 remoteip=localsubnet,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16 profile=any
@@ -331,9 +339,9 @@ netsh advfirewall firewall add rule name="GameFlow web controller" dir=in action
 
 **The wrong button lights up, or a stick is dead and moving it pulls a trigger.** The pad's physical layout doesn't match the identity SDL recognised — standard on PS2-to-USB and PS2-to-PS3 converters, which borrow a DualShock 3's VID/PID. Run both passes under [Device Calibration](#device-calibration). Check the LIVE STATE readout on the Devices page first: if the control moves nothing there, the device isn't reporting it at all and no remap can reach it.
 
-**The game responds to my input twice.** Both the physical and the virtual pad are visible to it. GameFlow does not hide devices from games and has no [HidHide](https://github.com/nefarius/HidHide) integration — that is a separate tool. If you use one, whitelist `GameFlow.App.exe` in it, or GameFlow loses the physical pad along with every other application.
+**The game responds to my input twice.** Both the physical and the virtual pad are visible to it. GameFlow does not hide devices from games and has no [HidHide](https://github.com/nefarius/HidHide) integration — that is a separate tool. If you use one, whitelist `GameFlow.exe` in it, or GameFlow loses the physical pad along with every other application.
 
-**HIDMaestro output isn't appearing.** Confirm `HIDMaestro.Core.dll` is next to `GameFlow.App.exe`, in a `HIDMaestro` subfolder beside it, or in the folder named by `GAMEFLOW_HIDMAESTRO_DIR`. GameFlow needs HIDMaestro 2.0.1 or a later 2.x release and refuses any other version with a status message. If it's genuinely missing, GameFlow says so explicitly in the log and the slot's display name — it will not silently fall back to a different backend without telling you.
+**HIDMaestro output isn't appearing.** Confirm `HIDMaestro.Core.dll` is next to `GameFlow.exe`, in a `HIDMaestro` subfolder beside it, or in the folder named by `GAMEFLOW_HIDMAESTRO_DIR`. GameFlow needs HIDMaestro 2.0.1 or a later 2.x release and refuses any other version with a status message. If it's genuinely missing, GameFlow says so explicitly in the log and the slot's display name — it will not silently fall back to a different backend without telling you.
 
 ---
 
@@ -368,5 +376,81 @@ netsh advfirewall firewall add rule name="GameFlow web controller" dir=in action
   `HidMaestroSubmitCoverageTests`. Where GameFlow genuinely cannot know a
   value, say so explicitly rather than writing a zero — `HasGyro` is the
   model: a pad with no sensor submits *no motion*, not "not moving".
-- **Tests:** `tests/GameFlow.Core.Tests` covers the pipeline and pure logic (no OS dependency); `tests/GameFlow.Infrastructure.Tests` covers platform interop, controller effects, device ownership, web protocols, and overlay compilation. Run `dotnet test GameFlow.sln` before handing off a change.
+- **Tests:** `tests/GameFlow.Core.Tests` covers the pipeline and pure logic (no OS dependency); `tests/GameFlow.Infrastructure.Tests` covers platform interop, controller effects, device ownership, web protocols, and overlay compilation. Run `dotnet test --solution GameFlow.sln` before handing off a change.
 - **Versioning:** the single source of truth is `Directory.Build.props`'s `<Version>`, used as the fallback for local builds. Tagged releases (`v*`) override it via `-p:Version=${GITHUB_REF_NAME#v}` in `.github/workflows/ci.yml` — tag `v1.0.1` and CI picks it up with no workflow changes needed.
+
+
+## Version 1.0.9 workflows
+
+Create a phone from **Devices → Add phone**.
+Each saved phone has its own private link and code.
+Removing a phone clears slot assignments and revokes the link.
+Phone model choices change appearance. The slot output type selects the virtual hardware protocol.
+Brief phone taps remain observable for at least 34 ms after their first transmitted edge.
+Focus loss and pointer cancellation release input immediately.
+
+Each dashboard surface has its own background and OBS link.
+The link can include active-input names and hold duration.
+See [the OBS guide](docs/obs-inputs.md).
+
+Keyboard and mouse mappings can override shared defaults for one physical device.
+Preview reads use separate movement and wheel buffers from runtime mapping reads.
+The current mouse mapping supports five buttons, vertical wheel directions, and motion.
+Laptop device enumeration and precision-touchpad behavior still require hardware checks.
+
+## Feedback precedence
+
+The effect producer runs separately from the mapping pipeline.
+It publishes the latest desired state into a bounded per-device queue.
+Unchanged effects do not require another hardware write.
+Normal effect writes have a 16 ms interval. Lighting-only changes have a 33 ms interval.
+Stop commands bypass the normal delay.
+
+Lightbar priority is:
+
+1. Enabled low-battery alert.
+2. An unexpired external API request.
+3. Eligible game feedback under the selected lighting mode.
+4. The configured lighting effect.
+
+Device-specific external requests take priority over slot requests, which take priority over global requests.
+Player and microphone LEDs use their separate capability checks and game-feedback settings.
+Rumble gain applies before adaptive-trigger links.
+The stronger rumble motor drives the trigger link.
+The configured trigger effect resumes between feedback events.
+
+## External lighting API
+
+The API is off by default.
+Enable it in **Options → Network & phones**.
+Use a local script or service to call it.
+Browser-origin requests do not receive a CORS exception.
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| GET | `/api/v1/lighting/targets` | List supported targets. |
+| POST | `/api/v1/lighting` | Apply a lighting request with an expiry time. |
+| DELETE | `/api/v1/lighting?target=all` | Clear external lighting requests. |
+
+Every request needs the private token in `Authorization: Bearer <token>`.
+Requests remain subject to host, origin, size, and rate checks.
+The maximum body size is 4096 bytes. The global request limit is 30 per second.
+Technical API errors use stable English messages.
+External requests expire after ten seconds unless the caller supplies another allowed duration.
+The maximum duration is one hour.
+Never put a real token into published examples or screenshots.
+
+## Artwork and release maintenance
+
+All 28 bundled themes have automated image-resolution checks.
+The imported input library contains 216 prompt vectors and 27 connection/controller icon vectors.
+The build embeds each original vector and its PNG conversion.
+Mapping pickers use shared positional prompts. The Devices page uses controller family icons.
+The converter caches decoded images and releases them at application shutdown.
+The [asset inventory](docs/asset-audit.json) distinguishes bundled artwork from unused upstream templates.
+
+Theme updates use content hashes, staged replacement, and retained user backups.
+The sibling Controllers folder is an import source. It is not required at runtime.
+Use `scripts/Import-InputAssets.mjs` with that folder and an installed `sharp` module to regenerate input resources.
+
+Read [the translation guide](docs/localization.md), [release guide](docs/release.md), and [quality report](docs/quality-report-1.0.9.md).

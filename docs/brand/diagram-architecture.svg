@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 660" width="1240" height="660" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <defs>
+    <linearGradient id="page" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0" stop-color="#0A1626"/><stop offset="1" stop-color="#050B12"/>
+    </linearGradient>
+    <linearGradient id="pipe" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#10233C"/><stop offset="1" stop-color="#0A1626"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#00D4FF"/>
+    </marker>
+    <marker id="arrowdim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#3D6E8C"/>
+    </marker>
+  </defs>
+
+  <rect width="1240" height="660" rx="20" fill="url(#page)"/>
+
+  <!-- ── Column headings ─────────────────────────────────────────── -->
+  <g font-size="13" font-weight="700" fill="#00D4FF" letter-spacing="2">
+    <text x="40"  y="46">PHYSICAL IN</text>
+    <text x="330" y="46">CONDITION</text>
+    <text x="560" y="46">TRANSFORM</text>
+    <text x="1000" y="46">VIRTUAL OUT</text>
+  </g>
+
+  <!-- ── Sources ─────────────────────────────────────────────────── -->
+  <g>
+    <rect x="40" y="70" width="240" height="86" rx="12" fill="#0E1B2E" stroke="#1B3552"/>
+    <text x="60" y="102" font-size="17" font-weight="600" fill="#E2E8F0">Gamepads &amp; joysticks</text>
+    <text x="60" y="128" font-size="13" fill="#7D8BA3">SDL3 · Windows · Linux · macOS</text>
+
+    <rect x="40" y="176" width="240" height="86" rx="12" fill="#0E1B2E" stroke="#1B3552"/>
+    <text x="60" y="208" font-size="17" font-weight="600" fill="#E2E8F0">Keyboard &amp; mouse</text>
+    <text x="60" y="234" font-size="13" fill="#7D8BA3">Raw Input · evdev · IOHIDManager</text>
+
+    <rect x="40" y="282" width="240" height="86" rx="12" fill="#0E1B2E" stroke="#1B3552"/>
+    <text x="60" y="314" font-size="17" font-weight="600" fill="#E2E8F0">Phone browser</text>
+    <text x="60" y="340" font-size="13" fill="#7D8BA3">WebSocket · up to 16 pads</text>
+
+    <rect x="40" y="388" width="240" height="86" rx="12" fill="#0E1B2E" stroke="#1B3552"/>
+    <text x="60" y="420" font-size="17" font-weight="600" fill="#E2E8F0">Motion &amp; touch</text>
+    <text x="60" y="446" font-size="13" fill="#7D8BA3">Gyro · accelerometer · touchpad</text>
+  </g>
+
+  <!-- ── Conditioning ────────────────────────────────────────────── -->
+  <g>
+    <rect x="330" y="70" width="190" height="118" rx="12" fill="#0E1B2E" stroke="#1B3552"/>
+    <text x="350" y="102" font-size="16" font-weight="600" fill="#E2E8F0">Calibration</text>
+    <text x="350" y="126" font-size="13" fill="#7D8BA3">Per device.</text>
+    <text x="350" y="146" font-size="13" fill="#7D8BA3">Buttons, hats,</text>
+    <text x="350" y="166" font-size="13" fill="#7D8BA3">stick &amp; trigger axes</text>
+
+    <rect x="330" y="208" width="190" height="118" rx="12" fill="#0E1B2E" stroke="#1B3552"/>
+    <text x="350" y="240" font-size="16" font-weight="600" fill="#E2E8F0">Device tuning</text>
+    <text x="350" y="264" font-size="13" fill="#7D8BA3">Radial deadzone,</text>
+    <text x="350" y="284" font-size="13" fill="#7D8BA3">curve, sensitivity —</text>
+    <text x="350" y="304" font-size="13" fill="#7D8BA3">per slot AND device</text>
+
+    <rect x="330" y="346" width="190" height="98" rx="12" fill="#0E1B2E" stroke="#1B3552"/>
+    <text x="350" y="378" font-size="16" font-weight="600" fill="#E2E8F0">Merge</text>
+    <text x="350" y="402" font-size="13" fill="#7D8BA3">Several devices</text>
+    <text x="350" y="422" font-size="13" fill="#7D8BA3">into one slot</text>
+  </g>
+
+  <!-- ── Pipeline ────────────────────────────────────────────────── -->
+  <rect x="560" y="70" width="390" height="464" rx="16" fill="url(#pipe)" stroke="#1E4160"/>
+  <text x="584" y="104" font-size="18" font-weight="700" fill="#E2E8F0">Mapping pipeline</text>
+  <text x="584" y="128" font-size="13" fill="#7D8BA3">One per slot · up to 1000 Hz · allocation-free</text>
+
+  <rect x="584" y="146" width="342" height="34" rx="8" fill="#0B2B3C" stroke="#1E5D7A"/>
+  <text x="600" y="168" font-size="13" font-weight="600" fill="#00D4FF">Shift layers resolve first — gate what runs</text>
+
+  <g font-size="13" fill="#B8C6D9">
+    <rect x="584" y="196" width="164" height="30" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="598" y="216">1  Rule toggle</text>
+    <rect x="762" y="196" width="164" height="30" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="776" y="216">2  SOCD clean</text>
+    <rect x="584" y="234" width="164" height="30" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="598" y="254">3  Button remap</text>
+    <rect x="762" y="234" width="164" height="30" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="776" y="254">4  Autofire</text>
+    <rect x="584" y="272" width="164" height="30" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="598" y="292">5  Multi-autofire</text>
+    <rect x="762" y="272" width="164" height="30" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="776" y="292">6  Button combo</text>
+    <rect x="584" y="310" width="164" height="30" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="598" y="330">7  Stick autofire</text>
+    <rect x="762" y="310" width="164" height="30" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="776" y="330">8  Freeze direction</text>
+    <rect x="584" y="348" width="164" height="30" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="598" y="368">9  Stick trim</text>
+    <rect x="762" y="348" width="164" height="30" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="776" y="368">10  Gyro map</text>
+    <rect x="584" y="386" width="164" height="30" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="598" y="406">11  Touchpad map</text>
+    <rect x="762" y="386" width="164" height="30" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="776" y="406">12  Multi-source</text>
+    <rect x="584" y="424" width="164" height="30" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="598" y="444">13  Lua script</text>
+    <rect x="762" y="424" width="164" height="30" rx="7" fill="#10243A" stroke="#1E3A5A"/><text x="776" y="444">14  Stick threshold</text>
+  </g>
+  <text x="584" y="486" font-size="13" fill="#7D8BA3">Rules run in profile order. Two rules on one target:</text>
+  <text x="584" y="506" font-size="13" fill="#7D8BA3">the later one wins — the same convention throughout.</text>
+
+  <!-- ── Outputs ─────────────────────────────────────────────────── -->
+  <g>
+    <rect x="1000" y="70" width="200" height="86" rx="12" fill="#0E1B2E" stroke="#1B3552"/>
+    <text x="1020" y="102" font-size="17" font-weight="600" fill="#E2E8F0">HIDMaestro</text>
+    <text x="1020" y="128" font-size="13" fill="#7D8BA3">Real virtual pad · Windows</text>
+
+    <rect x="1000" y="176" width="200" height="86" rx="12" fill="#0E1B2E" stroke="#1B3552"/>
+    <text x="1020" y="208" font-size="17" font-weight="600" fill="#E2E8F0">Preview</text>
+    <text x="1020" y="234" font-size="13" fill="#7D8BA3">Dashboard only · all OS</text>
+
+    <rect x="1000" y="282" width="200" height="86" rx="12" fill="#0E1B2E" stroke="#1B3552"/>
+    <text x="1020" y="314" font-size="17" font-weight="600" fill="#E2E8F0">Mouse cursor</text>
+    <text x="1020" y="340" font-size="13" fill="#7D8BA3">SendInput · uinput · CGEvent</text>
+
+    <rect x="1000" y="388" width="200" height="86" rx="12" fill="#0E1B2E" stroke="#1B3552"/>
+    <text x="1020" y="420" font-size="17" font-weight="600" fill="#E2E8F0">DSU / overlay</text>
+    <text x="1020" y="446" font-size="13" fill="#7D8BA3">Emulators · OBS browser</text>
+  </g>
+
+  <!-- ── Flow arrows ─────────────────────────────────────────────── -->
+  <g stroke="#3D6E8C" stroke-width="2" fill="none" marker-end="url(#arrowdim)">
+    <path d="M 284 113 L 324 113"/>
+    <path d="M 284 219 C 306 219 306 240 324 240"/>
+    <path d="M 284 325 C 306 325 306 300 324 300"/>
+    <path d="M 284 431 C 306 431 306 395 324 395"/>
+  </g>
+  <g stroke="#00D4FF" stroke-width="2.5" fill="none" marker-end="url(#arrow)">
+    <path d="M 524 129 C 542 129 542 250 554 250"/>
+    <path d="M 524 267 L 554 267"/>
+    <path d="M 524 395 C 542 395 542 284 554 284"/>
+    <path d="M 954 302 C 976 302 976 113 994 113"/>
+    <path d="M 954 302 C 976 302 976 219 994 219"/>
+    <path d="M 954 302 L 994 302"/>
+    <path d="M 954 302 C 976 302 976 431 994 431"/>
+  </g>
+
+  <!-- ── Footnote ────────────────────────────────────────────────── -->
+  <rect x="40" y="556" width="1160" height="64" rx="12" fill="#0B1A17" stroke="#1B4A38"/>
+  <circle cx="70" cy="588" r="11" fill="none" stroke="#34D399" stroke-width="2"/>
+  <path d="M 65 588 L 69 592 L 76 583" fill="none" stroke="#34D399" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="94" y="583" font-size="14" font-weight="600" fill="#E2E8F0">A slot's own virtual output can never be selected back in as a source.</text>
+  <text x="94" y="605" font-size="13" fill="#7D8BA3">Excluded at discovery, assignment, hot-plug, persisted restore and pipeline construction — not by a UI filter alone.</text>
+</svg>

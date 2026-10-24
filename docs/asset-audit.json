@@ -1,0 +1,3756 @@
+{
+  "version": "1.0.9",
+  "bundledThemeCount": 28,
+  "promptVectors": 216,
+  "iconVectors": 27,
+  "sourceControllerPngCount": 593,
+  "sourceControllerPngWithBundledCopy": 367,
+  "note": "Unmatched source templates are not runtime dependencies. Theme validation covers all shipped manifests.",
+  "controllerArtwork": [
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/Button Colors/DevMode/DualSense_Dev_L2.png",
+      "sha256": "fac731d764eb1c91c98e36cf2c2aabaa0632314fe1b340018ab5a136347d5af1",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/Button Colors/DevMode/DualSense_Dev_L2.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/Button Colors/DevMode/DualSense_Dev_LeftAnalogStick.png",
+      "sha256": "714b57898594b8f8ebb13cd17fa03aaa557fcfded2c436c41c3f8f71146f3be7",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/Button Colors/DevMode/DualSense_Dev_LeftAnalogStick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/Button Colors/DevMode/DualSense_Dev_R2.png",
+      "sha256": "dbb0488b991148c802caa50a4893ed49f1f152f2b06ccb8af948abcd04fdd3b3",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/Button Colors/DevMode/DualSense_Dev_R2.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/Button Colors/DevMode/DualSense_Dev_RightAnalogStick.png",
+      "sha256": "d9a43471aa620d6d5cbaea2770b7da7caca993bd4e100980940aa04e1b6c1d2a",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/Button Colors/DevMode/DualSense_Dev_RightAnalogStick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/Button Colors/DualSense_L2.png",
+      "sha256": "584e442b95c8ef43b90cd12ddc8df47f8ff4c32d36579db693d512fbc13315db",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/Button Colors/DualSense_L2.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/Button Colors/DualSense_LeftAnalogStick.png",
+      "sha256": "39bc34368ace08a26b37d06f9109a97d8ff3ca569fb5a36be8751bba9921448f",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/Button Colors/DualSense_LeftAnalogStick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/Button Colors/DualSense_R2.png",
+      "sha256": "70de9d05d6c1a31e2cff23427b01c77fbbe2daa9c74768dcac539b5014d21cb0",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/Button Colors/DualSense_R2.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/Button Colors/DualSense_RightAnalogStick.png",
+      "sha256": "577de74beafe69703a564c1ca4871098bd8db61a3a0fc74155832cfaf00391fb",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/Button Colors/DualSense_RightAnalogStick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_AnalogStick_Click.png",
+      "sha256": "72cb3662848a41168395ea1e48c2b82ff5af66a3295c3f6682aff0ab0d06af09",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_AnalogStick_Click.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_Circle.png",
+      "sha256": "8713d1952b692af810f9f61121c73bf53f37d47dd9c6f3ffe9b8a05652cc8fdf",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_Circle.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_Create_Button.png",
+      "sha256": "76becf3500870e9878b8383cef849ac19263e181950819bee584d59cdd59ec32",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_Create_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_Cross.png",
+      "sha256": "047c56c7f5ea7e5e0bf943ecfca442d5028b4118d0cead47e975f5e1998a0f61",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_Cross.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_D-PAD_Down.png",
+      "sha256": "e83b259d0991965c83852d99b8367597bc44c0fec932e034bb6ee0bee8658d2c",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_D-PAD_Down.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_D-PAD_Left.png",
+      "sha256": "817201562cbc6b6d2f446c922694ae1c4a65ade5d29032a8d0feedf7b767b881",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_D-PAD_Left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_D-PAD_Right.png",
+      "sha256": "b4a3e5b1f78907803eb7ec449c3be06ff17480d1b1d67e17c042cf1b421c5c8c",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_D-PAD_Right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_D-PAD_Up.png",
+      "sha256": "5fd55fa180fc74aaa1860fb125da8f2a60ba3426653f0d24eec9d3302fdf39cb",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_D-PAD_Up.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_Home_Button.png",
+      "sha256": "8b5f877334c846f0a67b8ad0779336b486c1367e6c18b10762a8c0c51af43677",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_Home_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_L1-Active.png",
+      "sha256": "a883aaf70c1472c9adb8634a12a371f45b156880a2b0b373d62d176d149aae6b",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_L1-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_L2-Active.png",
+      "sha256": "9f265f285dd6e523f031645b8ac756d6b243ec95fbca0a3a3ac8d4f00379ab7e",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_L2-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_Mute_Button.png",
+      "sha256": "820882771ca1b3c43415027c508190b3ef914ea0a07cad9e8d5b76dcc90e5587",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_Mute_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_Option_Button.png",
+      "sha256": "3c84e909471f49b7ff0a2953458c7bc987b7386db4e4c135eb4b2d22565dceae",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_Option_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_padheat.png",
+      "sha256": "836bee3f65a7e83a9b10a3ce00450cd4ebfde789300986f5f38e3a70019d4e01",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_padheat.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_R1-Active.png",
+      "sha256": "1569dcbe199f59b37a18817990667a25a2fb247041ab1d72e02a51d70d31602d",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_R1-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_R2-Active.png",
+      "sha256": "b318b0484cb82af9d79adaaa5d69cb01c20e372b18cc69f21309af7445570011",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_R2-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_Square.png",
+      "sha256": "8dd69a12844a14e881eceaf751e6a22098e5baa33bcbd87e6c576507e85ae67e",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_Square.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_Touchpad-Click.png",
+      "sha256": "b8e54b37ea96dd202fb523a036e22afee48338a67772a527a1db02e885b59d2c",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_Touchpad-Click.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_Touchpad_Touch.png",
+      "sha256": "37cea91f6d67aeeac8af13e250f6e18be58df46f9492a70ed48b098ffa0050bc",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_Touchpad_Touch.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DevMode Color/DualSense_Dev_Triangle.png",
+      "sha256": "5384991cfe0f678b615a8c8956dc01d3e16752fa4ebb0e02f97863c74396203b",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DevMode Color/DualSense_Dev_Triangle.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_AnalogStick_Click.png",
+      "sha256": "522f88c8afd90cd086dfaa50fe9af86fd6de1103a2486142b312e54b4702fac1",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_AnalogStick_Click.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_Circle.png",
+      "sha256": "371bf12642ba05d80998806a9f3090c4ed21b4dbb32afd25e227f594401cb8e2",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_Circle.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_Create_Button.png",
+      "sha256": "8c9365d08eafb5fcdb195bf4ab89d611ed81b2eb97c856a6c6ed528478d8e1d1",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_Create_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_Cross.png",
+      "sha256": "c450a7c472295158ad8cc283cab772e789eed0c3a66811146ebe249541a1d46c",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_Cross.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_D-PAD_Down.png",
+      "sha256": "e33eb1ee887ca6b7c1c257be148c9ca5aa4cb2f0b39df16d195467126988479d",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_D-PAD_Down.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_D-PAD_Left.png",
+      "sha256": "0c5fcb830df20eb4aeff7c52934b738b8002824e3a5016c779bf96fa6ee66bc3",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_D-PAD_Left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_D-PAD_Right.png",
+      "sha256": "94feeba0876c83d0a5c660e18e26574838d12000b01b8f46cb998f80d089f421",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_D-PAD_Right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_D-PAD_Up.png",
+      "sha256": "b25976ee8acc0d2e14dca12c8475dae052e5fd20437afac07eb78d19aae8570c",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_D-PAD_Up.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_Gyro-Accel.png",
+      "sha256": "e67388ab0310e60796fe81218f9cd5b1371bdf15426841b2ce1e0e254fede761",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_Gyro-Accel.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_Home_Button.png",
+      "sha256": "c15ba1555797afa6f08098bb916b482526cc08ac492c841a62c015da808765f1",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_Home_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_L1-Active.png",
+      "sha256": "c940a918e0897df1dd03ad3b07fe1c7ede2611b74e738522846b01a725af4bfa",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_L1-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_L2-Active.png",
+      "sha256": "04e1b778c13b34e09ef550cc2ff7ef0508f7dc87437cf905740e8a8a88c8b261",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_L2-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_Lightbar.png",
+      "sha256": "da77262d19922a17fe9a7202dfb7883e4bc6b2880546176057ed2780b9c4159d",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_Lightbar.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_Mute_Button.png",
+      "sha256": "3cc93bd3f798acc0082ca12f43361beeb23481d7079bee21e7c7be6bdf2cf324",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_Mute_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_Option_Button.png",
+      "sha256": "c0cea092481a5b020055469b0cc6a1ef04ec3e55e32515b69c03006cf1e8546e",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_Option_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_R1-Active.png",
+      "sha256": "763aab4b64f0e31d358bcd0996e8d3c6397e085b3a43879d937f3b72393ef47b",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_R1-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_R2-Active.png",
+      "sha256": "b1816bad58377999be578b40a0971fb49e50779cc90f6c56c3759403915e07cc",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_R2-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_Square.png",
+      "sha256": "e9f5d34e07af5c22e3394cb08ded02f4f30b4a96f5de4cda42a836826f6443f9",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_Square.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_Touchpad-Click.png",
+      "sha256": "6f08656e15bb88962af4cb81fd52014d90bd4750ade89234abae5ed1d48f89ee",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_Touchpad-Click.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_Touchpad_Touch.png",
+      "sha256": "0c045b021e7a39e6b16fa8506f0e7036af1efa70a39f00893e31ca37510336b5",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_Touchpad_Touch.png",
+        "themes/dualshock-4-default/Image Assets/DS4_Touchpad_Touch.png",
+        "themes/steam-deck-default/Image Assets/SD_Touchpad_Touch.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/DualSense_Triangle.png",
+      "sha256": "d3269aafd9e9c16ed30a1b5fc984a6c410b1212837c2262665fec63a44f9edde",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_Triangle.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/gyro_down.png",
+      "sha256": "1811a1d103f045b590477d676da2abb5ba846dfe12ec3acc04af7378f6dc701f",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/gyro_down.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/gyro_left.png",
+      "sha256": "1ed7119da21ec420447c0f2af62ed00f946d0f6c911d96657d1ff2bb38be215c",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/gyro_left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/gyro_right.png",
+      "sha256": "4388923d86298b26c8b35144fddf64923903ef61503e16f1f50f53a6f2d1bd67",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/gyro_right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/gyro_up.png",
+      "sha256": "57867365f793ec18e9fff9c80d6f98630c0f96ee7eceffba47c39f7a99fa87a6",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/gyro_up.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Image Assets/padheat.png",
+      "sha256": "de660b10f20df2abc33faaefb93a7c5c38a412714fdb2c59493b76a6ba34637a",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/padheat.png",
+        "themes/dualshock-4-default/Image Assets/padheat.png",
+        "themes/steam-deck-default/Image Assets/padheat.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Cosmic Red/DualSense Controller Layout (Cosmic Red).png",
+      "sha256": "00ddb1c784c9c11dab321c05d35af104942d8b3edc4fbe0ceb5f18846a0c24e3",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Cosmic Red/DualSense Controller Layout (Cosmic Red).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Cosmic Red/DualSense Controller Layout VSCView - Cosmic Red (No Analog Stick & Triggers).png",
+      "sha256": "5b4588b551f00ede2058009ae5a301e883ad47ef21277b0e530b01095b18b72d",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Cosmic Red/DualSense Controller Layout VSCView - Cosmic Red (No Analog Stick).png",
+      "sha256": "8e47ede7046eeabfee1400908599c874ba6e644955f716998d0ff3f771e39bb5",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Cosmic Red/DualSense Controller Layout VSCView - Cosmic Red (No Analog Stick).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Cosmic Red/DualSense Controller Layout VSCView - Cosmic Red (No Analog Stick, Triggers and Lightbar).png",
+      "sha256": "a518fe3138d3fd35421f17b533ac56360828850d55f55e11e87e11414354c140",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Cosmic Red/DualSense Controller Layout VSCView - Cosmic Red (No Analog Stick, Triggers and Lightbar).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Cosmic Red/DualSense_base_red.png",
+      "sha256": "5b4588b551f00ede2058009ae5a301e883ad47ef21277b0e530b01095b18b72d",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Dev Mode/DualSense DevMode Overlay (No Thumbstick and Triggers).png",
+      "sha256": "7daa2741ba278d34a92f2b088353cbd1271666f39b6c551284298c2116c9cdcc",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Dev Mode/DualSense DevMode Overlay (No Thumbstick).png",
+      "sha256": "743a8b353f612f5ad97258e28278a059cb118c751ba970d6c8debb1e8a5ff19d",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Dev Mode/DualSense DevMode Overlay.png",
+      "sha256": "9f3309c198c7d70c008b499f5926970520cc63e91f2f6675098c52051c8004cc",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Galactic Purple/DualSense Controller Layout (Galactic Purple).png",
+      "sha256": "060410ca9319f190f3cff8ecac3336800fe7e97e55414484abf6e27d05e3f9c1",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Galactic Purple/DualSense Controller Layout VSCView - Galactic Purple (No Analog Stick &.png",
+      "sha256": "79b11bc8e0f2ad5bbf37888bd9cfdeabbddf7bc95c622e59e204232497e3effb",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Galactic Purple/DualSense Controller Layout VSCView - Galactic Purple (No Analog Stick &.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Galactic Purple/DualSense Controller Layout VSCView - Galactic Purple (No Analog Stick).png",
+      "sha256": "11c07eefe5481b6fffc9580ee13325b5764c9417edf8a6f11e8f89abbf8d1dfa",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Galactic Purple/DualSense Controller Layout VSCView - Galactic Purple (No Analog Stick).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Galactic Purple/DualSense Controller Layout VSCView - Galactic Purple (No Analog Stick,.png",
+      "sha256": "838c0947694c59d7607770c8489860cb9d17366110028f45371cb2953d427345",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Galactic Purple/DualSense Controller Layout VSCView - Galactic Purple (No Analog Stick,.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Galactic Purple/DualSense_base_galactic_purple.png",
+      "sha256": "79b11bc8e0f2ad5bbf37888bd9cfdeabbddf7bc95c622e59e204232497e3effb",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Galactic Purple/DualSense Controller Layout VSCView - Galactic Purple (No Analog Stick &.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Midnight Black/DualSense Controller Layout (Midnight Black).png",
+      "sha256": "51492b0408fcb41dd23ce32c96dc7de3100d05bf7ec3d684f4167cbd796cca4e",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Midnight Black/DualSense Controller Layout VSCView - Midnight Black (No Analog Stick & Triggers).png",
+      "sha256": "c0a6dc609e5ddca58b20c955999f868d939bc51f3f54f1a1cd16a1ffba67c99f",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Midnight Black/DualSense Controller Layout VSCView - Midnight Black (No Analog Stick & Triggers).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Midnight Black/DualSense Controller Layout VSCView - Midnight Black (No Analog Stick).png",
+      "sha256": "55256ee049a83712789c76738493727c5be6211f2e1fb5d0ace7fb0e161c5028",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Midnight Black/DualSense Controller Layout VSCView - Midnight Black (No Analog Stick).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Midnight Black/DualSense Controller Layout VSCView - Midnight Black (No Analog Stick,Triggers and Lightbar).png",
+      "sha256": "2ff879bc3b25b3f53bd8b5f4be7b81a4acb9af5e2e9f35ea907489e1b2e64bb8",
+      "bundledCopies": [
+        "themes/dualsense-default/assets/DualSense_base_midnight_black.png",
+        "themes/dualsense-default/Templates/Midnight Black/DualSense Controller Layout VSCView - Midnight Black (No Analog Stick,Triggers and Lightbar).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Midnight Black/DualSense_base_black.png",
+      "sha256": "c0a6dc609e5ddca58b20c955999f868d939bc51f3f54f1a1cd16a1ffba67c99f",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Midnight Black/DualSense Controller Layout VSCView - Midnight Black (No Analog Stick & Triggers).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Nova Pink/DualSense Controller Layout (Nova Pink).png",
+      "sha256": "b6b13e32bbd0b4604d013d702f8d9110b43b134f9875ccae4779c9d75405f379",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Nova Pink/DualSense Controller Layout VSCView - Nova Pink (No Analog Stick & Trigg.png",
+      "sha256": "b0015e41c566a914c4c351d15ccfae73b5d7f64b2f92ada37f32046ce6165f7d",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Nova Pink/DualSense Controller Layout VSCView - Nova Pink (No Analog Stick & Trigg.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Nova Pink/DualSense Controller Layout VSCView - Nova Pink (No Analog Stick).png",
+      "sha256": "bd566e48c61cced087e9ff7b9dfabe48deedcb350d9c8704508a12d95299dca4",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Nova Pink/DualSense Controller Layout VSCView - Nova Pink (No Analog Stick).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Nova Pink/DualSense Controller Layout VSCView - Nova Pink (No Analog Stick, Trigge.png",
+      "sha256": "9fc839df55defa2b35a0ca536be6111d1c6aa6933c41e298272246f16f69f9ed",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Nova Pink/DualSense Controller Layout VSCView - Nova Pink (No Analog Stick, Trigge.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Nova Pink/DualSense_base_nova_pink.png",
+      "sha256": "b0015e41c566a914c4c351d15ccfae73b5d7f64b2f92ada37f32046ce6165f7d",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Nova Pink/DualSense Controller Layout VSCView - Nova Pink (No Analog Stick & Trigg.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Starlight Blue/DualSense Controller Layout (Starlight Blue).png",
+      "sha256": "30e3fe6272b3750d81442e09a046ec151a884c5a31f7d706a2e2dc41393c8db8",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Starlight Blue/DualSense Controller Layout VSCView - Starlight Blue (N (2).png",
+      "sha256": "3b622b7244513f1aabbc5157269c9c30927ade9f843c6ff7d8b5bbcbc25ad275",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Starlight Blue/DualSense Controller Layout VSCView - Starlight Blue (N (2).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Starlight Blue/DualSense Controller Layout VSCView - Starlight Blue (N.png",
+      "sha256": "c7725aa0b9a818fe8b3feecfa820820dc62fe64b9d3b720dcad8e7f361babefe",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Starlight Blue/DualSense Controller Layout VSCView - Starlight Blue (N.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Starlight Blue/DualSense Controller Layout VSCView - Starlight Blue (No.png",
+      "sha256": "74e8cef4b458c4dc69c07c0dffc750da9e0e900f831cf4493d259ae540a3ddc4",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Starlight Blue/DualSense Controller Layout VSCView - Starlight Blue (No.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/Starlight Blue/DualSense_base_starlight_blue.png",
+      "sha256": "74e8cef4b458c4dc69c07c0dffc750da9e0e900f831cf4493d259ae540a3ddc4",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/Starlight Blue/DualSense Controller Layout VSCView - Starlight Blue (No.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/White/DualSense Controller Layout (White-Black).png",
+      "sha256": "1047c1d20888df9b85f8e5377558318b646d95671c1c09aa0dfe5574159013be",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/White/DualSense Controller Layout VSCView (No Analog Stick & Triggers).png",
+      "sha256": "3cc9aaadb5507e7aba8c80f7b494cb6eed7971ef44df0c38ff40576449c00524",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/White/DualSense Controller Layout VSCView (No Analog Stick & Triggers).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/White/DualSense Controller Layout VSCView (No Analog Stick).png",
+      "sha256": "01cabce1e6253959830b601e24765b8064608437a0f5972a1cd62c1aa601b605",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/White/DualSense Controller Layout VSCView (No Analog Stick).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/White/DualSense Controller Layout VSCView (No Analog Stick, Triggers and Lightbar).png",
+      "sha256": "35c7fd9214bebb32a69f1883b541302ff47fbccfb91590461ee48b42a06de8f2",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/White/DualSense Controller Layout VSCView (No Analog Stick, Triggers and Lightbar).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualSense Controller Image/Default/Templates/White/DualSense_base.png",
+      "sha256": "3cc9aaadb5507e7aba8c80f7b494cb6eed7971ef44df0c38ff40576449c00524",
+      "bundledCopies": [
+        "themes/dualsense-default/Templates/White/DualSense Controller Layout VSCView (No Analog Stick & Triggers).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V1/DS4_dmc5_base.png",
+      "sha256": "84a152ae28945ac3088c9dd05135034b96784200c2e23f51847c5cc7e386d6c8",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V1/DS4_dmc5_base.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V1/DS4_V1_base.png",
+      "sha256": "374322e8b52f5df037fc69d291102cfcbe188e09671e7870810d6722d52431b9",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V1/DS4_V1_base.png",
+        "themes/dualshock-4-default/Templates/DS4 V1/DualShock 4 Controller Overlay - No Thumbstick and Triggers.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V1/DualShock 4 Controller Overlay - No Thumbstick and Triggers.png",
+      "sha256": "374322e8b52f5df037fc69d291102cfcbe188e09671e7870810d6722d52431b9",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V1/DS4_V1_base.png",
+        "themes/dualshock-4-default/Templates/DS4 V1/DualShock 4 Controller Overlay - No Thumbstick and Triggers.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V1/DualShock 4 Controller Overlay - No Thumbstick, Triggers and Lightbar Rear.png",
+      "sha256": "bc915b082257a41a01ec2f0efa5d697701063108556cb7afee2bca28d454fd1c",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V1/DualShock 4 Controller Overlay - No Thumbstick, Triggers and Lightbar Rear.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V1/DualShock 4 Controller Overlay - No Thumbstick.png",
+      "sha256": "8a426eb5c7bc8c1ba51cd35ccca7aac1628369665c493406d708f2ee9ff65183",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V1/DualShock 4 Controller Overlay - No Thumbstick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V1/DualShock 4 Controller Overlay.png",
+      "sha256": "57280f735e28312b340c01af2a9cb032b92a139531cb4269707b055390c642d7",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V1/DualShock 4 Controller Overlay.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Glacier White/DS4_V2_base_glacier_white.png",
+      "sha256": "a3b7b2a8d0a3a224d2d7e5265834b18b165c4c8b00d3b626cdbd445672c4723b",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Glacier White/DS4_V2_base_glacier_white.png",
+        "themes/dualshock-4-default/Templates/DS4 V2/Glacier White/DualShock 4 V2 Glacier White Overlay (No Thumbstick and Triggers).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Glacier White/DualShock 4 V2 Glacier White Overlay (No Thumbstick and Triggers).png",
+      "sha256": "a3b7b2a8d0a3a224d2d7e5265834b18b165c4c8b00d3b626cdbd445672c4723b",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Glacier White/DS4_V2_base_glacier_white.png",
+        "themes/dualshock-4-default/Templates/DS4 V2/Glacier White/DualShock 4 V2 Glacier White Overlay (No Thumbstick and Triggers).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Glacier White/DualShock 4 V2 Glacier White Overlay (No Thumbstick).png",
+      "sha256": "a942ca66fa9fc213e082103477912ebaf4aef4d828d968de70d0c7d2ac6cf95f",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Glacier White/DualShock 4 V2 Glacier White Overlay (No Thumbstick).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Glacier White/DualShock 4 V2 Glacier White Overlay (No Thumbstick, Triggers and Lightbar Rear).png",
+      "sha256": "d10ede5a6b8fdc29c4644dc2a7065b030226b03e697c3d9319a247d82cc65d2f",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Glacier White/DualShock 4 V2 Glacier White Overlay (No Thumbstick, Triggers and Lightbar Rear).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Glacier White/DualShock 4 V2 Glacier White Overlay.png",
+      "sha256": "6eb45b30bf6416a7509482c2d7dd412fde00e547a74da837462004365f20e48a",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Glacier White/DualShock 4 V2 Glacier White Overlay.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Gold/DS4_V2_base_gold.png",
+      "sha256": "a0b33a3d24af69a2da8d9002d8cb8dc11ec82de4aa49c07b7b46fad5f49f7112",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Gold/DS4_V2_base_gold.png",
+        "themes/dualshock-4-default/Templates/DS4 V2/Gold/DualShock 4 V2 Gold Overlay (No Thumbstick and Triggers).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Gold/DualShock 4 V2 Gold Overlay (No Thumbstick and Triggers).png",
+      "sha256": "a0b33a3d24af69a2da8d9002d8cb8dc11ec82de4aa49c07b7b46fad5f49f7112",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Gold/DS4_V2_base_gold.png",
+        "themes/dualshock-4-default/Templates/DS4 V2/Gold/DualShock 4 V2 Gold Overlay (No Thumbstick and Triggers).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Gold/DualShock 4 V2 Gold Overlay (No Thumbstick, Triggers and Lightbar Rear).png",
+      "sha256": "9e1a1e219967ab280c9cb90ea708f72f31ac9bf99b783232003e79faa2706cc0",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Gold/DualShock 4 V2 Gold Overlay (No Thumbstick, Triggers and Lightbar Rear).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Gold/DualShock 4 V2 Gold Overlay.png",
+      "sha256": "52292ae01291d80344cc73c67cc54a3a43fd6caf4f890b1cbcf845f81f731a67",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Gold/DualShock 4 V2 Gold Overlay.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Gold/DualShock 4 V2 Overlay Gold (No Thumbstick).png",
+      "sha256": "f22bea3ec05b92834cab8f12e98421086b71ff0afbea792483c839e136c3497c",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Gold/DualShock 4 V2 Overlay Gold (No Thumbstick).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Jet Black/DS4_V2_base.png",
+      "sha256": "af3909f28634274ada1fa4a5cbf7c0b3cbe2c592852a764b29958047bab147b9",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Jet Black/DualShock 4 Controller V2 Model Overlay - No Thumbstick and Triggers.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Jet Black/DualShock 4 Controller V2 Model Overlay - No Thumbstick and Triggers.png",
+      "sha256": "af3909f28634274ada1fa4a5cbf7c0b3cbe2c592852a764b29958047bab147b9",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Jet Black/DualShock 4 Controller V2 Model Overlay - No Thumbstick and Triggers.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Jet Black/DualShock 4 Controller V2 Model Overlay - No Thumbstick, Triggers and Lightbar Rear.png",
+      "sha256": "0b38d7bd120eb9b67492563efb53915635d2f0318fe7d84050b8f692b3717613",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Jet Black/DualShock 4 Controller V2 Model Overlay - No Thumbstick, Triggers and Lightbar Rear.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Jet Black/DualShock 4 Controller V2 Model Overlay - No Thumbstick.png",
+      "sha256": "ce819b4ea70cf8c6b02fc35be0017e622f31e65b5140439c710ec18bc9790bd3",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Jet Black/DualShock 4 Controller V2 Model Overlay - No Thumbstick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Jet Black/DualShock 4 Controller V2 Model Overlay.png",
+      "sha256": "4d33783edb39e67c6f2b798081ba9abd82ba439581b643fde904ea28279e03f7",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Jet Black/DualShock 4 Controller V2 Model Overlay.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Magma Red/DS4_V2_base_magma_red.png",
+      "sha256": "9d6de123912214a6e8c294838b106a9d024bf546efad2f06c068a26455d06272",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Magma Red/DS4_V2_base_magma_red.png",
+        "themes/dualshock-4-default/Templates/DS4 V2/Magma Red/DualShock 4 V2 Magma Red Overlay (No Thumbstick and Triggers).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Magma Red/DualShock 4 V2 Magma Red Overlay (No Thumbstick and Triggers).png",
+      "sha256": "9d6de123912214a6e8c294838b106a9d024bf546efad2f06c068a26455d06272",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Magma Red/DS4_V2_base_magma_red.png",
+        "themes/dualshock-4-default/Templates/DS4 V2/Magma Red/DualShock 4 V2 Magma Red Overlay (No Thumbstick and Triggers).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Magma Red/DualShock 4 V2 Magma Red Overlay (No Thumbstick).png",
+      "sha256": "e356fc8d7ebd25da9fb0c704f0f3b9777dbbfb3121cd5db9a0e5077504e0c0c1",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Magma Red/DualShock 4 V2 Magma Red Overlay (No Thumbstick).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Magma Red/DualShock 4 V2 Magma Red Overlay (No Thumbstick, Triggers and Lightbar Rear).png",
+      "sha256": "d5915301292588f7a57a29cefcc22481cf26a235956bae015e095a48bd2bec36",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Magma Red/DualShock 4 V2 Magma Red Overlay (No Thumbstick, Triggers and Lightbar Rear).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Magma Red/DualShock 4 V2 Magma Red Overlay.png",
+      "sha256": "c78643d360d85724b5174531f5514eb5a53a3cb5ba42c933067b1cf747fe2eab",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Magma Red/DualShock 4 V2 Magma Red Overlay.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Midnight Blue/DS4_V2_base_midnight_blue.png",
+      "sha256": "ba966e814f30aa6f142707214454dad9743abe2eac4e2a36819790b26dc2f791",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Midnight Blue/DS4_V2_base_midnight_blue.png",
+        "themes/dualshock-4-default/Templates/DS4 V2/Midnight Blue/DualShock 4 V2 Midnight Blue Overlay (No Thumbstick and Triggers).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Midnight Blue/DualShock 4 V2 Midnight Blue Overlay  (No Thumbstick).png",
+      "sha256": "e862881182a7d770045399135eff4d5488e865e66f38aed8b28847a750f2f2fc",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Midnight Blue/DualShock 4 V2 Midnight Blue Overlay  (No Thumbstick).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Midnight Blue/DualShock 4 V2 Midnight Blue Overlay (No Thumbstick and Triggers).png",
+      "sha256": "ba966e814f30aa6f142707214454dad9743abe2eac4e2a36819790b26dc2f791",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Midnight Blue/DS4_V2_base_midnight_blue.png",
+        "themes/dualshock-4-default/Templates/DS4 V2/Midnight Blue/DualShock 4 V2 Midnight Blue Overlay (No Thumbstick and Triggers).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Midnight Blue/DualShock 4 V2 Midnight Blue Overlay (No Thumbstick, Triggers and Lightbar Rear).png",
+      "sha256": "27c6f7ce8b8c3b45ae9126e259f926e901ecd3be0310c3f5b21f34525658c814",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Midnight Blue/DualShock 4 V2 Midnight Blue Overlay (No Thumbstick, Triggers and Lightbar Rear).png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/DualShock 4 Templates/DS4 V2/Midnight Blue/DualShock 4 V2 Midnight Blue Overlay.png",
+      "sha256": "bb8d7dc725f84f252c1367b0a6b17e6e6be6801e811718b29db875bd63a67491",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V2/Midnight Blue/DualShock 4 V2 Midnight Blue Overlay.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4 V1 Active Buttons/DS4_L2.png",
+      "sha256": "afee6bca22d892209b7b633d79f40e2e53f1555b4f1dcbcaaf9c762daeefc5db",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4 V1 Active Buttons/DS4_L2.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4 V1 Active Buttons/DS4_LeftAnalogStick.png",
+      "sha256": "3c3abd334543a61cf734ae207ab044ed9afb5dbdc5c09440c6e78a5ca05c0f84",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4 V1 Active Buttons/DS4_LeftAnalogStick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4 V1 Active Buttons/DS4_Lightbar_Rear.png",
+      "sha256": "959f19ce53a4dbac933203a43f79228918d79aeac42cde00f9d605a2acd4c8ed",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4_Lightbar_Rear.png",
+        "themes/dualshock-4-default/Image Assets/DS4 V1 Active Buttons/DS4_Lightbar_Rear.png",
+        "themes/dualshock-4-default/Image Assets/DS4 V2 Active Button/DS4_Lightbar_Rear.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4 V1 Active Buttons/DS4_R2.png",
+      "sha256": "7336b9c3cc6cb9b646480f52ea30f593f8e469ada5226d1053a44741827e58e7",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4 V1 Active Buttons/DS4_R2.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4 V1 Active Buttons/DS4_RightAnalogStick.png",
+      "sha256": "272782fbb4c7d80d48f970a4350a2e091a42560e87b21d587f36f95582b82cd2",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4 V1 Active Buttons/DS4_RightAnalogStick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4 V2 Active Button/DS4_Lightbar_Front.png",
+      "sha256": "113ed2b325a67fde661c29a14a8101b50d2cce3b92c863435eee74a4f27fbb85",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4_Lightbar_Front.png",
+        "themes/dualshock-4-default/Image Assets/DS4 V2 Active Button/DS4_Lightbar_Front.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4 V2 Active Button/DS4_Lightbar_Rear.png",
+      "sha256": "959f19ce53a4dbac933203a43f79228918d79aeac42cde00f9d605a2acd4c8ed",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4_Lightbar_Rear.png",
+        "themes/dualshock-4-default/Image Assets/DS4 V1 Active Buttons/DS4_Lightbar_Rear.png",
+        "themes/dualshock-4-default/Image Assets/DS4 V2 Active Button/DS4_Lightbar_Rear.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4 V2 Active Button/DS4_V2_L2.png",
+      "sha256": "12ef22ffc56d09ca750357c13136f2e77c4fb8ca5f88bfee8aa386aa90b580b6",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4 V2 Active Button/DS4_V2_L2.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4 V2 Active Button/DS4_V2_LeftAnalogStick.png",
+      "sha256": "6e0c1b0e4f838854694f6956f70622c33a239826da360db6a7b0ad35ccada877",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4 V2 Active Button/DS4_V2_LeftAnalogStick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4 V2 Active Button/DS4_V2_R2.png",
+      "sha256": "c5a33e4e5a7304ad6e874548f2559be0cdac7732ec5a097c0373c830f14b6d18",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4 V2 Active Button/DS4_V2_R2.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4 V2 Active Button/DS4_V2_RightAnalogStick.png",
+      "sha256": "b4f1f97f7698a363444385a877d71646968c24172ddf4067cf0dae96e68cc3ae",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4 V2 Active Button/DS4_V2_RightAnalogStick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4-Touchpad-Cick.png",
+      "sha256": "8faab51fc417b0bd21daa8aadeb6437088c643566af426de9798ef28640149db",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4-Touchpad-Cick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4_AnalogStick_Click.png",
+      "sha256": "656ac8cba88a5ed30689f609ef0b43653bcdd5691f8ea221d86e2b970b0bd388",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4_AnalogStick_Click.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4_D-PAD_Down.png",
+      "sha256": "c05d29eafcac5a8219613fac173b6f11ca8a85bb469aa6a18f9e4de4a482ce28",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4_D-PAD_Down.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4_D-PAD_Left.png",
+      "sha256": "6ed3b2f852e56d79586a32e523716ae928c25a24f09a55ad450ec81e98578377",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4_D-PAD_Left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4_D-PAD_Right.png",
+      "sha256": "6c3aa8315d2dfce90df9083a3fd771eab6d0cec6666e93432d13aa0bdfa35d9c",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4_D-PAD_Right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4_D-PAD_Up.png",
+      "sha256": "699c8605fb02281035acd7fa1d59f5edd4fb60a2de3c00b4ad4c4ffea0b74317",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4_D-PAD_Up.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4_Face_Button.png",
+      "sha256": "0f860ea696758a939036b042d4081cb441bc14959ee61e5cd6f7de16c92e22bd",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4_Face_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4_Home_Button.png",
+      "sha256": "0095cf5cacd5ab070dfff61cc80931cad614f20f2d45236dd8eb9321070793dd",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4_Home_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4_L1-Active.png",
+      "sha256": "04d7414be7c09bc0017db804a37b43db4075039bf7a6eaee5e74563c7ea61f26",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4_L1-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4_L2-Active.png",
+      "sha256": "75141539861f1c5c42b1b404c22184c97700b27c24f80ac66770e291cc80027e",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4_L2-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4_OptionsShare_Button.png",
+      "sha256": "48b5dfc4b4a9264920c763535c33dc718a71c7543f2896aa990ab8df34057075",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4_OptionsShare_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4_R1-Active.png",
+      "sha256": "6987a308974575b7bbeee8291b89c96e9393ff082098dcdcbbdce2524d5465ed",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4_R1-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4_R2-Active.png",
+      "sha256": "7ae3af50f6df68e4aae549ff598f44baaebdad8bc4ba08846f3b7c54d95365a1",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/DS4_R2-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/DS4_Touchpad_Touch.png",
+      "sha256": "0c045b021e7a39e6b16fa8506f0e7036af1efa70a39f00893e31ca37510336b5",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_Touchpad_Touch.png",
+        "themes/dualshock-4-default/Image Assets/DS4_Touchpad_Touch.png",
+        "themes/steam-deck-default/Image Assets/SD_Touchpad_Touch.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/gyro_down.png",
+      "sha256": "a19b797500ee12a92fc21e487aab2a78da9bf4a33430721f286e26d56f0daad4",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/gyro_down.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/gyro_left.png",
+      "sha256": "d9b4f208701a458413fea363481c9d6ed59475c52735c13eae7ab75fc433c53e",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/gyro_left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/gyro_right.png",
+      "sha256": "27caa01a68065bdfad8785f057ae090083a15495a4e5bfccc8add932a9abfbdc",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/gyro_right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/gyro_up.png",
+      "sha256": "a1be0004526fe8772cfd6a49e53c8bea75de81fb87b8da0ee3375d122ba766d6",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/gyro_up.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/padheat.png",
+      "sha256": "de660b10f20df2abc33faaefb93a7c5c38a412714fdb2c59493b76a6ba34637a",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/padheat.png",
+        "themes/dualshock-4-default/Image Assets/padheat.png",
+        "themes/steam-deck-default/Image Assets/padheat.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/Default Theme/Theme Assets/ps4_gyro-accel.png",
+      "sha256": "269115782430c309e552a0d05cfb14b6e4aff30a294297b95b2e4dccaf400ecb",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Image Assets/ps4_gyro-accel.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_padheat.png",
+      "sha256": "33471e619e5c4ea5ec8a9b782f0e25eff14af065bbbd250cdaceec20cc734712",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_analog_stick_active.png",
+      "sha256": "295d48384c820fb92bd6949d4db1b61fc538c45cbb6386b91fff367fad23a33e",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_circle.png",
+      "sha256": "905c11c4fe80647e87321dabc986f0bdf61f5f0b6174642ca9767e658752b1ae",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_circle_bar.png",
+      "sha256": "295d48384c820fb92bd6949d4db1b61fc538c45cbb6386b91fff367fad23a33e",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_cross.png",
+      "sha256": "ad7954cea9bde1878b9a43aa4567295ab942cee7a60e565da58f3cafa74d9317",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_dpad_down.png",
+      "sha256": "910db3959b70eb2db60231d799421d6accc5b95991b121423bed576e7e5eedfc",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_dpad_left.png",
+      "sha256": "12fc02eb47415daded916a5ed5cfb4794823716b3a8494808aacc5c8f65e5ed9",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_dpad_right.png",
+      "sha256": "edd4266767efd7ecaffae3a7c702edefb6042e65467fc92ec7e2712b502ced73",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_dpad_up.png",
+      "sha256": "d608e773f26124a9b656553009348f6c103f61f672a3df867b3564de5262ef32",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_gyro-acel.png",
+      "sha256": "5b537b1f8ea437fc9b5871e08d7a868b721e1fdaeeb9b5562dd743c35bb3b80f",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_gyro_down.png",
+      "sha256": "209f8f7c47891f6d8d9abf1a08728363726ccb9c414819fc0aa9990322a0a694",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_gyro_left.png",
+      "sha256": "7675538f8d5e728a2eb8a71178490457cfc6612c086e395e6584b44eba857ae0",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_gyro_right.png",
+      "sha256": "32c465c0801e60394e9b64a52530564e96d514ca9417d1e33c5cbf6c65feeece",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_gyro_up.png",
+      "sha256": "0b6918d29740280fab19b1f139877699a5d19f6f623320f3465b5d1287bec0ca",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_left_bumper.png",
+      "sha256": "b8b4cd29ac0a931ba9e64480cec373b4e57343bb6e693ee19911b4af5d25fd34",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_left_trigger.png",
+      "sha256": "9d2c1e0913dbf0c728a129aacd96a4b931a7f09da7f04d5e3a5bbbfc5e2c6fd7",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_options-share_button.png",
+      "sha256": "1152854aea3aa202aafe177fd04965c7d0d2040f7e68f2baf8c6b783d8a554b9",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_right_bumper.png",
+      "sha256": "b83eff1f24d549a90c0539b1eaa41579737e7fa2d658bf0132cff7355b5d10be",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_right_trigger.png",
+      "sha256": "d884dedcd06faf8b904a062c94d41501e1aa53b74834a9fb21be66c181d4c8c2",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_square.png",
+      "sha256": "f77f8c6059c7e6e8e9dc33f44ec7f6ed42ded55e4ba9d35c26e7c2cc33a94df1",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_touchpad.png",
+      "sha256": "48da20232fa43a5e9dc90138e201ba4778bbdb158d5e53252bb99ea6013e4472",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/dmc5_ps4_triangle.png",
+      "sha256": "c33ad2ea6f633d30df1f3c72be10198ab6d6799f393f93bd2a5cbb27f745ee67",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/DMC5_touchpad_touch.png",
+      "sha256": "b49bf2dd4e447ea3574aa01e93865beec4ce0a4b519debcdae8ad28e0d7af9b0",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/DMC5 Theme/Theme Assets/DS4_dmc5_base.png",
+      "sha256": "84a152ae28945ac3088c9dd05135034b96784200c2e23f51847c5cc7e386d6c8",
+      "bundledCopies": [
+        "themes/dualshock-4-default/Templates/DS4 V1/DS4_dmc5_base.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/Anniversary_Gyro-Accel.png",
+      "sha256": "072ac2cf7604029664c77715b22e4478a62b69af8e4c8aa2d032216041505098",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/Anniversary_LeftAnalogStick_Click.png",
+      "sha256": "6412b52ac929b3b675c2345320d933f8daea8cc3fef654bab3ef8e92d9952c42",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/Anniversary_RightAnalogStick_Click.png",
+      "sha256": "7716e136101dc800d3ab95b7a2cfa680f14c04a74533d37710dedf8c017f52ea",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_Circle_Button.png",
+      "sha256": "25fda54bb7b2dc7192e01e621407324d66a2727276642276f67757f326730a57",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_Cross_Button.png",
+      "sha256": "5775928178d10f01d3d3f34d3beced1f26ff73c0d8240c7a43fc83cab0713e81",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_D-PAD_Down.png",
+      "sha256": "6f6bd62b709874b1d89a9ae6998902ab88e4310ad4955427296234c9e785cb6a",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_D-PAD_Left.png",
+      "sha256": "bb30e0d945d5c5dc05e434de87eb86d0c7409ef8780f2206f9aa06ba02dd0b4b",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_D-PAD_Right.png",
+      "sha256": "15e5530e624c1b5fb0e04ac244ae5aaa1d425f7c58c0ef6d90b9766d4f8a8eae",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_D-PAD_Up.png",
+      "sha256": "2ebecdfc37f30c702a7b37ba8227d6967fb2c756269244b7479ad99841a8c76b",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_Home_Button.png",
+      "sha256": "91cc2cb5c82075ebb5c6db7c1a7c5a222839435c603ede5e945446112ca7a300",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_L1-Active.png",
+      "sha256": "30fa1198708259f5d1d928a29669c95dc49a61e20989bb0fea01bdeff24e4095",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_L2-Active.png",
+      "sha256": "b9f11f0925bba0d2bc01c2ca6b1249f15cce78caec63eb83ded2c3f8cc5a3332",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_Options_Button.png",
+      "sha256": "15e391e0e19f73f4d357ffe4e5c4d4cd5efd75824c97a289966847e48bc47388",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_Padheat.png",
+      "sha256": "4ed072d1b8fca8dcb66d212ceb05e6f2e26404ea42edb40f8e89cdc47c4d76f1",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_R1-Active.png",
+      "sha256": "0b5b396c2a332f7e242aa3eb48e465feb9beb6f3cf27d0509d780f93d4f9684c",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_R2-Active.png",
+      "sha256": "be431beaf0546eb51bb65df05e4bd8d944b90ad15c13d4c8f5a0cd79578f382c",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_Share_Button.png",
+      "sha256": "94a58f98b1ee4f73e6a8321e65456cc834479907179628810baf51a0a4b5a24f",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_Square_Button.png",
+      "sha256": "6cb86bc020db6447d214c1c50ad78a297c9f93c5663cf7804ab8bee7280d5763",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_Touchpad-Cick.png",
+      "sha256": "52d63c3de1b7474b129d764e8b7a5f4130c1f16179accc7f278230817b529564",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_Touchpad-Touch.png",
+      "sha256": "85d2eaa71ec26535dcbea39f16d2bfb770ebd3ade15b50fbf32bd0b2e73faf57",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/DS4_Anniversary_Triangle_Button.png",
+      "sha256": "da43f2ef3fc5ab23305838a89bd69106ab6f0d044a6a2e7535b090b8fce7a981",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/gyro_anniversary_down.png",
+      "sha256": "42357e70908a010048306b23308c03f4e963e6147fbf6789858899bc4b20fc28",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/gyro_anniversary_left.png",
+      "sha256": "847e92124668b32d20df5f5fb73f02408008120fb62a81bfda60eb25ccf4eb7f",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/gyro_anniversary_right.png",
+      "sha256": "295610616c9c5bf62c94619f52b4bd3393f2bbb4deb1a65b95e76fccc1762653",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/gyro_anniversary_up.png",
+      "sha256": "a54406b61a32474269a8886bb9733ccba6e9d70844966cae1ae43d57a9e289c4",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Assets/icon.png",
+      "sha256": "f1eda2b44594d0b346bce1062eb34db35d21e00a29eb7709bb6eb9a678c68bee",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Templates/20th Anniversary/DS4_anniversary_base.png",
+      "sha256": "1b48d861214f06cc127f361662b310ef19627769ad941f7bf9471ccbdf92d48c",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Templates/20th Anniversary/DualShock 4 20th Anniversary Overlay - No Thumbstick and Triggers.png",
+      "sha256": "1b48d861214f06cc127f361662b310ef19627769ad941f7bf9471ccbdf92d48c",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Templates/20th Anniversary/DualShock 4 20th Anniversary Overlay - No Thumbstick, Triggers and Lightbar Rear.png",
+      "sha256": "cb3baee18276b1a34dc43af03dc1bded8aad2f986e0ee82599bee0b9bd7ad395",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Templates/20th Anniversary/DualShock 4 20th Anniversary Overlay - No Thumbstick.png",
+      "sha256": "0f03bf77ecfd900134e2a4611c0c0364b5b714cf57347fd0b73c231c36b24ae7",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Templates/20th Anniversary/DualShock 4 Controller 20th Anniversary Model Overlay.png",
+      "sha256": "b9ecc701e0716d6d32bdb4e256fa246311c25a356fc265cab063f3b148ffc39a",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Templates/20th Anniversary Alternative/DS4_anniversary_alt_base.png",
+      "sha256": "b23434e948afabd340d4a4a7cec467ae191ed7535cdae854f43cbf1be9943736",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Templates/20th Anniversary Alternative/DualShock 4 20th Anniversary Overlay Alt - No Thumbstick and Triggers.png",
+      "sha256": "b23434e948afabd340d4a4a7cec467ae191ed7535cdae854f43cbf1be9943736",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Templates/20th Anniversary Alternative/DualShock 4 20th Anniversary Overlay Alt - No Thumbstick, Triggers and Lightbar Rear.png",
+      "sha256": "68429e0e216438fa28f8939d154eeb6bcde12b0472b479e9ae237fd29a644eab",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Templates/20th Anniversary Alternative/DualShock 4 20th Anniversary Overlay Alt - No Thumbstick.png",
+      "sha256": "7873283315f208a654c1f39ec3bad0c6ad8087021a6eb76c5e2b4b8647cfb496",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/DualShock 4 Controller Images/PS 20th Anniversary Theme/Templates/20th Anniversary Alternative/DualShock 4 Controller 20th Anniversary Model Overlay.png",
+      "sha256": "3e32c0dfd88012c3e72a8f9242eb715051f6690524e37028fdeaf9418bcaf353",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Image Assets/Active Press/Analog Joystick.png",
+      "sha256": "acacef0ffadcf58d2bfcc3921f621febdd408a43901f5f72dcff53e3209636c0",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Image Assets/Analog Joystick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Image Assets/Active Press/Arcade-Stick_Face_Button-Ergonomic.png",
+      "sha256": "50a1f549983e82f4814d63ca935a4e19c4ead0c7805fcc7da38d727c98bf4fd9",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Image Assets/Arcade-Stick_Face_Button-Ergonomic.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Image Assets/Active Press/Arcade-Stick_Face_Button.png",
+      "sha256": "a32e48522f7ddc6e7f013908686791de6758c7b31c15c36db12a51ee10f5d7ba",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Image Assets/Arcade-Stick_Face_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Image Assets/Active Press/Arcade-Stick_WASD-Press.png",
+      "sha256": "44eaa936eb4bd59f2f7b20592acede87ea1d33652c30e83992a0bac6d03dfc62",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Image Assets/Active Press/ArcadeStick_D-PAD_Down.png",
+      "sha256": "bd848ce0a7806aa0922f54afb478b0c47fe17b2fcb4bb93b33d49a4b6c13d37d",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Image Assets/Active Press/ArcadeStick_D-PAD_Left.png",
+      "sha256": "b44fb2f02f027e9b82725b80558c8be14e4afaa82d3bb94a5ec3fb81fa9a4382",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Image Assets/ArcadeStick_D-PAD_Left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Image Assets/Active Press/ArcadeStick_D-PAD_Right.png",
+      "sha256": "e8dfd8c18435856300838563d7477236862e05c7edb1f0bec66ad7ffdad37c67",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Image Assets/ArcadeStick_D-PAD_Right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Image Assets/Active Press/ArcadeStick_D-PAD_Up.png",
+      "sha256": "87ee6484bd6c3b7abe0fff2a11310647ca755017ad036aec5b07fd27ba97e0ba",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/D-PAD/Arcade-Stick-DPAD_Glyphless.png",
+      "sha256": "e20ab53b95779598042115eca7afb483e953d644ca4f51e8ce6c3aba39625c0a",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/D-PAD/Arcade-Stick-DPAD_Glyphless.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/D-PAD/Arcade-Stick-DPAD_NintendoSwitch.png",
+      "sha256": "e4214b5d30a05b79e25c4df690ceea49f63123fd9ceadfc4f955a4bf541192ff",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/D-PAD/Arcade-Stick-DPAD_NintendoSwitch.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/D-PAD/Arcade-Stick-DPAD_PlayStation.png",
+      "sha256": "57303f5db6693e4287d4b15425373d453abde714c10389fd7476989a920da370",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/D-PAD/Arcade-Stick-DPAD_PlayStation.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/D-PAD/Arcade-Stick-DPAD_Xbox.png",
+      "sha256": "d65c33881867412487ea783d29b49819701d52a9477f03ce8936a96685a08119",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/D-PAD/Arcade-Stick-DPAD_Xbox.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/Ergonomics/Arcade-StickErgonomic_Glyphless.png",
+      "sha256": "7e53abc75853ed6dc839d5714880f6b04a7378f1b439de40fa2cd7f22c42f8f4",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/Ergonomics/Arcade-StickErgonomic_Glyphless.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/Ergonomics/Arcade-StickErgonomic_NintendoSwitch.png",
+      "sha256": "6f531fe40a94d8555965dd8e02156e33b9bfe0f1758c0ba93c21c1ce94ba1f77",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/Ergonomics/Arcade-StickErgonomic_NintendoSwitch.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/Ergonomics/Arcade-StickErgonomic_PlayStation.png",
+      "sha256": "b4776bfa7ff9516c5da703c14b9554672ed28d359233280409db1852a2790242",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/Ergonomics/Arcade-StickErgonomic_PlayStation.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/Ergonomics/Arcade-StickErgonomic_Xbox.png",
+      "sha256": "8f8aab3012e8d8bed921f6c2635fa5a66342d6315ad4c0716c1836d6e16da671",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/Ergonomics/Arcade-StickErgonomic_Xbox.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/Joystick/Arcade-Stick_Glyphless.png",
+      "sha256": "ba9874f1c6cddcde329f886c8de83d07c5c8a9d025a69dbc6182814923657271",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/Joystick/Arcade-Stick_Glyphless.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/Joystick/Arcade-Stick_NintendoSwitch.png",
+      "sha256": "82aca280736b36f8e0bf44b0bf3cf4897fd5b241e1b260d3625f38772af390d1",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/Joystick/Arcade-Stick_NintendoSwitch.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/Joystick/Arcade-Stick_PlayStation.png",
+      "sha256": "4f10eedabf9beb6f8b8bbddcaeb2efa085133b781d307ac7a438cb42ed4c6282",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/Joystick/Arcade-Stick_PlayStation.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/Joystick/Arcade-Stick_Xbox.png",
+      "sha256": "f0b444feaae749eb4a5b2d2d455409110f11da9c457d82b1ed83e00966257ead",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/Joystick/Arcade-Stick_Xbox.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/Joystick/JoystickOutlineBaseLine.png",
+      "sha256": "0538cc8bec7e97ddcf3a4feb57fe3e21e332654f57a29aa56723b557be3b46a3",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/Joystick/JoystickOutlineBaseLine.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/Joystick+D-PAD Combo/Arcade-StickJoystickDPadCombo_Glyphless.png",
+      "sha256": "d8b55b8a70f53b56eafd4f664b94734a8c7dc74078f440600ead83afe0d4b32d",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/Joystick+D-PAD Combo/Arcade-StickJoystickDPadCombo_Glyphless.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/Joystick+D-PAD Combo/Arcade-StickJoystickDPadCombo_NintendoSwitch.png",
+      "sha256": "ade9e0c756bf6d44a57a9df52b5b88c35fa2dfa0eaceb1feec48f37ea84923d2",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/Joystick+D-PAD Combo/Arcade-StickJoystickDPadCombo_NintendoSwitch.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/Joystick+D-PAD Combo/Arcade-StickJoystickDPadCombo_PlayStation.png",
+      "sha256": "b8dbae0256bb72fb686dd2ac11eb53995c324445f8f7be9441381f1293eed8ab",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/Joystick+D-PAD Combo/Arcade-StickJoystickDPadCombo_PlayStation.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/Joystick+D-PAD Combo/Arcade-StickJoystickDPadCombo_Xbox.png",
+      "sha256": "1cd10ee1191ecb576851958b4f060a5338c67294f1cd89bc2fdad211f763ed0e",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/Joystick+D-PAD Combo/Arcade-StickJoystickDPadCombo_Xbox.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/WASD/Arcade-StickWASD_Glyphless.png",
+      "sha256": "1063450aa97c23f224935f2715071ca67de602450c2a56b3e82dcadf5b4d5fcc",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/WASD/Arcade-StickWASD_Glyphless.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/WASD/Arcade-StickWASD_NintendoSwitch.png",
+      "sha256": "eb7981ebc36a2a9fe1a9030c7628a8b3453583ea962181cb6ae2bc2ab07ad620",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/WASD/Arcade-StickWASD_NintendoSwitch.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/WASD/Arcade-StickWASD_PlayStation.png",
+      "sha256": "f8291db62d533f8ab4d81f5b96209ed25e1635fb14685f93b4f3600e766053e1",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/WASD/Arcade-StickWASD_PlayStation.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Generic Controller Type Images/Arcade Stick/Templates/WASD/Arcade-StickWASD_Xbox.png",
+      "sha256": "0137ce678a632014efb13d9aafa4594b4a95abb93f99dbc5f3411579b5729fa2",
+      "bundledCopies": [
+        "themes/arcade-stick-default/Templates/WASD/Arcade-StickWASD_Xbox.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Templates/VSCView Switch Joycon Detached No Joystick.png",
+      "sha256": "b1c384251e3106793aae10561efeb0fcd7a37774b3e2c11231f2c046684e57f6",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Templates/VSCView Switch Joycon Detached No Joystick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Templates/VSCView Switch Joycon Detached.png",
+      "sha256": "d31aa20afdb4074323292b939f1c65a6630a6e46e653a48554caefa05cc9e922",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Templates/VSCView Switch Joycon Detached.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Templates/VSCView Switch Joycon Grip NoJoystick.png",
+      "sha256": "1d3eb56f95e9d8a5b73a2e029912770d5e19b803313ba2c74ba2c0238543ffd4",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Templates/VSCView Switch Joycon Grip NoJoystick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Templates/VSCView Switch Joycon Grip.png",
+      "sha256": "4cad07fa8e9ad8f3bf2458aec885c2a49abb70ce7d3810af07ba7aaac70f5018",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Templates/VSCView Switch Joycon Grip.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Templates/VSCView Switch Left JoyCon - Horizontal.png",
+      "sha256": "4fb08545a2fca6f040b1823c495e205a0e006cd524189feb12cdf7acb05603ff",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Templates/VSCView Switch Left JoyCon - Horizontal.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Templates/VSCView Switch Left JoyCon - Vertical.png",
+      "sha256": "2d27568bee148dc8cb93348e5d729f9c7d54e4a4ee047a95f906a66dad13d984",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Templates/VSCView Switch Left JoyCon - Vertical.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Templates/VSCView Switch Right JoyCon - Horizotal.png",
+      "sha256": "6d5c2e0bacb1864d28758e7d66cd593df0f458a265ead7f182ecb5abd7c0b7ae",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Templates/VSCView Switch Right JoyCon - Horizotal.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Templates/VSCView Switch Right JoyCon - Vertical.png",
+      "sha256": "9e7494b60ee2a1a1a310821794970d91a0325b60c5cec4395b505f2d42294996",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Templates/VSCView Switch Right JoyCon - Vertical.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/joycongrip_gyro_down.png",
+      "sha256": "e4e96b3656fbbd8cd40afaca2d30adbca98f49b79e7690bdfa097e655c56bdc1",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/joycongrip_gyro_down.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/joycongrip_gyro_left.png",
+      "sha256": "e94080caba7dd17cc7c3ac06466120a2b3392063e74ff8f2d13ac310a3b5a8b3",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/joycongrip_gyro_left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/joycongrip_gyro_right.png",
+      "sha256": "72a086bbbdc66dd04be9b5ad5a2b64688a51ca24505c57d3c1dd206092e09dd2",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/joycongrip_gyro_right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/joycongrip_gyro_up.png",
+      "sha256": "ef27cd130f8d34ee5b468b1130b530246ac045802433529ae85dec4e8d3bacb9",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/joycongrip_gyro_up.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/leftjoycon-vertical_gyro_down.png",
+      "sha256": "aca40b4fdaab5b491a0026733d086dad17183b3937a993de55b8b326b4dedae2",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/leftjoycon-vertical_gyro_down.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/leftjoycon-vertical_gyro_left.png",
+      "sha256": "72edceebd964052f24f07667d23ca50d1ff1790c349a3f13fa01d8e67f342397",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/leftjoycon-vertical_gyro_left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/leftjoycon-vertical_gyro_right.png",
+      "sha256": "eb5910583a0204f8371032e334393885f3bb04b4952160a8ef4079736672deb0",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/leftjoycon-vertical_gyro_right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/leftjoycon-vertical_gyro_up.png",
+      "sha256": "1e006b0634514fbe19b7a59b966364d2455bdecec0e5be9de63161ef587ae585",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/leftjoycon-vertical_gyro_up.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/leftjoycon_gyro_down.png",
+      "sha256": "d1834f24b6baf1f40faa73da88b865bb44142c8fafd92132f6ee237a0f721101",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/leftjoycon_gyro_down.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/leftjoycon_gyro_left.png",
+      "sha256": "6d50d5bce8f8719d811f4f18611cf21c9bccce1bb16b097164ca44d8d4a18429",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/leftjoycon_gyro_left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/leftjoycon_gyro_right.png",
+      "sha256": "a8c5d3ad3abec8905f12d7f880af48dda65b436831d98583a0d62c16cb962e08",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/leftjoycon_gyro_right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/leftjoycon_gyro_up.png",
+      "sha256": "2e51623e559465309a47e08fba81906f0fbcbc86c0829441abd2237788aceb40",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/leftjoycon_gyro_up.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_AnalogStickClick.png",
+      "sha256": "4b75006f3b73eb9158a3add0f10aadf9d4400e5ab851e0107de9244a8906622e",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_AnalogStickClick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_CaptureButton.png",
+      "sha256": "ade440564f2ed6a317cc55e02ee75f02f73e8e5150deadebdd727b413f50b5a8",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_CaptureButton.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_FaceD-PAD_Button.png",
+      "sha256": "99a2039f7f093bbff23cc9b38accc0e3ebcf4ed38d1382686a15b12af20b0b41",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_FaceD-PAD_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_HomeButton.png",
+      "sha256": "8d69d4282b235334d9e8ecdc44b509edfd75c27cf5bf7d10f6ebb6155dd69974",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_HomeButton.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_L_Bumper-Horizontal.png",
+      "sha256": "08b2b23d1dcd162e03b0d176503dc9c88839ae144a3a353591b061889b8d4524",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_L_Bumper-Horizontal.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_L_Bumper.png",
+      "sha256": "c42c786453d3ab37631b9e4ab976ead60f33e0a7a4abd792ea649eb0a1bcfee7",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_L_Bumper.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_LeftStick.png",
+      "sha256": "21933a60270931ad15f5e6ffd4f668ffec19203f30f85b7dad7a744e92924084",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_LeftStick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_MinusButton.png",
+      "sha256": "ac716e1d25c3ab8d7de895ebaec17a6e57eb6c6f57ae96dff8066492287cabd1",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_MinusButton.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_MinusButton_Vertical.png",
+      "sha256": "702595859d0d1b577bcff7f11cf603e59c86d800c7d4510ecf6a1c85823cdcfe",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_MinusButton_Vertical.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_PlusButton.png",
+      "sha256": "5edb2a6df2a49647920649ae4aa8cb86462f5a85dc67f1044c6d1cd01da7aeea",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_PlusButton.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_R_Bumper-Horizontal.png",
+      "sha256": "35cfc6598ddc7b9a9078108756eb12f0f703ce5bab649682173ca2dab038e2a6",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_R_Bumper-Horizontal.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_R_Bumper.png",
+      "sha256": "f4a80ebc747dfdb6b50bd8672df8a47b0c981b83298e838a5410938836e4eff0",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_R_Bumper.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_RightStick.png",
+      "sha256": "accb46cf3d1197c0827e6c2bc3de132c41fe80cd11a7c272db1683c2e121bc77",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_RightStick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_Small-L-R_Button.png",
+      "sha256": "37ff15a7a925fb905464f75bf8d4a31672ae14cc01857748923cd2d511ec6aab",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_Small-L-R_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_Small-L-R_Button_Vertical.png",
+      "sha256": "e802eb64d5f093907e09a21d6b536d89d42b4e2544a66034b0943bfb24b2bd75",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_Small-L-R_Button_Vertical.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_ZL-Horizontal.png",
+      "sha256": "8da07c7d166824bad4ec8ae750e54f0e236f5371be77ab06780753904ec6eebc",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_ZL-Horizontal.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_ZL.png",
+      "sha256": "f649a51eeda8fc1108a536730e031c437e2d969c6e6a4331bd83e6485c616fb9",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_ZL.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_ZR-Horizontal.png",
+      "sha256": "6c6974b1e06755dd60de1739f987b74e5252f0208f8fb8be274bf975f17e0785",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_ZR-Horizontal.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/NSwitchJoycon_ZR.png",
+      "sha256": "afd3c682d2f93648e87ee93b4a7e61a3a77bc3572390ff2248ecaaf18afaf3f8",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/NSwitchJoycon_ZR.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/rightjoycon-vertical_gyro_down.png",
+      "sha256": "5b52957f722456881b6f47028aedc7eed2904a814cc8de9d1071013ac146e0a4",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/rightjoycon-vertical_gyro_down.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/rightjoycon-vertical_gyro_left.png",
+      "sha256": "ecd39f628533068031c4052e8c08224dfce352352e92c42f0587bf71f38586b7",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/rightjoycon-vertical_gyro_left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/rightjoycon-vertical_gyro_right.png",
+      "sha256": "7b1227231783ea03769e3fc44e91335c25f80f68a44497a36ef8d04b1e83032a",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/rightjoycon-vertical_gyro_right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/rightjoycon-vertical_gyro_up.png",
+      "sha256": "ba6033f478fa3986056c1f95152cb7818ba7207602c645d072fa7e4a7545a932",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/rightjoycon-vertical_gyro_up.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/rightjoycon_gyro_down.png",
+      "sha256": "9e130b62e93e56674e23e4e0010cc21e9cd68c484e6d809089d6c7b9ddda6447",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/rightjoycon_gyro_down.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/rightjoycon_gyro_left.png",
+      "sha256": "a6d50b66164e369b70a95bdc6bdf4de2999bf9321930ec676989d4937ee272c6",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/rightjoycon_gyro_left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/rightjoycon_gyro_right.png",
+      "sha256": "ea4aff9d714a9e1945e0be72ecfea0bd7a7245ae50502c9ce72018214a84cb62",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/rightjoycon_gyro_right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/rightjoycon_gyro_up.png",
+      "sha256": "72603257b4ad0cf4ec0fedf96af22d4247b52f0d6bd756411a8f1f4c60bd1f25",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/rightjoycon_gyro_up.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/switchjoycongrip_gyro-accel.png",
+      "sha256": "5ded7e77bb1f8e60a8598b4f467e8d0a3efa9b2f419a65a05b349abe30eb7144",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/switchjoycongrip_gyro-accel.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/switchleftjoycon-horizontal_gyro-accel.png",
+      "sha256": "9f66d741b51cd5a4c02eadf766745a2a1681e7f2331f88bbe820bd0db5adfdd7",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/switchleftjoycon-horizontal_gyro-accel.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/switchleftjoycon_gyro-accel.png",
+      "sha256": "fa20c61abb45f52916d5c60eb07224c3ba537b7783860618e37eba572dac4c22",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/switchleftjoycon_gyro-accel.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/switchrightjoycon-horizontal_gyro-accel.png",
+      "sha256": "5f5ee3a2ec21fd5913a35bc27bbfdc747e2bb984813957ba001e6b1442841993",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/switchrightjoycon-horizontal_gyro-accel.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Joycons/Theme Assets/switchrightjoycon_gyro-accel.png",
+      "sha256": "2ce132ac42bcb249d423307a0e1dc7a14e6f6d1c1051ae241366311766557100",
+      "bundledCopies": [
+        "themes/switch-joycon-default/Image Assets/switchrightjoycon_gyro-accel.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Templates/NSwitchPro_base.png",
+      "sha256": "4b5dc156c09bb76e7f2a0b79624b96f5227f75f0200cda277fb36dc79a6d0560",
+      "bundledCopies": [
+        "themes/switch-pro-default/Image Assets/base.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Templates/Switch Pro Controller Overlay (No Thumbstick and Triggers).png",
+      "sha256": "4b5dc156c09bb76e7f2a0b79624b96f5227f75f0200cda277fb36dc79a6d0560",
+      "bundledCopies": [
+        "themes/switch-pro-default/Image Assets/base.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Templates/Switch Pro Controller Overlay (No Thumbstick).png",
+      "sha256": "43e0ca93e03ec56052cf4baed3033a4a8d5212ab074a22279232e6d0cb2c042a",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Templates/Switch Pro Controller Overlay (No Thumbstick, Triggers and LED).png",
+      "sha256": "83a0be7f7955fb932a262d496a01e5bfe61c7a8b02982dfb9bbcfe457299bcf2",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Templates/Switch Pro Controller Overlay.png",
+      "sha256": "43488080eab1d8ff51341d3c29633d163275ee6e4f951a64267912f18dc34f98",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/Button Color/NSwitchPro_LeftStick.png",
+      "sha256": "cdf2ac10a66f37b2c1e0340eba83cb2d35cd5e4e75d58aefc8c784e73e97d4e4",
+      "bundledCopies": [
+        "themes/switch-pro-default/Image Assets/stick_left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/Button Color/NSwitchPro_RightStick.png",
+      "sha256": "29e0d968f695b619c40e12e32f205c4a9489f2561593129aab62565603ee9978",
+      "bundledCopies": [
+        "themes/switch-pro-default/Image Assets/stick_right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/gyro_down.png",
+      "sha256": "eeb76b81629ddbb50628abdaa01b41270c17f7450ef72dbf1d1c47f7e335f9bf",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/gyro_left.png",
+      "sha256": "25f03daa18ba7be48e612ac722f6d8afd47865fe190b187a3dbe559e257cf10c",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/gyro_right.png",
+      "sha256": "635eb366d3a175c8bc53f99e2ad90eb6175acbf01e232a66777ee0acaf1b46a2",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/gyro_up.png",
+      "sha256": "f7d116832dbe5a1363931bd8556963139872fedbca8d966e17a5e1b56656ade3",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/NSwitchPro_AnalogStickClick.png",
+      "sha256": "0d2d10aa82c41e8434b7fda5863ae9b40327ab0f34087c7e43951fe276de751f",
+      "bundledCopies": [
+        "themes/switch-pro-default/Image Assets/stick_click.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/NSwitchPro_CaptureButton.png",
+      "sha256": "0392dd0a51d6a3fad64383b0efae8cfecafed2a8d8cdd086ac3ff57239913c81",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/NSwitchPro_D-PAD_Down.png",
+      "sha256": "24a1d3208b554876a7a758fe5f66527d1ad213a8435b6dec0a86987e0754e8da",
+      "bundledCopies": [
+        "themes/switch-pro-default/Image Assets/dpad_down.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/NSwitchPro_D-PAD_Left.png",
+      "sha256": "325cf90a261c7df4fd8b167f3c54554c2031cf8ae3c4b4b84dbad203d03cc83d",
+      "bundledCopies": [
+        "themes/switch-pro-default/Image Assets/dpad_left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/NSwitchPro_D-PAD_Right.png",
+      "sha256": "94775e17cd82415374c7722de685cbef193530de98a8763305001973b97fb094",
+      "bundledCopies": [
+        "themes/switch-pro-default/Image Assets/dpad_right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/NSwitchPro_D-PAD_Up.png",
+      "sha256": "c09504cdfe5f9a52cd9a9d1e68fb6a7f596a372fab9dbda103160cb956a415a8",
+      "bundledCopies": [
+        "themes/switch-pro-default/Image Assets/dpad_up.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/NSwitchPro_FaceButton.png",
+      "sha256": "21b270f85530b3fe099787b4cb75f24bd25b0b8e202ea6e1d95ff2d0baf6ec38",
+      "bundledCopies": [
+        "themes/switch-pro-default/Image Assets/face.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/NSwitchPro_HomeButton.png",
+      "sha256": "b5374eaeeb770ed647ba207787b1df981fb14164b5504a37c621b9183b6b9ef2",
+      "bundledCopies": [
+        "themes/switch-pro-default/Image Assets/home.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/NSwitchPro_L_Bumper.png",
+      "sha256": "2b9f024d9a4703eec27a43188c0f94c259bd973b349942a49baf93e9d171b060",
+      "bundledCopies": [
+        "themes/switch-pro-default/Image Assets/l_bumper.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/NSwitchPro_Plus-MinusButton.png",
+      "sha256": "9b68ded8c6a8be1f4620dae0007f3e2dfd4006010ba1bb2e695380ac3ea88743",
+      "bundledCopies": [
+        "themes/switch-pro-default/Image Assets/plusminus.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/NSwitchPro_R_Bumper.png",
+      "sha256": "e7b04f36c5f97c8bd434c3c6d7eecec7337bf11c6fe2a0c0eda4dde06f39dcbc",
+      "bundledCopies": [
+        "themes/switch-pro-default/Image Assets/r_bumper.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/NSwitchPro_ZL.png",
+      "sha256": "ce1f7baca8355623c408cdb00d92eb84d77476e54c6d7e554beb269f4135aff3",
+      "bundledCopies": [
+        "themes/switch-pro-default/Image Assets/zl.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/NSwitchPro_ZR.png",
+      "sha256": "c7dfdd68c5394bbd83570e9730832f8fce2637a3b3faec8f02ef383780ddc76c",
+      "bundledCopies": [
+        "themes/switch-pro-default/Image Assets/zr.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Nintendo Switch Controller Images/Switch Pro Controller/Default Theme/Theme Assets/Active Presses/switchpro_gyro-accel.png",
+      "sha256": "6c0573dd94694f2f8eaed89394ae4fe65c1195323d0e70116e6e6f91502ae753",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Templates/Black/Steam Controller Model Overlay - Active Button View.png",
+      "sha256": "812400c51a9cd9f7d6eeb75175b8aa1be0fa59031a769e7eace49331882023e7",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/Black/Steam Controller Model Overlay - Active Button View.png",
+        "themes/steam-controller-default/Templates/Black/Steam Controller Model Overlay - Active Button View.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Templates/Black/Steam Controller Model Overlay - Compact View Template.png",
+      "sha256": "8991409b21a7988f57509d91fd868103a9f15a0132a71e481a05d82973fe3099",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/Black/Steam Controller Model Overlay - Compact View Template.png",
+        "themes/steam-controller-default/Templates/Black/Steam Controller Model Overlay - Compact View Template.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Templates/Black/Steam Controller Model Overlay - No Thumbstick and Triggers.png",
+      "sha256": "850958f9e01202461c7f001b3fe7b66d86572645f56ac9f84a2121df75f1b745",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/Black/Steam Controller Model Overlay - No Thumbstick and Triggers.png",
+        "themes/steam-controller-default/Templates/Black/Steam Controller Model Overlay - No Thumbstick and Triggers.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Templates/Black/Steam Controller Model Overlay - No Thumbstick.png",
+      "sha256": "ce9970b632b5b7d1ebc6414eb7144f9ef64af840d20114316046267661467276",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/Black/Steam Controller Model Overlay - No Thumbstick.png",
+        "themes/steam-controller-default/Templates/Black/Steam Controller Model Overlay - No Thumbstick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Templates/Black/Steam Controller Model Overlay.png",
+      "sha256": "d656ca3f3030966c1304326442cf6964d5d91efdd4c48def1089eedcb858b29e",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/Black/Steam Controller Model Overlay.png",
+        "themes/steam-controller-default/Templates/Black/Steam Controller Model Overlay.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Templates/White/Steam Controller White Model Overlay - Compact View Template.png",
+      "sha256": "21b02ab0c3e8d88b4cee0e99607343848678958449842abe0e9cf617df4fd69d",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/White/Steam Controller White Model Overlay - Compact View Template.png",
+        "themes/steam-controller-default/Templates/White/Steam Controller White Model Overlay - Compact View Template.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Templates/White/Steam Controller White Model Overlay - No Thumbstick and Triggers.png",
+      "sha256": "cb44d83f8425c2170341d50c10c93656ad4e215c9dd018f39d8c081ee18f3e7a",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/White/Steam Controller White Model Overlay - No Thumbstick and Triggers.png",
+        "themes/steam-controller-default/Templates/White/Steam Controller White Model Overlay - No Thumbstick and Triggers.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Templates/White/Steam Controller White Model Overlay - No Thumbstick.png",
+      "sha256": "b53fdea0580459d3f7866472ebae6cfa5cec3e3baaadec0aa55441d4e0852756",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/White/Steam Controller White Model Overlay - No Thumbstick.png",
+        "themes/steam-controller-default/Templates/White/Steam Controller White Model Overlay - No Thumbstick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Templates/White/Steam Controller White Model Overlay.png",
+      "sha256": "724fd8cca4dad24b6bd5963aa4cb99caeeb04a494148a9a153119c798bd6de8a",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/White/Steam Controller White Model Overlay.png",
+        "themes/steam-controller-default/Templates/White/Steam Controller White Model Overlay.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/Active Button Function/SC_AnalogStick.png",
+      "sha256": "feb5b2f33bd6b4392144c79849b60926876dad01f20bee5860052e0a39cc02e9",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/Active Button Function/SC_AnalogStick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/Active Button Function/SC_LeftTriggerSoftPull.png",
+      "sha256": "d010029ba844ba797410dc63c08f7d8c31596fde2c4dea3e0498ef1b74abc5e5",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/Active Button Function/SC_LeftTriggerSoftPull.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/Active Button Function/SC_RightTriggerSoftPull.png",
+      "sha256": "3233cd9c7f25f9e4a8ba80d8b291e3bafb95d69930255a992c5d721d28aa4332",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/Active Button Function/SC_RightTriggerSoftPull.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/gyro_down.png",
+      "sha256": "d172635fb995bbf290eb342467c8c63d4171cbe387907dbc2349762051aa39b6",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/gyro_down.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/gyro_left.png",
+      "sha256": "2d8f972702c55fbd645879706266538b8f2e35ad2c23ce691baa1e46ddaf14a1",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/gyro_left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/gyro_right.png",
+      "sha256": "81739fda3e244c5873bd2a0f33b3b4054da74622b71b701cdd06a800d6104609",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/gyro_right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/gyro_up.png",
+      "sha256": "a89f9a68b87085d05797fd00e90122aab50b528632d0c3695bb2c873ecef3712",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/gyro_up.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/pbar trigger test.png",
+      "sha256": "9ce5cbd055ed09498c00bb37471ba7f1fbc6ddefc134bd22ccd0d516a98bf3b3",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/SC_AnalogStick_Click.png",
+      "sha256": "1253b68c0f857d5b5d1a45b50e5f54928fe35a527f22065cdd958d7cab763fbc",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC_AnalogStick_Click.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/SC_Face_Button.png",
+      "sha256": "6af3a1199e798d42ebf94e229354198e5d21c179c44918d1119388797f1b679e",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC_Face_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/SC_GlyphPress.png",
+      "sha256": "a5efebd87cf23cdb382f4623c35e71e9667d519a6fa4631adf122cfe5e39880d",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC_GlyphPress.png",
+        "themes/steam-deck-default/Image Assets/SD_GlyphPress.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/SC_Guide_Button.png",
+      "sha256": "558e6c747bb41a09433ae854942debf8cfa69fbc086504c1500ba14eeba574b5",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC_Guide_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/SC_Gyro-Accel.png",
+      "sha256": "1d163ee9f750c5fc526eb32805a4376b8704911261f0f1f866e59c9a08aef15d",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC_Gyro-Accel.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/SC_LeftBumper-Active.png",
+      "sha256": "182aa66c545d431b397dea6608c1fd93727a3975a893cc0140b53d8f73fa860c",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC_LeftBumper-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/SC_LeftGrip_Button.png",
+      "sha256": "08e1a5d4c5dc2bf26dc27a01ab5d7c759c48304b7276804f6e2bfabdeab4f248",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC_LeftGrip_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/SC_LeftTrackpad_Click.png",
+      "sha256": "c2058cc44ed988e63d69841c3b4a138346a38af46f21935fe0234fa7a6270352",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC_LeftTrackpad_Click.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/SC_LeftTrigger-FullPull-Active.png",
+      "sha256": "5a4914d27c9b824c1e63f8b1a9105bd54a1e355465452016b7f904d95fd11bf4",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC_LeftTrigger-FullPull-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/SC_RightBumper-Active.png",
+      "sha256": "89896b6db23bfa928008b97237e574e04f51c98a017538d907ba8dca484baed1",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC_RightBumper-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/SC_RightGrip_Button.png",
+      "sha256": "4e7ac7ec2e7a1a0160055367c3364db5cfff9ca8b8ab9b2e63332ab58779ce1c",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC_RightGrip_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/SC_RightTrackpad_Click.png",
+      "sha256": "b40bd1bebcea1abe1c944d6a5c1ff7f97a5b03301469a8a876b98eaf46850844",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC_RightTrackpad_Click.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/SC_RightTrigger-FullPull-Active.png",
+      "sha256": "2466fb92ce01595320b8eaf3031825a998306a1355abb481786236508a38bffc",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC_RightTrigger-FullPull-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/Default Theme/Theme Assets/SC_Start-Select_Button.png",
+      "sha256": "539c915799743fc03062b08326b94521f7d619389c6e9fb6e4a9042692fc4923",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC_Start-Select_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Templates/SC Diagnosis Overlay - No Analog Stick and Trigger with Gyro.png",
+      "sha256": "3b8869990eff00c4ab8d49578224d0e67400483f421bb3db6f9e0e5c7342ea38",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC Diagnosis Overlay - No Analog Stick and Trigger with Gyro.png",
+        "themes/steam-controller-default/Templates/SC/SC Diagnosis Overlay - No Analog Stick and Trigger with Gyro.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Templates/SC Diagnosis Overlay - No Analog Stick and Trigger.png",
+      "sha256": "9ed023fdeba4340a4212af3eee855835203923e36bf851f62de1165d9e2f32f4",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC Diagnosis Overlay - No Analog Stick and Trigger.png",
+        "themes/steam-controller-default/Templates/SC/SC Diagnosis Overlay - No Analog Stick and Trigger.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Templates/SC Diagnosis Overlay - No Trigger with Gyro.png",
+      "sha256": "8528ffd601b57e3f7262277741b0570d0aee0cab5034a582c0839256ff5971a4",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC Diagnosis Overlay - No Trigger with Gyro.png",
+        "themes/steam-controller-default/Templates/SC/SC Diagnosis Overlay - No Trigger with Gyro.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Templates/SC Diagnosis Overlay - No Trigger.png",
+      "sha256": "45c5739a69d7b6e05bb60b2c7f36e059ac277bb91aa75e725344a72afa4d5409",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC Diagnosis Overlay - No Trigger.png",
+        "themes/steam-controller-default/Templates/SC/SC Diagnosis Overlay - No Trigger.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Templates/SC Diagnosis Overlay.png",
+      "sha256": "c3e799904f1c087f57dbb9227386e7553b21de95b156bad0165c8cff79ef45ee",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC Diagnosis Overlay.png",
+        "themes/steam-controller-default/Templates/SC/SC Diagnosis Overlay.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Templates/theme reference/Screenshot 2021-07-13 230130.png",
+      "sha256": "7f4b75a47b6eb554cc80b3b3c13d9cd814cb9a51b02700344b409e5cf6c5a94c",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Theme Assets/button_highlight.png",
+      "sha256": "52bd263238e3fc832fbdeed8e73fe1dc40b72bc499ecb387155f4342083ca0c1",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Theme Assets/button_highlight_waifu2x_photo_noise0_scale_tta_1.png",
+      "sha256": "5dfb9789622504c4c52d6cdfe4766b6c958941a0b471c4fa873f1227ce8b6c1d",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Theme Assets/SC_Diagnostic_AnalogStick.png",
+      "sha256": "53e66d9974f05837a4fd6a3629a46adb47fce60d7f97a6cac62f341200f628bd",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Theme Assets/SC_Diagnostic_AnalogStickOutline GIMP.png",
+      "sha256": "d4a5cd70ae5f47fb918bb527e3cad554cedb01f1b96315e4e83cad9e8ed32fc7",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Theme Assets/SC_Diagnostic_AnalogStickOutline.png",
+      "sha256": "ae00064e63543b3b55829d3506fa8417464b447727383d9263873bbd622863a8",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Theme Assets/SC_Diagnostic_Gyro.png",
+      "sha256": "f1dcf321137f2ff96f108c813a6a877e4bf7b8db4e8661fd9c3c450a4d6ec35e",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Theme Assets/SC_Diagnostic_Gyro_Alternative.png",
+      "sha256": "4704133d38ded860d1ce1a4be181e1fdf30270b882c68dcea14a678e6f284b9f",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Theme Assets/SC_Diagnostic_Gyro_Outline.png",
+      "sha256": "2d0635dd25697a410d65477dd4e906dabd345e4866347763ce25a338d68f3c5a",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Theme Assets/SC_Diagnostic_LeftGrip_Button.png",
+      "sha256": "b59d7ade7ec08e216f1fd951957d3ab564a7f2942b8bc479994d12deda812070",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Theme Assets/SC_Diagnostic_LeftTriggerSoftPull.png",
+      "sha256": "fdd42f2f9e79ac4e5744ccf1f5346f976965a8fc16c79d36f6c64cc76b208067",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Theme Assets/SC_Diagnostic_RightGrip_Button.png",
+      "sha256": "d24b518a242a61f123239f0a8c078cc8df1e76a166592cf9fe30b82bd38cff6d",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Steam Controller Images/SC Support Theme/Theme Assets/SC_Diagnostic_RightTriggerSoftPull.png",
+      "sha256": "903e356c63d5195be119ba81e32d7bedb4af63b93c488ad52ef8b8f0081b59bc",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Template/Steam Deck Compact.png",
+      "sha256": "87e5f16976d556cc6132849604bb681fc73f58f5229d990dd8a91b0fcf314673",
+      "bundledCopies": [
+        "themes/steam-deck-default/Template/Steam Deck Compact.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Template/Steam Deck VSCView Overlay without Joystick and Triggers.png",
+      "sha256": "4f350c00c4de38b6a181c49d8cf2768440bd84b373045dba31954e4a33757315",
+      "bundledCopies": [
+        "themes/steam-deck-default/Template/Steam Deck VSCView Overlay without Joystick and Triggers.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Template/Steam Deck VSCView Overlay without Joystick.png",
+      "sha256": "0aceb1e6f06566fffe2f348f1bcf7a947edc2d9e47678788f9d039737d9d8024",
+      "bundledCopies": [
+        "themes/steam-deck-default/Template/Steam Deck VSCView Overlay without Joystick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Template/Steam Deck VSCView Overlay.png",
+      "sha256": "92cec01f8fc83b9c80cf28a50ec733d5a6fe9722ffed70dc325025e94c026bfa",
+      "bundledCopies": [
+        "themes/steam-deck-default/Template/Steam Deck VSCView Overlay.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/Button Colors/SD_L2.png",
+      "sha256": "ef0ab339995ae74bfb20ee42d67c112c7cc3e9a8b94c89c2bc23b781bbd8b463",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/Button Colors/SD_L2.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/Button Colors/SD_LeftAnalogStick.png",
+      "sha256": "307a4799707853e5f39c9c7f2beb0bfa4f0e3c80249465569cf24e315b7c6c2b",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/Button Colors/SD_LeftAnalogStick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/Button Colors/SD_R2.png",
+      "sha256": "ef5d2342415321e473eaec208252e8fe8f8db7f72432e1ada418773ffce6d42e",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/Button Colors/SD_R2.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/Button Colors/SD_RightAnalogStick.png",
+      "sha256": "aeb58eaed5c8c9f15f6c477d9bbc003c11f4e23debb818b1c573be0e2d2dcd9e",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/Button Colors/SD_RightAnalogStick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/gyro_down.png",
+      "sha256": "a6616372ba586d6b7eb88de233bb1f6dfa63262f3babcd44c075369f631a34f5",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/gyro_down.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/gyro_left.png",
+      "sha256": "d08debb0d31b137b3ce576539f7b0d653c43659a1ea82889a707d6809fe9e900",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/gyro_left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/gyro_right.png",
+      "sha256": "57fb9ad528ec025f45dc71c851e9100396f513c16cf2d8868967ddbc90a01b6e",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/gyro_right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/gyro_up.png",
+      "sha256": "c2b5d00e7c640ff4ece504f943180f628400ce0c08eb67d19fb063a45c343650",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/gyro_up.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/padheat.png",
+      "sha256": "de660b10f20df2abc33faaefb93a7c5c38a412714fdb2c59493b76a6ba34637a",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/padheat.png",
+        "themes/dualshock-4-default/Image Assets/padheat.png",
+        "themes/steam-deck-default/Image Assets/padheat.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/SD_BackButton.png",
+      "sha256": "37e47cdbd0026092a73b0d8823aa8c76b55facee53789169c2b73013f2cb487b",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/SD_BackButton.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/SD_D-PAD_Down.png",
+      "sha256": "12052ee58bdec4a8a8928b2fe286b0d5aed2f528c2cc9aceb2387f160cdb3445",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/SD_D-PAD_Down.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/SD_D-PAD_Left.png",
+      "sha256": "529f39147e5a2ad6c84d9057ecd663edc5d6f0b293dd82384f16a612fb0e5f8f",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/SD_D-PAD_Left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/SD_D-PAD_Right.png",
+      "sha256": "3220708db82ec71bc4ae120d3d792139662ba87304dce5db414e37f44ef61b6f",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/SD_D-PAD_Right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/SD_D-PAD_Up.png",
+      "sha256": "c6b8156276628fde5b1c63b6c3a78ee04fe0eb588756b6832b567e93ecd8d979",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/SD_D-PAD_Up.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/SD_Face_Button.png",
+      "sha256": "8aeca0acbc73e2d84ca2a38797f65de2e9c561a1c094467b7f78bb32962649ba",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/SD_Face_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/SD_GlyphPress.png",
+      "sha256": "a5efebd87cf23cdb382f4623c35e71e9667d519a6fa4631adf122cfe5e39880d",
+      "bundledCopies": [
+        "themes/steam-controller-default/Image Assets/SC_GlyphPress.png",
+        "themes/steam-deck-default/Image Assets/SD_GlyphPress.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/SD_Guide-QuickMenu_Button.png",
+      "sha256": "6e8011458ecadb7942b80616dd86b8f87c46ddd9ae2f04b8c20bd009c52e0bd1",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/SD_Guide-QuickMenu_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/SD_Gyro-Accel.png",
+      "sha256": "b7b7038caa5e5c0699a717d130e490bbc983feba0e327b5b4031af2b9d2d4d59",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/SD_Gyro-Accel.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/SD_Joystick_Click.png",
+      "sha256": "54be17d5f216b5ae89c996d9e5284e407142906ad635a31c2f4a01e6a1250d0e",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/SD_Joystick_Click.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/SD_L1.png",
+      "sha256": "4ac8ad9fb275da91ff86e621e81aac928a8ef788eef199d5147b8ebc9399eb73",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/SD_L1.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/SD_L2-Active.png",
+      "sha256": "c4e8a5f82f17fda5164a12b1f7d6ba16bb15b7b0a780e86d94214a41ee3bc5c8",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/SD_L2-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/SD_R1.png",
+      "sha256": "295b16361662c72abb42e714bc80b6ccc26c4d3046ffb30bd753d0491eac6d50",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/SD_R1.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/SD_R2-Active.png",
+      "sha256": "97482e94857290d5ef6a27dd730d75b131d46234ddb958b6463a1059f2e27b18",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/SD_R2-Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/SD_Touchpad_Click.png",
+      "sha256": "f7b73182754a07d60e1fb698c28f8e4a1d3c302624e4f4556e516395cc19039a",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/SD_Touchpad_Click.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/SD_Touchpad_Touch.png",
+      "sha256": "0c045b021e7a39e6b16fa8506f0e7036af1efa70a39f00893e31ca37510336b5",
+      "bundledCopies": [
+        "themes/dualsense-default/Image Assets/DualSense_Touchpad_Touch.png",
+        "themes/dualshock-4-default/Image Assets/DS4_Touchpad_Touch.png",
+        "themes/steam-deck-default/Image Assets/SD_Touchpad_Touch.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Steam Deck Images/Theme Assets/SD_View-Menu_Button.png",
+      "sha256": "1e575cc9b16fb48cfce5c6db6d9427dc1f8011d6dd1dc4b9a44a6288194cce60",
+      "bundledCopies": [
+        "themes/steam-deck-default/Image Assets/SD_View-Menu_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Templates/Black/XB360_base_black.png",
+      "sha256": "51226f348c96584c9a1ac94d2a6653466a166c1581b2352764b75102ce75dedc",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_base_black.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Templates/Black/Xbox 360 Controller Overlay - Black (No Thumbstick and Triggers).png",
+      "sha256": "51226f348c96584c9a1ac94d2a6653466a166c1581b2352764b75102ce75dedc",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_base_black.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Templates/Black/Xbox 360 Controller Overlay - Black (No Thumbstick).png",
+      "sha256": "3939b150db555bff8d4a80640e2bdc0957fe32673847425cf4db08de9f73efd7",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Templates/Black/Xbox 360 Controller Overlay - Black.png",
+      "sha256": "1188249d438af801e60c7c47d29e4d0bb18423d572bae23d9a80af680850441b",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Templates/White/XB360_base.png",
+      "sha256": "169b86196800be0cd013828bd0b29a437a4288d9bb8406cfa4f64afb3095db42",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Templates/White/Xbox 360 Controller Overlay (No Thumbstick and Triggers).png",
+      "sha256": "169b86196800be0cd013828bd0b29a437a4288d9bb8406cfa4f64afb3095db42",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Templates/White/Xbox 360 Controller Overlay (No Thumbstick).png",
+      "sha256": "b5cc7233f1f6c5aec8fd28fe390c418da576bfa9d89f2a8e3f8bafe3b0f6dd1b",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Templates/White/Xbox 360 Controller Overlay.png",
+      "sha256": "643fee19c6ced1bc4265efa47dc33da8a8ca0d7f10c4bcf39315f722a56643c2",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme Icon/xbox 360 vscview.png",
+      "sha256": "b6cc4456b4374cd738d7dd71dc991edb974a8088654b1a0c59f71450e441b5a4",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/Button Color/XB360_LeftStick.png",
+      "sha256": "6e1552597a3a0e53444131cf82d3866513cb58cf84035dde1e26771f689e2fdd",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/Button Color/XB360_LeftStick_Black.png",
+      "sha256": "10ef088d24d2794715b0f77b1839308090f3f0ea298d6a95f7c879e54cad1d18",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_LeftStick_Black.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/Button Color/XB360_LeftTrigger.png",
+      "sha256": "4038501c15e1f5fef15ec976ecec2c7c9915183b286834fec862d3ef4024db55",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/Button Color/XB360_LeftTrigger_Black.png",
+      "sha256": "295b4dcff941bf367144fd1e5d1ecbceb1ee026b6d715f3ea20cf002999cbbf1",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_LeftTrigger_Black.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/Button Color/XB360_RightStick.png",
+      "sha256": "d1b74cb702dc9f996c170c7ab43479ef1264ba361750a083250dc9907ba509f8",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/Button Color/XB360_RightStick_Black.png",
+      "sha256": "d614f4815c63d78543e026ef34ad862837dd2528cce342d829f07ba303c4e6bd",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_RightStick_Black.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/Button Color/XB360_RightTrigger.png",
+      "sha256": "d1e8a6127f24e5a8f4c0b28ac8bf1c73db8d48be99e75216be726ed45cb9c79b",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/Button Color/XB360_RightTrigger_Black.png",
+      "sha256": "5f891d1d9d4ef27bca21f0f6b1c9e07e36e823db5063c9512cf9b1c57ffce630",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_RightTrigger_Black.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/XB360_A_Button.png",
+      "sha256": "1fe03fc0417a8e362aa8efc4ebf48ede9cb412956bb1f57dd0a111c2bbbce3f1",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_A_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/XB360_B_Button.png",
+      "sha256": "fc659b794451e5bb27604fea497eeca4c938f09c5a85fd28bd7c4e6f5076272f",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_B_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/XB360_BackButton.png",
+      "sha256": "99da8b5663948a4afb47a25eeac9c41abab07ac8564eedf5da8b1d4f3c28801b",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_BackButton.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/XB360_D-PAD_Down.png",
+      "sha256": "d24467be822094f666ceeb91209144323d171de9d4f83c45a3644ced961ce00b",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_D-PAD_Down.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/XB360_D-PAD_Left.png",
+      "sha256": "997806a7dd090c88bd34b1b5620cfe59b6a5440c8d1218d5f29d27974c5671f1",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_D-PAD_Left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/XB360_D-PAD_Right.png",
+      "sha256": "0db0f977cd4adcb116488e95d3608a2723d91a2f0cffa2c444c520dae5f38574",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_D-PAD_Right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/XB360_D-PAD_Up.png",
+      "sha256": "0765b40c5e2c858bceed1fb90389179712b4326d857888d4122d28b1abd0da00",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_D-PAD_Up.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/XB360_GuideButton.png",
+      "sha256": "ae929cce53e3b455032865af517be450518edbeeb1cc4e36edbc6758e549808a",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_GuideButton.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/XB360_LeftBumper_Active.png",
+      "sha256": "e91d88f2a3ba470c11219263f736f2cba4c420bf020ac48ab9e718ba09496ab7",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_LeftBumper_Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/XB360_LeftStick_Click.png",
+      "sha256": "c7494d56cf0b831212585253e99b006c13696b45d715749d24bf0125fef4230f",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_LeftStick_Click.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/XB360_LeftTrigger_Active.png",
+      "sha256": "17e1854b5302945cbb331f67f62fd1e2f82f40e6ffd45b3061a63d0948830577",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_LeftTrigger_Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/XB360_RightBumper_Active.png",
+      "sha256": "edb10f209da73645853f54b35d62b05f472df7768185864448f3cdbc53bae72d",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_RightBumper_Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/XB360_RightStick_Click.png",
+      "sha256": "e9b5fe05d03715c93372da4fa2dcc21c4c77b52ede6d396e7fdcd8bbfa7d50b0",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_RightStick_Click.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/XB360_RightTrigger_Active.png",
+      "sha256": "ff38560588f6f1416f8d9806a9c3332aa77283f127e8c2b90d4e0e50985e7954",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_RightTrigger_Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/XB360_StartButton.png",
+      "sha256": "8d89d380359816feae7bc66fd596a0e0fe0754de9e2f2fa28087679b14e3b915",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_StartButton.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/XB360_X_Button.png",
+      "sha256": "76bf87ff98a2e14e73b0187ee3fd5e22a31f0d31198d5eb54f54b5513a18278f",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_X_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Default Theme/Theme SVG/Theme Assets/Active Presses/XB360_Y_Button.png",
+      "sha256": "d788c8ca748f2ea58b02b8f6931b9a32653830851b1c739f2d2a5b0d8af697b1",
+      "bundledCopies": [
+        "themes/xbox-360-default/Image Assets/XB360_Y_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_A-Button.png",
+      "sha256": "e660245a9cb9c602bc83822324c66ef7af4da64edc19610af3aa324d55a6bf25",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_B-Button.png",
+      "sha256": "9aa73b7bd71523ba3f87d3f97e061d0436b7091cab769ccb73d96885e422219f",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_Back-Button.png",
+      "sha256": "10d33ff539862d709cf78ec3734607836c612f714c708f5ca5681929e5c61c95",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_D-PAD_Down.png",
+      "sha256": "d974e7ad04575759e5e717079080b5e8f26668b8d5ae342a5c6b2d16f9b3c293",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_D-PAD_Left.png",
+      "sha256": "d936671e66577fbaa6bc4c6a16944f39d3b0312dc05d9d8f22a93c9fb1d549db",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_D-PAD_Right.png",
+      "sha256": "a84dfdd883bb8905b4e88c96be0d0591a658e49f40c4b719bbf1cacd4d43418e",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_D-PAD_Up.png",
+      "sha256": "45ef8800f89894ac787ef626b225b9dc0366d00b60f83daf7692e43bd4fcea1e",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_LB.png",
+      "sha256": "0f9531dd627dc87e46d5a00179609fa39eea238905d55d72ac3cd7b42219d443",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_LeftStick-Click.png",
+      "sha256": "4f91dad783b2c7494e56fe5f3d05f77fd9045b2179266efa65b81cc3be6cb2fe",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_LeftStick.png",
+      "sha256": "00d33dd17901cc3b613088484673df912fc915fdec6e0ebee7bceb4df10b5381",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_LeftTrigger-Active.png",
+      "sha256": "4a6950b0bb237c49a87ca9aaacadcea286a7c4c2806dc263f776b5830e698772",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_LeftTrigger.png",
+      "sha256": "9ad771a841575a9bdc96a5b394a5920af71af4e430ab574440927efc140cd859",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_RB.png",
+      "sha256": "b82631d806aca28ff0f2a895cf6ab66fadc63fa46ac98b73f8c1f728b3aa78f9",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_RightStick-Click.png",
+      "sha256": "c13d4dc77e35e02ff1f63d0ee0f92620e256092e41f325eb0d3683c53ee53d53",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_RightStick.png",
+      "sha256": "57f636362ed22626b7d1acc69fdc1d6414e6737a727a7df554a030669a5c88f1",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_RightTrigger-Active.png",
+      "sha256": "9cb9c424151847dc76fe3eb8626031429e4839a445ffdea7fa96303aff7c8d48",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_RightTrigger.png",
+      "sha256": "f712a52453f320a14d61d157004500c59109a5f59496661500aa407ebcd4c7a0",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_Start-Button.png",
+      "sha256": "bea839f423bf17c0e767fb78e0936d1a6ec1c0a26f666ef5cb89b256e25b2ffd",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_X-Button.png",
+      "sha256": "0d399885a6b3651a5a42c539f82206dd876e74012d66add07ed279a13ae16cca",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_XboxGuide.png",
+      "sha256": "3fa96341c035938057facf33ea94bfb6a7da836ddc5f27106e9c83823ad34c1f",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Active Images/Wikimedia_Y-Button.png",
+      "sha256": "873b19d5c510679779bafa1cb5540f4aa0b1b18748d1b8fd7abd5dd73dee75a6",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Template/Xbox Wikimedia Overlay (No Thumbsticks and Triggers).png",
+      "sha256": "2a1b490606c84b431044720061e6705b94dfb8dc3833082db55034ef4c29b70a",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Template/Xbox Wikimedia Overlay (No Thumbsticks).png",
+      "sha256": "0e8922438c1de3f1605a9207ee6c4057c2f65e4337a4291abde7829d63fe509a",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox 360 Controller Images/Wikimedia/Template/Xbox Wikimedia Overlay.png",
+      "sha256": "eaab99f7455009979223d978c99b156a199d2c217ff9aa7912b327f8e656b3b4",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One OG Controller/Black/XB1_OG_base.png",
+      "sha256": "378a61aa8bc43b24ea55a872b4b9fb126aa549846ef3828c37facef0fe70996a",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One OG Controller/Black/Xbox One OG Controller Overlay (No Thumbstick and Triggers).png",
+      "sha256": "378a61aa8bc43b24ea55a872b4b9fb126aa549846ef3828c37facef0fe70996a",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One OG Controller/Black/Xbox One OG Controller Overlay (No Thumbstick).png",
+      "sha256": "880073251c480066097a20bcf85bf1935a0d0747de5abdc907c54a58b76badc5",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One OG Controller/Black/Xbox One OG Controller Overlay.png",
+      "sha256": "623b1fccf1de136d6edbbdc034fb2ace83e60667c063aaf6093ab3d5de458e3a",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One OG Controller/White/XB1_OG_base_white.png",
+      "sha256": "4d5f7100449e37a326a56dc414b8ae9e615365f043b0ed6c39a48053bc3c0fd6",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One OG Controller/White/Xbox One OG Controller Overlay - White (No Thumbstick and Triggers).png",
+      "sha256": "4d5f7100449e37a326a56dc414b8ae9e615365f043b0ed6c39a48053bc3c0fd6",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One OG Controller/White/Xbox One OG Controller Overlay - White (No Thumbstick).png",
+      "sha256": "a60e3cc9d0fb0d0fd20271e47eafe8e500a1738966bb8ce206e62979b742d99b",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One OG Controller/White/Xbox One OG Controller Overlay - White.png",
+      "sha256": "4838edb18540721f57a0bfeb534d4fc6ab9bcb071e463c673135aab86e384ee5",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One S Controller/Black/XB1_S_base.png",
+      "sha256": "076dce74a08d441ecabb4521c14e8e371d22fe637f192fa15cf824c01cf1ec14",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One S Controller/Black/Xbox One S Controller Overlay (No Thumbstick and Triggers).png",
+      "sha256": "076dce74a08d441ecabb4521c14e8e371d22fe637f192fa15cf824c01cf1ec14",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One S Controller/Black/Xbox One S Controller Overlay (No Thumbstick).png",
+      "sha256": "362ead45e55db2326f3b075918322bc169ad9fb49ca88a2c6966012ab80aa6a1",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One S Controller/Black/Xbox One S Controller Overlay.png",
+      "sha256": "1eaee3aaef1dfb1cf56090bb22c7b91fab08fde515d8fd6224ead7c87bac0516",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One S Controller/Blue/XB1_S_base_blue.png",
+      "sha256": "d2f2f0c1aafde25131cee7ddd64cda49006e3424c3cb414b2edddc075d2ddf49",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One S Controller/Blue/Xbox One S Controller Overlay - Blue (No Thumbstick and Triggers).png",
+      "sha256": "d2f2f0c1aafde25131cee7ddd64cda49006e3424c3cb414b2edddc075d2ddf49",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One S Controller/Blue/Xbox One S Controller Overlay - Blue (No Thumbstick).png",
+      "sha256": "66ee24beeabc2be149a20091f77f231ea76f35ddf23c47a96b583294b384bd66",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One S Controller/Blue/Xbox One S Controller Overlay - Blue.png",
+      "sha256": "92d3f3109851aef2e1f73a153f8569ddce0c0f70fdd0e94e3d9d0aa71d6690a9",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One S Controller/Red/XB1_S_base_red.png",
+      "sha256": "d5f861a07c029c31e0ebc99a8daba2cce8a6824f216c2fd44c09af7661635347",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One S Controller/Red/Xbox One S Controller Overlay - Red (No Thumbstick and Triggers).png",
+      "sha256": "d5f861a07c029c31e0ebc99a8daba2cce8a6824f216c2fd44c09af7661635347",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One S Controller/Red/Xbox One S Controller Overlay - Red (No Thumbstick).png",
+      "sha256": "9d0b31a5520bb5274e9ac7ce5d9108d09180d49bdb9db5e56625d374b21a5036",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One S Controller/Red/Xbox One S Controller Overlay - Red.png",
+      "sha256": "03f15df934d9a7e51a20ce3dab6b2df58eb655066be39d6f644025066d043c3d",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One S Controller/White/XB1_S_base_white.png",
+      "sha256": "d3a9f7fcc0b4ff7538fd5fcdc28d2b8b6758a2c7cc48126e4077430a52db44c9",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One S Controller/White/Xbox One S Controller Overlay - White (No Thumbstick and Triggers).png",
+      "sha256": "d3a9f7fcc0b4ff7538fd5fcdc28d2b8b6758a2c7cc48126e4077430a52db44c9",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One S Controller/White/Xbox One S Controller Overlay - White (No Thumbstick).png",
+      "sha256": "1b20df2c226eed210e46ea61f79affb62c087ed5ebcec1d80a4b0dd24760c5c1",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox One S Controller/White/Xbox One S Controller Overlay - White.png",
+      "sha256": "f0c494b943def34ae3d00effebe01c2693b78f38f91d359ab0a7ed2a7abe3c2a",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Black/Xbox Series X Controller Overlay (No Thumbstick and Triggers).png",
+      "sha256": "6679a21e533e60bd6ca17fd78b71eae9b3efbfeeef5ab8341520290fab65b10a",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_base.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Black/Xbox Series X Controller Overlay (No Thumbstick).png",
+      "sha256": "c407ba37acb699aee03bec7e23692c4cc7d4826bcad2358a1c8c7b2f2ea41e42",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Black/Xbox Series X Controller Overlay.png",
+      "sha256": "12b6769199aa559ac418e2e869da9f3ac7d37843ecc0a233cb70664badea0630",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Black/XBSeries_base.png",
+      "sha256": "6679a21e533e60bd6ca17fd78b71eae9b3efbfeeef5ab8341520290fab65b10a",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_base.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Blue/Xbox Series X Controller Overlay - Blue (No Thumbstick and Triggers).png",
+      "sha256": "c643285c8fca8e0506a24fa44567fb05da9e54b630d11956a7bbd6094098dbf8",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Blue/Xbox Series X Controller Overlay - Blue (No Thumbstick).png",
+      "sha256": "9b2ad011ab0088a4fa64ef15e199ae099e6af9155209d545074ac4dbd20827ba",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Blue/Xbox Series X Controller Overlay - Blue.png",
+      "sha256": "57cb961c7f2d23d0d2c46e3606ea77f53db41a4795186997ae61eb09d2e576d1",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Blue/XBSeries_base_blue.png",
+      "sha256": "c643285c8fca8e0506a24fa44567fb05da9e54b630d11956a7bbd6094098dbf8",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Deep Pink/Xbox Series X Controller Overlay - Deep Pink (No Thumbstick and Triggers).png",
+      "sha256": "b96af9beb5397eb954564be56628b1d44b5486be2c75c2adcbc71dd558c04498",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Deep Pink/Xbox Series X Controller Overlay - Deep Pink (No Thumbstick).png",
+      "sha256": "f3f4b48adcc84cbef181132870f3eed58efc9bb6e3177afd5d19396f59292ba6",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Deep Pink/Xbox Series X Controller Overlay - Deep Pink.png",
+      "sha256": "5fa6c11f6d298796a743aadebc3b9723e942ee7ac727081a3b3f2c45426aeef0",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Deep Pink/XBSeries_base_deep_pink.png",
+      "sha256": "b96af9beb5397eb954564be56628b1d44b5486be2c75c2adcbc71dd558c04498",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Red/Xbox Series X Controller Overlay - Red (No Thumbstick and Triggers).png",
+      "sha256": "460b9042aaf30d656e3c107e596b0d3af36fced5795f4961d43e6533b4165f71",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Red/Xbox Series X Controller Overlay - Red (No Thumbstick).png",
+      "sha256": "b5c9fcbc9014e5ecccacf6e8c2d91d3261b91b140a87644818272955f1a6c06f",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Red/Xbox Series X Controller Overlay - Red.png",
+      "sha256": "26d494d2a4d3979bcec7bcdcd51cfd75108f2870b350ae0e078de3afe34ae7f4",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Red/XBSeries_base_red.png",
+      "sha256": "460b9042aaf30d656e3c107e596b0d3af36fced5795f4961d43e6533b4165f71",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Volt/Xbox Series X Controller Overlay - Volt (No Thumbstick and Triggers).png",
+      "sha256": "952d8adf1376cc825d02f01a6d5a53f4da78ac7aabb4e74a0149fdb922374980",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Volt/Xbox Series X Controller Overlay - Volt (No Thumbstick).png",
+      "sha256": "9a1c5309ae6cfcb1fffe4c80c3cbdbf9e7bda8cdd2e8ccb80940d0fc30f00690",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Volt/Xbox Series X Controller Overlay - Volt.png",
+      "sha256": "a6a47a70b9f6952d1f5d5a1f0c4adea5fc50a9d7cd99ee26260f8dc80be137a1",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/Volt/XBSeries_base_volt.png",
+      "sha256": "952d8adf1376cc825d02f01a6d5a53f4da78ac7aabb4e74a0149fdb922374980",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/White/Xbox Series X Controller Overlay - White (No Thumbstick and Triggers).png",
+      "sha256": "ca31009115262ee4a54b24787258cdf9f31d2ea5152cb9e35c161ba30bd19727",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/White/Xbox Series X Controller Overlay - White (No Thumbstick).png",
+      "sha256": "9add90c8e1ed1d39ce6bb9a3ab94d963b1037119f9d4bab5647a27ef706594c0",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/White/Xbox Series X Controller Overlay - White.png",
+      "sha256": "010b7d4550f382750891a446e6f9ae4bbaccdf79d60bd943456118ca86aef8ae",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Template/Xbox Series X Controller/White/XBSeries_base_white.png",
+      "sha256": "ca31009115262ee4a54b24787258cdf9f31d2ea5152cb9e35c161ba30bd19727",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Motion Input Attachment/gyro_down.png",
+      "sha256": "40a72b5e6ba92734711dc9ff50ffc13771591864df70f6684c85eefe5fcb79e0",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Motion Input Attachment/gyro_left.png",
+      "sha256": "b2fabcf643d1b33751eeecc801b1d3ee6fd5a72761bc2b66f1d8bf7e333f5ab9",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Motion Input Attachment/gyro_right.png",
+      "sha256": "797a21c2723ed5c34d4a91266f3bbd528db809dca2afbcb5f0457909a2b63c7c",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Motion Input Attachment/gyro_up.png",
+      "sha256": "c3c84782d4abdf32a4651829723082cd4c8de324dcd6f72fa51c0568c770a673",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Motion Input Attachment/xbox_gyro-accel.png",
+      "sha256": "a0e3746ca28da45f48d1b773addc488f57c3083613b9a6cd1422effd6b256629",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Theme Icon/icon.png",
+      "sha256": "5ddf3689720e77ad394d71df038ffb10cfb8229a6ef9097eaae83181deaaeac4",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Theme Icon/path2.png",
+      "sha256": "0bd48415cdda48ea2ed1dc7ab8d67cb5ba12dbf26024743e19e1c4c5efcb255f",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Theme Icon/seriesx.png",
+      "sha256": "90f738bfc1b3f622ea55a46bf32c2d5f2879b4a06e5180ecd18b3e5545113ead",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Theme Icon/vscview icon.png",
+      "sha256": "4f5b331216b3ee6e02fb23d92238b0152e08bcfbc64351db19b0a9b2c3025467",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Theme Icon/Xbox_One_S_Logo.png",
+      "sha256": "acb85944460d47d061b1f937aee7d5fd871a280c12965a1d4b9a809c927ccd33",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/Color/XB1_LeftStick.png",
+      "sha256": "155fe6d2bf22230bb3407977fe8725f8e6c5add902d713cec7f4cfa5fc9a11ca",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_LeftStick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/Color/XB1_LeftStick_Blue.png",
+      "sha256": "8031a8356a989d1ae3865466e94398efbd313a36eca144675657eaca7283d084",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/Color/XB1_LeftStick_Red.png",
+      "sha256": "7ec5771b647af61620f012fba529a6c17549211bfcd525cfad756b05c7597a29",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/Color/XB1_LeftTrigger.png",
+      "sha256": "a92948f255b545d58db80db354283f8865dcb3ad62f21bba1568ea2fd96df48f",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_LeftTrigger.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/Color/XB1_LeftTrigger_Blue.png",
+      "sha256": "891d550f00eaa6340335d834fce385cfb78e09cf267bb0bfb082988fbba8274f",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/Color/XB1_LeftTrigger_Red.png",
+      "sha256": "2c136262d2ad91924688824e43e37ba7b14d44b9399bf2587086184192c09094",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/Color/XB1_RightStick.png",
+      "sha256": "b9053e4a7f0636a68df81393c797a5cd2cc6ccf872b91872da2c7498624aba0b",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_RightStick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/Color/XB1_RightStick_Blue.png",
+      "sha256": "37e688cbf81d0f0f2d3456bfc3758d38fde46753b4fa2b56ddb5a84a8d1da6a1",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/Color/XB1_RightStick_Red.png",
+      "sha256": "a516aa569e64b05eb9c1a2b02528bb9ab844b7cff782dc45a83ef8c9c2ffdf90",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/Color/XB1_RightTrigger.png",
+      "sha256": "28338c84fcfbaa914d899e7ee4634620fdf0cd9f7052c3e1b261b8edb0bc8d37",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_RightTrigger.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/Color/XB1_RightTrigger_Blue.png",
+      "sha256": "33795415daf691198b557f3d698ef83b07266327566425a6bbb5d88bdc2e5563",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/Color/XB1_RightTrigger_Red.png",
+      "sha256": "b23087d3b6cd33f05f6a126fc4317fe3619f479c520a4dbb34f4a1eb81f42434",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/XB1_A_Button.png",
+      "sha256": "3e65b63852d758474478eef364916419d0b6ceee85c570c116ed59679e9f77e1",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_A_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/XB1_B_Button.png",
+      "sha256": "0765b509167259c079c63fc3b1d69afb2d756ddbb786f48bf85d08443efce534",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_B_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/XB1_D-PAD_Down.png",
+      "sha256": "033a8c566cb3e97708b07a366b7e6089251c75e97e92ac8e562bd04654dd33c4",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_D-PAD_Down.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/XB1_D-PAD_Left.png",
+      "sha256": "cbe1654b78d13b929e5ab8f60aa3f1b0ef5eb213abf8cf622cfd581d6a102bc4",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_D-PAD_Left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/XB1_D-PAD_Right.png",
+      "sha256": "695e6727862f0b4e37481dd0be9675cba2407ed67f72e8825506984a2c8de3c3",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_D-PAD_Right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/XB1_D-PAD_Up.png",
+      "sha256": "75be83108db9d9f61093f270859d864e5ffdb0de539e20b46b7f8572b1a32251",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_D-PAD_Up.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/XB1_HomeButton.png",
+      "sha256": "7b712f01cd74dd4f38bccad7375832652d31d8ad7928abef09be2bb11ed7c9f9",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_HomeButton.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/XB1_LeftBumper_Active.png",
+      "sha256": "813e1a6517b1813a02155dc1af5a26ef52ef1adec9edf19fd80927afa4a49446",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_LeftBumper_Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/XB1_LeftStick_Click.png",
+      "sha256": "785f7dd595b0af2fc76fd4a01301ef5094ca00d343ea8a75fdfd9dd6a4b5d2d7",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_LeftStick_Click.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/XB1_LeftTrigger_Active.png",
+      "sha256": "ca8095087d91dd0d59d1afd5b2b257e65854c045740d9b1baa6006713379b990",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_LeftTrigger_Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/XB1_MenuButton.png",
+      "sha256": "0f597de16dd8157d069d92c5e8c0ee4d079336fcc5f2d761671ab366b41d90bf",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_MenuButton.png",
+        "themes/xbox-one-default/Image Assets/XB1_ViewButton.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/XB1_RightBumper_Active.png",
+      "sha256": "d38eb47d800afaacd3e9525c40f5beaaba240aa6440e045615bbb433f43c365d",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_RightBumper_Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/XB1_RightStick_Click.png",
+      "sha256": "e5cdc0f9364a0e945bcdca14f45802eabbf465abcd789f32d65aa22f7b3f4a9a",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_RightStick_Click.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/XB1_RightTrigger_Active.png",
+      "sha256": "230c40bcf169ba4bb0cd6b7248928c1359b291f2ca2226095d26e9ab4b1a0b52",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_RightTrigger_Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/XB1_ViewButton.png",
+      "sha256": "0f597de16dd8157d069d92c5e8c0ee4d079336fcc5f2d761671ab366b41d90bf",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_MenuButton.png",
+        "themes/xbox-one-default/Image Assets/XB1_ViewButton.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/XB1_X_Button.png",
+      "sha256": "178c77f0edad51c9e78d3ccc01e01a4205dc2e8bfa305a6ba67224acee8acb9a",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_X_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox One Active Presses/XB1_Y_Button.png",
+      "sha256": "638b5c75a1ef47aaf4350b6c3624cfc8df0b8601bef874d7f519eafc02ac329e",
+      "bundledCopies": [
+        "themes/xbox-one-default/Image Assets/XB1_Y_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/Color/XBSeries_LeftStick.png",
+      "sha256": "37d382b3843542a13b278780282aeae2e186c7d13206f003a41816202fa14ddf",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_LeftStick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/Color/XBSeries_LeftStick_Blue.png",
+      "sha256": "cde2e61b920580326549036aeeb39aae23403e60d9b8b84d6962b2806ebee288",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/Color/XBSeries_LeftStick_Pink.png",
+      "sha256": "bcfd55325051b734c7a149201b4e4ed043718a1d87bf77d610cbf29317d9d0fd",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/Color/XBSeries_LeftStick_Red.png",
+      "sha256": "ec41835b0ad16a4ddd2dbf009243936e43309f8ddd232f967077e8150a466bf3",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/Color/XBSeries_LeftStick_Volt.png",
+      "sha256": "79d4bb2fa2bbd90422f492af41eada6da61eb3851e0f40ef914f8bac1fcb9ed1",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/Color/XBSeries_LeftTrigger.png",
+      "sha256": "b9a0e1b3cfb934684ff593a83220680d63f8112d18ba8522798ac13b19876a9f",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_LeftTrigger.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/Color/XBSeries_LeftTrigger_White.png",
+      "sha256": "ae5be9f835004ed9194c09a887e678abe1296fa9f5fb4efa2ed2d45b5046dc07",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/Color/XBSeries_RightStick.png",
+      "sha256": "9331e0fb9c09eacb4c513ff56864759fdfdf0574fecfd44b1d3fdcaa689e603b",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_RightStick.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/Color/XBSeries_RightStick_Blue.png",
+      "sha256": "9225c43ee3a6c1b0ab0b01738d9eb09fc8100dae899156066cd0ae91e2d691b9",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/Color/XBSeries_RightStick_Pink.png",
+      "sha256": "c7dbeffb72556daa7f9a66f530f19020a749a69267d2228620f02beb503199ec",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/Color/XBSeries_RightStick_Red.png",
+      "sha256": "ed40afc98092f3c8e7144c2ff58effd3f72d3d7e6011096b66f48d055a16f4dc",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/Color/XBSeries_RightStick_Volt.png",
+      "sha256": "5761ddfb2419e5db25a389f6a91573380b67ad3bdb35ebf3aa6a2d6b3b324c0d",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/Color/XBSeries_RightTrigger.png",
+      "sha256": "9caf3ad161e5bba1b49f174b97e965e12a434b669a1ed51d006dc2dc74db56ce",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_RightTrigger.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/Color/XBSeries_RightTrigger_White.png",
+      "sha256": "8f3069d40ebc66959d567d922d62d3915b9da6cff26ab176718740c79208b3d0",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_A_Button.png",
+      "sha256": "be4766c855f8a14be1427ea594e8724aa83e8dbaf5da7665ede9d2f9de201bfa",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_A_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_B_Button.png",
+      "sha256": "3eb1bc232e0ec7c711da767e57aa917f4bbe2f615d54771ae700b9eb229751e8",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_B_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_D-PAD_Center.png",
+      "sha256": "b6dea57b5e2f4aa9f42962fc6e0e554c7c1b71f988475e4d08b8569c030c41bc",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_D-PAD_Down.png",
+      "sha256": "4124ae21a45aee4b51f864e95eb4ef75c67c358e19cae2f2a84f5597fdd2798e",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_D-PAD_Down.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_D-PAD_Left.png",
+      "sha256": "fe89dc07e7717d87b6cb1812f6274cf6c9438bba2114d065c1005efbcef579d5",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_D-PAD_Left.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_D-PAD_Right.png",
+      "sha256": "5b5ca296ed8c8bb20702afc082327bafa83178013ac8376c2d96a99fba2f6e1a",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_D-PAD_Right.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_D-PAD_Up.png",
+      "sha256": "aab98ea2c16054ebaed8a9506b2ef67cd99644f6affbf983b80833cc76802937",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_D-PAD_Up.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_HomeButton.png",
+      "sha256": "ee8a07aa02dde091116ce5a627d1a70f55ba943a7619006e2a39bd9c17ac284d",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_HomeButton.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_LeftBumper_Active.png",
+      "sha256": "7b689505988ea1de9bd9183f7a194ba1810f80dc26a1b63fea21882aa4ca9b19",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_LeftBumper_Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_LeftStick_Click.png",
+      "sha256": "450f8f43966fbecae769ea44d991c56333f090b75814404afbf5ecd7a41e6a54",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_LeftStick_Click.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_LeftTrigger_Active.png",
+      "sha256": "03ad36cc44a25ed3547283edac8a60bab916cb8b2bb13c4c823418d9f39daeed",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_LeftTrigger_Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_MenuButton.png",
+      "sha256": "078245729aeda5dacdcd9d7f8d991645d3a8e76615da539d3ed4d53164ade80d",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_MenuButton.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_RightBumper_Active.png",
+      "sha256": "7b0ab501ac5e84e46d84814756d5ef67094d1df215013499da2063ce0d3e3579",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_RightBumper_Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_RightStick_Click.png",
+      "sha256": "4bee6502cd6de6c4b8fec686527116345dfff836f39ec09fbac1ef7bb4ae1445",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_RightStick_Click.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_RightTrigger_Active.png",
+      "sha256": "ba845687ec74da991bc861625513b219e9f2a5ac44367920a2e9406157abbaab",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_RightTrigger_Active.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_ShareButton.png",
+      "sha256": "06bead3c8a81f371a4ab42b413d7a3910b63c3a429f25ef491277527a33324ff",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_ShareButton.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_ViewButton.png",
+      "sha256": "963b8f32e7af0c8aa26af88835eab567ae35e4a5ce6c096523143ae9ae2eb76c",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_ViewButton.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_X_Button.png",
+      "sha256": "938a885a3370b6486fa4a9a0908079f5cac19c7326def9dcd3b03e97dbebd5f5",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_X_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/Default Theme/Theme Assets/Xbox Series X Active Presses/XBSeries_Y_Button.png",
+      "sha256": "edd2610e4582613f695347c1bf29c83264615140f514dcea4a87260c80c45dae",
+      "bundledCopies": [
+        "themes/xbox-series-default/Image Assets/XBSeries_Y_Button.png"
+      ]
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Templates/DMC5 Xbox Controller.png",
+      "sha256": "c7db5e68a1a2405ae1c19cf0c2ce587553378d3fc9dc96d84007d397de843cf9",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Templates/dmc5_xbxox_base.png",
+      "sha256": "ba2fb4cb934e5c8fe2af8d89ffeb12699ceffe7f17dc5c8735f9fd5485e3a2b7",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Templates/xbox overlay raw example.png",
+      "sha256": "0e6b30c57b35017845b9d26ee320bba427c2574849f94d57cfc5a64e12418c64",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_a.png",
+      "sha256": "365564162b6b21ddcde8a6fca16c822d0f340616b09e55a1e59bf571e25f2d6b",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_analog_stick_active.png",
+      "sha256": "6bc128bb11d5bceb4e1e641c7d54e16aa3eca9adc758403a23c304967df8ec4f",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_b.png",
+      "sha256": "adac5e73112d52d21944ee122c905768c57096bea2a2288ab96569f0552f0167",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_circle_bar.png",
+      "sha256": "6bc128bb11d5bceb4e1e641c7d54e16aa3eca9adc758403a23c304967df8ec4f",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_dpad_down.png",
+      "sha256": "ed79efdc9bf66278029e329749bf4adc42ee6bced0d5dcc973aab3ee87583cb3",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_dpad_left.png",
+      "sha256": "d971fdb16ccc3dad67f2bbc2c536378470228d9e32707713b727540d576b8ba5",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_dpad_right.png",
+      "sha256": "7e8ec46e398cc27fd224821d34d9c90d85974c653c96e7d3f7b5f36599ba89bc",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_dpad_up.png",
+      "sha256": "46f50b239eb5417b9ff750ced12e780fc326e755716d0443b09cfd15cfe2a6e8",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_left_bumper.png",
+      "sha256": "e0cd5ab0697b4b23eebe26cb6085f7548aa01d2af67783361bfcf003f4fc2cfc",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_left_joystick.png",
+      "sha256": "01458dc42d7d98be11cbd3968c5aee78132af6ac5ede334d9231c415ec406327",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_left_triggers.png",
+      "sha256": "e5077e0a1a902bb033a13f58dfe5938437f17bc6865abd8731c8b9ca86f13b09",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_menu.png",
+      "sha256": "a013305a033802bfcd91c6f60a52d6c4a847dfefd1515ae78f3c61a06e9b7f44",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_right_bumper.png",
+      "sha256": "61e50c91bf7d8a2f2e99e1295ed6f04eb036313b037280d789743974dff8060a",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_right_joystick.png",
+      "sha256": "01458dc42d7d98be11cbd3968c5aee78132af6ac5ede334d9231c415ec406327",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_right_triggers.png",
+      "sha256": "366fff003a153cb52db18d0885b2aff017b48149372c179c453d285acf585f8d",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_view.png",
+      "sha256": "eed8eea52b117693203e79db6f9ebca4465938d1d5433f8eba5b20f5c6c2960f",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_x.png",
+      "sha256": "863fb289ac1d642722e03c1fa0153740661b63c11b0c844fbc3a742fbd3bf5c7",
+      "bundledCopies": []
+    },
+    {
+      "source": "Controller Asset Pack/Xbox Wireless Controller Images/DMC5 Theme/Theme Assets/dmc5_xbox_y.png",
+      "sha256": "94ca30d2757749950a89cab47491af17261c50a6d4bd9e4f13a072819d1a69c7",
+      "bundledCopies": []
+    }
+  ]
+}

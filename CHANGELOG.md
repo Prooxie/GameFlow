@@ -1,12 +1,29 @@
 # Changelog
 
-Notable changes per release. The `release` job in
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) reads the section
-matching the tag it is building and uses it as the release body, with
-GitHub's auto-generated commit list appended below it.
+Use one `## X.Y.Z` heading for each release, newest first.
+The heading must match the Git tag exactly.
+Older releases retain their `v` prefix.
+The release workflow uses the matching section as its release notes.
 
-Format: one `## vX.Y.Z` heading per release, newest first. The heading
-text must match the tag exactly — that is what the extraction keys on.
+## 1.0.9
+
+- Add per-device keyboard and mouse maps, extra key capture, and independent mouse preview buffers.
+- Improve phone model choices, saved phone seats, quick taps, link revocation, and disconnect cleanup.
+- Add capability-based controller lighting and trigger feedback with an authenticated external lighting API.
+- Preserve profile migrations, nullable axis inversion, and existing rule types during editing.
+- Correct controller theme geometry and add schematic layouts for additional device families.
+- Import 216 prompt vectors and 27 icon vectors with source hashes and cached UI images.
+- Validate all 28 bundled theme manifests and every imported raster resource.
+- Complete status, editor, calibration, and settings translations across all eight supported languages.
+- Extend translation checks to fallback keys and C# status assignments.
+- Remove the unused reflection bridge that prevented compilation.
+- Remove temporary collection allocations from idle effects updates.
+- Add application screenshots, maintained release documentation, and a Pages deployment workflow.
+- Support numeric release tags and portable local packages for all four release targets.
+- Add guarded SDK maintenance tools and isolated maintenance checks.
+
+Automated Windows checks pass. Physical devices, real phone browsers, OBS, and macOS hardware still need verification.
+The local Firefox binary cannot start. Hosted CI retains Firefox and platform checks.
 
 ## v1.0.8
 
