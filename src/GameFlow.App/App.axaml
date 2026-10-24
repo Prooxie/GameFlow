@@ -1,6 +1,8 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:themes="clr-namespace:Avalonia.Themes.Fluent;assembly=Avalonia.Themes.Fluent"
+             xmlns:converters="using:GameFlow.App.Converters"
+             xmlns:vm="using:GameFlow.App.ViewModels"
              x:Class="GameFlow.App.App"
              RequestedThemeVariant="Dark">
 
@@ -8,6 +10,7 @@
        resolve immediately on first paint (before AppThemeService is called). -->
   <Application.Resources>
     <ResourceDictionary>
+      <converters:InputAssetImageConverter x:Key="InputAssetImageConverter" />
       <!-- DesignTokens supplies the shared spacing, radius and typography
            scales consumed by Typography.axaml and the reusable app styles. -->
       <ResourceDictionary.MergedDictionaries>
@@ -44,6 +47,15 @@
     </ResourceDictionary>
   </Application.Resources>
 
+  <Application.DataTemplates>
+    <DataTemplate DataType="vm:ButtonIdOption" x:DataType="vm:ButtonIdOption">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Image Width="22" Height="22"
+               Source="{Binding Button, Converter={StaticResource InputAssetImageConverter}}" />
+        <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+      </StackPanel>
+    </DataTemplate>
+  </Application.DataTemplates>
 
   <Application.Styles>
     <themes:FluentTheme />

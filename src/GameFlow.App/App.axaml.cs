@@ -262,6 +262,10 @@ public partial class App : Application
 
         var currentHost = Interlocked.Exchange(ref host, null);
         UiTextResources.Detach();
+        if (Resources["InputAssetImageConverter"] is IDisposable inputImages)
+        {
+            inputImages.Dispose();
+        }
         Services.KeyboardMouseLegend.Detach();
         if (currentHost is null)
         {
