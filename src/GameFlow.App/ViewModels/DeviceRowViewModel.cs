@@ -21,6 +21,10 @@ public sealed class DeviceRowViewModel(InputDeviceInfo info) : ViewModelBase
     public bool IsGamepad => info.IsGamepad;
     public DeviceCategory Category => info.Category;
 
+    /// <summary>Gets a controller icon style when the device is a game controller.</summary>
+    public GameFlow.Core.Enums.ControllerVisualStyle? IconStyle => info.Category is DeviceCategory.Gamepad or DeviceCategory.Joystick
+        ? GameFlow.Core.Models.ControllerHardwareCatalog.Resolve(info.VendorId, info.ProductId)
+        : null;
     public bool HasBattery => info.HasBattery;
     public string BatteryText => info.HasBattery ? $"{info.BatteryPercentage}%" : string.Empty;
     public string BatteryStatusText => info.BatteryState switch
@@ -96,6 +100,7 @@ public sealed class DeviceRowViewModel(InputDeviceInfo info) : ViewModelBase
         OnPropertyChanged(nameof(IsSelected));
         OnPropertyChanged(nameof(IsGamepad));
         OnPropertyChanged(nameof(Category));
+        OnPropertyChanged(nameof(IconStyle));
         OnPropertyChanged(nameof(HasBattery));
         OnPropertyChanged(nameof(BatteryText));
         OnPropertyChanged(nameof(BatteryStatusText));

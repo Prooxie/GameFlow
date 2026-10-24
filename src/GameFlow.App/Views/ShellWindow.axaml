@@ -905,8 +905,12 @@
                                    VerticalAlignment="Center" Margin="0,0,10,0"
                                    Fill="{Binding ConnectionBrush}" />
                           <StackPanel Grid.Column="1" Spacing="2">
-                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"
-                                       FontSize="13" TextTrimming="CharacterEllipsis" />
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                              <Image Width="22" Height="22"
+                                     Source="{Binding IconStyle, Converter={StaticResource InputAssetImageConverter}}" />
+                              <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"
+                                         FontSize="13" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                            </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="6">
                               <Border CornerRadius="3" Padding="5,1" VerticalAlignment="Center"
                                       Background="{Binding KindBrush}">

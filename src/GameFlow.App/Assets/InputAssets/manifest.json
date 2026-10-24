@@ -1,0 +1,1460 @@
+[
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-0.svg",
+    "sha256": "9c89427bb4bf829858ed2e8f87782aae171d715dc42438c95e890cdec3016c72",
+    "resource": "Prompts/DirectInput/directinput-0.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-1.svg",
+    "sha256": "59d45d94fc824bee2e0d3b96e35fb399e091bbad3fe342c95d62dff8220487c3",
+    "resource": "Prompts/DirectInput/directinput-1.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-10.svg",
+    "sha256": "ce57c6fa7416b0167d52d4ebf30c5e65614b85d8fbb6fd9bc790f08171b0317b",
+    "resource": "Prompts/DirectInput/directinput-10.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-11.svg",
+    "sha256": "492af9eacb527cfc342fe85175454bc7595a937e800667e3725007ca960c572c",
+    "resource": "Prompts/DirectInput/directinput-11.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-12.svg",
+    "sha256": "6340e4ad417e3f4369ed9b1fc95d5968cbb5aee2d5a2de7b5f68ce08382c38bd",
+    "resource": "Prompts/DirectInput/directinput-12.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-13.svg",
+    "sha256": "885510b2fe42f325144fd6e945d4a1765ff07048a003f174ec2273fc18734308",
+    "resource": "Prompts/DirectInput/directinput-13.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-14.svg",
+    "sha256": "5335aa29777339bea58b7f0bbdeb5ae4f96369b3d87e21a43122be0d9c62962c",
+    "resource": "Prompts/DirectInput/directinput-14.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-15.svg",
+    "sha256": "e668cafe550e0e2daa2caa91adf5794f6aeef1668f75274a80764444a056bfd3",
+    "resource": "Prompts/DirectInput/directinput-15.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-16.svg",
+    "sha256": "5f330f3a7e3e4a70f64ea0a05112fea0ddce377e33ac349e425853e473cd1224",
+    "resource": "Prompts/DirectInput/directinput-16.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-17.svg",
+    "sha256": "e79e4489b18ce84d7af1efb5bfcafc3f13bbbaeda33d6451c976e97ced0d464f",
+    "resource": "Prompts/DirectInput/directinput-17.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-18.svg",
+    "sha256": "4e9aef9bdba3c4b39d031b7097d9f41f7f344ae8d0709ceff43826eef745bd30",
+    "resource": "Prompts/DirectInput/directinput-18.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-19.svg",
+    "sha256": "481eedeade4818b94f8d302deef050b4d3c9db9bbd2482d3782ece9f036475a1",
+    "resource": "Prompts/DirectInput/directinput-19.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-2.svg",
+    "sha256": "9b125f5bf709287c2e6a766971a6e70de34a842e938ab12c5a928baab3424603",
+    "resource": "Prompts/DirectInput/directinput-2.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-20.svg",
+    "sha256": "cba9033d503d87a39a551a36c085e1f51bfde57c9598d6a854cc24b7e3fb235d",
+    "resource": "Prompts/DirectInput/directinput-20.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-21.svg",
+    "sha256": "b633ad94e71041bb1235f8f17b55380e383d547acefbc74c426faaf39f720cc7",
+    "resource": "Prompts/DirectInput/directinput-21.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-22.svg",
+    "sha256": "5bfac852fd251fc3cd0dce0fea0a25f6a5c8bfa869eb312330ad0c00414a2663",
+    "resource": "Prompts/DirectInput/directinput-22.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-23.svg",
+    "sha256": "d3df9e858e2ef5069196ea2642d86153e4d985fc6e95da2bbe94fe52462b8074",
+    "resource": "Prompts/DirectInput/directinput-23.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-24.svg",
+    "sha256": "8a11aeafb51d915ec59b95a2eb32b9789da6f002429b922944b836235779d872",
+    "resource": "Prompts/DirectInput/directinput-24.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-25.svg",
+    "sha256": "6d558e91497a4624c65f643aee6d096144a22aa103d72049d8914c56c67469ee",
+    "resource": "Prompts/DirectInput/directinput-25.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-26.svg",
+    "sha256": "6b45407511419e202e0d97497dd1fc67a7c066f473fd4ee0b8f4ccfc5545ac7c",
+    "resource": "Prompts/DirectInput/directinput-26.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-27.svg",
+    "sha256": "10afb2eaca2180a1e0a159d3ae4f47a5f843b1b978566c1beabe1c14b6fe7908",
+    "resource": "Prompts/DirectInput/directinput-27.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-28.svg",
+    "sha256": "e5e1b3e292e3fdaa88e4a09d6c37f35d03a13cbf618b7102b12726eaf368ffa8",
+    "resource": "Prompts/DirectInput/directinput-28.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-29.svg",
+    "sha256": "b9aec20d3fb8228185a68aeb6638d5a5ea7714dd72796a97473478fe61cf2eb9",
+    "resource": "Prompts/DirectInput/directinput-29.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-3.svg",
+    "sha256": "e4eabbf9e36c63a2af43b0215477e5b6dd7958a963e20c85093cea32c4f3c5fe",
+    "resource": "Prompts/DirectInput/directinput-3.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-30.svg",
+    "sha256": "6ebcbafa01d397b53541bdbe8b1100db74f4e5997178e9677c78b5baba63617c",
+    "resource": "Prompts/DirectInput/directinput-30.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-31.svg",
+    "sha256": "f217a46355b5cb041e9d3e2729361d411e343006228d25b7d8dc2c8a01f99ba8",
+    "resource": "Prompts/DirectInput/directinput-31.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-32.svg",
+    "sha256": "ea5cc45469badcd9d1009cf86b8acfb902056968b18dcf0d430ef3f7fecbc4ba",
+    "resource": "Prompts/DirectInput/directinput-32.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-4.svg",
+    "sha256": "be478a168ad610a8e09cb3e4a190f2ee94e02bb6bf43a31a615aaca24b8fe302",
+    "resource": "Prompts/DirectInput/directinput-4.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-5.svg",
+    "sha256": "e0eb2dd052b0d98b63ff4a53060495fc3eb384aec8e8b9bd5e90728a25afa960",
+    "resource": "Prompts/DirectInput/directinput-5.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-6.svg",
+    "sha256": "2698d6de256f00b0d4603bfd42efba9b35c969f45a63afbaed51e1d69330f247",
+    "resource": "Prompts/DirectInput/directinput-6.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-7.svg",
+    "sha256": "31879167081f6bee90e19a1e2ecbc6aa99099b11f433e9568f72d6cfd7577174",
+    "resource": "Prompts/DirectInput/directinput-7.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-8.svg",
+    "sha256": "ab1f5835ece00ae35bdaf09b82fe69e4a93ae63d4b67aabd135e4209ddff3a65",
+    "resource": "Prompts/DirectInput/directinput-8.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/DirectInput/directinput-9.svg",
+    "sha256": "7a0b468b78fa552792c83be8b70c7d48b2cff4d6b81c678c6ed58a3706859e8b",
+    "resource": "Prompts/DirectInput/directinput-9.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendo-C.svg",
+    "sha256": "caa32a5584d99031cf50e2758df1ae14e8831043cb72b765716c00a0c7771f7b",
+    "resource": "Prompts/Nintendo/nintendo-C.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendo-L Click.svg",
+    "sha256": "9d73932841a21d21bf4641900972e40601ae99ae06347567124f6a0ce2cfe080",
+    "resource": "Prompts/Nintendo/nintendo-L Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendo-L.svg",
+    "sha256": "6e079d2b840a3e1c9404d3496e5b6c0b37f8cf002dcaf5d7b271eea71b930d0c",
+    "resource": "Prompts/Nintendo/nintendo-L.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendo-Minus.svg",
+    "sha256": "164c03f5f1d238a18117cd7a72999db27dcfae62bafba6ae303db93c61a2b823",
+    "resource": "Prompts/Nintendo/nintendo-Minus.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendo-Plus.svg",
+    "sha256": "3d79598f7cb5227dd4d6a85d5d9e58f35661ab833b06c527328b33f4e624ee55",
+    "resource": "Prompts/Nintendo/nintendo-Plus.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendo-positional prompt A.svg",
+    "sha256": "ffcda77cc1d045701f48000441c279cc7c99ef51bf0a7ed34fe3ad697abf8afb",
+    "resource": "Prompts/Nintendo/nintendo-positional prompt A.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendo-positional prompt B.svg",
+    "sha256": "b6785b65c4a4e022d523b56ea6081afc435d5a54ce19a6bf58032a1053a914cf",
+    "resource": "Prompts/Nintendo/nintendo-positional prompt B.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendo-positional prompt X.svg",
+    "sha256": "afcdccfbd814da88c13ba4237db415d090605dbdc5cc9d5bcccffdb6abad761b",
+    "resource": "Prompts/Nintendo/nintendo-positional prompt X.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendo-positional prompt Y.svg",
+    "sha256": "636959f26b67301ad76b51a63d04e3a5c015f470c56b5a256bf3574455358cf8",
+    "resource": "Prompts/Nintendo/nintendo-positional prompt Y.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendo-positional prompt.svg",
+    "sha256": "45cfac154ce405f895deee744ca3bb832a3622bc0b632e4e82110e2d2faf7fb6",
+    "resource": "Prompts/Nintendo/nintendo-positional prompt.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendo-R Click.svg",
+    "sha256": "b503181f350b1c6ea828f4e8d38b6056d4c364a1fabb2938ac473774940f249d",
+    "resource": "Prompts/Nintendo/nintendo-R Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendo-R.svg",
+    "sha256": "81bb98cfb467f36909e070c90be9531a2b7c6293c0a962b7cd9ce24a950ac1f5",
+    "resource": "Prompts/Nintendo/nintendo-R.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendo-SL.svg",
+    "sha256": "af159b3c9f6985e8078f30df55908258f3ab1171fddfece7ee9bcd7c67c54206",
+    "resource": "Prompts/Nintendo/nintendo-SL.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendo-SR.svg",
+    "sha256": "a0543031a108b7413afaec3fc81ada802ae1e1c3f256421032027531e62e6b62",
+    "resource": "Prompts/Nintendo/nintendo-SR.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendo-Z.svg",
+    "sha256": "87503552a177b6a9d3915b28b36e91acf1c620d536a4676cbb589e1f28745aff",
+    "resource": "Prompts/Nintendo/nintendo-Z.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendo-ZL.svg",
+    "sha256": "679e57911aea3fc58f0894f04d32020f5b77197cdda31cf4230aaa99ba09ded9",
+    "resource": "Prompts/Nintendo/nintendo-ZL.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendo-ZR.svg",
+    "sha256": "c0997dc6e6647a13dcec1fab878410e77453fe473fbfc761abe00515c821ec34",
+    "resource": "Prompts/Nintendo/nintendo-ZR.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendoswitch-Capture.svg",
+    "sha256": "74a5bc4ec3879bd751f0f58458327816890401b9e73d18caaa968669d858598e",
+    "resource": "Prompts/Nintendo/nintendoswitch-Capture.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendoswitch-Guide.svg",
+    "sha256": "b1699bc368002dd368e02ab6baeaf2ec254e241ff5c0a15d3cca25fc05088a3a",
+    "resource": "Prompts/Nintendo/nintendoswitch-Guide.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendoswitch-JoyCon D-PAD Down.svg",
+    "sha256": "23629c7a1880f2a3bbe597dfe9cb59bf13173906826bdec74146c7664d6d33b5",
+    "resource": "Prompts/Nintendo/nintendoswitch-JoyCon D-PAD Down.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendoswitch-JoyCon D-PAD Left.svg",
+    "sha256": "57c9ec17b9a34b61d33c03f6e34df8a3693fb175558ecf8f2b38ef9266f70802",
+    "resource": "Prompts/Nintendo/nintendoswitch-JoyCon D-PAD Left.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendoswitch-JoyCon D-PAD Right.svg",
+    "sha256": "f90a3ebd1cb192f77859890eaf8e295e6e8bbaaf8ed4ad7ea67a3bcfb7b7c003",
+    "resource": "Prompts/Nintendo/nintendoswitch-JoyCon D-PAD Right.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendoswitch-JoyCon D-PAD Up.svg",
+    "sha256": "a7925d80b4b2d9d9164d4dfee53c6a97b2d0407177c9513b60bbc1eb5c9a34db",
+    "resource": "Prompts/Nintendo/nintendoswitch-JoyCon D-PAD Up.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendoswitch-JoyCon D-PAD.svg",
+    "sha256": "057cc11f371e40809ed64df31b59f3e0ff38d5cb49234867f6e958d2305b02f9",
+    "resource": "Prompts/Nintendo/nintendoswitch-JoyCon D-PAD.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendoswitch-positional prompts JoyCon D-PAD Down.svg",
+    "sha256": "510e2af4b8d4ffae44441aadc839809fceb105a14aab5c912173e0e5bee475fb",
+    "resource": "Prompts/Nintendo/nintendoswitch-positional prompts JoyCon D-PAD Down.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendoswitch-positional prompts JoyCon D-PAD Left.svg",
+    "sha256": "5137870500b702b90526014247ca22d8edbc68bb8e11d243c7a9946c4117c4b9",
+    "resource": "Prompts/Nintendo/nintendoswitch-positional prompts JoyCon D-PAD Left.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendoswitch-positional prompts JoyCon D-PAD Right.svg",
+    "sha256": "7d386c46089675b8639a91d39edd8e51dc24257a804fe090066607d51e1de1c0",
+    "resource": "Prompts/Nintendo/nintendoswitch-positional prompts JoyCon D-PAD Right.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Nintendo/nintendoswitch-positional prompts JoyCon D-PAD Up.svg",
+    "sha256": "da8bd29aaf125b14af2f85e46cfd9ef884b7d90cfb557fb732bfb909ec31dcdf",
+    "resource": "Prompts/Nintendo/nintendoswitch-positional prompts JoyCon D-PAD Up.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-Circle-Color.svg",
+    "sha256": "ff744b28c455a707877fb0bf7413e13d5c407e1d959a554bf6a0d83fbb97e371",
+    "resource": "Prompts/PlayStation/ps-Circle-Color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-Circle.svg",
+    "sha256": "a18ce981620dc9fb4ce08e8d618195a4d38c74a16e00e2e7c493c5c2cce9c06f",
+    "resource": "Prompts/PlayStation/ps-Circle.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-Cross-Color.svg",
+    "sha256": "fbd0ad042248cdae7139a66ab79cf0abcf4599f05add5480c980a61fbae1f553",
+    "resource": "Prompts/PlayStation/ps-Cross-Color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-Cross.svg",
+    "sha256": "b18ac020743e06ce073d618e9ac9aaba7ba8b6355272ae151f3caa00f0bd47a4",
+    "resource": "Prompts/PlayStation/ps-Cross.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-D-PAD Down.svg",
+    "sha256": "a3149b405f569f70e6c674caa37dafb59740c9de6a9f43247579a9869876e53a",
+    "resource": "Prompts/PlayStation/ps-D-PAD Down.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-D-PAD Left.svg",
+    "sha256": "1a0adb40012e1614beed2596726a28b308889b4fc58529d277be2bb9f7119e5b",
+    "resource": "Prompts/PlayStation/ps-D-PAD Left.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-D-PAD Right.svg",
+    "sha256": "1660ac9a9fae60f04414b87b81aa3b0f0eca34c39b9f600375fd00b1332a314b",
+    "resource": "Prompts/PlayStation/ps-D-PAD Right.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-D-PAD Up.svg",
+    "sha256": "8421d0216ba302c4d8be0fdfec8b524d73112ad966927f095642b72af1de835e",
+    "resource": "Prompts/PlayStation/ps-D-PAD Up.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-D-PAD.svg",
+    "sha256": "da85ba0c188e0c97dd64d7805a93658c3f09054b95323a893ef841dfda929448",
+    "resource": "Prompts/PlayStation/ps-D-PAD.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-Guide.svg",
+    "sha256": "092f059dafaaa7103d924d2e6a9bd77606d3957935cae3846372ca0b2379b9a6",
+    "resource": "Prompts/PlayStation/ps-Guide.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-positional prompt Circle-Color.svg",
+    "sha256": "ec8d0ec726eee51de674087bff8de4a0df157000852c158e13363c9e7c4031a3",
+    "resource": "Prompts/PlayStation/ps-positional prompt Circle-Color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-positional prompt Circle.svg",
+    "sha256": "ba3554bf64e61093f4f8509a197fdbcee3c1f79d753bedd5848c5dd19301093a",
+    "resource": "Prompts/PlayStation/ps-positional prompt Circle.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-positional prompt Cross-Color.svg",
+    "sha256": "0d64461e7fdf7a4b97fde8cf8d8c8df2026adc2331d2f661bf663105aa77b3aa",
+    "resource": "Prompts/PlayStation/ps-positional prompt Cross-Color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-positional prompt Cross.svg",
+    "sha256": "e221170e2d7b19fcf6d4b38c0e2c22a53c7cfe6eff49aa2f23b74d577514a718",
+    "resource": "Prompts/PlayStation/ps-positional prompt Cross.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-positional prompt Square-Color.svg",
+    "sha256": "c898618c8f781c83c8bfa6af2f203042e53fb97441a6a030301a293242d7dc15",
+    "resource": "Prompts/PlayStation/ps-positional prompt Square-Color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-positional prompt Square.svg",
+    "sha256": "921828618172ee650e0c57cabb82b08651f403ffb91828d3a64f39089cd84115",
+    "resource": "Prompts/PlayStation/ps-positional prompt Square.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-positional prompt Triangle-Color.svg",
+    "sha256": "c0316e76e3856ba8d7adbf08e1aaa080d10e554e4cccb16c01285e8066734b25",
+    "resource": "Prompts/PlayStation/ps-positional prompt Triangle-Color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-positional prompt Triangle.svg",
+    "sha256": "390721f67075dad1efb2b7103e15b21126db4fe24e30326619bc04cc9308e379",
+    "resource": "Prompts/PlayStation/ps-positional prompt Triangle.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-positional prompt-color.svg",
+    "sha256": "c5b0478332f664da6bb80f6a3403b103e63dbcba53a889daec0389d3124f3fe4",
+    "resource": "Prompts/PlayStation/ps-positional prompt-color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-positional prompt.svg",
+    "sha256": "14e3769247de84398993b2cb2462a4e49fdcc87b163150840c1d2512f652163a",
+    "resource": "Prompts/PlayStation/ps-positional prompt.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-Square-Color.svg",
+    "sha256": "c07215300240f645e8192b9ff43d7b49a6d1ae0ad230d868de7fcbe3d8f02aa9",
+    "resource": "Prompts/PlayStation/ps-Square-Color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-Square.svg",
+    "sha256": "9562b43d6b7385abb01d7c2c79c8ec18a321c49eec7dfc3c9d0aa525962a3114",
+    "resource": "Prompts/PlayStation/ps-Square.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-Triangle-Color.svg",
+    "sha256": "a4f7920a26a148c9904d2c150671822ce8fb70d8f7faa8486e324f3f1129e46d",
+    "resource": "Prompts/PlayStation/ps-Triangle-Color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps-Triangle.svg",
+    "sha256": "011330865e3424fd086f836aefdbdc77c32cbabacb1adb56ff021afaf4fd5909",
+    "resource": "Prompts/PlayStation/ps-Triangle.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps3-Select.svg",
+    "sha256": "fe9a1e31c039b68551cf70e2ea330cd77dec1bb31f3a29a79d57adae81db3566",
+    "resource": "Prompts/PlayStation/ps3-Select.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps3-Start.svg",
+    "sha256": "c234837b11dbe5e39d0644dcd82f61c825271164c84e718014b1cd1a476d2686",
+    "resource": "Prompts/PlayStation/ps3-Start.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps4-Option-Alt.svg",
+    "sha256": "1a28d776c3c0f9ee20af245288cf8447852b1eb5096d39a33eb09d2f9f0b851f",
+    "resource": "Prompts/PlayStation/ps4-Option-Alt.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps4-Option.svg",
+    "sha256": "ebd503e152e0c3f9772b6751415d2446779c6042095c104ea9eac7ff7d0ceb10",
+    "resource": "Prompts/PlayStation/ps4-Option.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps4-Share-Alt.svg",
+    "sha256": "d7de3808355d69a9368fcd374c4f7f1adb8d0f9f488c7b9665926b321b775bcf",
+    "resource": "Prompts/PlayStation/ps4-Share-Alt.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps4-Share.svg",
+    "sha256": "a24d9df87094f21619cd1fc8b721cd396b8219d02ab28669dd1f2e378c877563",
+    "resource": "Prompts/PlayStation/ps4-Share.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps4-Touchpad Click.svg",
+    "sha256": "4812a3229eb643ad5b8e8a6062dfa8c92ae24ae75294937329099969100da13e",
+    "resource": "Prompts/PlayStation/ps4-Touchpad Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps4-Touchpad Left Click.svg",
+    "sha256": "035584a2a89a33e36583a4dd6a00c246bd9226407d82b47f4152d5204645c6c4",
+    "resource": "Prompts/PlayStation/ps4-Touchpad Left Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps4-Touchpad Left Touch.svg",
+    "sha256": "3adb99f67d3c109f70213a5c7c823da35a43bf44ee085f5178a9c7fe940a75f4",
+    "resource": "Prompts/PlayStation/ps4-Touchpad Left Touch.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps4-Touchpad Right Click.svg",
+    "sha256": "0c9e0333bc3aab5067ff543ed774cf881c1c5e67cc7a834676eeca024dfe3539",
+    "resource": "Prompts/PlayStation/ps4-Touchpad Right Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps4-Touchpad Right Touch.svg",
+    "sha256": "266d6d3d60c1cdb7d7567654c9193a0cbc8ad624bd200f2b3d5492e2ed06be00",
+    "resource": "Prompts/PlayStation/ps4-Touchpad Right Touch.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps4-Touchpad Swipe.svg",
+    "sha256": "c5b7aaae2a54ece3b00300977b489e7445e25f98614c916a54069f9188005fbf",
+    "resource": "Prompts/PlayStation/ps4-Touchpad Swipe.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps4-Touchpad Touch.svg",
+    "sha256": "4f7a625620b71141699d90a747bffebe120f8aa763c58fff8c1238cd251070ed",
+    "resource": "Prompts/PlayStation/ps4-Touchpad Touch.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps4-Touchpad.svg",
+    "sha256": "0f1bbc0c277461cb7902156063f011a63421128c7b3bcdc21daf117fb3f02f81",
+    "resource": "Prompts/PlayStation/ps4-Touchpad.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps5-Create-Alt.svg",
+    "sha256": "fb51dcdeed8b8c9f0cf01548689373241bbb6260d28245e2e1389042e84dc9b4",
+    "resource": "Prompts/PlayStation/ps5-Create-Alt.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps5-Create.svg",
+    "sha256": "4b7c9f0fdde9a640802f119b3327d42aa1eed14ce15d57c17f72464a52aee666",
+    "resource": "Prompts/PlayStation/ps5-Create.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps5-Left Back.svg",
+    "sha256": "03cafbf059664b1eee2d2fdeb212065da8e3f132054c488335145211e63e3da3",
+    "resource": "Prompts/PlayStation/ps5-Left Back.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps5-Mute-Alt.svg",
+    "sha256": "0f22fe7599d2ce18beb5faeef9620ec6119cb8fdd8dfcdbbf276ead42f1327a4",
+    "resource": "Prompts/PlayStation/ps5-Mute-Alt.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps5-Mute.svg",
+    "sha256": "163e2c14a54d5b3177ee608a84ac52f41c203f051d5cfdf3067053ace8cc50f5",
+    "resource": "Prompts/PlayStation/ps5-Mute.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps5-Option-Alt.svg",
+    "sha256": "fac2dffeeaf5965531506a60cfd9278d03d39d29e0d295927b8c54c35a4e0efe",
+    "resource": "Prompts/PlayStation/ps5-Option-Alt.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps5-Option.svg",
+    "sha256": "562c98a032e0a715dcfa72bf31557242acd64509348b4b5cc7ccfacad4efa3a0",
+    "resource": "Prompts/PlayStation/ps5-Option.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps5-Right Back.svg",
+    "sha256": "cf52f5a287a4216e4f785c769d5e3feda9080f49ad96032020a640378e4e3d5b",
+    "resource": "Prompts/PlayStation/ps5-Right Back.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps5-Touchpad Click.svg",
+    "sha256": "853e711451fa982ffa6761888d355e719f96867bf277448aa16a7bab01f0e8b2",
+    "resource": "Prompts/PlayStation/ps5-Touchpad Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps5-Touchpad Left Click.svg",
+    "sha256": "2782f1561050da5d339368c0af8d19a3dc48f148a16b045fef3eedf408f18ca2",
+    "resource": "Prompts/PlayStation/ps5-Touchpad Left Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps5-Touchpad Left Touch.svg",
+    "sha256": "92be4b51509b6c6f6c6fa9556fecc5d3ac7f5c1c864aaf30fbe0e8741654ea4d",
+    "resource": "Prompts/PlayStation/ps5-Touchpad Left Touch.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps5-Touchpad Right Click.svg",
+    "sha256": "75858ec86ac3a9148d71d398d8fb0825e8a38747a54e541712937fddaa5bccaf",
+    "resource": "Prompts/PlayStation/ps5-Touchpad Right Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps5-Touchpad Right Touch.svg",
+    "sha256": "abf6995175355d38542b790d68d9d7d230b0eeb6e1c5302ffdd049b036191012",
+    "resource": "Prompts/PlayStation/ps5-Touchpad Right Touch.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps5-Touchpad Swipe.svg",
+    "sha256": "67152034b5e1947c99d2408644220cb067c1e35fad0f431f037147d46b05172f",
+    "resource": "Prompts/PlayStation/ps5-Touchpad Swipe.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps5-Touchpad Touch.svg",
+    "sha256": "b7953ceda8c63252d52dec984c223a7d4ee6a5e214adaca8a20e9c0201b7cc6c",
+    "resource": "Prompts/PlayStation/ps5-Touchpad Touch.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/PlayStation/ps5-Touchpad.svg",
+    "sha256": "2f4cdfc78c06956ed231a046fe82b86bdf7957d31938b62db6eff78a7ea96f62",
+    "resource": "Prompts/PlayStation/ps5-Touchpad.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-A-Color.svg",
+    "sha256": "13688356984a86bf25924b02fb5975ac3fca5667b813c92e8f524b993091ad97",
+    "resource": "Prompts/Shared/shared-A-Color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-A.svg",
+    "sha256": "c7642f88d16845bf4b9da72109e79021cddaa696e9ebbb7d6902ca4692e26ba2",
+    "resource": "Prompts/Shared/shared-A.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-B-Color.svg",
+    "sha256": "bb0400702eed4d11dcb5532b0f0556ab74eec1994ea8e7a62dc07d15d05332a2",
+    "resource": "Prompts/Shared/shared-B-Color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-B.svg",
+    "sha256": "ea33bb1ffbdfcdf78aedf035218b702a894faf7480b52c7baa9ec80fe53d21ce",
+    "resource": "Prompts/Shared/shared-B.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Back-Alt.svg",
+    "sha256": "f5a815c023e7ad4df8390bb2f178db630e78e625be584a294ceeadd12258c48c",
+    "resource": "Prompts/Shared/shared-Back-Alt.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-D-PA Down.svg",
+    "sha256": "c7996221c1d2bc2af51b924ead6623b055d2c0d9bd957fe07103a1a996ad66ba",
+    "resource": "Prompts/Shared/shared-D-PA Down.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-D-PAD Left.svg",
+    "sha256": "2db27534d3074d95ecbdee418ded0deaa914d34ab8bb7acfe4eff9062d6ce772",
+    "resource": "Prompts/Shared/shared-D-PAD Left.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-D-PAD Right.svg",
+    "sha256": "a7b3c49a8888a0fbdf06cba6c2db8e99e8fa322bfad6b1db062eeae9b0492992",
+    "resource": "Prompts/Shared/shared-D-PAD Right.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-D-PAD Up.svg",
+    "sha256": "463d6964e22fa2c35cd7d9827997dc8617efb48db0a21230ccf96a90956eb010",
+    "resource": "Prompts/Shared/shared-D-PAD Up.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Guide.svg",
+    "sha256": "bb7b7af1fbf8fe32d26e76257a9ff54f6d5bb3f9d899e77ac2fd6e15e880ad10",
+    "resource": "Prompts/Shared/shared-Guide.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-L1.svg",
+    "sha256": "0ea9d584f90ac114c5754dc72e3ae37b917b40d119f53cd100541552b0622e04",
+    "resource": "Prompts/Shared/shared-L1.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-L2.svg",
+    "sha256": "3bde76d4bd86565d2c240c95ac3c6b082db6d1352d3138ef13dfbba2f5eca7c3",
+    "resource": "Prompts/Shared/shared-L2.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-L3 Click.svg",
+    "sha256": "bd88eefffc489bbe69c87851356d7727eb2efed35c3d02359d0f9b0f3c2db29c",
+    "resource": "Prompts/Shared/shared-L3 Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-L4.svg",
+    "sha256": "5933fb16b4044c8c9551d0d5f34e30128ce7e0a4fee1c650e6b8f6793086411d",
+    "resource": "Prompts/Shared/shared-L4.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-L5.svg",
+    "sha256": "ea3c1cf2b1f52f6941e202d46d748717494a3f9130d6d690afc02480f42c89b1",
+    "resource": "Prompts/Shared/shared-L5.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Left Bumper.svg",
+    "sha256": "bea96b3b78296274247d48fcdc68512629d1931df6cd9308310773198dc17e97",
+    "resource": "Prompts/Shared/shared-Left Bumper.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Left Joystick Down.svg",
+    "sha256": "de018075c2daa7095b8b49932665c6cb66add9f4c48eb7461fc0c13fe83b90e9",
+    "resource": "Prompts/Shared/shared-Left Joystick Down.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Left Joystick Left.svg",
+    "sha256": "c960eef7cc28c35c3586db2fe0cce9d191dc3e532c6b6e0369d1beb9016946dd",
+    "resource": "Prompts/Shared/shared-Left Joystick Left.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Left Joystick Right.svg",
+    "sha256": "fe9b62137007b220811dadef9cd97de26361652fe94b632461a826e4cd1e5064",
+    "resource": "Prompts/Shared/shared-Left Joystick Right.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Left Joystick Up.svg",
+    "sha256": "6c07d8742db254cf1bd65940f000402bb49a6522568997bdd0607db70e481bcf",
+    "resource": "Prompts/Shared/shared-Left Joystick Up.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Left Joystick.svg",
+    "sha256": "feeffc1e4959ae5c97c64246f3d4dec64614e5f2c0dc187e35f6898b5dc152ed",
+    "resource": "Prompts/Shared/shared-Left Joystick.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Left Stick Click.svg",
+    "sha256": "3ec2c1ecaa930c50aff4746bb40bf765d415967a76d2a9f3198e2ffa2c5224ee",
+    "resource": "Prompts/Shared/shared-Left Stick Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Left Trigger.svg",
+    "sha256": "7969cb7499a510cd1649264ebe13baba9a9aa0bc568beee39cf5a6ac7f7e2cb7",
+    "resource": "Prompts/Shared/shared-Left Trigger.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-M1.svg",
+    "sha256": "649226ae1e0f8c74abed8b20c0cf897ece4f5986ab8b218fc4f6e15efdaff34a",
+    "resource": "Prompts/Shared/shared-M1.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-M2.svg",
+    "sha256": "0eedd1b61e43a0fb7b5f9c1db3343a45a6ab54f11b884e7583d2cf8423cf30c5",
+    "resource": "Prompts/Shared/shared-M2.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-M3.svg",
+    "sha256": "31ee14a44bea77407054f82907b26f4b74b0bffa4df31e08d3a5866d3adc9797",
+    "resource": "Prompts/Shared/shared-M3.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-M4.svg",
+    "sha256": "812b8ceb534144257d6089290c7b4dc92cf7b970b8ece86fd2ee7e3b8d336e63",
+    "resource": "Prompts/Shared/shared-M4.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-positional prompt A-Color.svg",
+    "sha256": "db0474bc3777f09c783e2a99e185120ff46784b9257968ea62c1a59f028da285",
+    "resource": "Prompts/Shared/shared-positional prompt A-Color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-positional prompt A.svg",
+    "sha256": "5195b79ad50d32f4aff9f8acde9c8b7ce70dd8d69e0bef4e51db1789abf328f6",
+    "resource": "Prompts/Shared/shared-positional prompt A.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-positional prompt B-Color.svg",
+    "sha256": "85ae3e1fd9537832f12d4a0d828e87dd7e81535969cc2587e09613fca72bc969",
+    "resource": "Prompts/Shared/shared-positional prompt B-Color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-positional prompt B.svg",
+    "sha256": "47042fd9d6dd65d609eb5ea0b547e60e811340fe7871c1f7a54cb57e3a39f39f",
+    "resource": "Prompts/Shared/shared-positional prompt B.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-positional prompt East.svg",
+    "sha256": "945613f0c0889655a349442c316e8d757cccb847db57a2107d9ba139855df40a",
+    "resource": "Prompts/Shared/shared-positional prompt East.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-positional prompt North.svg",
+    "sha256": "efd1bc239e341689e646199be0f5568e4405c10878f21290febd6d80af97fbda",
+    "resource": "Prompts/Shared/shared-positional prompt North.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-positional prompt South.svg",
+    "sha256": "6333f088771be85829b34e1fd0c5f1b4f14d8a8d5936a70de8813912d2e858d2",
+    "resource": "Prompts/Shared/shared-positional prompt South.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-positional prompt West.svg",
+    "sha256": "ea53a883be75e1b23a929920abeb70472184983777616d4f587ebc59549849cf",
+    "resource": "Prompts/Shared/shared-positional prompt West.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-positional prompt X-Color.svg",
+    "sha256": "e463048884928b939a5aa2d53fb9d7c8cf7eb70d48260a3186c0d29d06f7fb37",
+    "resource": "Prompts/Shared/shared-positional prompt X-Color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-positional prompt X.svg",
+    "sha256": "1a6b82b5ea7e50868d79f75e87fba53d2cc7bcb1232be21325559e1084d21f21",
+    "resource": "Prompts/Shared/shared-positional prompt X.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-positional prompt Y-Color.svg",
+    "sha256": "98d451f36ba67c045fdbad9e6b423b4d11b926c0b8fc5ae50c6514d0d2bd48e1",
+    "resource": "Prompts/Shared/shared-positional prompt Y-Color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-positional prompt Y.svg",
+    "sha256": "63b1cf9fddafd4cc15ae164392a83ef7eed86f0fbab8cd1d19f20a518c02f81a",
+    "resource": "Prompts/Shared/shared-positional prompt Y.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-positional prompt-Color.svg",
+    "sha256": "7ae06f2e2e9ea70113f8cfc986c4547f74486841928f9caf0245bdd96322f350",
+    "resource": "Prompts/Shared/shared-positional prompt-Color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-positional prompt.svg",
+    "sha256": "be053aab5376337f8c02ba2702d7fe8b2fe4f39207f6185312d0ae29285de0ba",
+    "resource": "Prompts/Shared/shared-positional prompt.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-R1.svg",
+    "sha256": "f9fa5a95609bceb4ae9a3470e2ea70307f1af31008492d7854aa5a17f876383f",
+    "resource": "Prompts/Shared/shared-R1.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-R2.svg",
+    "sha256": "00fc5f5dbc8b30acfc722dac9e83d891b9c070b5f5b6458dabf2434ae660c7f0",
+    "resource": "Prompts/Shared/shared-R2.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-R3 Click.svg",
+    "sha256": "d2091830693cef6bc5cd3ad3e172732755d022246d09009c3fb474ac2a09888a",
+    "resource": "Prompts/Shared/shared-R3 Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-R4.svg",
+    "sha256": "75933da7a444347e314eea79c846fc33f6450a2776aa144c3c10301bb5c8d7ac",
+    "resource": "Prompts/Shared/shared-R4.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-R5.svg",
+    "sha256": "58133746e06bc0b9a27b62b894db13b706bd4635d22628a75ab88f235245d66a",
+    "resource": "Prompts/Shared/shared-R5.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Right Bumper.svg",
+    "sha256": "cc8307b4061dc2ee5e368f8b5083748aa6010433942dc6722b4fae68830ef5c8",
+    "resource": "Prompts/Shared/shared-Right Bumper.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Right Joystick Down.svg",
+    "sha256": "3c6f4b9ea64e50196b556136dd7d0d910fe594465b4c6610d9c9e2b5b1318024",
+    "resource": "Prompts/Shared/shared-Right Joystick Down.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Right Joystick Left.svg",
+    "sha256": "ea9e65b25fdd5801695e4a507886c96475eca777d34ec64cae993abc006f1a67",
+    "resource": "Prompts/Shared/shared-Right Joystick Left.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Right Joystick Right.svg",
+    "sha256": "d8483ac8e357065f53200900e819a71aa6bc8732a619169245bb7558b9982334",
+    "resource": "Prompts/Shared/shared-Right Joystick Right.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Right Joystick Up.svg",
+    "sha256": "9fb07b23ae4feb24183948645e05b822e287061f540713b36805aa853231fbb6",
+    "resource": "Prompts/Shared/shared-Right Joystick Up.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Right Joystick.svg",
+    "sha256": "876e06319764b90e7c27ef9fe4fdb18caafe69411ba2d14d3d82db47a5146e67",
+    "resource": "Prompts/Shared/shared-Right Joystick.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Right Stick Click.svg",
+    "sha256": "41447950e2a33ed71e0ef0f21781e0c455866aa4e8a53ffca8d43a8b172c3bb3",
+    "resource": "Prompts/Shared/shared-Right Stick Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Right Trigger.svg",
+    "sha256": "64cf1c05dab5fa7c2570d4b78b94f7b8effb3054bdcc9716374016e14b243733",
+    "resource": "Prompts/Shared/shared-Right Trigger.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Select.svg",
+    "sha256": "1298699bd469044ed328ae1aab631dca9205ded8edff9bc04ddff614402bd91b",
+    "resource": "Prompts/Shared/shared-Select.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Start-Alt.svg",
+    "sha256": "fa0a476b0dfd40727e812d90f3746a928da8206a76912003975b969a79d59af5",
+    "resource": "Prompts/Shared/shared-Start-Alt.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Start.svg",
+    "sha256": "d9193cc1351c8e94149a313f59fbb523158d809050eb6f2d3e68a56bdc7b271b",
+    "resource": "Prompts/Shared/shared-Start.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-X-Color.svg",
+    "sha256": "ac6b614e63af257b835df9ec2307df86f4177cf2d54d2a4428aff8251eae98d9",
+    "resource": "Prompts/Shared/shared-X-Color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-X.svg",
+    "sha256": "d8a84ffeac0c2f1392c585bd6a5bcf0a4e8209e18047276fbc6bad243f2a9bc9",
+    "resource": "Prompts/Shared/shared-X.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Y-Color.svg",
+    "sha256": "7070ae8a98297f841d917dcdfa5a927dbb2c6bd189a492311c91a86b91d7fb07",
+    "resource": "Prompts/Shared/shared-Y-Color.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/shared-Y.svg",
+    "sha256": "db107931da20621161866dc75a9734915f3ef0443b4ef5c7cbe406042a5f70ec",
+    "resource": "Prompts/Shared/shared-Y.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Shared/sharerd-D-PAD.svg",
+    "sha256": "a6478fdc1e26bed3ec9e4cff322051487ce81805c32e66cdccbc977ca06730a4",
+    "resource": "Prompts/Shared/sharerd-D-PAD.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steam-Guide.svg",
+    "sha256": "996466ca70b2ecad9bc8803eac5f7c89b9e53f92fef0138ee2a4bbb2b4affcaa",
+    "resource": "Prompts/Steam/steam-Guide.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steam-Left Joystick Touch.svg",
+    "sha256": "9557c3bf7b716761765f0b981e4615508ce0c50a91d518cece6df58d3abe10ed",
+    "resource": "Prompts/Steam/steam-Left Joystick Touch.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steam-Quick Menu.svg",
+    "sha256": "100408082ec7ec77c95549ad604bf9f7a795f7320ed00390861992340c481aaf",
+    "resource": "Prompts/Steam/steam-Quick Menu.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steam-Right Joystick Touch.svg",
+    "sha256": "d356325fb0a484df40efb054662746d29c6c55bf7b44a4b801fa6c703ba2ba7f",
+    "resource": "Prompts/Steam/steam-Right Joystick Touch.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamcontroller-Left Grip.svg",
+    "sha256": "d169846bd0f6f36462c1acc6fe786a3dad4127341df047e3ded455f6c63a0925",
+    "resource": "Prompts/Steam/steamcontroller-Left Grip.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamcontroller-Left Trackpad Click.svg",
+    "sha256": "170f259f01ee31deb976ccc50cc970a48e395fb2e8cff0ced0d65e825a8e498e",
+    "resource": "Prompts/Steam/steamcontroller-Left Trackpad Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamcontroller-Left Trackpad Down Click.svg",
+    "sha256": "cd4deb71bf7bae66401b18a7a1ecce0881d48b81601cc0845f22a7299d30a7df",
+    "resource": "Prompts/Steam/steamcontroller-Left Trackpad Down Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamcontroller-Left Trackpad Left Click.svg",
+    "sha256": "3c83acbd421bad1caa8815f0b72ad1edb479a9a867937ab709b7e9b0fd478779",
+    "resource": "Prompts/Steam/steamcontroller-Left Trackpad Left Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamcontroller-Left Trackpad Right Click.svg",
+    "sha256": "09084dbd93b35c08ff7aea8df65a345dc597fa9a97da9b6fd4050a4eb689c70a",
+    "resource": "Prompts/Steam/steamcontroller-Left Trackpad Right Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamcontroller-Left Trackpad Swipe.svg",
+    "sha256": "4acdd07683915fe494bd3093bed44b612e403340dd1e98d38039d714fb2c3919",
+    "resource": "Prompts/Steam/steamcontroller-Left Trackpad Swipe.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamcontroller-Left Trackpad Touch.svg",
+    "sha256": "fad049574d6d4ebc6c7732be8298dedd2edecd1b4284da608ac2e270b2c1cfc9",
+    "resource": "Prompts/Steam/steamcontroller-Left Trackpad Touch.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamcontroller-Left Trackpad Up Click.svg",
+    "sha256": "5b4272d705001c7da496585fade9f243cd6613d02c25ae70a1dc833b0ae388e4",
+    "resource": "Prompts/Steam/steamcontroller-Left Trackpad Up Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamcontroller-Left Trackpad.svg",
+    "sha256": "874a58e5210b78343926c0b6f8bb1135e078abffdf349317ca721807ea049609",
+    "resource": "Prompts/Steam/steamcontroller-Left Trackpad.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamcontroller-Right Grip.svg",
+    "sha256": "dbaf2ec3a5836e63e21ba74683c7f4a12272cf84da7e38e2d75d713f77fbc640",
+    "resource": "Prompts/Steam/steamcontroller-Right Grip.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamcontroller-Right Trackpad Click.svg",
+    "sha256": "f0ec008938cb8f1ac55c037d361fdf0769943d95907e15ccac94571abd5d4688",
+    "resource": "Prompts/Steam/steamcontroller-Right Trackpad Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamcontroller-Right Trackpad Swipe.svg",
+    "sha256": "1fc993c7bd4dd1e1f56830278e553689fc963db17dfd89a0638f2911cd8d3759",
+    "resource": "Prompts/Steam/steamcontroller-Right Trackpad Swipe.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamcontroller-Right Trackpad Touch.svg",
+    "sha256": "4e3e5179286278d8d25007d3b3c5d82406eaaddb2f62086bc02ba8a6baa148bb",
+    "resource": "Prompts/Steam/steamcontroller-Right Trackpad Touch.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamcontroller-Right Trackpad.svg",
+    "sha256": "0f85019ab5ad323362a58f0b8b49af7899dd7358dede673b168eab307be0e07e",
+    "resource": "Prompts/Steam/steamcontroller-Right Trackpad.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamdeck-guide.svg",
+    "sha256": "ec054e32e454effdf28a36bcedf7fb2b98f9c600c57944cd1e7390012a61cbf7",
+    "resource": "Prompts/Steam/steamdeck-guide.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamdeck-L4.svg",
+    "sha256": "f629c1590dbc861b15111dbdd914a49956feec97ec733b71151ede0dfd0f6158",
+    "resource": "Prompts/Steam/steamdeck-L4.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamdeck-L5.svg",
+    "sha256": "9953bc1cc25d0427bba13bdfa313ed33ecebd0cbeb418a9bd2d8b15b211563a3",
+    "resource": "Prompts/Steam/steamdeck-L5.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamdeck-Left Trackpad Click.svg",
+    "sha256": "f9ee3cd248cd72e73b160ec36c4c9164b028a9f9a7a39e801ffa369ba6830452",
+    "resource": "Prompts/Steam/steamdeck-Left Trackpad Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamdeck-Left Trackpad Swipe.svg",
+    "sha256": "11851a89aea5aaf7cf4b1b3309f857aae98ef6a9d698f5013167c9f9fdc65ba5",
+    "resource": "Prompts/Steam/steamdeck-Left Trackpad Swipe.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamdeck-Left Trackpad Touch.svg",
+    "sha256": "b5d5b14c028689f0fa6ccc328d8d041f354179a428ab79179132b7b93dc6e471",
+    "resource": "Prompts/Steam/steamdeck-Left Trackpad Touch.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamdeck-Left Trackpad.svg",
+    "sha256": "dece3c93357e3931a1521153d1a2f7a27e9ef7d57ca9e5a4a6980057b052f64d",
+    "resource": "Prompts/Steam/steamdeck-Left Trackpad.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamdeck-R4.svg",
+    "sha256": "25c7f71bf01efe62448da2dddcc784309ff133b8ab96c74145d80904ca69b806",
+    "resource": "Prompts/Steam/steamdeck-R4.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamdeck-R5.svg",
+    "sha256": "b64f98cd0e448fe206b65c5187b1fc08938ffd3f86bf06e658703607fff482e1",
+    "resource": "Prompts/Steam/steamdeck-R5.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamdeck-Right Trackpad Click.svg",
+    "sha256": "91cad48626e954bd227e97a9da10954765da1f534f9c55e08e78ae2e911bfadc",
+    "resource": "Prompts/Steam/steamdeck-Right Trackpad Click.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamdeck-Right Trackpad Swipe.svg",
+    "sha256": "4ce671f079786f5ee5dfaf81509255af02372b79367577e05b81a4e4a2b4df05",
+    "resource": "Prompts/Steam/steamdeck-Right Trackpad Swipe.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamdeck-Right Trackpad Touch.svg",
+    "sha256": "f28949208d095ff91e6483f16125fa4e7d53544f0b5a0bb39220cc8855c40d21",
+    "resource": "Prompts/Steam/steamdeck-Right Trackpad Touch.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Steam/steamdeck-Right Trackpad.svg",
+    "sha256": "d79266541d40586c96e93af63f6eaea953b081d628842b5c534cb60ab9baf21d",
+    "resource": "Prompts/Steam/steamdeck-Right Trackpad.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Xbox/xbox-Guide.svg",
+    "sha256": "7b3e4e5c2d60ad44f62e8cf67aed4593763bbd6369e1ea79159034fc0a37a7f4",
+    "resource": "Prompts/Xbox/xbox-Guide.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Xbox/xbox-Menu.svg",
+    "sha256": "16034ef93b3c51c7ab281b43681487426c6f96ab66fb7bd7a3eb2694883fcf59",
+    "resource": "Prompts/Xbox/xbox-Menu.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Xbox/xbox-P1.svg",
+    "sha256": "6947bde2c40395678df11cd3273a06daa4a87c58c60af793ef779da30d3dbfbe",
+    "resource": "Prompts/Xbox/xbox-P1.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Xbox/xbox-P2.svg",
+    "sha256": "f38391382ada248791c71bd68f92c5170fd1e3bade8f361d8fe4d676cc055cbc",
+    "resource": "Prompts/Xbox/xbox-P2.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Xbox/xbox-P3.svg",
+    "sha256": "1a49ed07b2bf85d50e194b67b43c3d2f2b400812593e874f033d9677829ed024",
+    "resource": "Prompts/Xbox/xbox-P3.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Xbox/xbox-P4.svg",
+    "sha256": "221a54d83cf47e92673289d7bf18b0a4f73259443ecb4020f38c2bf0990656d9",
+    "resource": "Prompts/Xbox/xbox-P4.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Xbox/xbox-Share.svg",
+    "sha256": "a72892c7048ba0cbb561a0a71e2aac8264f580eb85c442bf30bb580ddaa03215",
+    "resource": "Prompts/Xbox/xbox-Share.png"
+  },
+  {
+    "pack": "prompts",
+    "source": "Controller Prompt Asset Pack/Xbox/xbox-View.svg",
+    "sha256": "363d3f3c5a19585fa5b0ede825df3bb1f3d656dcd888fe874d5c299b98c09e94",
+    "resource": "Prompts/Xbox/xbox-View.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Connection Type/Dark Theme/Bluetooth-White.svg",
+    "sha256": "25f7fb21060397ab6f16f9a8114b2fd31318ef6dcb1201f016387b6793cc95a2",
+    "resource": "Icons/Connection Type/Dark Theme/Bluetooth-White.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Connection Type/Dark Theme/DS4 Wireless Adapter Dark Theme.svg",
+    "sha256": "61e877412450e25a4718e8ea667c04a9da92548f0a3dbbe7b65509bb7facbb61",
+    "resource": "Icons/Connection Type/Dark Theme/DS4 Wireless Adapter Dark Theme.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Connection Type/Dark Theme/Flydigi Wireless Adapter Dark Theme.svg",
+    "sha256": "7dd74b23d258ddc655d194bc102314bbf4fb8922870a2276c09cb87841cc6c1c",
+    "resource": "Icons/Connection Type/Dark Theme/Flydigi Wireless Adapter Dark Theme.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Connection Type/Dark Theme/Steam_Hardware_Dongle Dark Theme.svg",
+    "sha256": "770df1c8b3c2a879817e1d5a8b2d2f07d6e2e268182589caa77ce4dbea2aa56a",
+    "resource": "Icons/Connection Type/Dark Theme/Steam_Hardware_Dongle Dark Theme.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Connection Type/Dark Theme/USB Connection Dark Theme.svg",
+    "sha256": "184e85b9c7a474c780ced70d38baf89df27565b361819c1b7c48b02883bf6570",
+    "resource": "Icons/Connection Type/Dark Theme/USB Connection Dark Theme.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Connection Type/Dark Theme/Xbox Wireless Adapter - Dark Theme.svg",
+    "sha256": "b57b90c73585e8ef615f6fc9c9dd3fe2b9b6be4387f8a8a044501dbc07fb9ac1",
+    "resource": "Icons/Connection Type/Dark Theme/Xbox Wireless Adapter - Dark Theme.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Connection Type/Light Theme/Bluetooth-Black.svg",
+    "sha256": "e823c7795c35e5207e7ce7162064ea4c21249b6d0c9d57f3d18f6f638399fe50",
+    "resource": "Icons/Connection Type/Light Theme/Bluetooth-Black.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Connection Type/Light Theme/DS4 Wireless Adapter.svg",
+    "sha256": "a6ffeee79f9db6f3364cf07e30ac5c70380592efc5b9fbefe0476156df4bc317",
+    "resource": "Icons/Connection Type/Light Theme/DS4 Wireless Adapter.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Connection Type/Light Theme/Flydigi Wireless Adapter.svg",
+    "sha256": "191b30821cee330f18b06b88d22239a8a82e2d0cac03ff903b833660c0abd14d",
+    "resource": "Icons/Connection Type/Light Theme/Flydigi Wireless Adapter.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Connection Type/Light Theme/Steam_Hardware_Dongle.svg",
+    "sha256": "4b698915c32df98cdb6f660a076b78adfbe8b5b916e13f524a32a35d4ff4ae26",
+    "resource": "Icons/Connection Type/Light Theme/Steam_Hardware_Dongle.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Connection Type/Light Theme/USB Connection.svg",
+    "sha256": "c5627f6b7c8b4e00e5644941ebca705ae18fb4f67ec3e3f497d14e499bc710fd",
+    "resource": "Icons/Connection Type/Light Theme/USB Connection.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Connection Type/Light Theme/Xbox Wireless Adapter.svg",
+    "sha256": "4fd3bf6282ed94dc92d95b1f8334694f26e89f5e2f4931c7f8dd502c17f29d60",
+    "resource": "Icons/Connection Type/Light Theme/Xbox Wireless Adapter.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Controller Type/SVG/VSCView Arcade Stick.svg",
+    "sha256": "3660a0bd6d345d5f417c28066b12be98e7ede88a3e19d40033cc8a4d91da2c2d",
+    "resource": "Icons/Controller Type/SVG/VSCView Arcade Stick.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Controller Type/SVG/VSCView Device NONE.svg",
+    "sha256": "0384bc57a0fb350b0b420ae5ec652846ff38e66354a6d14ae47ec70e10fae53d",
+    "resource": "Icons/Controller Type/SVG/VSCView Device NONE.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Controller Type/SVG/VSCView Device UNKNOWN.svg",
+    "sha256": "a2749fd12c410a2607726724ae418b25a426a28115d34fdc2e79233bd8cee7f7",
+    "resource": "Icons/Controller Type/SVG/VSCView Device UNKNOWN.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Controller Type/SVG/VSCView DualSense Controller.svg",
+    "sha256": "a316662f5fb318b5c6ab2ceab90889276e14e6c006eccaa36d2c4c876359069e",
+    "resource": "Icons/Controller Type/SVG/VSCView DualSense Controller.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Controller Type/SVG/VSCView DualShock 3 Controller.svg",
+    "sha256": "e51d9f86ccce65429eb110bbcf236c304fd7dfe24bbd559d0df7c4ca7b1c260d",
+    "resource": "Icons/Controller Type/SVG/VSCView DualShock 3 Controller.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Controller Type/SVG/VSCView DualShock 4 Controller.svg",
+    "sha256": "9aa620fb7903f2ebb0bec39782df8ffe83089a309a31c5b4490a35e5473c16d0",
+    "resource": "Icons/Controller Type/SVG/VSCView DualShock 4 Controller.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Controller Type/SVG/VSCView Generic Controller.svg",
+    "sha256": "7d30b92a833621c73dcc773a4083624933922d434354b1b2e3263dfe953e9f0e",
+    "resource": "Icons/Controller Type/SVG/VSCView Generic Controller.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Controller Type/SVG/VSCView Steam Controller Chell.svg",
+    "sha256": "b1c1c0e6384c171bb223afa178ae83de88f978e98767b07e6a0358991b64ed93",
+    "resource": "Icons/Controller Type/SVG/VSCView Steam Controller Chell.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Controller Type/SVG/VSCView Steam Controller.svg",
+    "sha256": "cb0699aa26d0334c70296e30893f9b4b006fc2f7985c38faf7db757c670b1022",
+    "resource": "Icons/Controller Type/SVG/VSCView Steam Controller.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Controller Type/SVG/VSCView Steam Deck.svg",
+    "sha256": "c5b9d9ab248a5480c16599bc6323e4ad69ae9ff0b5d4697d14a8ab30380cf995",
+    "resource": "Icons/Controller Type/SVG/VSCView Steam Deck.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Controller Type/SVG/VSCView Switch Joy-Con Grip.svg",
+    "sha256": "dc5f015c0e2d2e86e93f1729b44b1123915bc2cf52556a5c6dd2c872269c8a7e",
+    "resource": "Icons/Controller Type/SVG/VSCView Switch Joy-Con Grip.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Controller Type/SVG/VSCView Switch Joy-Con.svg",
+    "sha256": "7918377a67de03e6e08032d714dfa90d04f3967b84e5f4810e85c7ba763b0a83",
+    "resource": "Icons/Controller Type/SVG/VSCView Switch Joy-Con.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Controller Type/SVG/VSCView Switch Pro Controller.svg",
+    "sha256": "fb1dac0371c778903731966d10cc384647356b67c95156278faf01cf862143ae",
+    "resource": "Icons/Controller Type/SVG/VSCView Switch Pro Controller.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Controller Type/SVG/VSCView Xbox 360 Controller.svg",
+    "sha256": "4dd0de46a4a0effd7883cdc1b6a1bb709ddf73d5e5f6205a1695c2bce5de8d8b",
+    "resource": "Icons/Controller Type/SVG/VSCView Xbox 360 Controller.png"
+  },
+  {
+    "pack": "icons",
+    "source": "Connection Icon Pack/Controller Type/SVG/VSCView Xbox Wireless Controller.svg",
+    "sha256": "dfd793cfb4cc39bfec8d610272854a0a055363d3503a3f8c116dc9c05f4969ef",
+    "resource": "Icons/Controller Type/SVG/VSCView Xbox Wireless Controller.png"
+  }
+]

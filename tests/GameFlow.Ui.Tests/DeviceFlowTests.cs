@@ -5,6 +5,9 @@ using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
+using GameFlow.App.Converters;
 using GameFlow.App.Bootstrap;
 using GameFlow.App.Services;
 using GameFlow.App.ViewModels;
@@ -264,6 +267,48 @@ public sealed class DeviceFlowTests(UiFixture fixture) : IClassFixture<UiFixture
         localizer.SetCulture("cs");
         release.SetResult();
         Assert.Equal("Dolní (A / ×)", await request.WaitAsync(TimeSpan.FromSeconds(5)));
+    });
+
+    /// <summary>Checks every embedded prompt through the same converter as the mapping picker.</summary>
+    [Fact]
+    public Task ImportedButtonAndControllerImagesDecodeAndRemainCachedAsync() => Run(_ =>
+    {
+        using var converter = new InputAssetImageConverter();
+        foreach (var button in Enum.GetValues<ButtonId>().Where(button => button != ButtonId.None))
+        {
+            var image = converter.Convert(button, typeof(Bitmap), null, System.Globalization.CultureInfo.InvariantCulture);
+
+            Assert.IsType<Bitmap>(image);
+            Assert.Same(image, converter.Convert(button, typeof(Bitmap), null, System.Globalization.CultureInfo.InvariantCulture));
+        }
+
+        foreach (var style in Enum.GetValues<ControllerVisualStyle>())
+        {
+            Assert.IsType<Bitmap>(converter.Convert(style, typeof(Bitmap), null, System.Globalization.CultureInfo.InvariantCulture));
+        }
+
+        return Task.CompletedTask;
+    });
+
+    /// <summary>Checks that every imported vector has a usable embedded raster image.</summary>
+    [Fact]
+    public Task ImportedAssetManifestResolvesEveryEmbeddedImageAsync() => Run(_ =>
+    {
+        using var manifestStream = AssetLoader.Open(new Uri("avares://GameFlow/Assets/InputAssets/manifest.json"));
+        using var manifest = System.Text.Json.JsonDocument.Parse(manifestStream);
+        Assert.Equal(243, manifest.RootElement.GetArrayLength());
+
+        foreach (var entry in manifest.RootElement.EnumerateArray())
+        {
+            using var stream = AssetLoader.Open(new Uri("avares://GameFlow/Assets/InputAssets/" + entry.GetProperty("resource").GetString()));
+            using var image = new Bitmap(stream);
+
+            Assert.True(image.PixelSize.Width > 0);
+            Assert.True(image.PixelSize.Height > 0);
+            Assert.Equal(64, entry.GetProperty("sha256").GetString()!.Length);
+        }
+
+        return Task.CompletedTask;
     });
 
     [Theory]
