@@ -1,9 +1,9 @@
 using System.Diagnostics;
-using GameFlow.Infrastructure.Updates;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using GameFlow.Infrastructure.Updates;
 using Serilog;
 
 namespace GameFlow.App.Views;

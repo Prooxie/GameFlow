@@ -42,8 +42,8 @@ public sealed class DefaultInputSourceFactory(
                 serviceProvider, "No live input", "Live input is disabled for this profile."),
             "demo" => ActivatorUtilities.CreateInstance<DemoInputSource>(
                 serviceProvider, "DemoInput (preview)"),
-            "sdl"  => CreateSdlOrFallback(),
-            _      => CreateUnknown(normalized),
+            "sdl" => CreateSdlOrFallback(),
+            _ => CreateUnknown(normalized),
         };
     }
 

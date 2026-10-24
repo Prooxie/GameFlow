@@ -457,7 +457,8 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
             var pressed = keyboardStateSource.GetPressedKeys(deviceId);
             return GameFlow.Infrastructure.Runtime.Input.KeyboardGamepadSynthesizer
                 .Synthesize(info.DisplayName ?? deviceId, pressed, map)
-                with { Timestamp = DateTimeOffset.UtcNow };
+                with
+            { Timestamp = DateTimeOffset.UtcNow };
         }
 
         if (info?.Category == DeviceCategory.Mouse)
@@ -474,7 +475,8 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
 
             return GameFlow.Infrastructure.Runtime.Input.MouseGamepadSynthesizer
                 .Synthesize(info.DisplayName ?? deviceId, frame, motion, wheel, map)
-                with { Timestamp = DateTimeOffset.UtcNow };
+                with
+            { Timestamp = DateTimeOffset.UtcNow };
         }
 
         return null;
@@ -519,24 +521,24 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
     /// <summary>Worker-only: opens (lazily) and reads one slot device. Blocking SDL calls live here, on the worker.</summary>
     private ControllerSnapshot? WorkerReadSlotDevice(string deviceId)
     {
-            var device = EnsureSlotDeviceOpened(deviceId);
-            if (device is null)
-            {
-                return ControllerSnapshot.Empty(deviceId) with { Timestamp = DateTimeOffset.UtcNow };
-            }
+        var device = EnsureSlotDeviceOpened(deviceId);
+        if (device is null)
+        {
+            return ControllerSnapshot.Empty(deviceId) with { Timestamp = DateTimeOffset.UtcNow };
+        }
 
-            // Gate the crash trace on THIS slot device, then mark it traced
-            // once a full read survives. Without this the slot path never
-            // silenced the breadcrumb: it wrote ~20 File.AppendAllText lines
-            // every tick at 250 Hz, all while holding syncRoot — which
-            // stalled the runtime loop and froze the app the instant a
-            // controller was mapped to a slot.
-            activeTraceDeviceId = deviceId;
-            var snapshot = device.Kind == DeviceKind.Gamepad
-                ? ReadGamepadSnapshot(device)
-                : ReadJoystickSnapshot(device);
-            tracedDeviceIds.Add(deviceId);
-            return snapshot;
+        // Gate the crash trace on THIS slot device, then mark it traced
+        // once a full read survives. Without this the slot path never
+        // silenced the breadcrumb: it wrote ~20 File.AppendAllText lines
+        // every tick at 250 Hz, all while holding syncRoot — which
+        // stalled the runtime loop and froze the app the instant a
+        // controller was mapped to a slot.
+        activeTraceDeviceId = deviceId;
+        var snapshot = device.Kind == DeviceKind.Gamepad
+            ? ReadGamepadSnapshot(device)
+            : ReadJoystickSnapshot(device);
+        tracedDeviceIds.Add(deviceId);
+        return snapshot;
     }
 
     private OpenedDevice? EnsureSlotDeviceOpened(string deviceId)
@@ -1256,7 +1258,7 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
         // queued a rebuild. RefreshDeviceCatalog owns the status.
 
         ReadBreadcrumb("gamepad: reading sticks + vendor/product");
-        var vendorId  = SdlInterop.GetGamepadVendor(device.Handle);
+        var vendorId = SdlInterop.GetGamepadVendor(device.Handle);
         var productId = SdlInterop.GetGamepadProduct(device.Handle);
         var leftStick = new StickVector(
             NormalizeSignedAxis(SdlInterop.GetGamepadAxis(device.Handle, SdlInterop.GamepadAxis.LeftX)),
@@ -1299,8 +1301,8 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
         return new ControllerSnapshot
         {
             DeviceName = device.DisplayName,
-            VendorId   = vendorId,
-            ProductId  = productId,
+            VendorId = vendorId,
+            ProductId = productId,
             BatteryPercent = power.Percentage,
             BatteryCharging = power.State == DeviceBatteryState.Charging,
             LeftStick = leftStick,
@@ -1432,8 +1434,8 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
         return new ControllerSnapshot
         {
             DeviceName = device.DisplayName,
-            VendorId   = SdlInterop.GetJoystickVendor(device.Handle),
-            ProductId  = SdlInterop.GetJoystickProduct(device.Handle),
+            VendorId = SdlInterop.GetJoystickVendor(device.Handle),
+            ProductId = SdlInterop.GetJoystickProduct(device.Handle),
             LeftStick = leftStick,
             RightStick = rightStick,
             LeftTrigger = leftTrigger,

@@ -1,4 +1,4 @@
-﻿using GameFlow.Core.Enums;
+using GameFlow.Core.Enums;
 
 namespace GameFlow.Core.Models;
 

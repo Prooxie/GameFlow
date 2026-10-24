@@ -1,6 +1,6 @@
 using System.Globalization;
-using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace GameFlow.Infrastructure.Runtime.RawInput;
 

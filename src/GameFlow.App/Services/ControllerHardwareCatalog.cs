@@ -64,12 +64,12 @@ public static class ControllerHardwareCatalog
     public static IReadOnlyList<(ushort Vid, ushort Pid, ControllerVisualStyle Style)> All => KnownDevices;
 
     // Vendor IDs (centralised so the table below stays scannable).
-    private const ushort SonyVid       = 0x054C;
-    private const ushort MicrosoftVid  = 0x045E;
-    private const ushort NintendoVid   = 0x057E;
-    private const ushort ValveVid      = 0x28DE;
-    private const ushort RazerVid      = 0x1532;
-    private const ushort HoriVid       = 0x0F0D;
+    private const ushort SonyVid = 0x054C;
+    private const ushort MicrosoftVid = 0x045E;
+    private const ushort NintendoVid = 0x057E;
+    private const ushort ValveVid = 0x28DE;
+    private const ushort RazerVid = 0x1532;
+    private const ushort HoriVid = 0x0F0D;
     private const ushort EightBitDoVid = 0x2DC8;
 
     /// <summary>

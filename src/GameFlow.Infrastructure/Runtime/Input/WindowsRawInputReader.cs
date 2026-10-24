@@ -239,9 +239,9 @@ public sealed class WindowsRawInputReader : IKeyboardStateSource, IMouseStateSou
             state.AccumY += m.lLastY;
             state.PreviewY += m.lLastY;
             var bf = m.usButtonFlags;
-            if ((bf & 0x0001) != 0) state.Left = true;    if ((bf & 0x0002) != 0) state.Left = false;
-            if ((bf & 0x0004) != 0) state.Right = true;   if ((bf & 0x0008) != 0) state.Right = false;
-            if ((bf & 0x0010) != 0) state.Middle = true;  if ((bf & 0x0020) != 0) state.Middle = false;
+            if ((bf & 0x0001) != 0) state.Left = true; if ((bf & 0x0002) != 0) state.Left = false;
+            if ((bf & 0x0004) != 0) state.Right = true; if ((bf & 0x0008) != 0) state.Right = false;
+            if ((bf & 0x0010) != 0) state.Middle = true; if ((bf & 0x0020) != 0) state.Middle = false;
             if ((bf & 0x0040) != 0) state.Button4 = true; if ((bf & 0x0080) != 0) state.Button4 = false;
             if ((bf & 0x0100) != 0) state.Button5 = true; if ((bf & 0x0200) != 0) state.Button5 = false;
             if ((bf & RI_MOUSE_WHEEL) != 0)
@@ -335,7 +335,7 @@ public sealed class WindowsRawInputReader : IKeyboardStateSource, IMouseStateSou
     }
 
     // ─── Win32 constants ───
-    private const uint WM_INPUT  = 0x00FF;
+    private const uint WM_INPUT = 0x00FF;
     private const uint RID_INPUT = 0x10000003;
     private const uint RIM_TYPEKEYBOARD = 1;
     private const uint RIM_TYPEMOUSE = 0;
@@ -367,10 +367,10 @@ public sealed class WindowsRawInputReader : IKeyboardStateSource, IMouseStateSou
     [StructLayout(LayoutKind.Explicit)]
     private struct RAWMOUSE
     {
-        [FieldOffset(0)]  public ushort usFlags;
-        [FieldOffset(4)]  public ushort usButtonFlags;
-        [FieldOffset(6)]  public ushort usButtonData;
-        [FieldOffset(8)]  public uint ulRawButtons;
+        [FieldOffset(0)] public ushort usFlags;
+        [FieldOffset(4)] public ushort usButtonFlags;
+        [FieldOffset(6)] public ushort usButtonData;
+        [FieldOffset(8)] public uint ulRawButtons;
         [FieldOffset(12)] public int lLastX;
         [FieldOffset(16)] public int lLastY;
         [FieldOffset(20)] public uint ulExtraInformation;

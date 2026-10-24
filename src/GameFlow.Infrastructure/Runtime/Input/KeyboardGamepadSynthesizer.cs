@@ -57,34 +57,34 @@ internal struct GamepadActionAccumulator
     {
         switch (action)
         {
-            case GamepadAction.LeftStickUp:    ly += 1f; break;
-            case GamepadAction.LeftStickDown:  ly -= 1f; break;
-            case GamepadAction.LeftStickLeft:  lx -= 1f; break;
+            case GamepadAction.LeftStickUp: ly += 1f; break;
+            case GamepadAction.LeftStickDown: ly -= 1f; break;
+            case GamepadAction.LeftStickLeft: lx -= 1f; break;
             case GamepadAction.LeftStickRight: lx += 1f; break;
-            case GamepadAction.RightStickUp:    ry += 1f; break;
-            case GamepadAction.RightStickDown:  ry -= 1f; break;
-            case GamepadAction.RightStickLeft:  rx -= 1f; break;
+            case GamepadAction.RightStickUp: ry += 1f; break;
+            case GamepadAction.RightStickDown: ry -= 1f; break;
+            case GamepadAction.RightStickLeft: rx -= 1f; break;
             case GamepadAction.RightStickRight: rx += 1f; break;
-            case GamepadAction.LeftTriggerFull:  lt = 1f; break;
+            case GamepadAction.LeftTriggerFull: lt = 1f; break;
             case GamepadAction.RightTriggerFull: rt = 1f; break;
-            case GamepadAction.LeftStickWalk:    walk = true; break;
-            case GamepadAction.South:         buttons[ButtonId.South] = true; break;
-            case GamepadAction.East:          buttons[ButtonId.East] = true; break;
-            case GamepadAction.West:          buttons[ButtonId.West] = true; break;
-            case GamepadAction.North:         buttons[ButtonId.North] = true; break;
-            case GamepadAction.LeftShoulder:  buttons[ButtonId.LeftShoulder] = true; break;
+            case GamepadAction.LeftStickWalk: walk = true; break;
+            case GamepadAction.South: buttons[ButtonId.South] = true; break;
+            case GamepadAction.East: buttons[ButtonId.East] = true; break;
+            case GamepadAction.West: buttons[ButtonId.West] = true; break;
+            case GamepadAction.North: buttons[ButtonId.North] = true; break;
+            case GamepadAction.LeftShoulder: buttons[ButtonId.LeftShoulder] = true; break;
             case GamepadAction.RightShoulder: buttons[ButtonId.RightShoulder] = true; break;
-            case GamepadAction.Back:          buttons[ButtonId.Back] = true; break;
-            case GamepadAction.Start:         buttons[ButtonId.Start] = true; break;
-            case GamepadAction.Guide:         buttons[ButtonId.Guide] = true; break;
-            case GamepadAction.DpadUp:        buttons[ButtonId.DpadUp] = true; break;
-            case GamepadAction.DpadDown:      buttons[ButtonId.DpadDown] = true; break;
-            case GamepadAction.DpadLeft:      buttons[ButtonId.DpadLeft] = true; break;
-            case GamepadAction.DpadRight:     buttons[ButtonId.DpadRight] = true; break;
-            case GamepadAction.LeftStickClick:  buttons[ButtonId.LeftStick] = true; break;
+            case GamepadAction.Back: buttons[ButtonId.Back] = true; break;
+            case GamepadAction.Start: buttons[ButtonId.Start] = true; break;
+            case GamepadAction.Guide: buttons[ButtonId.Guide] = true; break;
+            case GamepadAction.DpadUp: buttons[ButtonId.DpadUp] = true; break;
+            case GamepadAction.DpadDown: buttons[ButtonId.DpadDown] = true; break;
+            case GamepadAction.DpadLeft: buttons[ButtonId.DpadLeft] = true; break;
+            case GamepadAction.DpadRight: buttons[ButtonId.DpadRight] = true; break;
+            case GamepadAction.LeftStickClick: buttons[ButtonId.LeftStick] = true; break;
             case GamepadAction.RightStickClick: buttons[ButtonId.RightStick] = true; break;
-            case GamepadAction.Touchpad:      buttons[ButtonId.Touchpad] = true; break;
-            case GamepadAction.Misc:          buttons[ButtonId.Misc1] = true; break;
+            case GamepadAction.Touchpad: buttons[ButtonId.Touchpad] = true; break;
+            case GamepadAction.Misc: buttons[ButtonId.Misc1] = true; break;
         }
     }
 
@@ -104,12 +104,12 @@ internal struct GamepadActionAccumulator
 
         return new ControllerSnapshot
         {
-            DeviceName   = deviceName,
-            LeftStick    = left,
-            RightStick   = ClampToUnit(rx, ry),
-            LeftTrigger  = lt,
+            DeviceName = deviceName,
+            LeftStick = left,
+            RightStick = ClampToUnit(rx, ry),
+            LeftTrigger = lt,
             RightTrigger = rt,
-            Buttons      = result,
+            Buttons = result,
         };
     }
 

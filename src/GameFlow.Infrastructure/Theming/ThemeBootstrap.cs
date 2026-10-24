@@ -12,7 +12,8 @@ public static class ThemeBootstrap
     private static readonly Lock Gate = new();
     private static readonly EnumerationOptions Files = new()
     {
-        RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint
+        RecurseSubdirectories = true,
+        AttributesToSkip = FileAttributes.ReparsePoint
     };
 
     public static int EnsureBundledThemesInstalled() => EnsureBundledThemesInstalled(

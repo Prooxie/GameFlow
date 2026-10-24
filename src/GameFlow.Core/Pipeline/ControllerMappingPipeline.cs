@@ -1301,10 +1301,10 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
             .WithButtons(buttons)
             .WithTriggers(leftTrigger, rightTrigger)
             with
-            {
-                Timestamp = now,
-                DeviceName = $"{physical.DeviceName} / virtual"
-            };
+        {
+            Timestamp = now,
+            DeviceName = $"{physical.DeviceName} / virtual"
+        };
 
         // Axis inversion is the LAST thing that happens, in a pass of its
         // own after every rule — see AxisInvertProcessor for why it sits
@@ -1674,43 +1674,43 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
         switch (mode)
         {
             case CombineMode.Maximum:
-            {
-                var best = values[0];
-                for (var i = 1; i < values.Length; i++) { best = MathF.Max(best, values[i]); }
-                return best;
-            }
-            case CombineMode.Minimum:
-            {
-                var worst = values[0];
-                for (var i = 1; i < values.Length; i++) { worst = MathF.Min(worst, values[i]); }
-                return worst;
-            }
-            case CombineMode.Sum:
-            {
-                var sum = 0f;
-                foreach (var v in values) { sum += v; }
-                return sum;
-            }
-            case CombineMode.Average:
-            {
-                var sum = 0f;
-                foreach (var v in values) { sum += v; }
-                return sum / values.Length;
-            }
-            case CombineMode.Multiply:
-            {
-                var product = 1f;
-                foreach (var v in values) { product *= v; }
-                return product;
-            }
-            case CombineMode.FirstActive:
-            {
-                foreach (var v in values)
                 {
-                    if (MathF.Abs(v) > FirstActiveEpsilon) { return v; }
+                    var best = values[0];
+                    for (var i = 1; i < values.Length; i++) { best = MathF.Max(best, values[i]); }
+                    return best;
                 }
-                return 0f;
-            }
+            case CombineMode.Minimum:
+                {
+                    var worst = values[0];
+                    for (var i = 1; i < values.Length; i++) { worst = MathF.Min(worst, values[i]); }
+                    return worst;
+                }
+            case CombineMode.Sum:
+                {
+                    var sum = 0f;
+                    foreach (var v in values) { sum += v; }
+                    return sum;
+                }
+            case CombineMode.Average:
+                {
+                    var sum = 0f;
+                    foreach (var v in values) { sum += v; }
+                    return sum / values.Length;
+                }
+            case CombineMode.Multiply:
+                {
+                    var product = 1f;
+                    foreach (var v in values) { product *= v; }
+                    return product;
+                }
+            case CombineMode.FirstActive:
+                {
+                    foreach (var v in values)
+                    {
+                        if (MathF.Abs(v) > FirstActiveEpsilon) { return v; }
+                    }
+                    return 0f;
+                }
             default:
                 return 0f;
         }
@@ -1733,17 +1733,17 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
                 if (source.Button != ButtonId.None) { hidden[source.Button] = true; }
                 break;
             case MapSourceKind.StickAxisX:
-            {
-                var stick = GetStick(leftStick, rightStick, source.Stick) with { X = 0f };
-                SetStick(ref leftStick, ref rightStick, source.Stick, stick);
-                break;
-            }
+                {
+                    var stick = GetStick(leftStick, rightStick, source.Stick) with { X = 0f };
+                    SetStick(ref leftStick, ref rightStick, source.Stick, stick);
+                    break;
+                }
             case MapSourceKind.StickAxisY:
-            {
-                var stick = GetStick(leftStick, rightStick, source.Stick) with { Y = 0f };
-                SetStick(ref leftStick, ref rightStick, source.Stick, stick);
-                break;
-            }
+                {
+                    var stick = GetStick(leftStick, rightStick, source.Stick) with { Y = 0f };
+                    SetStick(ref leftStick, ref rightStick, source.Stick, stick);
+                    break;
+                }
             case MapSourceKind.StickMagnitude:
                 SetStick(ref leftStick, ref rightStick, source.Stick, StickVector.Zero);
                 break;
@@ -1751,11 +1751,11 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
                 if (source.Trigger == TriggerId.Left) { leftTrigger = 0f; } else { rightTrigger = 0f; }
                 break;
 
-            // Gyro axes are deliberately absent: they're read straight
-            // from the physical snapshot, and nothing in the virtual
-            // output carries angular velocity, so there is no
-            // contribution to suppress. Falling through is correct here,
-            // not a missing case.
+                // Gyro axes are deliberately absent: they're read straight
+                // from the physical snapshot, and nothing in the virtual
+                // output carries angular velocity, so there is no
+                // contribution to suppress. Falling through is correct here,
+                // not a missing case.
         }
     }
 
@@ -1780,17 +1780,17 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
                 }
                 break;
             case MapTargetKind.StickAxisX:
-            {
-                var stick = GetStick(leftStick, rightStick, rule.TargetStick) with { X = Math.Clamp(combined, -1f, 1f) };
-                SetStick(ref leftStick, ref rightStick, rule.TargetStick, stick);
-                break;
-            }
+                {
+                    var stick = GetStick(leftStick, rightStick, rule.TargetStick) with { X = Math.Clamp(combined, -1f, 1f) };
+                    SetStick(ref leftStick, ref rightStick, rule.TargetStick, stick);
+                    break;
+                }
             case MapTargetKind.StickAxisY:
-            {
-                var stick = GetStick(leftStick, rightStick, rule.TargetStick) with { Y = Math.Clamp(combined, -1f, 1f) };
-                SetStick(ref leftStick, ref rightStick, rule.TargetStick, stick);
-                break;
-            }
+                {
+                    var stick = GetStick(leftStick, rightStick, rule.TargetStick) with { Y = Math.Clamp(combined, -1f, 1f) };
+                    SetStick(ref leftStick, ref rightStick, rule.TargetStick, stick);
+                    break;
+                }
             case MapTargetKind.Trigger:
                 var clamped = Math.Clamp(combined, 0f, 1f);
                 if (rule.TargetTrigger == TriggerId.Left) { leftTrigger = clamped; } else { rightTrigger = clamped; }

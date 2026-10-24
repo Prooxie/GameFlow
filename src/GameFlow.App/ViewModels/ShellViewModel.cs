@@ -2,6 +2,10 @@ using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Input;
 using GameFlow.App.Services;
 using GameFlow.App.Views;
 using GameFlow.Core.Enums;
@@ -10,10 +14,6 @@ using GameFlow.Infrastructure.Configuration;
 using GameFlow.Infrastructure.Localization;
 using GameFlow.Infrastructure.Profiles;
 using GameFlow.Infrastructure.Runtime;
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Threading;
-using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -41,11 +41,11 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     // snapshot" debug panes feel frozen. 500 ms keeps them legibly responsive without the
     // serialisation cost showing up in profilers.
     private const int SlowPathEvery = 1;
-    private const int MedPathEvery  = 1;
+    private const int MedPathEvery = 1;
     private int refreshTick;
 
     private bool ruleSummaryDirty = true;
-    private bool aboutTextDirty   = true;
+    private bool aboutTextDirty = true;
 
     private readonly ProfileSession profileSession;
     private readonly RuntimeSnapshotStore runtimeSnapshotStore;
@@ -202,37 +202,37 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         this.serviceProvider = serviceProvider;
         this.overlayThemeChoices = overlayThemeChoices;
 
-        SaveProfileCommand               = new AsyncRelayCommand(SaveProfileAsync);
-        ResetProfileCommand              = new AsyncRelayCommand(ResetProfileAsync);
+        SaveProfileCommand = new AsyncRelayCommand(SaveProfileAsync);
+        ResetProfileCommand = new AsyncRelayCommand(ResetProfileAsync);
         ApplyDashboardPreferencesCommand = new AsyncRelayCommand(ApplyDashboardPreferencesAsync);
-        CreateProfileCommand             = new AsyncRelayCommand(CreateProfileAsync);
-        DuplicateProfileCommand          = new AsyncRelayCommand(DuplicateProfileAsync);
-        ImportProfileCommand             = new AsyncRelayCommand(ImportProfileAsync);
-        ExportProfileCommand             = new AsyncRelayCommand(ExportProfileAsync);
-        RenameProfileCommand             = new AsyncRelayCommand(RenameProfileAsync);
-        DeleteProfileCommand             = new AsyncRelayCommand(DeleteProfileAsync, CanDeleteProfile);
-        OpenControlEditorCommand         = new RelayCommand<string>(OpenControlEditor);
-        OpenDeviceSettingsCommand        = new RelayCommand<string>(OpenDeviceSettings);
-        OpenSettingsCommand              = new AsyncRelayCommand(OpenSettingsAsync);
-        AddVirtualControllerCommand      = new RelayCommand(AddVirtualControllerFromSidebar);
-        OpenWalkthroughCommand           = new RelayCommand(() => WalkthroughRequested?.Invoke(this, EventArgs.Empty));
-        AddPhoneCommand                  = new RelayCommand(AddPhone);
-        OpenKeyboardMouseMapCommand      = new RelayCommand(() => KeyboardMouseMapRequested?.Invoke(this, new(null)));
-        ShowPhoneCommand                 = new RelayCommand<string>(ShowPhone);
-        RemovePhoneCommand               = new RelayCommand<string>(RemovePhone);
-        OpenVirtualControllerCommand     = new RelayCommand<string>(SelectVirtualMenuItem);
-        OpenMappingsCommand              = new RelayCommand(() => OuterNavSelectedIndex = OuterNavProfiles);
+        CreateProfileCommand = new AsyncRelayCommand(CreateProfileAsync);
+        DuplicateProfileCommand = new AsyncRelayCommand(DuplicateProfileAsync);
+        ImportProfileCommand = new AsyncRelayCommand(ImportProfileAsync);
+        ExportProfileCommand = new AsyncRelayCommand(ExportProfileAsync);
+        RenameProfileCommand = new AsyncRelayCommand(RenameProfileAsync);
+        DeleteProfileCommand = new AsyncRelayCommand(DeleteProfileAsync, CanDeleteProfile);
+        OpenControlEditorCommand = new RelayCommand<string>(OpenControlEditor);
+        OpenDeviceSettingsCommand = new RelayCommand<string>(OpenDeviceSettings);
+        OpenSettingsCommand = new AsyncRelayCommand(OpenSettingsAsync);
+        AddVirtualControllerCommand = new RelayCommand(AddVirtualControllerFromSidebar);
+        OpenWalkthroughCommand = new RelayCommand(() => WalkthroughRequested?.Invoke(this, EventArgs.Empty));
+        AddPhoneCommand = new RelayCommand(AddPhone);
+        OpenKeyboardMouseMapCommand = new RelayCommand(() => KeyboardMouseMapRequested?.Invoke(this, new(null)));
+        ShowPhoneCommand = new RelayCommand<string>(ShowPhone);
+        RemovePhoneCommand = new RelayCommand<string>(RemovePhone);
+        OpenVirtualControllerCommand = new RelayCommand<string>(SelectVirtualMenuItem);
+        OpenMappingsCommand = new RelayCommand(() => OuterNavSelectedIndex = OuterNavProfiles);
 
-        SupportedLanguages     = localizationService.SupportedLanguages;
-        ThemeOptions           = CreateThemeOptions();
-        InputProviderOptions   = CreateInputProviderOptions();
-        OutputProviderOptions  = CreateOutputProviderOptions();
+        SupportedLanguages = localizationService.SupportedLanguages;
+        ThemeOptions = CreateThemeOptions();
+        InputProviderOptions = CreateInputProviderOptions();
+        OutputProviderOptions = CreateOutputProviderOptions();
         ControllerStyleOptions = CreateControllerStyleOptions();
-        MappingEditor          = new MappingEditorViewModel(loggerFactory.CreateLogger<MappingEditorViewModel>(), localizationService);
+        MappingEditor = new MappingEditorViewModel(loggerFactory.CreateLogger<MappingEditorViewModel>(), localizationService);
         MappingEditor.RulesChanged += OnMappingRulesChanged;
-        DevicesPanel           = devicesPanel ?? throw new ArgumentNullException(nameof(devicesPanel));
+        DevicesPanel = devicesPanel ?? throw new ArgumentNullException(nameof(devicesPanel));
         DevicesPanel.InputMappingRequested += OnInputMappingRequested;
-        SlotsPanel             = new SlotsViewModel(slotRegistry, inputDeviceCatalog, deviceTemplateStore, profileSession, localizationService, hidMaestroCatalog, deviceSettingsStore);
+        SlotsPanel = new SlotsViewModel(slotRegistry, inputDeviceCatalog, deviceTemplateStore, profileSession, localizationService, hidMaestroCatalog, deviceSettingsStore);
 
         // Tuning follows the virtual-controller selection rather than
         // keeping a second picker of its own.
@@ -295,7 +295,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
         PhysicalController = new ControllerVisualStateViewModel(OnControllerElementSelected, localizationService);
         PhysicalController.SetPanelKind(isPhysical: true);
-        VirtualController  = new ControllerVisualStateViewModel(OnControllerElementSelected, localizationService);
+        VirtualController = new ControllerVisualStateViewModel(OnControllerElementSelected, localizationService);
         VirtualController.SetPanelKind(isPhysical: false);
         SlotConfigurationController = new ControllerVisualStateViewModel(OnControllerElementSelected, localizationService);
         SlotConfigurationController.SetPanelKind(isPhysical: false);
@@ -332,21 +332,21 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                 $"- {p.DisplayName}: {(p.IsImplemented ? "available" : "planned")} — {p.Notes}"));
 
         localizationService.CultureChanged += OnCultureChanged;
-        profileSession.Changed             += OnProfileChanged;
+        profileSession.Changed += OnProfileChanged;
     }
 
     // ─── Commands ─────────────────────────────────────────────────────────────
 
-    public IAsyncRelayCommand SaveProfileCommand               { get; }
-    public IAsyncRelayCommand ResetProfileCommand              { get; }
+    public IAsyncRelayCommand SaveProfileCommand { get; }
+    public IAsyncRelayCommand ResetProfileCommand { get; }
     public IAsyncRelayCommand ApplyDashboardPreferencesCommand { get; }
-    public IAsyncRelayCommand CreateProfileCommand             { get; }
-    public IAsyncRelayCommand DuplicateProfileCommand          { get; }
-    public IAsyncRelayCommand ImportProfileCommand             { get; }
-    public IAsyncRelayCommand ExportProfileCommand             { get; }
-    public IAsyncRelayCommand RenameProfileCommand             { get; }
-    public IAsyncRelayCommand DeleteProfileCommand             { get; }
-    public IAsyncRelayCommand OpenSettingsCommand              { get; }
+    public IAsyncRelayCommand CreateProfileCommand { get; }
+    public IAsyncRelayCommand DuplicateProfileCommand { get; }
+    public IAsyncRelayCommand ImportProfileCommand { get; }
+    public IAsyncRelayCommand ExportProfileCommand { get; }
+    public IAsyncRelayCommand RenameProfileCommand { get; }
+    public IAsyncRelayCommand DeleteProfileCommand { get; }
+    public IAsyncRelayCommand OpenSettingsCommand { get; }
 
     /// <summary>Sidebar "+ Add controller": creates a slot and jumps to its editor.</summary>
     public IRelayCommand AddVirtualControllerCommand { get; }
@@ -459,10 +459,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         OuterNavSelectedIndex = OuterNavDevices;
         DevicesSubTabIndex = DevicesSubTabVirtual;
     }
-    public IRelayCommand<string> OpenControlEditorCommand      { get; }
+    public IRelayCommand<string> OpenControlEditorCommand { get; }
 
     /// <summary>Opens the per-device tuning editor for a slot. Parameter is the slot id.</summary>
-    public IRelayCommand<string> OpenDeviceSettingsCommand     { get; }
+    public IRelayCommand<string> OpenDeviceSettingsCommand { get; }
 
     public event EventHandler<ControlMappingRequestedEventArgs>? ControlMappingRequested;
 
@@ -471,7 +471,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     // ─── Collections ──────────────────────────────────────────────────────────
 
-    public IReadOnlyList<LanguageOption> SupportedLanguages    { get; }
+    public IReadOnlyList<LanguageOption> SupportedLanguages { get; }
     public IReadOnlyList<AppThemeOption> ThemeOptions
     {
         get => themeOptions;
@@ -495,10 +495,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     // Backing fields for the rebuilt-on-culture-change option lists above.
     // Kept private so the only writes go through the property setters.
-    private IReadOnlyList<AppThemeOption>          themeOptions          = [];
-    private IReadOnlyList<InputProviderOption>     inputProviderOptions  = [];
-    private IReadOnlyList<OutputProviderOption>    outputProviderOptions = [];
-    private IReadOnlyList<ControllerStyleOption>   controllerStyleOptions = [];
+    private IReadOnlyList<AppThemeOption> themeOptions = [];
+    private IReadOnlyList<InputProviderOption> inputProviderOptions = [];
+    private IReadOnlyList<OutputProviderOption> outputProviderOptions = [];
+    private IReadOnlyList<ControllerStyleOption> controllerStyleOptions = [];
 
     public IReadOnlyList<DetectedControllerOption> AvailableControllers
     {
@@ -528,7 +528,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     /// </summary>
     public MotionServerPanelViewModel MotionServerPanel { get; }
     public ControllerVisualStateViewModel PhysicalController { get; }
-    public ControllerVisualStateViewModel VirtualController  { get; }
+    public ControllerVisualStateViewModel VirtualController { get; }
     public ControllerVisualStateViewModel SlotConfigurationController { get; }
 
     /// <summary>Per-slot live controller panels shown on the dashboard.</summary>
@@ -638,23 +638,23 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             var isPhone = GameFlow.Infrastructure.Runtime.Web.WebControllerDeviceScanner.IsPhone(device.Id);
             var icon = isPhone ? "📱" : device.Category switch
             {
-                DeviceCategory.Gamepad  => "🎮",
+                DeviceCategory.Gamepad => "🎮",
                 DeviceCategory.Joystick => "🕹",
                 DeviceCategory.Keyboard => "⌨",
-                DeviceCategory.Mouse    => "🖱",
-                _                       => "■",
+                DeviceCategory.Mouse => "🖱",
+                _ => "■",
             };
             var capturedId = device.Id;
             var deviceType = isPhone
                 ? (device.IsConnected ? UiTextResources.Get("UiPHONE") : UiTextResources.Get("UiPhoneOffline"))
                 : device.Category switch
-            {
-                DeviceCategory.Gamepad => UiTextResources.Get("UiGamepad"),
-                DeviceCategory.Joystick => UiTextResources.Get("UiGenericHid"),
-                DeviceCategory.Keyboard => UiTextResources.Get("UiKeyboard"),
-                DeviceCategory.Mouse => UiTextResources.Get("TouchpadMouseSection"),
-                _ => UiTextResources.Get("InputMapDevice"),
-            };
+                {
+                    DeviceCategory.Gamepad => UiTextResources.Get("UiGamepad"),
+                    DeviceCategory.Joystick => UiTextResources.Get("UiGenericHid"),
+                    DeviceCategory.Keyboard => UiTextResources.Get("UiKeyboard"),
+                    DeviceCategory.Mouse => UiTextResources.Get("TouchpadMouseSection"),
+                    _ => UiTextResources.Get("InputMapDevice"),
+                };
             physical.Add(new MenuColumnItemViewModel(
                 device.Id, device.DisplayName, icon, isConnected: device.IsConnected,
                 onSelect: () => SelectPhysicalMenuItem(capturedId),
@@ -1160,49 +1160,49 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     // ─── Localised label properties ───────────────────────────────────────────
 
-    public string DashboardTabLabel              => localizationService["DashboardTab"];
-    public string ProfilesTabLabel               => localizationService["ProfilesTab"];
-    public string DevicesTabLabel                => localizationService["DevicesTab"];
-    public string DiagnosticsTabLabel            => localizationService["DiagnosticsTab"];
-    public string LanguageLabel                  => localizationService["LanguageLabel"];
-    public string ThemeLabel                     => localizationService["ThemeLabel"];
-    public string OpenSettingsButtonLabel        => localizationService["OpenSettingsButtonLabel"];
-    public string SaveProfileButtonLabel         => localizationService["SaveProfileButton"];
-    public string ResetProfileButtonLabel        => localizationService["ResetProfileButton"];
-    public string PhysicalInputLabel             => localizationService["PhysicalInputLabel"];
-    public string VirtualOutputLabel             => localizationService["VirtualOutputLabel"];
-    public string RuleSummaryLabel               => localizationService["RuleSummaryLabel"];
-    public string ProfileEditorLabel             => localizationService["ProfileEditorLabel"];
-    public string DiagnosticsLabel               => localizationService["DiagnosticsLabel"];
-    public string DashboardSettingsLabel         => localizationService["DashboardSettingsLabel"];
-    public string DashboardSubtitle              => localizationService["DashboardSubtitle"];
-    public string InputProviderLabel             => localizationService["InputProviderLabel"];
-    public string OutputProviderLabel            => localizationService["OutputProviderLabel"];
-    public string ControllerLabel                => localizationService["ControllerLabel"];
-    public string ControllerInventoryLabel       => localizationService["ControllerInventoryLabel"];
-    public string ProviderStatusLabel            => localizationService["ProviderStatusLabel"];
-    public string PollingRateLabel               => localizationService["PollingRateLabel"];
-    public string PhysicalStyleLabel             => localizationService["PhysicalStyleLabel"];
-    public string VirtualStyleLabel              => localizationService["VirtualStyleLabel"];
+    public string DashboardTabLabel => localizationService["DashboardTab"];
+    public string ProfilesTabLabel => localizationService["ProfilesTab"];
+    public string DevicesTabLabel => localizationService["DevicesTab"];
+    public string DiagnosticsTabLabel => localizationService["DiagnosticsTab"];
+    public string LanguageLabel => localizationService["LanguageLabel"];
+    public string ThemeLabel => localizationService["ThemeLabel"];
+    public string OpenSettingsButtonLabel => localizationService["OpenSettingsButtonLabel"];
+    public string SaveProfileButtonLabel => localizationService["SaveProfileButton"];
+    public string ResetProfileButtonLabel => localizationService["ResetProfileButton"];
+    public string PhysicalInputLabel => localizationService["PhysicalInputLabel"];
+    public string VirtualOutputLabel => localizationService["VirtualOutputLabel"];
+    public string RuleSummaryLabel => localizationService["RuleSummaryLabel"];
+    public string ProfileEditorLabel => localizationService["ProfileEditorLabel"];
+    public string DiagnosticsLabel => localizationService["DiagnosticsLabel"];
+    public string DashboardSettingsLabel => localizationService["DashboardSettingsLabel"];
+    public string DashboardSubtitle => localizationService["DashboardSubtitle"];
+    public string InputProviderLabel => localizationService["InputProviderLabel"];
+    public string OutputProviderLabel => localizationService["OutputProviderLabel"];
+    public string ControllerLabel => localizationService["ControllerLabel"];
+    public string ControllerInventoryLabel => localizationService["ControllerInventoryLabel"];
+    public string ProviderStatusLabel => localizationService["ProviderStatusLabel"];
+    public string PollingRateLabel => localizationService["PollingRateLabel"];
+    public string PhysicalStyleLabel => localizationService["PhysicalStyleLabel"];
+    public string VirtualStyleLabel => localizationService["VirtualStyleLabel"];
     public string ApplyDashboardSettingsButtonLabel => localizationService["ApplyDashboardSettingsButtonLabel"];
-    public string SelectedControlLabel           => localizationService["SelectedControlLabel"];
-    public string RuntimeNotesLabel              => localizationService["RuntimeNotesLabel"];
-    public string RawPhysicalLabel               => localizationService["RawPhysicalLabel"];
-    public string RawVirtualLabel                => localizationService["RawVirtualLabel"];
-    public string ProfileComboLabel              => localizationService["ProfileComboLabel"];
-    public string ProfileToolbarSubtitle         => localizationService["ProfileToolbarSubtitle"];
-    public string ProfileNameLabel               => localizationService["ProfileNameLabel"];
-    public string ProfileNameWatermark           => localizationService["ProfileNameWatermark"];
-    public string RenameProfileButtonLabel       => localizationService["RenameProfileButton"];
-    public string CreateProfileButtonLabel       => localizationService["CreateProfileButton"];
-    public string DuplicateProfileButtonLabel    => localizationService["DuplicateProfileButton"];
-    public string ImportProfileButtonLabel       => localizationService["ImportProfileButton"];
-    public string ExportProfileButtonLabel       => localizationService["ExportProfileButton"];
-    public string DeleteProfileButtonLabel       => localizationService["DeleteProfileButton"];
-    public string MappingOverviewLabel           => localizationService["MappingOverviewLabel"];
-    public string MappingOverviewSubtitle        => localizationService["MappingOverviewSubtitle"];
-    public string OpenControlEditorButtonLabel   => localizationService["OpenControlEditorButton"];
-    public string NoMappingCardsText             => localizationService["NoMappingCardsText"];
+    public string SelectedControlLabel => localizationService["SelectedControlLabel"];
+    public string RuntimeNotesLabel => localizationService["RuntimeNotesLabel"];
+    public string RawPhysicalLabel => localizationService["RawPhysicalLabel"];
+    public string RawVirtualLabel => localizationService["RawVirtualLabel"];
+    public string ProfileComboLabel => localizationService["ProfileComboLabel"];
+    public string ProfileToolbarSubtitle => localizationService["ProfileToolbarSubtitle"];
+    public string ProfileNameLabel => localizationService["ProfileNameLabel"];
+    public string ProfileNameWatermark => localizationService["ProfileNameWatermark"];
+    public string RenameProfileButtonLabel => localizationService["RenameProfileButton"];
+    public string CreateProfileButtonLabel => localizationService["CreateProfileButton"];
+    public string DuplicateProfileButtonLabel => localizationService["DuplicateProfileButton"];
+    public string ImportProfileButtonLabel => localizationService["ImportProfileButton"];
+    public string ExportProfileButtonLabel => localizationService["ExportProfileButton"];
+    public string DeleteProfileButtonLabel => localizationService["DeleteProfileButton"];
+    public string MappingOverviewLabel => localizationService["MappingOverviewLabel"];
+    public string MappingOverviewSubtitle => localizationService["MappingOverviewSubtitle"];
+    public string OpenControlEditorButtonLabel => localizationService["OpenControlEditorButton"];
+    public string NoMappingCardsText => localizationService["NoMappingCardsText"];
 
     public string SelectedInputProviderSummary =>
         SelectedInputProvider?.Label ?? "—";
@@ -1216,9 +1216,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             : SelectedController.Label;
 
     public string SelectedPollingRateText => $"{SelectedPollingRateHz:0} Hz";
-    public string SelectedProfileSummary  => SelectedProfileOption?.Description ?? string.Empty;
+    public string SelectedProfileSummary => SelectedProfileOption?.Description ?? string.Empty;
 
-    public bool HasControlConfigurationCards   => ControlConfigurationCards.Count > 0;
+    public bool HasControlConfigurationCards => ControlConfigurationCards.Count > 0;
     public bool HasNoControlConfigurationCards => !HasControlConfigurationCards;
 
     // ─── Mutable selection properties ─────────────────────────────────────────
@@ -1301,7 +1301,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                 mergedUi = MergeVariantPick(mergedUi, SelectedVirtualStyle.Style, pendingVirtualVariantPick);
             }
 
-            var themeChanged   = !string.Equals(profile.Ui.Theme, newKind, StringComparison.OrdinalIgnoreCase);
+            var themeChanged = !string.Equals(profile.Ui.Theme, newKind, StringComparison.OrdinalIgnoreCase);
             var variantChanged = !ReferenceEquals(mergedUi, profile.Ui) && !UiVariantsEqual(mergedUi, profile.Ui);
 
             if (themeChanged || variantChanged)
@@ -1312,7 +1312,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                 // Picks are now committed; clear the pending slots so a
                 // later partial save doesn't re-stamp a stale value.
                 pendingPhysicalVariantPick = null;
-                pendingVirtualVariantPick  = null;
+                pendingVirtualVariantPick = null;
             }
         }
     }
@@ -1324,10 +1324,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     /// (and therefore whether a save is warranted).
     /// </summary>
     private static bool UiVariantsEqual(UiPreferences a, UiPreferences b) =>
-        string.Equals(a.DualSenseVariantId,  b.DualSenseVariantId,  StringComparison.Ordinal) &&
+        string.Equals(a.DualSenseVariantId, b.DualSenseVariantId, StringComparison.Ordinal) &&
         string.Equals(a.DualShock4VariantId, b.DualShock4VariantId, StringComparison.Ordinal) &&
         string.Equals(a.DualShock3VariantId, b.DualShock3VariantId, StringComparison.Ordinal) &&
-        string.Equals(a.XboxVariantId,       b.XboxVariantId,       StringComparison.Ordinal);
+        string.Equals(a.XboxVariantId, b.XboxVariantId, StringComparison.Ordinal);
 
     public InputProviderOption? SelectedInputProvider
     {
@@ -1365,10 +1365,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     /// <summary>Header for the dashboard background preset picker.</summary>
     public string DashboardBackgroundLabel => Localized("DashboardBackgroundLabel", "Background");
 
-    public string SidebarPhysicalHeader     => Localized("SidebarPhysicalHeader",     "PHYSICAL DEVICES");
-    public string SidebarVirtualHeader      => Localized("SidebarVirtualHeader",      "VIRTUAL CONTROLLERS");
-    public string DevicesPhysicalTabHeader  => Localized("DevicesPhysicalTabHeader",  "Physical devices");
-    public string DevicesVirtualTabHeader   => Localized("DevicesVirtualTabHeader",   "Virtual controllers");
+    public string SidebarPhysicalHeader => Localized("SidebarPhysicalHeader", "PHYSICAL DEVICES");
+    public string SidebarVirtualHeader => Localized("SidebarVirtualHeader", "VIRTUAL CONTROLLERS");
+    public string DevicesPhysicalTabHeader => Localized("DevicesPhysicalTabHeader", "Physical devices");
+    public string DevicesVirtualTabHeader => Localized("DevicesVirtualTabHeader", "Virtual controllers");
 
     public sealed record PanelBackgroundOption(string Label, string BrushValue);
 
@@ -1525,7 +1525,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             var key = SelectedOutputProvider?.Key;
             return !string.IsNullOrWhiteSpace(key)
                 && !string.Equals(key, "preview", StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(key, "none",    StringComparison.OrdinalIgnoreCase);
+                && !string.Equals(key, "none", StringComparison.OrdinalIgnoreCase);
         }
     }
 
@@ -1646,9 +1646,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         }
 
         var snapshot = runtimeSnapshotStore.Current;
-        var profile  = profileSession.CurrentProfile;
+        var profile = profileSession.CurrentProfile;
         var physicalStyle = SelectedPhysicalStyle?.Style ?? profile.Ui.PhysicalControllerStyle;
-        var virtualStyle  = SelectedVirtualStyle?.Style  ?? profile.Ui.VirtualControllerStyle;
+        var virtualStyle = SelectedVirtualStyle?.Style ?? profile.Ui.VirtualControllerStyle;
 
         // When the user leaves the virtual panel on Auto, resolve the
         // style from the SELECTED OUTPUT CONTROLLER first — the first
@@ -1682,7 +1682,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
         // ── Fast path: always ─────────────────────────────────────────────────
         PhysicalController.Update("physical", PhysicalInputLabel, snapshot.PhysicalSnapshot, physicalStyle);
-        VirtualController.Update("virtual",   VirtualOutputLabel,  snapshot.VirtualSnapshot,  virtualStyle);
+        VirtualController.Update("virtual", VirtualOutputLabel, snapshot.VirtualSnapshot, virtualStyle);
 
         var selectedSlotId = SlotsPanel.SelectedSlot?.Id;
         var selectedSlot = string.IsNullOrWhiteSpace(selectedSlotId)
@@ -1792,13 +1792,13 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             var ui = profileSession.CurrentProfile.Ui with
             {
                 PhysicalControllerStyle = SelectedPhysicalStyle.Style,
-                VirtualControllerStyle  = SelectedVirtualStyle.Style,
+                VirtualControllerStyle = SelectedVirtualStyle.Style,
                 Theme = themeKey,
                 ControllerPanelBackground = PhysicalController.PanelBackgroundBrush,
             };
 
             ui = MergeVariantPick(ui, SelectedPhysicalStyle.Style, pendingPhysicalVariantPick);
-            ui = MergeVariantPick(ui, SelectedVirtualStyle.Style,  pendingVirtualVariantPick);
+            ui = MergeVariantPick(ui, SelectedVirtualStyle.Style, pendingVirtualVariantPick);
 
             var profile = profileSession.CurrentProfile with
             {
@@ -1815,9 +1815,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             // later Apply that doesn't include another pick doesn't
             // re-write the same field.
             pendingPhysicalVariantPick = null;
-            pendingVirtualVariantPick  = null;
+            pendingVirtualVariantPick = null;
 
-            ProfileJson      = profileSession.SerializeCurrentProfile();
+            ProfileJson = profileSession.SerializeCurrentProfile();
             ruleSummaryDirty = true;
             await RefreshRuntimeAsync();
         }
@@ -1865,7 +1865,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         try
         {
             await profileSession.SaveCurrentProfileAsync(profileSession.CurrentProfile);
-            ProfileJson      = profileSession.SerializeCurrentProfile();
+            ProfileJson = profileSession.SerializeCurrentProfile();
             ruleSummaryDirty = true;
             if (logger.IsEnabled(LogLevel.Information))
             {
@@ -1891,9 +1891,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             await RefreshAvailableProfilesAsync();
             SyncDashboardSelectionsFromProfile();
             RefreshControllerInventory();
-            ProfileJson      = profileSession.SerializeCurrentProfile();
+            ProfileJson = profileSession.SerializeCurrentProfile();
             ruleSummaryDirty = true;
-            ProfileName      = profileSession.CurrentProfile.Name;
+            ProfileName = profileSession.CurrentProfile.Name;
             await RefreshRuntimeAsync();
         }
         catch (Exception exception)
@@ -1980,7 +1980,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             {
                 await profileSession.ImportProfileAsync(json);
                 await RefreshAvailableProfilesAsync();
-                ProfileJson      = profileSession.SerializeCurrentProfile();
+                ProfileJson = profileSession.SerializeCurrentProfile();
                 ruleSummaryDirty = true;
                 RebuildControlConfigurationCards();
                 ProfileName = profileSession.CurrentProfile.Name;
@@ -2032,8 +2032,8 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             var unique = await MakeUniqueProfileNameAsync(newName, profileSession.CurrentProfile.Id);
             var profile = profileSession.CurrentProfile with { Name = unique };
             await profileSession.SaveCurrentProfileAsync(profile);
-            ProfileName      = unique;
-            ProfileJson      = profileSession.SerializeCurrentProfile();
+            ProfileName = unique;
+            ProfileJson = profileSession.SerializeCurrentProfile();
             ruleSummaryDirty = true;
             await RefreshAvailableProfilesAsync();
             var target = AvailableProfiles.FirstOrDefault(o => o.Id == profile.Id);
@@ -2236,7 +2236,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         // applies: physical typically resolves via the detected device,
         // virtual uses the user-picked style directly.
         ApplyVariantPreferenceForStyle(PhysicalController, profile.Ui.PhysicalControllerStyle, profile.Ui);
-        ApplyVariantPreferenceForStyle(VirtualController,  profile.Ui.VirtualControllerStyle,  profile.Ui);
+        ApplyVariantPreferenceForStyle(VirtualController, profile.Ui.VirtualControllerStyle, profile.Ui);
 
         // Background brush — applies to both panels uniformly.
         ApplyPanelBackgroundToAll(string.Empty);
@@ -2260,7 +2260,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             ControllerVisualStyle.PlayStation5 => ui.DualSenseVariantId,
             ControllerVisualStyle.PlayStation4 => ui.DualShock4VariantId,
             ControllerVisualStyle.PlayStation3 => ui.DualShock3VariantId,
-            ControllerVisualStyle.Xbox         => ui.XboxVariantId,
+            ControllerVisualStyle.Xbox => ui.XboxVariantId,
             _ => string.Empty,
         };
 
@@ -2284,10 +2284,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
         return style switch
         {
-            ControllerVisualStyle.PlayStation5 => ui with { DualSenseVariantId  = pickedId },
+            ControllerVisualStyle.PlayStation5 => ui with { DualSenseVariantId = pickedId },
             ControllerVisualStyle.PlayStation4 => ui with { DualShock4VariantId = pickedId },
             ControllerVisualStyle.PlayStation3 => ui with { DualShock3VariantId = pickedId },
-            ControllerVisualStyle.Xbox         => ui with { XboxVariantId       = pickedId },
+            ControllerVisualStyle.Xbox => ui with { XboxVariantId = pickedId },
             _ => ui,
         };
     }
@@ -2322,9 +2322,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             await profileSession.SwitchToProfileAsync(profileId);
             MappingEditor.LoadFromProfile(profileSession.CurrentProfile);
             RebuildControlConfigurationCards();
-            ProfileJson      = profileSession.SerializeCurrentProfile();
+            ProfileJson = profileSession.SerializeCurrentProfile();
             ruleSummaryDirty = true;
-            ProfileName      = profileSession.CurrentProfile.Name;
+            ProfileName = profileSession.CurrentProfile.Name;
             await RefreshRuntimeAsync();
         }
         catch (Exception exception)
@@ -2399,7 +2399,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     private string RuleCountText(int count) => count switch
     {
         0 => Localized("MappedControlsRuleCountZero", "No rules"),
-        1 => Localized("MappedControlsRuleCountOne",  "1 rule"),
+        1 => Localized("MappedControlsRuleCountOne", "1 rule"),
         _ => string.Format(
             System.Globalization.CultureInfo.CurrentCulture,
             Localized("MappedControlsRuleCountMany", "{0} rules"),
@@ -2506,7 +2506,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                 return;
             }
 
-            ProfileJson      = profileSession.SerializeCurrentProfile();
+            ProfileJson = profileSession.SerializeCurrentProfile();
             ruleSummaryDirty = true;
             RebuildControlConfigurationCards();
         }
@@ -2582,16 +2582,16 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             return;
         }
 
-        var scope      = selectionKey[..sep];
+        var scope = selectionKey[..sep];
         var elementKey = selectionKey[(sep + 1)..];
-        var source     = scope.Equals("virtual", StringComparison.OrdinalIgnoreCase)
+        var source = scope.Equals("virtual", StringComparison.OrdinalIgnoreCase)
             ? snapshot.VirtualSnapshot
             : snapshot.PhysicalSnapshot;
 
         SelectedControlTitle = $"{FormatScope(scope)} · {FormatElementName(elementKey)}";
         SelectedControlValue = BuildCurrentValue(elementKey, source);
         SelectedControlRules = BuildRuleMatches(elementKey);
-        SelectedControlHint  = BuildSelectionHint(elementKey);
+        SelectedControlHint = BuildSelectionHint(elementKey);
     }
 
     private static string BuildCurrentValue(string elementKey, ControllerSnapshot snapshot)
@@ -2613,8 +2613,8 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             ? snapshot.TouchContactCount switch
             {
                 <= 0 => UiTextResources.Format("UiCurrentTouches", 0),
-                1    => UiTextResources.Format("UiCurrentTouches", 1),
-                _    => UiTextResources.Format("UiCurrentTouches", snapshot.TouchContactCount)
+                1 => UiTextResources.Format("UiCurrentTouches", 1),
+                _ => UiTextResources.Format("UiCurrentTouches", snapshot.TouchContactCount)
             }
             : UiTextResources.Get("UiCurrentUnavailable");
     }
@@ -2642,7 +2642,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         SelectedControlTitle = UiTextResources.Get("UiSelectControl");
         SelectedControlValue = UiTextResources.Get("UiInspectorHint");
         SelectedControlRules = UiTextResources.Get("UiInspectorRules");
-        SelectedControlHint  = UiTextResources.Get("UiInspectorScope");
+        SelectedControlHint = UiTextResources.Get("UiInspectorScope");
     }
 
     // ─── Localised text refresh ───────────────────────────────────────────────
@@ -2654,7 +2654,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             return;
         }
 
-        WindowTitle    = localizationService["WindowTitle"];
+        WindowTitle = localizationService["WindowTitle"];
         aboutTextDirty = true;
 
         // Re-build the option lists in the new culture and re-select
@@ -2760,9 +2760,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             RebuildControlConfigurationCards();
             RefreshControllerInventory();
             _ = RefreshAvailableProfilesAsync();
-            ProfileJson      = profileSession.SerializeCurrentProfile();
+            ProfileJson = profileSession.SerializeCurrentProfile();
             ruleSummaryDirty = true;
-            ProfileName      = profileSession.CurrentProfile.Name;
+            ProfileName = profileSession.CurrentProfile.Name;
             OnPropertyChanged(nameof(SelectedProfileSummary));
             OnPropertyChanged(nameof(HasControlConfigurationCards));
             OnPropertyChanged(nameof(HasNoControlConfigurationCards));
@@ -2914,15 +2914,15 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     /// </remarks>
     private void RebuildLocalizedOptionLists()
     {
-        var previousThemeKind         = SelectedTheme?.Kind;
-        var previousInputKey          = SelectedInputProvider?.Key;
-        var previousOutputKey         = SelectedOutputProvider?.Key;
-        var previousPhysicalStyle     = SelectedPhysicalStyle?.Style;
-        var previousVirtualStyle      = SelectedVirtualStyle?.Style;
+        var previousThemeKind = SelectedTheme?.Kind;
+        var previousInputKey = SelectedInputProvider?.Key;
+        var previousOutputKey = SelectedOutputProvider?.Key;
+        var previousPhysicalStyle = SelectedPhysicalStyle?.Style;
+        var previousVirtualStyle = SelectedVirtualStyle?.Style;
 
-        ThemeOptions           = CreateThemeOptions();
-        InputProviderOptions   = CreateInputProviderOptions();
-        OutputProviderOptions  = CreateOutputProviderOptions();
+        ThemeOptions = CreateThemeOptions();
+        InputProviderOptions = CreateInputProviderOptions();
+        OutputProviderOptions = CreateOutputProviderOptions();
         ControllerStyleOptions = CreateControllerStyleOptions();
 
         // Avoid running the full theme-persist side effects that fire
@@ -2987,9 +2987,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     private static string FormatElementName(string k)
     {
-        return k.Replace("LeftStick",    UiTextResources.Get("StickLeftLabel"),    StringComparison.OrdinalIgnoreCase)
-                .Replace("RightStick",   UiTextResources.Get("StickRightLabel"),   StringComparison.OrdinalIgnoreCase)
-                .Replace("LeftTrigger",  UiTextResources.Get("UiLeftTrigger"),  StringComparison.OrdinalIgnoreCase)
+        return k.Replace("LeftStick", UiTextResources.Get("StickLeftLabel"), StringComparison.OrdinalIgnoreCase)
+                .Replace("RightStick", UiTextResources.Get("StickRightLabel"), StringComparison.OrdinalIgnoreCase)
+                .Replace("LeftTrigger", UiTextResources.Get("UiLeftTrigger"), StringComparison.OrdinalIgnoreCase)
                 .Replace("RightTrigger", UiTextResources.Get("UiRightTrigger"), StringComparison.OrdinalIgnoreCase)
                 .Replace(".Analog", " · " + UiTextResources.Get("UiAnalog"), StringComparison.OrdinalIgnoreCase)
                 .Replace(".Button", " · " + UiTextResources.Get("UiClick"), StringComparison.OrdinalIgnoreCase)
@@ -3061,7 +3061,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         }
 
         var invalidChars = Path.GetInvalidFileNameChars();
-        var builder      = new StringBuilder(value.Length);
+        var builder = new StringBuilder(value.Length);
 
         foreach (var ch in value.Trim())
         {
@@ -3083,8 +3083,8 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
         disposed = true;
         localizationService.CultureChanged -= OnCultureChanged;
-        profileSession.Changed             -= OnProfileChanged;
-        MappingEditor.RulesChanged         -= OnMappingRulesChanged;
+        profileSession.Changed -= OnProfileChanged;
+        MappingEditor.RulesChanged -= OnMappingRulesChanged;
         MappingEditor.Dispose();
         DevicesPanel.InputMappingRequested -= OnInputMappingRequested;
         DevicesPanel.Dispose();

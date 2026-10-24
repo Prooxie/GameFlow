@@ -84,7 +84,7 @@ public sealed record VariableNode(string Name) : FleeNode
         {
             var tail = Name.AsSpan(5);
             if (tail.Equals("pi", StringComparison.OrdinalIgnoreCase)) { return Math.PI; }
-            if (tail.Equals("e",  StringComparison.OrdinalIgnoreCase)) { return Math.E; }
+            if (tail.Equals("e", StringComparison.OrdinalIgnoreCase)) { return Math.E; }
         }
         return symbols.Resolve(Name);
     }
@@ -98,9 +98,9 @@ public sealed record UnaryNode(string Op, FleeNode Operand) : FleeNode
         var v = Operand.Evaluate(symbols);
         return Op switch
         {
-            "-"   => -v,
+            "-" => -v,
             "not" => v == 0 ? 1 : 0,
-            _     => throw new InvalidOperationException($"Unknown unary operator '{Op}'.")
+            _ => throw new InvalidOperationException($"Unknown unary operator '{Op}'.")
         };
     }
 }
@@ -126,19 +126,19 @@ public sealed record BinaryNode(string Op, FleeNode Left, FleeNode Right) : Flee
         var r = Right.Evaluate(symbols);
         return Op switch
         {
-            "+"  => l + r,
-            "-"  => l - r,
-            "*"  => l * r,
-            "/"  => r == 0 ? 0 : l / r,
-            "<"  => l <  r ? 1 : 0,
+            "+" => l + r,
+            "-" => l - r,
+            "*" => l * r,
+            "/" => r == 0 ? 0 : l / r,
+            "<" => l < r ? 1 : 0,
             "<=" => l <= r ? 1 : 0,
-            ">"  => l >  r ? 1 : 0,
+            ">" => l > r ? 1 : 0,
             ">=" => l >= r ? 1 : 0,
             "==" => l == r ? 1 : 0,
-            "="  => l == r ? 1 : 0,
+            "=" => l == r ? 1 : 0,
             "!=" => l != r ? 1 : 0,
             "<>" => l != r ? 1 : 0,
-            _    => throw new InvalidOperationException($"Unknown binary operator '{Op}'.")
+            _ => throw new InvalidOperationException($"Unknown binary operator '{Op}'.")
         };
     }
 }
@@ -157,68 +157,68 @@ public sealed record CallNode(string Name, IReadOnlyList<FleeNode> Arguments) : 
         switch (Name)
         {
             case "max":
-            {
-                if (Arguments.Count == 0) { return 0; }
-                var result = Arguments[0].Evaluate(symbols);
-                for (var i = 1; i < Arguments.Count; i++)
                 {
-                    var v = Arguments[i].Evaluate(symbols);
-                    if (v > result) { result = v; }
+                    if (Arguments.Count == 0) { return 0; }
+                    var result = Arguments[0].Evaluate(symbols);
+                    for (var i = 1; i < Arguments.Count; i++)
+                    {
+                        var v = Arguments[i].Evaluate(symbols);
+                        if (v > result) { result = v; }
+                    }
+                    return result;
                 }
-                return result;
-            }
 
             case "min":
-            {
-                if (Arguments.Count == 0) { return 0; }
-                var result = Arguments[0].Evaluate(symbols);
-                for (var i = 1; i < Arguments.Count; i++)
                 {
-                    var v = Arguments[i].Evaluate(symbols);
-                    if (v < result) { result = v; }
+                    if (Arguments.Count == 0) { return 0; }
+                    var result = Arguments[0].Evaluate(symbols);
+                    for (var i = 1; i < Arguments.Count; i++)
+                    {
+                        var v = Arguments[i].Evaluate(symbols);
+                        if (v < result) { result = v; }
+                    }
+                    return result;
                 }
-                return result;
-            }
 
             case "if":
-            {
-                if (Arguments.Count != 3)
                 {
-                    throw new InvalidOperationException(
-                        "Flee 'if' requires exactly 3 arguments (condition, ifTrue, ifFalse).");
+                    if (Arguments.Count != 3)
+                    {
+                        throw new InvalidOperationException(
+                            "Flee 'if' requires exactly 3 arguments (condition, ifTrue, ifFalse).");
+                    }
+                    return Arguments[0].Evaluate(symbols) != 0
+                        ? Arguments[1].Evaluate(symbols)
+                        : Arguments[2].Evaluate(symbols);
                 }
-                return Arguments[0].Evaluate(symbols) != 0
-                    ? Arguments[1].Evaluate(symbols)
-                    : Arguments[2].Evaluate(symbols);
-            }
 
             case "tobool":
-            {
-                if (Arguments.Count != 1)
                 {
-                    throw new InvalidOperationException("Flee 'tobool' requires exactly 1 argument.");
+                    if (Arguments.Count != 1)
+                    {
+                        throw new InvalidOperationException("Flee 'tobool' requires exactly 1 argument.");
+                    }
+                    return Arguments[0].Evaluate(symbols) != 0 ? 1 : 0;
                 }
-                return Arguments[0].Evaluate(symbols) != 0 ? 1 : 0;
-            }
 
-            case "abs":   return Math.Abs(Arguments[0].Evaluate(symbols));
-            case "sign":  return Math.Sign(Arguments[0].Evaluate(symbols));
+            case "abs": return Math.Abs(Arguments[0].Evaluate(symbols));
+            case "sign": return Math.Sign(Arguments[0].Evaluate(symbols));
             case "floor": return Math.Floor(Arguments[0].Evaluate(symbols));
             case "ceil":
             case "ceiling": return Math.Ceiling(Arguments[0].Evaluate(symbols));
             case "round": return Math.Round(Arguments[0].Evaluate(symbols));
-            case "sqrt":  return Math.Sqrt(Arguments[0].Evaluate(symbols));
+            case "sqrt": return Math.Sqrt(Arguments[0].Evaluate(symbols));
             case "clamp":
-            {
-                if (Arguments.Count != 3)
                 {
-                    throw new InvalidOperationException("Flee 'clamp' requires (value, min, max).");
+                    if (Arguments.Count != 3)
+                    {
+                        throw new InvalidOperationException("Flee 'clamp' requires (value, min, max).");
+                    }
+                    return Math.Clamp(
+                        Arguments[0].Evaluate(symbols),
+                        Arguments[1].Evaluate(symbols),
+                        Arguments[2].Evaluate(symbols));
                 }
-                return Math.Clamp(
-                    Arguments[0].Evaluate(symbols),
-                    Arguments[1].Evaluate(symbols),
-                    Arguments[2].Evaluate(symbols));
-            }
         }
 
         // math.<name> namespace — dispatches to System.Math by reflection
@@ -246,25 +246,25 @@ public sealed record CallNode(string Name, IReadOnlyList<FleeNode> Arguments) : 
 
         // Case-insensitive comparison so theme.json authors can write
         // either `math.Max` (matching the .NET docs) or `math.max`.
-        if (name.Equals("abs",     StringComparison.OrdinalIgnoreCase)) { return Math.Abs(args[0]); }
-        if (name.Equals("sign",    StringComparison.OrdinalIgnoreCase)) { return Math.Sign(args[0]); }
-        if (name.Equals("floor",   StringComparison.OrdinalIgnoreCase)) { return Math.Floor(args[0]); }
+        if (name.Equals("abs", StringComparison.OrdinalIgnoreCase)) { return Math.Abs(args[0]); }
+        if (name.Equals("sign", StringComparison.OrdinalIgnoreCase)) { return Math.Sign(args[0]); }
+        if (name.Equals("floor", StringComparison.OrdinalIgnoreCase)) { return Math.Floor(args[0]); }
         if (name.Equals("ceiling", StringComparison.OrdinalIgnoreCase)) { return Math.Ceiling(args[0]); }
-        if (name.Equals("round",   StringComparison.OrdinalIgnoreCase)) { return Math.Round(args[0]); }
-        if (name.Equals("sqrt",    StringComparison.OrdinalIgnoreCase)) { return Math.Sqrt(args[0]); }
-        if (name.Equals("sin",     StringComparison.OrdinalIgnoreCase)) { return Math.Sin(args[0]); }
-        if (name.Equals("cos",     StringComparison.OrdinalIgnoreCase)) { return Math.Cos(args[0]); }
-        if (name.Equals("tan",     StringComparison.OrdinalIgnoreCase)) { return Math.Tan(args[0]); }
-        if (name.Equals("atan",    StringComparison.OrdinalIgnoreCase)) { return Math.Atan(args[0]); }
-        if (name.Equals("atan2",   StringComparison.OrdinalIgnoreCase)) { return Math.Atan2(args[0], args[1]); }
-        if (name.Equals("log",     StringComparison.OrdinalIgnoreCase)) { return Math.Log(args[0]); }
-        if (name.Equals("log10",   StringComparison.OrdinalIgnoreCase)) { return Math.Log10(args[0]); }
-        if (name.Equals("exp",     StringComparison.OrdinalIgnoreCase)) { return Math.Exp(args[0]); }
-        if (name.Equals("pow",     StringComparison.OrdinalIgnoreCase)) { return Math.Pow(args[0], args[1]); }
-        if (name.Equals("max",     StringComparison.OrdinalIgnoreCase)) { return Math.Max(args[0], args[1]); }
-        if (name.Equals("min",     StringComparison.OrdinalIgnoreCase)) { return Math.Min(args[0], args[1]); }
-        if (name.Equals("pi",      StringComparison.OrdinalIgnoreCase)) { return Math.PI; }
-        if (name.Equals("e",       StringComparison.OrdinalIgnoreCase)) { return Math.E; }
+        if (name.Equals("round", StringComparison.OrdinalIgnoreCase)) { return Math.Round(args[0]); }
+        if (name.Equals("sqrt", StringComparison.OrdinalIgnoreCase)) { return Math.Sqrt(args[0]); }
+        if (name.Equals("sin", StringComparison.OrdinalIgnoreCase)) { return Math.Sin(args[0]); }
+        if (name.Equals("cos", StringComparison.OrdinalIgnoreCase)) { return Math.Cos(args[0]); }
+        if (name.Equals("tan", StringComparison.OrdinalIgnoreCase)) { return Math.Tan(args[0]); }
+        if (name.Equals("atan", StringComparison.OrdinalIgnoreCase)) { return Math.Atan(args[0]); }
+        if (name.Equals("atan2", StringComparison.OrdinalIgnoreCase)) { return Math.Atan2(args[0], args[1]); }
+        if (name.Equals("log", StringComparison.OrdinalIgnoreCase)) { return Math.Log(args[0]); }
+        if (name.Equals("log10", StringComparison.OrdinalIgnoreCase)) { return Math.Log10(args[0]); }
+        if (name.Equals("exp", StringComparison.OrdinalIgnoreCase)) { return Math.Exp(args[0]); }
+        if (name.Equals("pow", StringComparison.OrdinalIgnoreCase)) { return Math.Pow(args[0], args[1]); }
+        if (name.Equals("max", StringComparison.OrdinalIgnoreCase)) { return Math.Max(args[0], args[1]); }
+        if (name.Equals("min", StringComparison.OrdinalIgnoreCase)) { return Math.Min(args[0], args[1]); }
+        if (name.Equals("pi", StringComparison.OrdinalIgnoreCase)) { return Math.PI; }
+        if (name.Equals("e", StringComparison.OrdinalIgnoreCase)) { return Math.E; }
 
         throw new InvalidOperationException(
             $"Unsupported math function 'math.{name}'. " +

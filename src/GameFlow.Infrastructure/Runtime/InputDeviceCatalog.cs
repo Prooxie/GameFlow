@@ -388,7 +388,7 @@ public sealed class InputDeviceCatalog
     /// </param>
     public void SetProviderStatus(string? keyOrLiteral, params object?[] args)
     {
-        var normalisedKey  = string.IsNullOrWhiteSpace(keyOrLiteral) ? null : keyOrLiteral;
+        var normalisedKey = string.IsNullOrWhiteSpace(keyOrLiteral) ? null : keyOrLiteral;
         var normalisedArgs = args ?? [];
 
         lock (gate)
@@ -398,7 +398,7 @@ public sealed class InputDeviceCatalog
             {
                 return;
             }
-            statusKey  = normalisedKey;
+            statusKey = normalisedKey;
             statusArgs = normalisedArgs;
         }
 
@@ -487,14 +487,14 @@ public sealed class InputDeviceCatalog
     /// <param name="args">Format arguments for the status string, when applicable.</param>
     public void Clear(string? statusKeyOrLiteral = null, params object?[] args)
     {
-        var normalisedKey  = string.IsNullOrWhiteSpace(statusKeyOrLiteral) ? null : statusKeyOrLiteral;
+        var normalisedKey = string.IsNullOrWhiteSpace(statusKeyOrLiteral) ? null : statusKeyOrLiteral;
         var normalisedArgs = args ?? [];
 
         lock (gate)
         {
-            devices    = [];
+            devices = [];
             RebuildIndex();
-            statusKey  = normalisedKey;
+            statusKey = normalisedKey;
             statusArgs = normalisedArgs;
         }
 
@@ -507,7 +507,7 @@ public sealed class InputDeviceCatalog
     /// <returns>The fully-localized status string (or the literal text if no resource matched).</returns>
     private string ResolveProviderStatus()
     {
-        var key      = statusKey ?? defaultStatusKey;
+        var key = statusKey ?? defaultStatusKey;
         var template = localization[key];
 
         if (statusArgs.Length == 0)

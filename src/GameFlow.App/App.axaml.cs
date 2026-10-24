@@ -1,3 +1,8 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using GameFlow.App.Bootstrap;
 using GameFlow.App.Services;
 using GameFlow.App.Startup;
@@ -6,11 +11,6 @@ using GameFlow.App.Views;
 using GameFlow.Infrastructure.Configuration;
 using GameFlow.Infrastructure.Localization;
 using GameFlow.Infrastructure.Profiles;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -92,7 +92,7 @@ public partial class App : Application
                     "ThemeBootstrap failed to install bundled themes; the controller surface may render empty.");
             }
 
-            var profileSession   = host.Services.GetRequiredService<ProfileSession>();
+            var profileSession = host.Services.GetRequiredService<ProfileSession>();
             await profileSession.EnsureInitializedAsync();
 
             var localization = host.Services.GetRequiredService<ILocalizationService>();
@@ -257,7 +257,7 @@ public partial class App : Application
         })
         {
             IsBackground = true,
-            Name         = "GameFlow-Exit-Watchdog",
+            Name = "GameFlow-Exit-Watchdog",
         }.Start();
 
         var currentHost = Interlocked.Exchange(ref host, null);

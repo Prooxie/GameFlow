@@ -1,11 +1,11 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Input;
+using GameFlow.Infrastructure.Profiles;
 using GameFlow.Infrastructure.Runtime;
 using GameFlow.Infrastructure.Runtime.Slots;
 using GameFlow.Infrastructure.Runtime.Templates;
-using GameFlow.Infrastructure.Profiles;
-using Avalonia.Threading;
-using CommunityToolkit.Mvvm.Input;
 
 namespace GameFlow.App.ViewModels;
 

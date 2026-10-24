@@ -94,8 +94,8 @@ public sealed class MultiButtonAutofireExecutor
         foreach (var step in rule.Steps)
         {
             cycle += Math.Max(0, step.HoldMs)
-                  +  Math.Max(0, step.ReleaseMs)
-                  +  Math.Max(0, step.DelayAfterMs);
+                  + Math.Max(0, step.ReleaseMs)
+                  + Math.Max(0, step.DelayAfterMs);
         }
         if (cycle <= 0)
         {
@@ -112,9 +112,9 @@ public sealed class MultiButtonAutofireExecutor
         var cursor = 0;
         foreach (var step in rule.Steps)
         {
-            var hold    = Math.Max(0, step.HoldMs);
+            var hold = Math.Max(0, step.HoldMs);
             var release = Math.Max(0, step.ReleaseMs);
-            var delay   = Math.Max(0, step.DelayAfterMs);
+            var delay = Math.Max(0, step.DelayAfterMs);
             var stepLen = hold + release + delay;
 
             // Only the [cursor, cursor + hold) sub-window emits a press

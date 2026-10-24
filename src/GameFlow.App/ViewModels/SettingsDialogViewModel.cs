@@ -1,8 +1,8 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using GameFlow.Infrastructure.Configuration;
 using GameFlow.Infrastructure.Localization;
 using GameFlow.Infrastructure.Profiles;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 
 namespace GameFlow.App.ViewModels;

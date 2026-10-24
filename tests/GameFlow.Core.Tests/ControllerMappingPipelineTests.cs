@@ -902,8 +902,12 @@ public sealed class ControllerMappingPipelineTests
     {
         var rule = new TouchpadMapRule
         {
-            Id = "pad", StickEnabled = false, DpadEnabled = false, MouseEnabled = true,
-            MouseSensitivityX = 2f, InvertMouseX = true
+            Id = "pad",
+            StickEnabled = false,
+            DpadEnabled = false,
+            MouseEnabled = true,
+            MouseSensitivityX = 2f,
+            InvertMouseX = true
         };
         using var pipeline = new ControllerMappingPipeline(new ProfileDocument { Rules = [rule] });
         var now = DateTimeOffset.UtcNow;
@@ -940,8 +944,14 @@ public sealed class ControllerMappingPipelineTests
     {
         var rule = new TouchpadMapRule
         {
-            Id = "pad", StickEnabled = true, TargetStick = StickId.Right, StickSensitivity = 1f,
-            DpadEnabled = false, MouseEnabled = true, MouseSensitivityX = 1f, MouseSensitivityY = 1f
+            Id = "pad",
+            StickEnabled = true,
+            TargetStick = StickId.Right,
+            StickSensitivity = 1f,
+            DpadEnabled = false,
+            MouseEnabled = true,
+            MouseSensitivityX = 1f,
+            MouseSensitivityY = 1f
         };
         using var pipeline = new ControllerMappingPipeline(new ProfileDocument { Rules = [rule] });
         var now = DateTimeOffset.UtcNow;

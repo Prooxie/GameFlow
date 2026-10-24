@@ -226,7 +226,7 @@ public sealed class ControllerStateSymbols : IFleeSymbols
             // the analog pull). Approximated as "trigger > 0.95" so themes
             // using stage2 still light up when the user pulls the trigger
             // all the way on non-SC hardware.
-            if (side.Equals("l", StringComparison.Ordinal)) { return Snapshot.LeftTrigger  > 0.95f ? 1 : 0; }
+            if (side.Equals("l", StringComparison.Ordinal)) { return Snapshot.LeftTrigger > 0.95f ? 1 : 0; }
             if (side.Equals("r", StringComparison.Ordinal)) { return Snapshot.RightTrigger > 0.95f ? 1 : 0; }
         }
         return 0;
@@ -308,7 +308,7 @@ public sealed class ControllerStateSymbols : IFleeSymbols
 
     private double ResolveStick(ReadOnlySpan<char> tail, StickVector stick, ButtonId clickButton)
     {
-        if (tail.Equals("x", StringComparison.Ordinal))     { return stick.X; }
+        if (tail.Equals("x", StringComparison.Ordinal)) { return stick.X; }
         if (tail.Equals("y", StringComparison.Ordinal))
         {
             // VSCView's Y axis is positive-down (screen coordinates) but
@@ -332,7 +332,7 @@ public sealed class ControllerStateSymbols : IFleeSymbols
         var sep = tail.IndexOf(':');
         if (sep < 0) { return 0; }
         var index = tail[..sep];
-        var axis  = tail[(sep + 1)..];
+        var axis = tail[(sep + 1)..];
 
         if (!int.TryParse(index, out var fingerIndex)) { return 0; }
 

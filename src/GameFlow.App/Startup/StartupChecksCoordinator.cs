@@ -1,11 +1,11 @@
+using Avalonia.Controls;
+using Avalonia.Threading;
 using GameFlow.App.ViewModels;
 using GameFlow.App.Views;
 using GameFlow.Infrastructure.Configuration;
 using GameFlow.Infrastructure.Profiles;
 using GameFlow.Infrastructure.Requirements;
 using GameFlow.Infrastructure.Updates;
-using Avalonia.Controls;
-using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 

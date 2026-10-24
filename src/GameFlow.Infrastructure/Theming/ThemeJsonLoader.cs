@@ -90,11 +90,11 @@ public static class ThemeJsonLoader
             throw new ThemeLoadException("theme.json must be a JSON object at the top level.");
         }
 
-        var name      = GetString(root, "name") ?? "Untitled";
-        var width     = GetDouble(root, "width", 1500);
-        var height    = GetDouble(root, "height", 900);
-        var version   = (int)GetDouble(root, "version", 1);
-        var children  = root.TryGetProperty("children", out var childArr)
+        var name = GetString(root, "name") ?? "Untitled";
+        var width = GetDouble(root, "width", 1500);
+        var height = GetDouble(root, "height", 900);
+        var version = (int)GetDouble(root, "version", 1);
+        var children = root.TryGetProperty("children", out var childArr)
                         ? ParseChildren(childArr)
                         : [];
         var touchpadInset = root.TryGetProperty("touchpadInset", out var insetElement)
@@ -196,8 +196,8 @@ public static class ThemeJsonLoader
         var type = GetString(element, "type")?.ToLowerInvariant();
 
         // Shared "Item" fields populated on every node.
-        var x   = GetDouble(element, "x", 0);
-        var y   = GetDouble(element, "y", 0);
+        var x = GetDouble(element, "x", 0);
+        var y = GetDouble(element, "y", 0);
         var rot = GetDouble(element, "rot", 0);
         var children = element.TryGetProperty("children", out var ce)
                        ? ParseChildren(ce)
@@ -210,40 +210,55 @@ public static class ThemeJsonLoader
             case "item":
                 return new GroupNode
                 {
-                    X = x, Y = y, Rotation = rot, Children = children
+                    X = x,
+                    Y = y,
+                    Rotation = rot,
+                    Children = children
                 };
 
             case "image":
                 return new ImageNode
                 {
-                    X = x, Y = y, Rotation = rot, Children = children,
+                    X = x,
+                    Y = y,
+                    Rotation = rot,
+                    Children = children,
                     ImagePath = GetString(element, "image") ?? string.Empty,
-                    Width     = GetDouble(element, "width",  0),
-                    Height    = GetDouble(element, "height", 0),
-                    Center    = GetBool(element, "center", false)
+                    Width = GetDouble(element, "width", 0),
+                    Height = GetDouble(element, "height", 0),
+                    Center = GetBool(element, "center", false)
                 };
 
             case "lightbar":
                 return new LightbarNode
                 {
-                    X = x, Y = y, Rotation = rot, Children = children,
+                    X = x,
+                    Y = y,
+                    Rotation = rot,
+                    Children = children,
                     ImagePath = GetString(element, "image") ?? string.Empty,
-                    Width     = GetDouble(element, "width", 0),
-                    Height    = GetDouble(element, "height", 0),
-                    Center    = GetBool(element, "center", false)
+                    Width = GetDouble(element, "width", 0),
+                    Height = GetDouble(element, "height", 0),
+                    Center = GetBool(element, "center", false)
                 };
 
             case "showhide":
                 return new ShowHideNode
                 {
-                    X = x, Y = y, Rotation = rot, Children = children,
+                    X = x,
+                    Y = y,
+                    Rotation = rot,
+                    Children = children,
                     Input = ParseExpression(GetString(element, "input"), "1")
                 };
 
             case "slider":
                 return new SliderNode
                 {
-                    X = x, Y = y, Rotation = rot, Children = children,
+                    X = x,
+                    Y = y,
+                    Rotation = rot,
+                    Children = children,
                     InputX = ParseExpression(GetString(element, "inputX"), "0"),
                     InputY = ParseExpression(GetString(element, "inputY"), "0"),
                     InputR = ParseExpression(GetString(element, "inputR"), "0")
@@ -252,17 +267,20 @@ public static class ThemeJsonLoader
             case "pbar":
                 return new PBarNode
                 {
-                    X = x, Y = y, Rotation = rot, Children = children,
-                    Input      = ParseExpression(GetString(element, "input"),  "0"),
-                    Min        = ParseExpression(GetString(element, "min"),    "0"),
-                    Max        = ParseExpression(GetString(element, "max"),    "1"),
-                    Direction  = ParseDirection(GetString(element, "direction")),
-                    ImagePath  = GetString(element, "image"),
+                    X = x,
+                    Y = y,
+                    Rotation = rot,
+                    Children = children,
+                    Input = ParseExpression(GetString(element, "input"), "0"),
+                    Min = ParseExpression(GetString(element, "min"), "0"),
+                    Max = ParseExpression(GetString(element, "max"), "1"),
+                    Direction = ParseDirection(GetString(element, "direction")),
+                    ImagePath = GetString(element, "image"),
                     Foreground = GetString(element, "foreground") ?? "FFFFFFFF",
                     Background = GetString(element, "background") ?? "00000000",
-                    Width      = GetDouble(element, "width", 0),
-                    Height     = GetDouble(element, "height", 0),
-                    Center     = GetBool(element, "center", false)
+                    Width = GetDouble(element, "width", 0),
+                    Height = GetDouble(element, "height", 0),
+                    Center = GetBool(element, "center", false)
                 };
 
             // The remaining VSCView types (ppie, basic3d1) are
@@ -279,13 +297,19 @@ public static class ThemeJsonLoader
                     type);
                 return new GroupNode
                 {
-                    X = x, Y = y, Rotation = rot, Children = children
+                    X = x,
+                    Y = y,
+                    Rotation = rot,
+                    Children = children
                 };
 
             case "trailpad":
                 return new TrailPadNode
                 {
-                    X = x, Y = y, Rotation = rot, Children = children,
+                    X = x,
+                    Y = y,
+                    Rotation = rot,
+                    Children = children,
                     Input = ParseExpression(GetString(element, "input"), "0"),
                     InputX = ParseExpression(GetString(element, "inputX"), "0"),
                     InputY = ParseExpression(GetString(element, "inputY"), "0"),
@@ -319,10 +343,10 @@ public static class ThemeJsonLoader
 
     private static PBarDirection ParseDirection(string? raw) => (raw ?? "right").ToLowerInvariant() switch
     {
-        "up"    => PBarDirection.Up,
-        "down"  => PBarDirection.Down,
-        "left"  => PBarDirection.Left,
-        _       => PBarDirection.Right
+        "up" => PBarDirection.Up,
+        "down" => PBarDirection.Down,
+        "left" => PBarDirection.Left,
+        _ => PBarDirection.Right
     };
 
     // ─── Low-level JSON helpers ───────────────────────────────────────────────
@@ -333,8 +357,8 @@ public static class ThemeJsonLoader
         return v.ValueKind switch
         {
             JsonValueKind.String => v.GetString(),
-            JsonValueKind.Null   => null,
-            _                    => v.GetRawText()
+            JsonValueKind.Null => null,
+            _ => v.GetRawText()
         };
     }
 
@@ -357,8 +381,8 @@ public static class ThemeJsonLoader
         if (!element.TryGetProperty(property, out var v)) { return fallback; }
         return v.ValueKind switch
         {
-            JsonValueKind.True   => true,
-            JsonValueKind.False  => false,
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
             JsonValueKind.Number => v.GetDouble() != 0,
             JsonValueKind.String =>
                 string.Equals(v.GetString(), "true", StringComparison.OrdinalIgnoreCase),

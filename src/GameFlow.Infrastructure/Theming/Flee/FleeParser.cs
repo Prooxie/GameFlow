@@ -115,15 +115,15 @@ public static class FleeParser
         {
             // Order matters: two-character operators must be tried before
             // their one-character prefixes so "<=" doesn't bind as "<" "=".
-            if      (c.Match("<=")) { node = new BinaryNode("<=", node, ParseAdd(c)); }
+            if (c.Match("<=")) { node = new BinaryNode("<=", node, ParseAdd(c)); }
             else if (c.Match(">=")) { node = new BinaryNode(">=", node, ParseAdd(c)); }
             else if (c.Match("==")) { node = new BinaryNode("==", node, ParseAdd(c)); }
             else if (c.Match("!=")) { node = new BinaryNode("!=", node, ParseAdd(c)); }
             else if (c.Match("<>")) { node = new BinaryNode("<>", node, ParseAdd(c)); }
-            else if (c.Match("<"))  { node = new BinaryNode("<",  node, ParseAdd(c)); }
-            else if (c.Match(">"))  { node = new BinaryNode(">",  node, ParseAdd(c)); }
-            else if (c.Match("="))  { node = new BinaryNode("=",  node, ParseAdd(c)); }
-            else                    { break; }
+            else if (c.Match("<")) { node = new BinaryNode("<", node, ParseAdd(c)); }
+            else if (c.Match(">")) { node = new BinaryNode(">", node, ParseAdd(c)); }
+            else if (c.Match("=")) { node = new BinaryNode("=", node, ParseAdd(c)); }
+            else { break; }
         }
         return node;
     }
@@ -133,9 +133,9 @@ public static class FleeParser
         var node = ParseMul(c);
         while (true)
         {
-            if      (c.Match("+")) { node = new BinaryNode("+", node, ParseMul(c)); }
+            if (c.Match("+")) { node = new BinaryNode("+", node, ParseMul(c)); }
             else if (c.Match("-")) { node = new BinaryNode("-", node, ParseMul(c)); }
-            else                    { break; }
+            else { break; }
         }
         return node;
     }
@@ -145,9 +145,9 @@ public static class FleeParser
         var node = ParseUnary(c);
         while (true)
         {
-            if      (c.Match("*")) { node = new BinaryNode("*", node, ParseUnary(c)); }
+            if (c.Match("*")) { node = new BinaryNode("*", node, ParseUnary(c)); }
             else if (c.Match("/")) { node = new BinaryNode("/", node, ParseUnary(c)); }
-            else                    { break; }
+            else { break; }
         }
         return node;
     }
@@ -181,7 +181,7 @@ public static class FleeParser
             c.Advance();
 
             // Boolean literals — case-insensitive per VSCView convention.
-            if (string.Equals(tok.Text, "true",  StringComparison.OrdinalIgnoreCase)) { return new LiteralNode(1); }
+            if (string.Equals(tok.Text, "true", StringComparison.OrdinalIgnoreCase)) { return new LiteralNode(1); }
             if (string.Equals(tok.Text, "false", StringComparison.OrdinalIgnoreCase)) { return new LiteralNode(0); }
 
             // Function call? Detected by an immediately-following '('.
@@ -298,9 +298,15 @@ public static class FleeParser
 
             switch (ch)
             {
-                case '+': case '-': case '*': case '/':
-                case '<': case '>': case '=':
-                case '(': case ')':
+                case '+':
+                case '-':
+                case '*':
+                case '/':
+                case '<':
+                case '>':
+                case '=':
+                case '(':
+                case ')':
                 case ',':
                     tokens.Add(new Token(TokenKind.Punct, ch.ToString(), i));
                     i++;

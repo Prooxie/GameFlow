@@ -85,7 +85,12 @@ public sealed class HidMaestroStateWriterTests
     {
         var state = new HMGamepadState
         {
-            AccelGX = 1, AccelGY = 1, AccelGZ = 1, GyroDpsX = 1, GyroDpsY = 1, GyroDpsZ = 1,
+            AccelGX = 1,
+            AccelGY = 1,
+            AccelGZ = 1,
+            GyroDpsX = 1,
+            GyroDpsY = 1,
+            GyroDpsZ = 1,
         };
 
         new HidMaestroStateWriter(Profile()).Fill(ref state, ControllerSnapshot.Empty("pad"));

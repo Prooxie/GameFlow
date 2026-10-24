@@ -100,7 +100,7 @@ public sealed class ThemeJsonLoaderTests
             """;
         var doc = ThemeJsonLoader.LoadFromString(json);
         Assert.Equal(1534, doc.Width);
-        Assert.Equal( 954, doc.Height);
+        Assert.Equal(954, doc.Height);
     }
 
     /// <summary>
@@ -127,7 +127,7 @@ public sealed class ThemeJsonLoaderTests
         var doc = ThemeJsonLoader.LoadFromString(json);
         Assert.Equal("Untitled", doc.Name);
         Assert.Equal(1500, doc.Width);
-        Assert.Equal( 900, doc.Height);
+        Assert.Equal(900, doc.Height);
         Assert.Empty(doc.Children);
     }
 }

@@ -96,19 +96,19 @@ public static class ControllerSnapshotMerger
 
         var merged = new ControllerSnapshot
         {
-            DeviceName   = deviceName,
-            VendorId     = identitySource?.VendorId ?? 0,
-            ProductId    = identitySource?.ProductId ?? 0,
+            DeviceName = deviceName,
+            VendorId = identitySource?.VendorId ?? 0,
+            ProductId = identitySource?.ProductId ?? 0,
             BatteryPercent = identitySource?.BatteryPercent,
             BatteryCharging = identitySource?.BatteryCharging ?? false,
-            LeftStick    = left,
-            RightStick   = right,
-            LeftTrigger  = leftTrigger,
+            LeftStick = left,
+            RightStick = right,
+            LeftTrigger = leftTrigger,
             RightTrigger = rightTrigger,
-            Buttons      = buttons,
+            Buttons = buttons,
             MouseButtons = mouseButtons,
-            MouseMotion  = mouseMotion,
-            PressedKeys  = (IReadOnlySet<int>?)keyUnion ?? pressedKeys ?? EmptyKeys,
+            MouseMotion = mouseMotion,
+            PressedKeys = (IReadOnlySet<int>?)keyUnion ?? pressedKeys ?? EmptyKeys,
         };
 
         if (motionSource is not null)

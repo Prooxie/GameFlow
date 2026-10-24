@@ -1,12 +1,12 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Avalonia;
+using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Input;
 using GameFlow.Core.Enums;
 using GameFlow.Infrastructure.Localization;
 using GameFlow.Infrastructure.Runtime;
 using GameFlow.Infrastructure.Runtime.Input;
-using Avalonia;
-using Avalonia.Threading;
-using CommunityToolkit.Mvvm.Input;
 
 namespace GameFlow.App.ViewModels;
 
@@ -382,17 +382,17 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable, IKeyboardMous
             var btns = string.Concat(
                 frame.Left ? "L" : "·", frame.Right ? "R" : "·", frame.Middle ? "M" : "·",
                 frame.Button4 ? "4" : "·", frame.Button5 ? "5" : "·");
-            IsMouseScrollUp   = frame.WheelDelta > 0;
+            IsMouseScrollUp = frame.WheelDelta > 0;
             IsMouseScrollDown = frame.WheelDelta < 0;
             var wheel = frame.WheelDelta == 0 ? "  --" : $"{frame.WheelDelta,4:+#;-#}";
             MouseInfo = UiTextResources.Format("UiMouseState", frame.Dx, frame.Dy, wheel, btns);
 
-            IsMouseLeftDown    = frame.Left;
-            IsMouseRightDown   = frame.Right;
-            IsMouseMiddleDown  = frame.Middle;
+            IsMouseLeftDown = frame.Left;
+            IsMouseRightDown = frame.Right;
+            IsMouseMiddleDown = frame.Middle;
             IsMouseButton4Down = frame.Button4;
             IsMouseButton5Down = frame.Button5;
-            MouseAimEndPoint   = ComputeMouseAimEndpoint(frame.Dx, frame.Dy);
+            MouseAimEndPoint = ComputeMouseAimEndpoint(frame.Dx, frame.Dy);
         }
     }
 
@@ -673,20 +673,20 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable, IKeyboardMous
     public bool IsEmpty => Devices.Count == 0;
 
     // ─── Localized labels (live via CultureChanged) ───────────────────
-    public string TitleLabel        => localization["DevicesTitle"];
-    public string RefreshLabel      => localization["CommonRefresh"];
-    public string OnlineTotalLabel  => localization["DevicesOnlineTotal"];
-    public string TotalLabel        => localization["DevicesTotal"];
-    public string ProductLabel      => localization["DevicesProduct"];
-    public string VidPidLabel       => localization["DevicesVIDPID"];
-    public string HardwareIdLabel   => localization["DevicesHardwareId"];
+    public string TitleLabel => localization["DevicesTitle"];
+    public string RefreshLabel => localization["CommonRefresh"];
+    public string OnlineTotalLabel => localization["DevicesOnlineTotal"];
+    public string TotalLabel => localization["DevicesTotal"];
+    public string ProductLabel => localization["DevicesProduct"];
+    public string VidPidLabel => localization["DevicesVIDPID"];
+    public string HardwareIdLabel => localization["DevicesHardwareId"];
     public string ActiveDeviceLabel => localization["DevicesActiveDevice"];
-    public string NoSelectionLabel  => localization["DevicesNoSelection"];
-    public string EmptyListLabel    => localization["DevicesEmptyList"];
+    public string NoSelectionLabel => localization["DevicesNoSelection"];
+    public string EmptyListLabel => localization["DevicesEmptyList"];
     public string KeyboardHintLabel => localization["DevicesKeyboardHint"];
-    public string MouseHintLabel    => localization["DevicesMouseHint"];
-    public string KeysDownLabel     => localization["DevicesKeysDownLabel"];
-    public string InputLiveLabel    => localization["DevicesInputLiveLabel"];
+    public string MouseHintLabel => localization["DevicesMouseHint"];
+    public string KeysDownLabel => localization["DevicesKeysDownLabel"];
+    public string InputLiveLabel => localization["DevicesInputLiveLabel"];
 
     private void OnCatalogUpdated(object? sender, EventArgs e)
     {

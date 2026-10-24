@@ -31,9 +31,9 @@ public enum ControllerVisualStyle
     /// <summary>Legacy / generic Xbox. Kept for backward compatibility
     /// with persisted preferences from earlier builds where the
     /// generation wasn't differentiated.</summary>
-    Xbox       = 20,
-    Xbox360    = 21,
-    XboxOne    = 22,
+    Xbox = 20,
+    Xbox360 = 21,
+    XboxOne = 22,
     XboxSeries = 23,
 
     // ─── Nintendo ────────────────────────────────────────────────
@@ -41,14 +41,14 @@ public enum ControllerVisualStyle
 
     // ─── Valve ───────────────────────────────────────────────────
     SteamController = 40,
-    SteamDeck       = 41,
+    SteamDeck = 41,
     SteamControllerV2 = 42,
 
     // ─── Generic / other ─────────────────────────────────────────
     SimpleGamepad = 50,
-    Arcade        = 51,
-    Joystick      = 52,
-    Wheel         = 53,
+    Arcade = 51,
+    Joystick = 52,
+    Wheel = 53,
 
     /// <summary>
     /// Non-gamepad input hardware rendered with its own layout art —
@@ -57,7 +57,7 @@ public enum ControllerVisualStyle
     /// gamepad silhouette.
     /// </summary>
     Keyboard = 60,
-    Mouse    = 61,
+    Mouse = 61,
 
     /// <summary>
     /// A keyboard and a mouse feeding one slot together, drawn as both
