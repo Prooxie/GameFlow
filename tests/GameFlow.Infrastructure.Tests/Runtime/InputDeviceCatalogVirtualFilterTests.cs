@@ -27,6 +27,43 @@ public sealed class InputDeviceCatalogVirtualFilterTests
         new(id, "Xbox 360 Controller", IsConnected: true, IsSelected: false,
             VendorId: vid, ProductId: pid, IsGamepad: true, Category: DeviceCategory.Gamepad);
 
+    /// <summary>A physical Bluetooth pad must remain visible beside a matching virtual output.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ReplaceDevicesBluetoothDualSenseRemainsVisibleDuringOutputClaim(bool connectedBeforeClaim)
+    {
+        var catalog = NewCatalog();
+        var physical = Pad("physical", 0x054C, 0x0CE6) with
+        {
+            HardwarePath = @"\\?\HID#{00001124-0000-1000-8000-00805f9b34fb}_VID&0002054c_PID&0ce6#9&22599cf&9&0000",
+        };
+        if (connectedBeforeClaim) { catalog.ReplaceDevices("sdl", [physical]); }
+        using var claim = catalog.ClaimHardwareSignature(0x054C, 0x0CE6, DateTimeOffset.UtcNow);
+
+        catalog.ReplaceDevices("sdl", [physical, physical with { Id = "virtual", IsVirtual = true }]);
+
+        Assert.Equal(physical, Assert.Single(catalog.Devices));
+    }
+
+    /// <summary>Resolved Bluetooth identity must clear an earlier heuristic exclusion.</summary>
+    [Fact]
+    public void ReplaceDevicesResolvedBluetoothPathRestoresPreviouslyHiddenDevice()
+    {
+        var catalog = NewCatalog();
+        using var claim = catalog.ClaimHardwareSignature(0x054C, 0x0CE6, DateTimeOffset.UtcNow);
+        var physical = Pad("physical", 0x054C, 0x0CE6);
+        catalog.ReplaceDevices("sdl", [physical]);
+        Assert.Empty(catalog.Devices);
+
+        catalog.ReplaceDevices("sdl", [physical with
+        {
+            HardwarePath = @"HID\{00001124-0000-1000-8000-00805F9B34FB}_VID&0002054C_PID&0CE6\9&22599CF&9&0000",
+        }]);
+
+        Assert.Equal("physical", Assert.Single(catalog.Devices).Id);
+    }
+
     [Fact]
     public void LingeringVirtualEndpointStaysHiddenAfterGraceUntilItDisappears()
     {

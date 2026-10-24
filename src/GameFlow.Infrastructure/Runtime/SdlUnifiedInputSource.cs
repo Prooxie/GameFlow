@@ -1656,6 +1656,7 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
                     LogVirtualVerdict(gamepadId, gamepadPath, isVirtualGamepad))
                 {
                     Features = GetDetectedFeatures(gamepadId),
+                    HardwarePath = gamepadPath,
                 });
             }
         }
@@ -1716,6 +1717,7 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
                     LogVirtualVerdict(joystickId, joystickPath, isVirtualJoystick))
                 {
                     Features = GetDetectedFeatures(joystickId),
+                    HardwarePath = joystickPath,
                 });
             }
         }

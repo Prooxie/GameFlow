@@ -536,6 +536,11 @@ public sealed class InputDeviceCatalog
     /// <returns>True if the device is hardware-signature-filtered.</returns>
     private bool MatchesIgnoredHardwareSignature(InputDeviceInfo device)
     {
+        if (VirtualDeviceIdentity.IsPhysicalBluetooth(device.HardwarePath))
+        {
+            return false;
+        }
+
         if ((ignoredHardwareSignatures.Count == 0 && claims.Count == 0) || (device.VendorId == 0 && device.ProductId == 0))
         {
             return false;
@@ -571,6 +576,7 @@ public sealed class InputDeviceCatalog
 
     private bool IsKnownVirtualDevice(InputDeviceInfo device)
     {
+        if (VirtualDeviceIdentity.IsPhysicalBluetooth(device.HardwarePath)) { return false; }
         if (hiddenVirtualDeviceIds.Contains(device.Id)) { return true; }
         if (!MatchesIgnoredHardwareSignature(device)) { return false; }
         hiddenVirtualDeviceIds.Add(device.Id);

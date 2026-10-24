@@ -327,14 +327,17 @@ function Test-SamePath {
     param([string]$Left, [string]$Right)
     $a = [System.IO.Path]::GetFullPath($Left).TrimEnd('\', '/')
     $b = [System.IO.Path]::GetFullPath($Right).TrimEnd('\', '/')
-    [string]::Equals($a, $b, [StringComparison]::OrdinalIgnoreCase)
+    $comparison = if ([OperatingSystem]::IsWindows()) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
+    [string]::Equals($a, $b, $comparison)
 }
 
 function Test-PathInside {
     param([string]$Path, [string]$Folder)
-    $p = [System.IO.Path]::GetFullPath($Path).TrimEnd('\', '/') + '\'
-    $f = [System.IO.Path]::GetFullPath($Folder).TrimEnd('\', '/') + '\'
-    $p.StartsWith($f, [StringComparison]::OrdinalIgnoreCase)
+    $relative = [System.IO.Path]::GetRelativePath(
+        [System.IO.Path]::GetFullPath($Folder), [System.IO.Path]::GetFullPath($Path))
+    $relative -eq '.' -or (
+        ![System.IO.Path]::IsPathRooted($relative) -and $relative -ne '..' -and
+        !$relative.StartsWith('..' + [System.IO.Path]::DirectorySeparatorChar, [StringComparison]::Ordinal))
 }
 
 function Get-RelativePath {

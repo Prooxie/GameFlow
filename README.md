@@ -2,9 +2,24 @@
 
 <img src="brand/logo-lockup.png" alt="GameFlow" width="620">
 
+**Cross-platform gamepad tooling for anyone.**
+
 **Any input in. Your controller mapping out.**
 
-**Version 1.0.9** · .NET 10 · Avalonia · SDL3 · HIDMaestro
+**v1.0.9** · Built with **.NET 10** · **Avalonia UI** · **SDL3** · **HIDMaestro**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-informational)](#requirements)
+[![Made by Proxy Darkness](https://img.shields.io/badge/made%20by-Proxy%20Darkness-blueviolet)](https://buymeacoffee.com/ProxyDarkness)
+[![Website](https://img.shields.io/badge/website-prooxie.github.io%2FGameFlow-00D4FF)](https://prooxie.github.io/GameFlow/)
+
+---
+
+[![Buy Me a Coffee](https://user-images.githubusercontent.com/1286821/181085373-12eee197-187a-4438-90fe-571ac6d68900.png)](https://buymeacoffee.com/ProxyDarkness)
+
+Using and sharing the project also helps. Thank you!
+
+---
 
 [Download](https://github.com/Prooxie/GameFlow/releases/latest) · [Project page](https://prooxie.github.io/GameFlow/) · [Wiki](WIKI.md)
 
@@ -190,11 +205,6 @@ Read [the release guide](docs/release.md) for local packages, checksums, Git tag
 
 The [1.0.9 quality report](docs/quality-report-1.0.9.md) records the checks and remaining limits.
 
-## Contribute
-
-Read the project documentation before you change code.
-Write tests first and keep commits focused.
-
 ## License and credits
 
 GameFlow uses the [MIT license](LICENSE).
@@ -206,5 +216,14 @@ GameFlow uses the [MIT license](LICENSE).
 - [SDL3](https://github.com/libsdl-org/SDL) provides controller input.
 - [MoonSharp](https://www.moonsharp.org/) provides Lua execution.
 
-Thanks to Nazzareno96 and NoobKillerRoof for feedback and testing.
 [Support Proxy Darkness](https://buymeacoffee.com/ProxyDarkness) · [YouTube](https://www.youtube.com/@ProxyDarkness) · [Twitch](https://www.twitch.tv/ProxyDarkness)
+
+---
+
+## Thanks to
+
+**Nazzareno96** provides feedback and beta testing.
+[twitch.tv/nazzareno96](https://www.twitch.tv/nazzareno96)
+
+**NoobKillerRoof** reports hardware and software problems and provides beta testing.
+[twitch.tv/noobkillerroof](https://www.twitch.tv/noobkillerroof)
