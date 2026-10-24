@@ -160,7 +160,7 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
     /// </summary>
     private void ProcessGestures(
         TouchpadMapRule rule, ControllerSnapshot physical,
-        ref ButtonMask buttons, DateTimeOffset now)
+        ref ButtonMask produced, DateTimeOffset now)
     {
         if (!rule.GesturesEnabled || rule.Gestures.Count == 0 || rule.Mode == RuleMode.DoNothing)
         {
@@ -195,16 +195,17 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
                 // one. At a low polling rate a tick is several
                 // milliseconds, and deferring would shave that off the
                 // front of every gesture press for no reason.
-                buttons[binding.TargetButton] = true;
+                produced[binding.TargetButton] = true;
             }
         }
     }
 
     /// <summary>
-    /// Holds down every button with an unexpired gesture press and drops
-    /// the entries that have run out. Expired holds are removed rather
-    /// than set to false: the button may be genuinely held by the
-    /// player's own thumb, and forcing it false would fight them.
+    /// Adds every button with an unexpired gesture press to the produced
+    /// set and drops the entries that have run out. Expired holds are
+    /// simply not added rather than forced off: the button may be
+    /// genuinely held by the player's own thumb, and forcing it false
+    /// would fight them.
     /// </summary>
     private void ApplyGestureHolds(ref ButtonMask buttons, DateTimeOffset now)
     {
@@ -239,19 +240,15 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
 
     /// <summary>
     /// Buckets an anchor-relative touch vector into D-pad button(s) and
-    /// writes all four — clearing the ones NOT in the active wedge, not
-    /// just setting the active one(s), so a stale press from a previous
-    /// tick can't linger. Below <paramref name="deadzone"/>, all four
-    /// stay false. 8-way diagonals hold two adjacent buttons at once
-    /// (the standard way to represent 8 directions on 4 buttons).
+    /// ADDS them to <paramref name="buttons"/> (the produced set). It never
+    /// clears a direction: the produced set is rebuilt every tick, so a
+    /// stale press cannot linger, and clearing used to release the
+    /// PHYSICAL D-pad too. Below <paramref name="deadzone"/>, nothing is
+    /// added. 8-way diagonals hold two adjacent buttons at once (the
+    /// standard way to represent 8 directions on 4 buttons).
     /// </summary>
     private static void ApplyWedgeDpad(float dx, float dy, float deadzone, bool eightWay, ref ButtonMask buttons)
     {
-        buttons[ButtonId.DpadUp] = false;
-        buttons[ButtonId.DpadDown] = false;
-        buttons[ButtonId.DpadLeft] = false;
-        buttons[ButtonId.DpadRight] = false;
-
         if (MathF.Sqrt((dx * dx) + (dy * dy)) < deadzone)
         {
             return;
@@ -298,14 +295,29 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
     private readonly Dictionary<string, Func<float[], float>?> compiledFormulas = [];
 
     /// <summary>
-    /// Runtime "is this rule currently muted" overlay maintained by
-    /// <see cref="RuleToggleRule"/> executions. Targets that appear
-    /// here are skipped by every <c>.Where(IsActive)</c> filter below.
-    /// Resets to empty on each app launch (not persisted) — the
-    /// profile JSON's Enabled flag stays the source of truth across
-    /// restarts.
+    /// Runtime on/off overlay maintained by <see cref="RuleToggleRule"/>
+    /// executions: rule id → the state a toggle last put it in. A rule
+    /// absent from here follows its authored <see cref="MappingRule.Enabled"/>.
+    ///
+    /// <para>
+    /// An explicit state per id rather than a "muted" set, because a set
+    /// can only ever take a rule AWAY: a rule saved disabled could never
+    /// be switched on by a toggle, which is half of what a toggle is for.
+    /// Resets on each app launch (not persisted) — the profile JSON's
+    /// Enabled flag stays the source of truth across restarts.
+    /// </para>
     /// </summary>
-    private readonly HashSet<string> runtimeDisabledIds = [];
+    private readonly Dictionary<string, bool> runtimeEnabledOverrides = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Bumped on every toggle flip. The resolved axis inversion depends on
+    /// which inversion rules are on, so it is cached against this and the
+    /// active layer instead of being re-folded on every tick.
+    /// </summary>
+    private int toggleVersion;
+
+    /// <summary>Every rule by id, first occurrence winning — what a toggle needs to know a target's authored state.</summary>
+    private readonly Dictionary<string, MappingRule> rulesById = BuildRulesById(profile.Rules);
 
     /// <summary>
     /// Last-frame state of each rule-toggle's source button, used for
@@ -340,6 +352,27 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
     private readonly MultiSourceMapRule[] multiSourceRules = profile.Rules.OfType<MultiSourceMapRule>().ToArray();
     private readonly ControlScriptRule[] controlScriptRules = profile.Rules.OfType<ControlScriptRule>().ToArray();
     private readonly StickThresholdRule[] stickThresholdRules = profile.Rules.OfType<StickThresholdRule>().ToArray();
+    private readonly AxisInvertRule[] axisInvertRules = profile.Rules.OfType<AxisInvertRule>().ToArray();
+
+    /// <summary>Layers whose activator is hidden from the output — see <see cref="ShiftLayer.SuppressActivatorButton"/>. Usually empty.</summary>
+    private readonly ShiftLayer[] layersSuppressingActivator = profile.ShiftLayers.Where(layer => layer.SuppressActivatorButton).ToArray();
+
+    // ── Layer-over-Base override (see ShiftLayer) ──
+    // Every rule's source inputs as one bit set, computed once: a layer
+    // rule's are OR-ed into activeLayerInputs while its layer is active,
+    // and a Base rule whose own set meets that one is skipped. Keyed by
+    // reference, not by the record's value equality — two rules can be
+    // field-for-field identical and still be two rules.
+    private readonly Dictionary<string, LayerRuleInputs[]> layerRuleInputs = BuildLayerRuleInputs(profile.Rules);
+    private readonly Dictionary<MappingRule, ulong> baseRuleInputs = BuildBaseRuleInputs(profile.Rules);
+
+    /// <summary>Source inputs bound by the active layer's currently enabled rules; 0 on Base.</summary>
+    private ulong activeLayerInputs;
+
+    /// <summary>The axis inversion last resolved, and the layer/toggle state it was resolved for.</summary>
+    private AxisInvert? resolvedAxisInvert;
+    private string? resolvedAxisInvertLayerId;
+    private int resolvedAxisInvertToggleVersion = -1;
 
     /// <summary>
     /// Note text for each entry of <see cref="buttonRemapRules"/>, formatted
@@ -360,11 +393,23 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
     private readonly string[] buttonBlockedNotes = profile.Rules.OfType<ButtonRemapRule>()
         .Select(r => $"Blocked {r.SourceButton}.").ToArray();
 
-    // Issue #12: Track previous button states for rising-edge detection on freeze rules.
-    private ButtonMask previousButtonStates = ButtonMask.Empty;
+    /// <summary>
+    /// Last-frame state of each freeze rule's activation button, for
+    /// rising-edge detection. Keyed by RULE id: keyed by button, the first
+    /// of two freeze rules sharing an activation button consumed the edge
+    /// and the second never saw a press at all.
+    /// </summary>
+    private readonly Dictionary<string, bool> freezeActivationWasPressed = new(StringComparer.Ordinal);
 
     /// <summary>Dense array size for the ControlScriptRule bool[] round-trip -- see the Script pass in <see cref="Process"/>.</summary>
     private static readonly int buttonIdCount = Enum.GetValues<ButtonId>().Length;
+
+    /// <summary>
+    /// Scratch for that round-trip. Reused rather than allocated per script
+    /// per tick: a pipeline is driven by one slot's tick loop, never two
+    /// threads at once, and the engine copies the array before it runs.
+    /// </summary>
+    private readonly bool[] scriptButtonBuffer = new bool[buttonIdCount];
 
     /// <summary>
     /// Releases this pipeline's owned <see cref="LuaScriptEngine"/> (compiled
@@ -384,14 +429,36 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
     }
 
     /// <summary>
-    /// Helper that combines a rule's authored Enabled flag with the
-    /// runtime-disabled overlay maintained by <see cref="RuleToggleRule"/>
-    /// executions. Used in every <c>.Where(...)</c> below so toggle
-    /// state actually mutes downstream rule processing.
+    /// A rule's authored Enabled flag, unless a <see cref="RuleToggleRule"/>
+    /// has since switched it — see <see cref="runtimeEnabledOverrides"/>.
     /// </summary>
-    private bool IsActive(MappingRule rule) =>
-        rule.Enabled && !runtimeDisabledIds.Contains(rule.Id)
-        && (string.IsNullOrEmpty(rule.LayerId) || rule.LayerId == shiftLayerResolver.ActiveLayerId);
+    private bool IsEnabled(MappingRule rule) =>
+        runtimeEnabledOverrides.Count == 0 || !runtimeEnabledOverrides.TryGetValue(rule.Id, out var overridden)
+            ? rule.Enabled
+            : overridden;
+
+    /// <summary>
+    /// Whether a rule takes part in this tick: enabled (authored or
+    /// toggled), and on the right layer. A layer rule runs only while its
+    /// layer is active; a Base rule runs unless the active layer binds one
+    /// of the same source inputs — see <see cref="ShiftLayer"/>.
+    /// </summary>
+    private bool IsActive(MappingRule rule)
+    {
+        if (!IsEnabled(rule))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(rule.LayerId))
+        {
+            return rule.LayerId == shiftLayerResolver.ActiveLayerId;
+        }
+
+        return activeLayerInputs == 0
+            || !baseRuleInputs.TryGetValue(rule, out var inputs)
+            || (inputs & activeLayerInputs) == 0;
+    }
 
     public ControllerFrameResult Process(ControllerSnapshot physical, DateTimeOffset now)
     {
@@ -400,61 +467,111 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
         // the UI rate; the overwhelming majority of ticks produce none at
         // all, and this method runs up to 1000 times a second per slot.
         List<string>? notes = null;
-        var buttons = ButtonState.Clone(physical.Buttons);
+
+        // ── Buttons are four sets, combined once ──
+        // passThrough: the physical buttons, after SOCD cleaning.
+        // suppressed:  physical presses a rule consumes ("suppress source").
+        // blocked:     physical presses a rule blocks ("Ignore / block").
+        // produced:    buttons rules press (remap targets, pulses, steps…).
+        // Output = (passThrough minus suppressed and blocked) OR produced.
+        //
+        // This used to be ONE map every pass wrote into, which is how rules
+        // nullified each other: "suppress source" cleared the button for
+        // everyone, so swapping South and East with two suppressing remaps
+        // left only one of them pressed, a turbo on its own button either
+        // held solid or never fired, and a block that happened to run after
+        // a remap erased the remap's output. With separate sets, suppressing
+        // or blocking only ever hides the PHYSICAL press — never a button
+        // another rule (or the same rule) produces.
+        var passThrough = physical.Buttons;
+        var produced = ButtonMask.Empty;
+        var suppressed = ButtonMask.Empty;
+        var blocked = ButtonMask.Empty;
 
         // Shift layers resolve FIRST — every subsequent pass gates
-        // through IsActive, which now also checks layer membership, so
-        // this must run before anything else reads it.
+        // through IsActive, which also checks layer membership, so this
+        // must run before anything else reads it.
         var layerNote = shiftLayerResolver.Resolve(profile.ShiftLayers, physical, now);
         if (layerNote is not null)
         {
             (notes ??= []).Add(layerNote);
         }
+        RefreshActiveLayerInputs();
 
-        // RuleToggleRule pass — must run before any rule whose Enabled
-        // state it might flip. On the rising edge of the toggle's
-        // source button, every target id is flipped in/out of the
-        // runtime-disabled set, which the IsActive helper consults
-        // below.
+        foreach (var layer in layersSuppressingActivator)
+        {
+            if (layer.ActivatorButton != ButtonId.None && physical.IsPressed(layer.ActivatorButton))
+            {
+                suppressed[layer.ActivatorButton] = true;
+            }
+            if (layer.ActivationMode == ShiftLayerActivationMode.Cycle
+                && layer.CyclePreviousButton != ButtonId.None && physical.IsPressed(layer.CyclePreviousButton))
+            {
+                suppressed[layer.CyclePreviousButton] = true;
+            }
+        }
+
+        // RuleToggleRule pass — must run before any rule whose state it
+        // might flip. On the rising edge of the toggle's source button,
+        // every target flips relative to its CURRENT state (authored, or
+        // whatever an earlier toggle left it in).
+        var toggledThisTick = false;
         foreach (var rule in ruleToggleRules)
         {
-            if (!rule.Enabled)
-            {
-                continue;
-            }
-
             if (rule.SourceButton == ButtonId.None) { continue; }
 
             var pressed = physical.IsPressed(rule.SourceButton);
             toggleSourceWasPressed.TryGetValue(rule.Id, out var wasPressed);
+            // Tracked even while the toggle is inactive, so a layer engaging
+            // under an already-held button doesn't read as a fresh press.
+            toggleSourceWasPressed[rule.Id] = pressed;
+
+            if (!IsActive(rule) || rule.Mode == RuleMode.Passthrough)
+            {
+                continue;
+            }
+            if (rule.Mode == RuleMode.DoNothing)
+            {
+                blocked[rule.SourceButton] = true;
+                continue;
+            }
 
             if (pressed && !wasPressed)
             {
                 foreach (var targetId in rule.TargetRuleIds)
                 {
-                    if (string.IsNullOrWhiteSpace(targetId)) { continue; }
-                    if (!runtimeDisabledIds.Remove(targetId))
+                    if (string.IsNullOrWhiteSpace(targetId) || !rulesById.TryGetValue(targetId, out var target))
                     {
-                        runtimeDisabledIds.Add(targetId);
+                        continue;
                     }
+                    runtimeEnabledOverrides[targetId] = !IsEnabled(target);
                 }
+                toggleVersion++;
+                toggledThisTick = true;
                 (notes ??= []).Add($"Toggled {rule.TargetRuleIds.Count} rule(s) via {rule.SourceButton}.");
             }
-            toggleSourceWasPressed[rule.Id] = pressed;
 
             if (rule.SuppressSourceButton)
             {
-                buttons[rule.SourceButton] = false;
+                suppressed[rule.SourceButton] = true;
             }
+        }
+        if (toggledThisTick)
+        {
+            // A toggle can switch a layer rule on or off, which changes
+            // which Base rules that layer overrides.
+            RefreshActiveLayerInputs();
         }
 
         // Issue #10: Use the threshold-adjusted map as the baseline for the output sticks.
         // Previously leftStick/rightStick were seeded from physical.LeftStick/RightStick,
         // which meant StickThresholdRule deadzones only affected autofire source reads,
-        // not the final virtual output. Now thresholds apply to the output directly.
-        var transformedSticks = BuildSourceStickMap(physical);
-        var leftStick = transformedSticks[StickId.Left];
-        var rightStick = transformedSticks[StickId.Right];
+        // not the final virtual output. Now thresholds apply to the output directly —
+        // unless the threshold rule asks to suppress the stick, in which case the shaped
+        // value only feeds the rules that read it as a source.
+        var transformedSticks = BuildSourceStickMap(physical, out var suppressLeftStick, out var suppressRightStick);
+        var leftStick = suppressLeftStick ? StickVector.Zero : transformedSticks[StickId.Left];
+        var rightStick = suppressRightStick ? StickVector.Zero : transformedSticks[StickId.Right];
         var leftTrigger = physical.LeftTrigger;
         var rightTrigger = physical.RightTrigger;
 
@@ -469,8 +586,8 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
         // SOCD cleaning runs first among the button passes — it's input
         // hygiene (resolving a conflicting opposite-direction pair down
         // to what the pair SHOULD report), not a creative remap, so
-        // everything downstream (remaps, autofire, combos) should see
-        // the already-cleaned result rather than raw dual input.
+        // everything downstream (remaps, autofire, combos) reads the
+        // cleaned result through `source` below rather than raw dual input.
         foreach (var rule in socdCleanRules)
         {
             if (!IsActive(rule))
@@ -485,8 +602,8 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
             }
             if (rule.Mode == RuleMode.DoNothing)
             {
-                buttons[rule.NegativeButton] = false;
-                buttons[rule.PositiveButton] = false;
+                blocked[rule.NegativeButton] = true;
+                blocked[rule.PositiveButton] = true;
                 continue;
             }
 
@@ -524,13 +641,18 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
                     _ => null
                 };
 
-                if (winner != rule.NegativeButton) { buttons[rule.NegativeButton] = false; }
-                if (winner != rule.PositiveButton) { buttons[rule.PositiveButton] = false; }
+                if (winner != rule.NegativeButton) { passThrough[rule.NegativeButton] = false; }
+                if (winner != rule.PositiveButton) { passThrough[rule.PositiveButton] = false; }
             }
 
             state.NegativeWasPressed = negNow;
             state.PositiveWasPressed = posNow;
         }
+
+        // What every button-driven rule below reads: the physical frame
+        // with SOCD's verdict applied. Only allocated when SOCD actually
+        // changed something, which is rare.
+        var source = passThrough == physical.Buttons ? physical : physical.WithButtons(passThrough);
 
         for (int i = 0; i < buttonRemapRules.Length; i++)
         {
@@ -547,20 +669,20 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
 
             if (rule.Mode == RuleMode.DoNothing)
             {
-                buttons[rule.SourceButton] = false;
+                blocked[rule.SourceButton] = true;
                 (notes ??= []).Add(buttonBlockedNotes[i]);
                 continue;
             }
 
-            if (!physical.IsPressed(rule.SourceButton))
+            if (!source.IsPressed(rule.SourceButton))
             {
                 continue;
             }
 
-            buttons[rule.TargetButton] = true;
+            produced[rule.TargetButton] = true;
             if (rule.SuppressSourceButton)
             {
-                buttons[rule.SourceButton] = false;
+                suppressed[rule.SourceButton] = true;
             }
 
             (notes ??= []).Add(buttonRemapNotes[i]);
@@ -573,13 +695,14 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
                 continue;
             }
 
+            var held = source.IsPressed(rule.SourceButton);
             var scheduler = GetOrCreateBinaryScheduler(rule);
-            scheduler.SetDesired(physical.IsPressed(rule.SourceButton), now);
+            scheduler.SetDesired(held, now);
             var pulse = scheduler.Tick(now);
 
             if (rule.Mode == RuleMode.DoNothing)
             {
-                buttons[rule.SourceButton] = false;
+                blocked[rule.SourceButton] = true;
                 continue;
             }
 
@@ -588,14 +711,25 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
                 continue;
             }
 
+            if (held)
+            {
+                // While its trigger is held the rule OWNS its output
+                // button: the physical press of that button is hidden so
+                // the release phases actually reach the game. Without
+                // this, turbo on the button you are holding (the default
+                // when you click a button to add a rule) just held it
+                // solid. Other rules pressing the same button still OR in.
+                suppressed[rule.TargetButton] = true;
+            }
+
             if (pulse.IsPressed)
             {
-                buttons[rule.TargetButton] = true;
+                produced[rule.TargetButton] = true;
             }
 
             if (rule.SuppressSourceButton)
             {
-                buttons[rule.SourceButton] = false;
+                suppressed[rule.SourceButton] = true;
             }
         }
 
@@ -614,7 +748,7 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
             {
                 if (rule.SourceButton != ButtonId.None)
                 {
-                    buttons[rule.SourceButton] = false;
+                    blocked[rule.SourceButton] = true;
                 }
                 continue;
             }
@@ -624,7 +758,7 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
                 executor = new MultiButtonAutofireExecutor(rule);
                 multiButtonExecutors[rule.Id] = executor;
             }
-            executor.Apply(physical, ref buttons, now);
+            executor.Apply(source, ref produced, ref suppressed, now);
         }
 
         // ButtonComboRule: fully built (ButtonComboExecutor.cs) since
@@ -647,7 +781,7 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
             {
                 if (rule.SourceButton != ButtonId.None)
                 {
-                    buttons[rule.SourceButton] = false;
+                    blocked[rule.SourceButton] = true;
                 }
                 continue;
             }
@@ -658,21 +792,7 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
                 comboExecutors[rule.Id] = comboExecutor;
             }
 
-            // ButtonComboExecutor.Apply wants a dense bool[] (it indexes
-            // by (int)ButtonId directly) — same round-trip as the Script
-            // pass below, scoped to just this rule's execution.
-            var comboArray = new bool[buttonIdCount];
-            foreach (var id in buttons)
-            {
-                comboArray[(int)id] = true;
-            }
-
-            comboExecutor.Apply(physical, comboArray, now);
-
-            for (var i = 0; i < comboArray.Length; i++)
-            {
-                buttons[(ButtonId)i] = comboArray[i];
-            }
+            comboExecutor.Apply(source, ref produced, ref suppressed, now);
         }
 
         foreach (var rule in stickAutofireRules)
@@ -689,25 +809,32 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
 
             if (rule.Mode == RuleMode.DoNothing)
             {
-                SetStick(ref leftStick, ref rightStick, rule.TargetStick, StickVector.Zero);
+                // Block = the SOURCE stick is kept from the output (see
+                // RuleMode). The target is left alone; this used to
+                // centre the target stick every tick instead.
+                SetStick(ref leftStick, ref rightStick, rule.SourceStick, StickVector.Zero);
                 continue;
             }
 
-            var source = transformedSticks[rule.SourceStick]
+            var sourceVector = transformedSticks[rule.SourceStick]
                 .WithDeadzone(rule.ActivationDeadzone)
                 .AmplifyToFull(rule.ActivationFullAt);
             var scheduler = GetOrCreateStickScheduler(rule);
-            scheduler.SetDesired(source, now);
+            scheduler.SetDesired(sourceVector, now);
             var pulse = scheduler.Tick(now).Value;
 
-            var current = GetStick(leftStick, rightStick, rule.TargetStick);
-            var merged = ApplyBlend(current, pulse, rule.BlendMode);
-            SetStick(ref leftStick, ref rightStick, rule.TargetStick, merged);
-
+            // Suppress BEFORE blending into the target. Suppressing after
+            // zeroed the rule's own output whenever source and target are
+            // the same stick; this way that case reads as "the pulse
+            // replaces the stick", which is what suppressing it means.
             if (rule.SuppressSourceStick)
             {
                 SetStick(ref leftStick, ref rightStick, rule.SourceStick, StickVector.Zero);
             }
+
+            var current = GetStick(leftStick, rightStick, rule.TargetStick);
+            var merged = ApplyBlend(current, pulse, rule.BlendMode);
+            SetStick(ref leftStick, ref rightStick, rule.TargetStick, merged);
         }
 
         foreach (var rule in freezeRules)
@@ -724,18 +851,16 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
 
             if (rule.Mode == RuleMode.DoNothing)
             {
-                SetStick(ref leftStick, ref rightStick, rule.TargetStick, StickVector.Zero);
-                if (rule.SuppressActivationButton)
-                {
-                    buttons[rule.ActivationButton] = false;
-                }
+                // Block = the activation button is kept from the output
+                // and nothing freezes. The target stick is left alone.
+                blocked[rule.ActivationButton] = true;
                 continue;
             }
 
             var latch = GetOrCreateFreezeLatch(rule);
-            var buttonNowPressed = physical.IsPressed(rule.ActivationButton);
-            var buttonWasPressed = previousButtonStates[rule.ActivationButton];
-            previousButtonStates[rule.ActivationButton] = buttonNowPressed;
+            var buttonNowPressed = source.IsPressed(rule.ActivationButton);
+            freezeActivationWasPressed.TryGetValue(rule.Id, out var buttonWasPressed);
+            freezeActivationWasPressed[rule.Id] = buttonNowPressed;
 
             // Issue #12: Capture the stick vector only at the RISING EDGE of the
             // activation button. This means the latch holds exactly what the stick
@@ -757,18 +882,21 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
                     frozenVector = scheduler.Tick(now).Value;
                 }
 
+                // Before the blend, for the same reason as stick autofire:
+                // the default freeze captures INTO the stick it reads, and
+                // suppressing afterwards wiped the frozen output.
+                if (rule.SuppressCaptureStick)
+                {
+                    SetStick(ref leftStick, ref rightStick, rule.CaptureStick, StickVector.Zero);
+                }
+
                 var currentTarget = GetStick(leftStick, rightStick, rule.TargetStick);
                 var merged = ApplyBlend(currentTarget, frozenVector, rule.BlendMode);
                 SetStick(ref leftStick, ref rightStick, rule.TargetStick, merged);
 
                 if (rule.SuppressActivationButton)
                 {
-                    buttons[rule.ActivationButton] = false;
-                }
-
-                if (rule.SuppressCaptureStick)
-                {
-                    SetStick(ref leftStick, ref rightStick, rule.CaptureStick, StickVector.Zero);
+                    suppressed[rule.ActivationButton] = true;
                 }
             }
             else
@@ -797,10 +925,11 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
             if (rule.Mode == RuleMode.DoNothing)
             {
                 trimValues.Remove(rule.Id);
+                blocked[rule.ArmButton] = true;
                 continue;
             }
 
-            var armed = physical.IsPressed(rule.ArmButton);
+            var armed = source.IsPressed(rule.ArmButton);
             var current = trimValues.GetValueOrDefault(rule.Id);
             var dtSeconds = MathF.Max(0f, (float)(now - (lastTrimTickAt.TryGetValue(rule.Id, out var lastAt) ? lastAt : now)).TotalSeconds);
             lastTrimTickAt[rule.Id] = now;
@@ -808,7 +937,11 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
             float next;
             if (armed)
             {
-                var stickValue = GetStick(leftStick, rightStick, rule.ModulatorStick);
+                // The shaped physical stick, like every other rule that
+                // reads a stick as a SOURCE — not the working output, which
+                // a threshold rule may have suppressed or another rule
+                // already moved.
+                var stickValue = transformedSticks[rule.ModulatorStick];
                 var magnitude = stickValue.Magnitude;
                 var target = magnitude < rule.Deadzone ? 0f
                     : Math.Clamp((magnitude - rule.Deadzone) / (1f - rule.Deadzone), 0f, 1f);
@@ -839,13 +972,20 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
 
             trimValues[rule.Id] = next;
 
-            if (rule.TargetTrigger == TriggerId.Left)
+            // A floor under the physical trigger, never a replacement for
+            // it. Assigning `next` outright made the real trigger dead
+            // whenever the trim was unarmed (it wrote 0 every tick), so a
+            // pad with Stick Trim on R2 could not pull R2 at all.
+            if (next > 0f)
             {
-                leftTrigger = next;
-            }
-            else
-            {
-                rightTrigger = next;
+                if (rule.TargetTrigger == TriggerId.Left)
+                {
+                    leftTrigger = MathF.Max(leftTrigger, next);
+                }
+                else
+                {
+                    rightTrigger = MathF.Max(rightTrigger, next);
+                }
             }
         }
 
@@ -856,34 +996,34 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
         // the same ordering convention every other rule here follows).
         foreach (var rule in gyroRules)
         {
-            if (!IsActive(rule))
+            // Block has nothing to block here: motion never reaches the
+            // output except through this rule (see RuleMode).
+            if (!IsActive(rule) || rule.Mode is RuleMode.Passthrough or RuleMode.DoNothing)
             {
                 continue;
             }
 
-            if (rule.Mode == RuleMode.Passthrough)
+            var aim = gyroProcessor.Process(rule, source);
+            if (!aim.Engaged)
             {
+                // Disengaged (or no gyro on this pad): contribute nothing
+                // and leave the stick to the hand. This used to write the
+                // zero aim over the target stick, which made the physical
+                // right stick dead whenever the gyro wasn't engaged — and
+                // permanently on a pad without a gyro.
                 continue;
             }
-            if (rule.Mode == RuleMode.DoNothing)
-            {
-                if (rule.OutputTarget == GyroOutputTarget.Stick)
-                {
-                    SetStick(ref leftStick, ref rightStick, rule.TargetStick, StickVector.Zero);
-                }
-                continue;
-            }
-
-            var aim = gyroProcessor.Process(rule, physical);
 
             if (rule.OutputTarget == GyroOutputTarget.Stick)
             {
-                // Write even when disengaged, so releasing an Aim Engage
-                // button actually re-centres the stick instead of
-                // leaving it stuck at the last deflection.
-                SetStick(ref leftStick, ref rightStick, rule.TargetStick, GyroProcessor.ToStick(aim));
+                // Added to the stick, not written over it, so the thumb
+                // and the gyro aim together the way gyro aiming is meant
+                // to work. Re-centring on disengage is automatic: the
+                // contribution is recomputed from scratch every tick.
+                var current = GetStick(leftStick, rightStick, rule.TargetStick);
+                SetStick(ref leftStick, ref rightStick, rule.TargetStick, (current + GyroProcessor.ToStick(aim)).Clamp());
             }
-            else if (aim.Engaged)
+            else
             {
                 // First tick has no previous timestamp to measure
                 // against — a zero delta means no movement rather than
@@ -922,7 +1062,7 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
                 continue;
             }
 
-            ProcessGestures(rule, physical, ref buttons, now);
+            ProcessGestures(rule, physical, ref produced, now);
 
             var state = GetOrCreateTouchAnchor(rule.Id);
             var down = rule.Mode != RuleMode.DoNothing && physical.TouchDown;
@@ -952,7 +1092,7 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
 
                 if (rule.DpadEnabled)
                 {
-                    ApplyWedgeDpad(dx, dy, rule.DpadDeadzoneRadius, rule.DpadEightWay, ref buttons);
+                    ApplyWedgeDpad(dx, dy, rule.DpadDeadzoneRadius, rule.DpadEightWay, ref produced);
                 }
 
                 if (rule.MouseEnabled && state.WasDown)
@@ -980,31 +1120,22 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
                 state.PrevMouseX = physical.TouchX;
                 state.PrevMouseY = physical.TouchY;
             }
-            else
-            {
-                if (rule.StickEnabled)
-                {
-                    SetStick(ref leftStick, ref rightStick, rule.TargetStick, StickVector.Zero);
-                }
-                if (rule.DpadEnabled)
-                {
-                    buttons[ButtonId.DpadUp] = false;
-                    buttons[ButtonId.DpadDown] = false;
-                    buttons[ButtonId.DpadLeft] = false;
-                    buttons[ButtonId.DpadRight] = false;
-                }
-            }
+
+            // No finger, no output: nothing is written, so the physical
+            // stick and D-pad pass straight through. The rule used to
+            // centre its stick and release all four D-pad buttons here on
+            // every untouched tick — see TouchpadMapRule.
 
             state.WasDown = down;
         }
 
         // Re-assert every gesture-driven button that hasn't expired.
-        // Done AFTER the touchpad rules so a gesture bound to a D-pad
-        // direction wins over the wedge D-pad's own writes for the length
-        // of its pulse — the gesture is the more deliberate act — and
-        // BEFORE multi-source rows and scripts, so both can read
-        // gesture-driven buttons as ordinary sources.
-        ApplyGestureHolds(ref buttons, now);
+        // Done AFTER the touchpad rules and BEFORE multi-source rows and
+        // scripts, so both can read gesture-driven buttons as ordinary
+        // sources. A gesture bound to a D-pad direction still wins over
+        // the wedge D-pad for the length of its pulse: both only ever
+        // ADD presses now, so nothing the wedge does can cut it short.
+        ApplyGestureHolds(ref produced, now);
 
         // Multi-source mapping rows: many inputs, one output, a combine
         // mode (or formula) deciding how they fold together. Sources
@@ -1014,7 +1145,11 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
         // get the final say. A row OWNS its target for the tick: below
         // threshold releases a button target even if it's physically
         // held, which is what makes "these sources and nothing else"
-        // mappings possible.
+        // mappings possible. Ownership is its own pair of sets, so a row
+        // overrides its target without the suppress/produce bookkeeping
+        // above losing track of anyone else's buttons.
+        var owned = ButtonMask.Empty;
+        var ownedPressed = ButtonMask.Empty;
         foreach (var rule in multiSourceRules)
         {
             if (!IsActive(rule))
@@ -1028,14 +1163,20 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
             }
             if (rule.Mode == RuleMode.DoNothing)
             {
-                WriteMapTarget(rule, 0f, ref leftStick, ref rightStick, ref leftTrigger, ref rightTrigger, ref buttons);
+                // Block = every source is kept from the output; the
+                // target is not written (see RuleMode).
+                foreach (var mapSource in rule.Sources)
+                {
+                    SuppressMapSource(mapSource, ref blocked, ref leftStick, ref rightStick, ref leftTrigger, ref rightTrigger);
+                }
                 continue;
             }
 
+            var working = ComposeButtons(passThrough, suppressed, blocked, produced, owned, ownedPressed);
             var values = new float[rule.Sources.Count];
             for (var i = 0; i < rule.Sources.Count; i++)
             {
-                values[i] = ReadMapSource(rule.Sources[i], buttons, leftStick, rightStick, leftTrigger, rightTrigger, physical);
+                values[i] = ReadMapSource(rule.Sources[i], working, leftStick, rightStick, leftTrigger, rightTrigger, physical);
             }
 
             float combined;
@@ -1063,53 +1204,26 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
 
             if (rule.SuppressSources)
             {
-                foreach (var source in rule.Sources)
+                foreach (var mapSource in rule.Sources)
                 {
-                    SuppressMapSource(source, ref buttons, ref leftStick, ref rightStick, ref leftTrigger, ref rightTrigger);
+                    SuppressMapSource(mapSource, ref suppressed, ref leftStick, ref rightStick, ref leftTrigger, ref rightTrigger);
                 }
             }
 
-            WriteMapTarget(rule, combined, ref leftStick, ref rightStick, ref leftTrigger, ref rightTrigger, ref buttons);
+            WriteMapTarget(rule, combined, ref leftStick, ref rightStick, ref leftTrigger, ref rightTrigger, ref owned, ref ownedPressed);
         }
 
+        // Scripts get the final say over buttons. Their own suppression
+        // and blocking go into the sets FIRST, so the map a script is
+        // handed already hides its source — and a script that presses its
+        // own source button (or one another rule produced) keeps it.
+        // Applying the suppression after the script ran wiped both.
+        var anyScriptRuns = false;
         foreach (var rule in controlScriptRules)
         {
-            if (!IsActive(rule))
+            if (!IsActive(rule) || rule.Mode == RuleMode.Passthrough)
             {
                 continue;
-            }
-
-            if (rule.Mode == RuleMode.Passthrough)
-            {
-                continue;
-            }
-            if (rule.Mode == RuleMode.DoNothing || string.IsNullOrWhiteSpace(rule.ScriptCode))
-            {
-                continue;
-            }
-
-            // LuaScriptEngine wants a dense bool[] indexed by (int)ButtonId
-            // (its press()/release() callbacks index it directly); the
-            // rest of this method carries button state as a
-            // ButtonMask. Round-trip through the array
-            // only for the duration of this one rule's execution.
-            var buttonArray = new bool[buttonIdCount];
-            foreach (var id in buttons)
-            {
-                buttonArray[(int)id] = true;
-            }
-
-            // virtualBefore isn't read by Execute today (checked against
-            // the engine's own source); passing `physical` rather than a
-            // null-forgiving placeholder keeps this call honest if that
-            // ever changes.
-            luaScriptEngine.Execute(
-                rule, physical, virtualBefore: physical, buttonArray,
-                ref leftStick, ref rightStick, ref leftTrigger, ref rightTrigger, now);
-
-            for (var i = 0; i < buttonArray.Length; i++)
-            {
-                buttons[(ButtonId)i] = buttonArray[i];
             }
 
             // SuppressSourceInput: the doc comment on ControlScriptRule
@@ -1121,10 +1235,63 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
             // names a stick or trigger; deliberately NOT guessing which
             // axis/sub-control to zero there, since a wrong guess would
             // silently kill legitimate output rather than just no-op.
-            if (rule.SuppressSourceInput
-                && Enum.TryParse<ButtonId>(rule.ControlKey, ignoreCase: true, out var sourceButton))
+            var namesButton = Enum.TryParse<ButtonId>(rule.ControlKey, ignoreCase: true, out var sourceButton);
+            if (rule.Mode == RuleMode.DoNothing)
             {
-                buttons[sourceButton] = false;
+                if (namesButton)
+                {
+                    blocked[sourceButton] = true;
+                }
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(rule.ScriptCode))
+            {
+                continue;
+            }
+
+            anyScriptRuns = true;
+            if (rule.SuppressSourceInput && namesButton)
+            {
+                suppressed[sourceButton] = true;
+            }
+        }
+
+        var buttons = ComposeButtons(passThrough, suppressed, blocked, produced, owned, ownedPressed);
+
+        if (anyScriptRuns)
+        {
+            // LuaScriptEngine wants a dense bool[] indexed by (int)ButtonId
+            // (its press()/release() callbacks index it directly); the
+            // rest of this method carries button state as a ButtonMask.
+            // One round-trip covers every script, in rule order, each
+            // seeing what the ones before it did.
+            var buttonArray = scriptButtonBuffer;
+            Array.Clear(buttonArray);
+            foreach (var id in buttons)
+            {
+                buttonArray[(int)id] = true;
+            }
+
+            foreach (var rule in controlScriptRules)
+            {
+                if (!IsActive(rule) || rule.Mode != RuleMode.Modify || string.IsNullOrWhiteSpace(rule.ScriptCode))
+                {
+                    continue;
+                }
+
+                // virtualBefore isn't read by Execute today (checked against
+                // the engine's own source); passing `physical` rather than a
+                // null-forgiving placeholder keeps this call honest if that
+                // ever changes.
+                luaScriptEngine.Execute(
+                    rule, physical, virtualBefore: physical, buttonArray,
+                    ref leftStick, ref rightStick, ref leftTrigger, ref rightTrigger, now);
+            }
+
+            for (var i = 0; i < buttonArray.Length; i++)
+            {
+                buttons[(ButtonId)i] = buttonArray[i];
             }
         }
 
@@ -1139,13 +1306,15 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
                 DeviceName = $"{physical.DeviceName} / virtual"
             };
 
-        // Axis inversion is the LAST thing that happens — see
-        // AxisInvertProcessor for why it sits behind every rule rather
-        // than in front of them. When the profile doesn't ask the layout
-        // to show it, the two snapshots diverge here and only here: the
-        // sink gets `inverted`, the panels keep `virtualSnapshot`.
-        var inverted = AxisInvertProcessor.Apply(virtualSnapshot, profile.Invert);
-        var showInLayout = profile.Invert?.ShowInLayout ?? false;
+        // Axis inversion is the LAST thing that happens, in a pass of its
+        // own after every rule — see AxisInvertProcessor for why it sits
+        // behind the rules rather than in front of them. When the
+        // resolved inversion doesn't ask the layout to show it, the two
+        // snapshots diverge here and only here: the sink gets `inverted`,
+        // the panels keep `virtualSnapshot`.
+        var invert = ResolveAxisInvert();
+        var inverted = AxisInvertProcessor.Apply(virtualSnapshot, invert);
+        var showInLayout = invert?.ShowInLayout ?? false;
 
         return new ControllerFrameResult(
             physical with { Timestamp = now },
@@ -1157,6 +1326,226 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
             MouseDeltaY = mouseDeltaY,
             OutputSnapshot = inverted
         };
+    }
+
+    /// <summary>
+    /// The button output as the four sets of <see cref="Process"/> plus a
+    /// multi-source row's ownership describe it: physical presses nobody
+    /// suppressed or blocked, OR every produced press — and then each
+    /// owned button forced to whatever its row decided.
+    /// </summary>
+    private static ButtonMask ComposeButtons(
+        ButtonMask passThrough, ButtonMask suppressed, ButtonMask blocked, ButtonMask produced,
+        ButtonMask owned, ButtonMask ownedPressed) =>
+        (passThrough.Without(suppressed | blocked) | produced).Without(owned) | ownedPressed;
+
+    /// <summary>
+    /// Folds every active <see cref="AxisInvertRule"/> into one inversion:
+    /// Base rules first, then the active layer's, each group in list order,
+    /// with <see cref="AxisInvert.Overlay"/> — so a later opinion about an
+    /// axis wins and "no opinion" defers. Null when no rule applies.
+    ///
+    /// <para>
+    /// Cached against the active layer and <see cref="toggleVersion"/>,
+    /// the only two things that can change the answer during this
+    /// pipeline's life: without the cache every tick would allocate a
+    /// fresh record per rule, at up to 1000 Hz per slot, to recompute a
+    /// value that almost never changes.
+    /// </para>
+    /// </summary>
+    private AxisInvert? ResolveAxisInvert()
+    {
+        if (axisInvertRules.Length == 0)
+        {
+            return null;
+        }
+
+        var layerId = shiftLayerResolver.ActiveLayerId;
+        if (resolvedAxisInvertToggleVersion == toggleVersion
+            && string.Equals(resolvedAxisInvertLayerId, layerId, StringComparison.Ordinal))
+        {
+            return resolvedAxisInvert;
+        }
+
+        AxisInvert? folded = null;
+        foreach (var rule in axisInvertRules)
+        {
+            if (string.IsNullOrEmpty(rule.LayerId) && IsActive(rule) && rule.Mode == RuleMode.Modify)
+            {
+                folded = (folded ?? AxisInvert.None).Overlay(rule.Axes);
+            }
+        }
+        if (!string.IsNullOrEmpty(layerId))
+        {
+            foreach (var rule in axisInvertRules)
+            {
+                if (rule.LayerId == layerId && IsActive(rule) && rule.Mode == RuleMode.Modify)
+                {
+                    folded = (folded ?? AxisInvert.None).Overlay(rule.Axes);
+                }
+            }
+        }
+
+        resolvedAxisInvert = folded;
+        resolvedAxisInvertLayerId = layerId;
+        resolvedAxisInvertToggleVersion = toggleVersion;
+        return folded;
+    }
+
+    /// <summary>
+    /// Recomputes <see cref="activeLayerInputs"/> from the active layer's
+    /// rules that are currently enabled. A layer rule that is switched off
+    /// does not take its input away from Base; one switched on by a toggle
+    /// does, from that tick on. Its <see cref="RuleMode"/> does not matter:
+    /// a Passthrough rule in a layer is how a layer says "this button is
+    /// plain again here".
+    /// </summary>
+    private void RefreshActiveLayerInputs()
+    {
+        activeLayerInputs = 0;
+        var layerId = shiftLayerResolver.ActiveLayerId;
+        if (string.IsNullOrEmpty(layerId) || !layerRuleInputs.TryGetValue(layerId, out var entries))
+        {
+            return;
+        }
+
+        foreach (var entry in entries)
+        {
+            if (IsEnabled(entry.Rule))
+            {
+                activeLayerInputs |= entry.Inputs;
+            }
+        }
+    }
+
+    /// <summary>One layer rule and its source inputs, for <see cref="RefreshActiveLayerInputs"/>.</summary>
+    private readonly record struct LayerRuleInputs(MappingRule Rule, ulong Inputs);
+
+    private static Dictionary<string, LayerRuleInputs[]> BuildLayerRuleInputs(IReadOnlyList<MappingRule> rules) =>
+        rules
+            .Where(rule => !string.IsNullOrEmpty(rule.LayerId))
+            .Select(rule => new LayerRuleInputs(rule, SourceInputs(rule)))
+            .Where(entry => entry.Inputs != 0)
+            .GroupBy(entry => entry.Rule.LayerId, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
+
+    private static Dictionary<MappingRule, ulong> BuildBaseRuleInputs(IReadOnlyList<MappingRule> rules)
+    {
+        var map = new Dictionary<MappingRule, ulong>(ReferenceEqualityComparer.Instance);
+        foreach (var rule in rules)
+        {
+            if (string.IsNullOrEmpty(rule.LayerId))
+            {
+                var inputs = SourceInputs(rule);
+                if (inputs != 0)
+                {
+                    map[rule] = inputs;
+                }
+            }
+        }
+        return map;
+    }
+
+    private static Dictionary<string, MappingRule> BuildRulesById(IReadOnlyList<MappingRule> rules)
+    {
+        var map = new Dictionary<string, MappingRule>(StringComparer.Ordinal);
+        foreach (var rule in rules)
+        {
+            map.TryAdd(rule.Id, rule);
+        }
+        return map;
+    }
+
+    // ── Source inputs as bits ──
+    // Buttons use their own ButtonMask bit (0..31, which ButtonMask's
+    // static guard keeps true); sticks, triggers, touchpad and gyro take
+    // the bits above. None is never an input.
+    private const int StickInputShift = 32;
+    private const int TriggerInputShift = 34;
+    private const ulong TouchpadInput = 1UL << 36;
+    private const ulong GyroInput = 1UL << 37;
+
+    private static ulong InputBit(ButtonId button) =>
+        button == ButtonId.None || (uint)button >= 32u ? 0UL : 1UL << (int)button;
+
+    private static ulong InputBit(StickId stick) => 1UL << (StickInputShift + (int)stick);
+
+    private static ulong InputBit(TriggerId trigger) => 1UL << (TriggerInputShift + (int)trigger);
+
+    /// <summary>
+    /// The inputs a rule READS — what a layer rule takes over from Base.
+    /// Targets do not count: two rules that write the same output but
+    /// listen to different inputs are not overriding each other. Axis
+    /// inversion reads nothing (it folds per axis instead).
+    /// </summary>
+    private static ulong SourceInputs(MappingRule rule) => rule switch
+    {
+        ButtonRemapRule r => InputBit(r.SourceButton),
+        ButtonAutofireRule r => InputBit(r.SourceButton),
+        MultiButtonAutofireRule r => InputBit(r.SourceButton),
+        ButtonComboRule r => InputBit(r.SourceButton),
+        RuleToggleRule r => InputBit(r.SourceButton),
+        SocdCleanRule r => InputBit(r.NegativeButton) | InputBit(r.PositiveButton),
+        StickThresholdRule r => InputBit(r.TargetStick),
+        StickAutofireRule r => InputBit(r.SourceStick),
+        FreezeLastDirectionRule r => InputBit(r.ActivationButton) | InputBit(r.CaptureStick),
+        StickTrimRule r => InputBit(r.ArmButton) | InputBit(r.ModulatorStick),
+        GyroMapRule r => GyroInput | InputBit(r.EngageButton),
+        TouchpadMapRule => TouchpadInput,
+        MultiSourceMapRule r => r.Sources.Aggregate(0UL, (bits, source) => bits | SourceInputs(source)),
+        ControlScriptRule r => ControlKeyInputs(r.ControlKey),
+        _ => 0UL
+    };
+
+    private static ulong SourceInputs(MapSource source) => source.Kind switch
+    {
+        MapSourceKind.Button => InputBit(source.Button),
+        MapSourceKind.StickAxisX or MapSourceKind.StickAxisY or MapSourceKind.StickMagnitude => InputBit(source.Stick),
+        MapSourceKind.Trigger => InputBit(source.Trigger),
+        MapSourceKind.GyroPitch or MapSourceKind.GyroYaw or MapSourceKind.GyroRoll => GyroInput,
+        _ => 0UL
+    };
+
+    /// <summary>
+    /// A script's control key ("South", "LeftStick.Button", "RightStick",
+    /// "LeftTrigger.Analog") as an input. Unrecognised keys bind nothing
+    /// rather than guessing.
+    /// </summary>
+    private static ulong ControlKeyInputs(string? controlKey)
+    {
+        if (string.IsNullOrWhiteSpace(controlKey))
+        {
+            return 0UL;
+        }
+
+        var key = controlKey.Trim();
+        var dot = key.IndexOf('.');
+        var head = dot < 0 ? key : key[..dot];
+        var tail = dot < 0 ? string.Empty : key[(dot + 1)..];
+        var isButtonSuffix = tail.Equals("Button", StringComparison.OrdinalIgnoreCase);
+
+        if (head.Equals("LeftStick", StringComparison.OrdinalIgnoreCase))
+        {
+            return isButtonSuffix ? InputBit(ButtonId.LeftStick) : InputBit(StickId.Left);
+        }
+        if (head.Equals("RightStick", StringComparison.OrdinalIgnoreCase))
+        {
+            return isButtonSuffix ? InputBit(ButtonId.RightStick) : InputBit(StickId.Right);
+        }
+        if (head.Equals("LeftTrigger", StringComparison.OrdinalIgnoreCase))
+        {
+            return isButtonSuffix ? InputBit(ButtonId.LeftTriggerButton) : InputBit(TriggerId.Left);
+        }
+        if (head.Equals("RightTrigger", StringComparison.OrdinalIgnoreCase))
+        {
+            return isButtonSuffix ? InputBit(ButtonId.RightTriggerButton) : InputBit(TriggerId.Right);
+        }
+        if (head.Equals("Touchpad", StringComparison.OrdinalIgnoreCase) && dot >= 0)
+        {
+            return TouchpadInput;
+        }
+
+        return Enum.TryParse<ButtonId>(head, ignoreCase: true, out var button) ? InputBit(button) : 0UL;
     }
 
     /// <summary>
@@ -1190,10 +1579,16 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
     /// Builds a threshold-adjusted stick map. This map now also seeds the baseline
     /// output stick values (leftStick, rightStick) so that StickThresholdRule
     /// deadzones and amplification are reflected in the final virtual output.
+    /// <paramref name="suppressLeft"/>/<paramref name="suppressRight"/> report a
+    /// threshold rule's <see cref="StickThresholdRule.SuppressSourceStick"/>: the
+    /// map keeps the shaped value for rules that read it as a source, and the
+    /// caller starts that stick's OUTPUT from centre.
     /// </summary>
-    private SourceStickMap BuildSourceStickMap(ControllerSnapshot snapshot)
+    private SourceStickMap BuildSourceStickMap(ControllerSnapshot snapshot, out bool suppressLeft, out bool suppressRight)
     {
         var map = new SourceStickMap(snapshot.LeftStick, snapshot.RightStick);
+        suppressLeft = false;
+        suppressRight = false;
 
         foreach (var rule in stickThresholdRules)
         {
@@ -1211,6 +1606,11 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
             map[rule.TargetStick] = map[rule.TargetStick]
                 .WithDeadzone(rule.Deadzone)
                 .AmplifyToFull(rule.FullAt);
+
+            if (rule.SuppressSourceStick)
+            {
+                if (rule.TargetStick == StickId.Left) { suppressLeft = true; } else { suppressRight = true; }
+            }
         }
 
         return map;
@@ -1316,15 +1716,21 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
         }
     }
 
-    /// <summary>Zeroes one source's own contribution in the virtual output.</summary>
+    /// <summary>
+    /// Zeroes one source's own contribution in the virtual output. A
+    /// button source goes into <paramref name="hidden"/> (the suppressed or
+    /// blocked set), which hides only its PHYSICAL press — clearing it in
+    /// the shared map, as this used to, also released the button for any
+    /// other rule that had pressed it.
+    /// </summary>
     private static void SuppressMapSource(
-        MapSource source, ref ButtonMask buttons,
+        MapSource source, ref ButtonMask hidden,
         ref StickVector leftStick, ref StickVector rightStick, ref float leftTrigger, ref float rightTrigger)
     {
         switch (source.Kind)
         {
             case MapSourceKind.Button:
-                if (source.Button != ButtonId.None) { buttons[source.Button] = false; }
+                if (source.Button != ButtonId.None) { hidden[source.Button] = true; }
                 break;
             case MapSourceKind.StickAxisX:
             {
@@ -1353,18 +1759,24 @@ public sealed class ControllerMappingPipeline(ProfileDocument profile) : IDispos
         }
     }
 
-    /// <summary>Writes the combined value to the row's target — button via threshold, axis preserving its sibling axis, trigger clamped.</summary>
+    /// <summary>
+    /// Writes the combined value to the row's target — button via threshold
+    /// (the row takes ownership of it: <paramref name="owned"/> marks it,
+    /// <paramref name="ownedPressed"/> holds the verdict), axis preserving
+    /// its sibling axis, trigger clamped.
+    /// </summary>
     private static void WriteMapTarget(
         MultiSourceMapRule rule, float combined,
         ref StickVector leftStick, ref StickVector rightStick, ref float leftTrigger, ref float rightTrigger,
-        ref ButtonMask buttons)
+        ref ButtonMask owned, ref ButtonMask ownedPressed)
     {
         switch (rule.TargetKind)
         {
             case MapTargetKind.Button:
                 if (rule.TargetButton != ButtonId.None)
                 {
-                    buttons[rule.TargetButton] = combined >= rule.PressThreshold;
+                    owned[rule.TargetButton] = true;
+                    ownedPressed[rule.TargetButton] = combined >= rule.PressThreshold;
                 }
                 break;
             case MapTargetKind.StickAxisX:

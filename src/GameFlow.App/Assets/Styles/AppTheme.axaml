@@ -454,6 +454,15 @@
     <Setter Property="TextElement.Foreground" Value="{DynamicResource AppAccent}" />
   </Style>
 
+  <!-- The sidebar's delete button draws a trash icon. Dim at rest so it
+       does not compete with the row, red when it is about to be pressed. -->
+  <Style Selector="Button.navDelete Path">
+    <Setter Property="Fill" Value="{DynamicResource AppForegroundDim}" />
+  </Style>
+  <Style Selector="Button.navDelete:pointerover Path">
+    <Setter Property="Fill" Value="{DynamicResource AppDanger}" />
+  </Style>
+
   <!-- ── List selection follows the app accent (theme-swapped) ─────── -->
   <Style Selector="ListBoxItem">
     <Setter Property="CornerRadius" Value="6" />

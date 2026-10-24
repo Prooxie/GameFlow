@@ -63,6 +63,10 @@ public static class OverlayProgramBuilder
             }
         }
 
+        // A trailpad theme draws its own finger art. The dashboard draws
+        // its finger markers only when no trailpad drew, and so does the page.
+        var touchpad = state.TrailPads.Count == 0 ? ThemeTouchpadLocator.Locate(document) : null;
+
         return new OverlayProgram
         {
             ThemeId = theme.Id,
@@ -74,9 +78,8 @@ public static class OverlayProgramBuilder
             ValueSlots = state.ValueSlots,
             TrailPads = state.TrailPads,
             MissingImages = state.MissingImages,
-            // A trailpad theme draws its own finger art. The dashboard draws
-            // its finger markers only when no trailpad drew, and so does the page.
-            TouchRegion = state.TrailPads.Count == 0 ? ThemeTouchpadLocator.Find(document) : null
+            TouchRegion = touchpad?.Surface,
+            TouchOutline = touchpad?.Outline
         };
     }
 

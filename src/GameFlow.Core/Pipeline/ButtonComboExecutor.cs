@@ -12,6 +12,14 @@ namespace GameFlow.Core.Pipeline;
 /// may overlap on the same virtual button: when that happens the executor uses
 /// "any-pressed wins" — i.e. if two concurrent combos both want South pressed,
 /// it stays pressed for the union of their windows.
+///
+/// <para>
+/// Steps go into the pipeline's PRODUCED set and source suppression into
+/// its SUPPRESSED set, never into one shared button map. With a single map,
+/// clearing the suppressed source also cleared that button for every other
+/// rule that had pressed it — including this combo's own step when a step
+/// targets its own source.
+/// </para>
 /// </summary>
 public sealed class ButtonComboExecutor
 {
@@ -25,20 +33,22 @@ public sealed class ButtonComboExecutor
     }
 
     /// <summary>
-    /// Updates the virtual snapshot in-place to reflect any currently-active
-    /// steps in this combo for the given timestamp.
+    /// Adds the steps active at <paramref name="now"/> to
+    /// <paramref name="produced"/>, and the source to
+    /// <paramref name="suppressed"/> when the rule suppresses it.
     /// </summary>
-    /// <param name="physical">Physical controller snapshot for the current tick.</param>
-    /// <param name="virtualButtons">Virtual button state vector, indexed by <c>(int)<see cref="ButtonId"/></c>.</param>
+    /// <param name="source">The input this tick, after SOCD cleaning.</param>
+    /// <param name="produced">Buttons rules are pressing this tick.</param>
+    /// <param name="suppressed">Physical presses to hide from the output.</param>
     /// <param name="now">Current tick timestamp.</param>
-    public void Apply(ControllerSnapshot physical, bool[] virtualButtons, DateTimeOffset now)
+    public void Apply(ControllerSnapshot source, ref ButtonMask produced, ref ButtonMask suppressed, DateTimeOffset now)
     {
         if (rule.SourceButton == ButtonId.None || rule.Steps.Count == 0)
         {
             return;
         }
 
-        var sourcePressed = physical.IsPressed(rule.SourceButton);
+        var sourcePressed = source.IsPressed(rule.SourceButton);
 
         // Rising edge — start the combo timeline.
         if (sourcePressed && !sourceWasPressed)
@@ -56,10 +66,10 @@ public sealed class ButtonComboExecutor
 
         if (activationStart is null)
         {
-            // Nothing to do; ensure source suppression doesn't accidentally re-press.
+            // Nothing playing, but a suppressed source stays hidden either way.
             if (rule.SuppressSourceButton)
             {
-                virtualButtons[(int)rule.SourceButton] = false;
+                suppressed[rule.SourceButton] = true;
             }
             return;
         }
@@ -81,7 +91,7 @@ public sealed class ButtonComboExecutor
             if (elapsed >= startMs && elapsed < endMs && step.Button != ButtonId.None)
             {
                 // Latch (any-pressed wins) — never clear a button that another rule may want.
-                virtualButtons[(int)step.Button] = true;
+                produced[step.Button] = true;
                 anyStepActive = true;
             }
 
@@ -98,7 +108,7 @@ public sealed class ButtonComboExecutor
 
         if (rule.SuppressSourceButton)
         {
-            virtualButtons[(int)rule.SourceButton] = false;
+            suppressed[rule.SourceButton] = true;
         }
 
         // Mark elapsed used so callers can ignore noise about unused locals if compiled with warnings-as-errors.

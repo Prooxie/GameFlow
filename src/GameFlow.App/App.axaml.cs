@@ -25,15 +25,16 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+        UiTextResources.Refresh();
 
-        // Seed the default palette before anything paints. ShellViewModel
-        // re-applies the user's saved theme once profiles have loaded, but
-        // only when it differs from the default — so on a default-theme
-        // launch this is the sole call, and skipping it would leave every
-        // stock Fluent control (check boxes, sliders, scroll bars, combo
-        // popups) on Fluent's own blue instead of the app palette. It also
-        // covers the splash window, which appears long before the shell.
-        AppThemeService.Apply(AppThemeKind.CyberBlue);
+        // Seed the palette before anything paints, from the theme the app
+        // last ran with, so the splash opens in the user's colours instead
+        // of switching halfway through loading. ShellViewModel re-applies
+        // the profile's saved theme once profiles have loaded, but only when
+        // it differs; on a launch where it matches, this is the sole call,
+        // and skipping it would leave every stock Fluent control on
+        // Fluent's own blue instead of the app palette.
+        AppThemeService.Apply(AppThemeService.LastApplied());
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -96,6 +97,13 @@ public partial class App : Application
 
             var localization = host.Services.GetRequiredService<ILocalizationService>();
             localization.SetCulture(profileSession.Settings.SelectedCulture);
+            Services.UiTextResources.Attach(localization);
+
+            // Key and button legends on the keyboard and mouse pictures
+            // follow the user's bindings; the pictures are controls with
+            // no constructor injection, so they read it from here.
+            Services.KeyboardMouseLegend.Attach(
+                host.Services.GetRequiredService<GameFlow.Infrastructure.Runtime.Input.KeyboardMouseMapStore>());
 
             var shellViewModel = host.Services.GetRequiredService<ShellViewModel>();
             await shellViewModel.InitializeAsync();
@@ -253,6 +261,8 @@ public partial class App : Application
         }.Start();
 
         var currentHost = Interlocked.Exchange(ref host, null);
+        UiTextResources.Detach();
+        Services.KeyboardMouseLegend.Detach();
         if (currentHost is null)
         {
             // Still force-exit so a foreground thread doesn't keep

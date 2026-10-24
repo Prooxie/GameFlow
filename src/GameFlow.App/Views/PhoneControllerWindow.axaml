@@ -1,22 +1,24 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:GameFlow.App.ViewModels"
+        xmlns:views="using:GameFlow.App.Views"
         x:Class="GameFlow.App.Views.PhoneControllerWindow"
-        x:DataType="vm:OverlayPanelViewModel"
+        x:DataType="vm:PhoneSheetViewModel"
         x:CompileBindings="True"
-        Title="Use a phone as a controller"
-        Width="560" Height="470"
-        MinWidth="480" MinHeight="400"
+        Title="{Binding Title}"
+        Width="640" Height="600"
+        MinWidth="520" MinHeight="460"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource AppSurface0}">
 
   <!--
-      A focused sheet rather than a page in Options.
+      One phone's sheet: its name, a QR code of its own link, and whether it
+      has connected. Opened from Devices > Physical devices > Add phone, and
+      from a phone's own row there.
 
-      Everything here already existed, but only inside the settings
-      dialog, which is not where anyone looks when the thought is "can I
-      use my phone as a second pad". It carries the reachability banner
-      too, because that is the question this feature actually fails on.
+      The QR code is the point. A phone's link carries a 64-character
+      access token, so the old sheet's "type this address into the phone"
+      was not a realistic instruction; pointing a camera at the screen is.
   -->
   <Border Background="{DynamicResource AppSurface1}"
           BorderBrush="{DynamicResource AppBorder0}" BorderThickness="1">
@@ -25,62 +27,88 @@
       <Border DockPanel.Dock="Bottom" Padding="20,12"
               BorderBrush="{DynamicResource AppBorder0}" BorderThickness="0,1,0,0">
         <Button Classes="primary" HorizontalAlignment="Right" Padding="22,9"
-                Content="Done" IsCancel="True" IsDefault="True" Click="OnCloseClick" />
+                Content="{DynamicResource Ui.UiDone}" IsCancel="True" IsDefault="True" Click="OnCloseClick" />
       </Border>
 
       <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Spacing="14" Margin="24,20">
+        <Grid Margin="24,20" ColumnDefinitions="Auto,*" ColumnSpacing="22" RowDefinitions="Auto,Auto">
 
-          <TextBlock Text="Use a phone as a controller" FontSize="18" FontWeight="Bold"
-                     Foreground="{DynamicResource AppForeground}" />
-          <StackPanel Orientation="Horizontal" Spacing="8">
-          <Button Content="{Binding NetworkSharingButtonLabel}" Command="{Binding ToggleNetworkSharingCommand}" HorizontalAlignment="Left" />
-          <Button Classes="ghost" Content="Reset private link" Command="{Binding ResetPrivateLinkCommand}"
-                  ToolTip.Tip="Disconnects existing phones and invalidates old links. Copy the new link to reconnect." HorizontalAlignment="Left" />
-          </StackPanel>
-          <TextBlock Classes="hint" Text="{Binding NetworkSharingStatus}" TextWrapping="Wrap" />
-          <TextBlock Classes="hint" Text="Sharing changes take effect immediately. Keep connection links private and use only trusted networks." TextWrapping="Wrap" />
-          <TextBlock Classes="hint"
-                     Text="Open this address in any browser on a phone connected to the same network. There is no app to install. The phone then appears under Physical devices and can be assigned to a virtual controller like any other pad." />
-
-          <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-            <TextBox Grid.Column="0" IsReadOnly="True" FontSize="14"
-                     Text="{Binding PhoneControllerUrl, Mode=OneWay}" />
-            <Button Grid.Column="1" Classes="ghost" Content="Open"
-                    ToolTip.Tip="Open it in this PC's browser, to confirm the server is serving before trying a phone."
-                    IsEnabled="{Binding CanCopyPhoneControllerUrl}"
-                    Click="OnOpenClick" />
-            <Button Grid.Column="2" Content="Copy"
-                    IsEnabled="{Binding CanCopyPhoneControllerUrl}"
-                    Click="OnCopyClick" />
-          </Grid>
-
-          <Border Classes="inset" Padding="10,8"
-                  IsVisible="{Binding HasReachabilityWarning}"
-                  Background="{DynamicResource AppWarningSoft}"
-                  BorderBrush="{DynamicResource AppWarning}">
-            <StackPanel Spacing="8">
-              <TextBlock Classes="hint" Foreground="{DynamicResource AppForeground}"
-                         Text="{Binding ReachabilityMessage}" />
-              <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-                <Button Classes="ghost" Content="Allow through firewall"
-                        ToolTip.Tip="Adds an inbound rule for GameFlow on this port. It accepts devices on your local network only, never the internet. Windows will ask for administrator permission."
-                        IsVisible="{Binding CanAllowThroughFirewall}"
-                        Command="{Binding AllowThroughFirewallCommand}" />
-              </StackPanel>
-            </StackPanel>
+          <!-- QR code, or why there is none yet -->
+          <Border Grid.Column="0" Grid.Row="0" Width="248" Height="248"
+                  CornerRadius="10" Background="White" ClipToBounds="True"
+                  VerticalAlignment="Top">
+            <Panel>
+              <views:QrCodeView Code="{Binding Code}" IsVisible="{Binding HasLink}" Margin="4" />
+              <TextBlock IsVisible="{Binding !HasLink}" Text="{DynamicResource Ui.UiNoCodeWhilePhoneSharingIsOff}"
+                         Foreground="#55606E" FontSize="12" TextWrapping="Wrap" TextAlignment="Center"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" Margin="24" />
+            </Panel>
           </Border>
 
-          <Border Classes="divider" />
+          <StackPanel Grid.Column="1" Grid.Row="0" Spacing="12">
+            <StackPanel Spacing="4">
+              <TextBlock Text="{DynamicResource Ui.UiNAME}" Classes="sectionLabel" />
+              <TextBox Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" MaxLength="40" />
+            </StackPanel>
 
-          <StackPanel Spacing="5">
-            <TextBlock Text="What you get" Classes="sectionLabel" />
-            <TextBlock Classes="hint" Text="Touch buttons, two analog sticks and an 8-way D-pad." />
-            <TextBlock Classes="hint" Text="Rumble returns through the phone's Vibration API where the browser supports it." />
-            <TextBlock Classes="hint" Text="Up to 16 phones at once, each its own virtual pad. Reconnecting keeps the same pad number." />
+            <Border Classes="inset" Padding="10,8">
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                <Panel Width="10" Height="10" VerticalAlignment="Top" Margin="0,4,0,0">
+                  <Ellipse Width="10" Height="10" Fill="{DynamicResource AppSuccess}" IsVisible="{Binding IsConnected}" />
+                  <Ellipse Width="10" Height="10" Fill="{DynamicResource AppWarning}" IsVisible="{Binding !IsConnected}" />
+                </Panel>
+                <TextBlock Grid.Column="1" Text="{Binding StatusText}" TextWrapping="Wrap" FontSize="12"
+                           Foreground="{DynamicResource AppForeground}" />
+              </Grid>
+            </Border>
+
+            <StackPanel Spacing="6" IsVisible="{Binding !HasLink}">
+              <TextBlock Classes="hint" TextWrapping="Wrap"
+                         Text="{DynamicResource Ui.UiPhonesReachGameFlowOverYourNetworkSharingIsOff}" />
+              <Button Classes="primary" HorizontalAlignment="Left"
+                      Content="{Binding Network.NetworkSharingButtonLabel}"
+                      Command="{Binding Network.ToggleNetworkSharingCommand}" />
+              <TextBlock Classes="hint" Text="{Binding Network.NetworkSharingStatus}" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <StackPanel Spacing="6" IsVisible="{Binding HasLink}">
+              <TextBlock Text="{DynamicResource Ui.UiLINK}" Classes="sectionLabel" />
+              <!-- No "open in this PC's browser" button: the link claims this
+                   phone's seat, so opening it here would move the phone to
+                   the PC and disconnect the real one. -->
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                <TextBox Grid.Column="0" IsReadOnly="True" FontSize="11" Text="{Binding Link, Mode=OneWay}"
+                         TextWrapping="NoWrap" />
+                <Button Grid.Column="1" Classes="ghost" Content="{DynamicResource Ui.UiCopy}" Click="OnCopyClick" />
+              </Grid>
+              <TextBlock Classes="hint" TextWrapping="Wrap"
+                         Text="{DynamicResource Ui.UiThisLinkIsThisPhoneSAloneOpeningIt}" />
+            </StackPanel>
           </StackPanel>
 
-        </StackPanel>
+          <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Spacing="10" Margin="0,18,0,0">
+            <Border Classes="inset" Padding="10,8"
+                    IsVisible="{Binding Network.HasReachabilityWarning}"
+                    Background="{DynamicResource AppWarningSoft}"
+                    BorderBrush="{DynamicResource AppWarning}">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="hint" Foreground="{DynamicResource AppForeground}"
+                           Text="{Binding Network.ReachabilityMessage}" TextWrapping="Wrap" />
+                <Button Classes="ghost" HorizontalAlignment="Right" Content="{DynamicResource Ui.UiAllowThroughFirewall}"
+                        ToolTip.Tip="{DynamicResource Ui.UiAddsAnInboundRuleForGameFlowOnThisPort}"
+                        IsVisible="{Binding Network.CanAllowThroughFirewall}"
+                        Command="{Binding Network.AllowThroughFirewallCommand}" />
+              </StackPanel>
+            </Border>
+
+            <Border Classes="divider" />
+            <TextBlock Text="{DynamicResource Ui.UiONTHEPHONE}" Classes="sectionLabel" />
+            <TextBlock Classes="hint" TextWrapping="Wrap"
+                       Text="{DynamicResource Ui.UiHoldItSidewaysAndTapToStartItGoes}" />
+            <TextBlock Classes="hint" TextWrapping="Wrap"
+                       Text="{DynamicResource Ui.UiUpTo16PhonesAtOnceEachItsOwn}" />
+          </StackPanel>
+        </Grid>
       </ScrollViewer>
     </DockPanel>
   </Border>

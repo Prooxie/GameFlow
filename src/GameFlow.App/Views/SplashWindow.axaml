@@ -26,7 +26,7 @@
              was dropped from this window. This is texture only — flow
              curves echoing the app mark, with a clear centre for the
              wordmark to sit in. -->
-        <Image Source="avares://GameFlow.App/Assets/SplashBackground.png"
+        <Image Source="avares://GameFlow/Assets/SplashBackground.png"
                Stretch="UniformToFill"
                HorizontalAlignment="Stretch"
                VerticalAlignment="Stretch" />
@@ -78,7 +78,7 @@
                          Foreground="{DynamicResource AppAccent}" VerticalAlignment="Center" LetterSpacing="1.5" />
             </StackPanel>
           </StackPanel>
-          <TextBlock Text="Cross-platform controller remapping, autofire &amp; speedrun tooling"
+          <TextBlock Text="{DynamicResource Ui.UiCrossPlatformControllerRemappingAutofireSpeedrunTooling}"
                      FontSize="14"
                      Foreground="{DynamicResource AppForegroundDim}"
                      TextWrapping="Wrap"
@@ -95,7 +95,7 @@
               BorderThickness="0,1,0,0">
         <StackPanel Spacing="10">
           <ProgressBar IsIndeterminate="True" Height="2" CornerRadius="1" />
-          <TextBlock Text="Bootstrapping host, runtime pipeline, profile store and translations…"
+          <TextBlock Text="{DynamicResource Ui.UiBootstrappingHostRuntimePipelineProfileStoreAndTranslations}"
                      FontSize="12"
                      Foreground="{DynamicResource AppForegroundDim}" />
         </StackPanel>

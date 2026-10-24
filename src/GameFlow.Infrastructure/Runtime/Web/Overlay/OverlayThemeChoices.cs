@@ -21,6 +21,16 @@ namespace GameFlow.Infrastructure.Runtime.Web.Overlay;
 public sealed class OverlayThemeChoices
 {
     private readonly ConcurrentDictionary<(string SlotId, bool Physical), InstalledTheme> themes = new();
+    private readonly ConcurrentDictionary<(string SlotId, bool Physical), OverlayProgram> inputs = new();
+
+    /// <summary>Records a native keyboard/mouse surface. Null removes it.</summary>
+    public void SetInput(string slotId, bool physical, OverlayProgram? program)
+    {
+        if (program is null) { inputs.TryRemove((slotId, physical), out _); }
+        else { inputs[(slotId, physical)] = program; }
+    }
+
+    public OverlayProgram? GetInput(string slotId, bool physical) => inputs.GetValueOrDefault((slotId, physical));
 
     /// <summary>
     /// Records the theme that a panel shows. A null theme removes the record.
@@ -54,5 +64,7 @@ public sealed class OverlayThemeChoices
         ArgumentNullException.ThrowIfNull(slotId);
         _ = themes.TryRemove((slotId, false), out _);
         _ = themes.TryRemove((slotId, true), out _);
+        _ = inputs.TryRemove((slotId, false), out _);
+        _ = inputs.TryRemove((slotId, true), out _);
     }
 }

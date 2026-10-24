@@ -48,6 +48,14 @@ public static class SnapshotVisuals
         if (MathF.Abs(a.RightStick.Y - b.RightStick.Y) > Epsilon) { return false; }
         if (!TouchEquivalent(a, b)) { return false; }
 
+        // Keyboard and mouse pictures draw these directly. Without them a
+        // key press that maps to nothing on the pad, or a click, changed
+        // no gamepad field and so never repainted the keyboard or mouse.
+        if (a.MouseButtons != b.MouseButtons) { return false; }
+        if (MathF.Abs(a.MouseMotion.X - b.MouseMotion.X) > Epsilon) { return false; }
+        if (MathF.Abs(a.MouseMotion.Y - b.MouseMotion.Y) > Epsilon) { return false; }
+        if (!ReferenceEquals(a.PressedKeys, b.PressedKeys) && !a.PressedKeys.SetEquals(b.PressedKeys)) { return false; }
+
         // A mask IS the pressed set, so equality is the comparison this
         // used to spell out over two dictionaries — including the case it
         // was written for, where one snapshot carries a key explicitly set

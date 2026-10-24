@@ -109,6 +109,14 @@ public struct ButtonMask : IEquatable<ButtonMask>
     public static ButtonMask operator &(ButtonMask left, ButtonMask right) =>
         new(left.bits & right.bits);
 
+    /// <summary>
+    /// The buttons down here that are NOT down in <paramref name="other"/>.
+    /// A method rather than a <c>~</c> operator on purpose: a complemented
+    /// mask would have bits set for ids that do not exist, and enumerating
+    /// one would hand out <see cref="ButtonId"/> values outside the enum.
+    /// </summary>
+    public readonly ButtonMask Without(ButtonMask other) => new(bits & ~other.bits);
+
     public static bool operator ==(ButtonMask left, ButtonMask right) => left.bits == right.bits;
 
     public static bool operator !=(ButtonMask left, ButtonMask right) => left.bits != right.bits;

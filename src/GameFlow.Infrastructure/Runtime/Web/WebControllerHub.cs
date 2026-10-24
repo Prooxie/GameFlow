@@ -3,6 +3,44 @@ using GameFlow.Core.Models;
 
 namespace GameFlow.Infrastructure.Runtime.Web;
 
+/// <summary>
+/// Which controller a phone's page is laid out as. Reported by the page with
+/// every frame, so the app can draw the matching controller for that phone.
+/// </summary>
+public enum WebPadLayout
+{
+    Xbox = 0,
+    DualShock4 = 1,
+
+    /// <summary>Older pages only: a touchpad-first layout, drawn as a DualShock 4.</summary>
+    Touchpad = 2,
+
+    /// <summary>Switch Pro style: B/A/Y/X by position, ZL/ZR, −/+, Home, Capture.</summary>
+    Nintendo = 3,
+
+    XboxOne = 4,
+    XboxSeries = 5,
+    DualSense = 6,
+}
+
+/// <summary>Controller art for a phone's layout.</summary>
+public static class WebPadLayoutStyles
+{
+    /// <summary>
+    /// The controller a phone is drawn as. A phone has no vendor id to look
+    /// up, so without this its panel read "no controller theme installed".
+    /// </summary>
+    public static GameFlow.Core.Enums.ControllerVisualStyle ToVisualStyle(this WebPadLayout layout) => layout switch
+    {
+        WebPadLayout.DualShock4 or WebPadLayout.Touchpad => GameFlow.Core.Enums.ControllerVisualStyle.PlayStation4,
+        WebPadLayout.Nintendo => GameFlow.Core.Enums.ControllerVisualStyle.NintendoSwitch,
+        WebPadLayout.XboxOne => GameFlow.Core.Enums.ControllerVisualStyle.XboxOne,
+        WebPadLayout.XboxSeries => GameFlow.Core.Enums.ControllerVisualStyle.XboxSeries,
+        WebPadLayout.DualSense => GameFlow.Core.Enums.ControllerVisualStyle.PlayStation5,
+        _ => GameFlow.Core.Enums.ControllerVisualStyle.Xbox360,
+    };
+}
+
 /// <summary>One rumble command queued back to a phone, played via the browser Vibration API.</summary>
 public readonly record struct WebRumbleCommand(float LowFrequency, float HighFrequency, int DurationMs);
 
@@ -53,6 +91,7 @@ public sealed class WebControllerHub
     private readonly DateTimeOffset[] lastSeen = new DateTimeOffset[MaxPads];
     private readonly long[] leaseTokens = new long[MaxPads];
     private readonly string?[] clientIds = new string?[MaxPads];
+    private readonly WebPadLayout[] layouts = new WebPadLayout[MaxPads];
     private long nextLeaseToken;
 
     /// <summary>
@@ -85,7 +124,12 @@ public sealed class WebControllerHub
     /// Browser-generated opaque id, or null for legacy clients. Only short
     /// ASCII identifiers are retained; invalid input is treated as anonymous.
     /// </param>
-    public WebPadLease ClaimPad(string? clientId = null)
+    /// <param name="reservedSeats">
+    /// Seats a newcomer must not take: phones registered in the app whose own
+    /// link has not connected yet. A connection's own previous seat is never
+    /// excluded.
+    /// </param>
+    public WebPadLease ClaimPad(string? clientId = null, IReadOnlySet<int>? reservedSeats = null)
     {
         lock (gate)
         {
@@ -108,7 +152,7 @@ public sealed class WebControllerHub
             // until capacity pressure actually requires reusing one.
             for (var i = 0; i < MaxPads; i++)
             {
-                if (clientIds[i] is null && !IsActive(i, now))
+                if (clientIds[i] is null && !IsActive(i, now) && reservedSeats?.Contains(i) != true)
                 {
                     return Activate(i, normalizedClientId, now);
                 }
@@ -118,13 +162,72 @@ public sealed class WebControllerHub
             // active connections are never displaced by a different client.
             for (var i = 0; i < MaxPads; i++)
             {
-                if (!IsActive(i, now))
+                if (!IsActive(i, now) && reservedSeats?.Contains(i) != true)
                 {
                     return Activate(i, normalizedClientId, now);
                 }
             }
 
             return WebPadLease.Unavailable;
+        }
+    }
+
+    /// <summary>
+    /// Claims one specific seat for a phone that opened that seat's own link.
+    /// </summary>
+    /// <remarks>
+    /// Always succeeds for a valid seat, replacing whatever held it: the link
+    /// IS that phone, so the browser that opened it most recently is the one
+    /// the user is holding. The replaced connection's lease stops matching
+    /// and its socket loops end on their next check, exactly as on a
+    /// reconnect.
+    /// </remarks>
+    public WebPadLease ClaimSeat(int seat, string? clientId = null)
+    {
+        if (!IsValidIndex(seat))
+        {
+            return WebPadLease.Unavailable;
+        }
+
+        lock (gate)
+        {
+            return Activate(seat, NormalizeClientId(clientId), timeProvider.GetUtcNow());
+        }
+    }
+
+    /// <summary>
+    /// Ends whatever connection holds a seat and forgets its client, so the
+    /// seat no longer reconnects on its own. Used when a phone is removed in
+    /// the app.
+    /// </summary>
+    public void Revoke(int seat)
+    {
+        if (!IsValidIndex(seat))
+        {
+            return;
+        }
+
+        lock (gate)
+        {
+            pads[seat] = null;
+            leaseTokens[seat] = 0;
+            clientIds[seat] = null;
+            layouts[seat] = WebPadLayout.Xbox;
+            rumbleQueues[seat].Clear();
+        }
+    }
+
+    /// <summary>The layout the phone in a seat last reported.</summary>
+    public WebPadLayout GetLayout(int padIndex)
+    {
+        if (!IsValidIndex(padIndex))
+        {
+            return WebPadLayout.Xbox;
+        }
+
+        lock (gate)
+        {
+            return layouts[padIndex];
         }
     }
 
@@ -158,7 +261,7 @@ public sealed class WebControllerHub
     /// false when a newer lease replaced it so the server can close the stale
     /// connection.
     /// </summary>
-    public bool UpdatePad(WebPadLease lease, ControllerSnapshot snapshot)
+    public bool UpdatePad(WebPadLease lease, ControllerSnapshot snapshot, WebPadLayout? layout = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
 
@@ -176,6 +279,10 @@ public sealed class WebControllerHub
 
             pads[lease.PadIndex] = snapshot;
             lastSeen[lease.PadIndex] = timeProvider.GetUtcNow();
+            if (layout is { } reported)
+            {
+                layouts[lease.PadIndex] = reported;
+            }
             return true;
         }
     }

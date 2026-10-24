@@ -40,7 +40,8 @@ public static class WebControllerProtocol
         ButtonId.DpadDown,       // 12
         ButtonId.DpadLeft,       // 13
         ButtonId.DpadRight,      // 14
-        ButtonId.Touchpad        // 15
+        ButtonId.Touchpad,       // 15
+        ButtonId.Misc1           // 16: Capture on the Nintendo layout, Share/Mute elsewhere
     ];
 
     /// <summary>
@@ -49,8 +50,18 @@ public static class WebControllerProtocol
     /// the network, so a garbled or hostile frame must not be able to
     /// take down the receive loop.
     /// </summary>
-    public static ControllerSnapshot? TryParseInput(string json, int padIndex)
+    public static ControllerSnapshot? TryParseInput(string json, int padIndex) =>
+        TryParseInput(json, padIndex, out _);
+
+    /// <summary>
+    /// Parses one input frame and the layout the page reports itself as
+    /// (<c>"layout"</c>: <c>"xbox"</c>, <c>"ds4"</c> or <c>"touch"</c>).
+    /// <paramref name="layout"/> is null when the frame names none or an
+    /// unknown one — older pages send no layout at all.
+    /// </summary>
+    public static ControllerSnapshot? TryParseInput(string json, int padIndex, out WebPadLayout? layout)
     {
+        layout = null;
         try
         {
             using var document = JsonDocument.Parse(json);
@@ -59,6 +70,8 @@ public static class WebControllerProtocol
             {
                 return null;
             }
+
+            layout = ReadLayout(root);
 
             var buttonMask = ReadInt(root, "b");
             var buttons = ButtonState.Clone(ButtonState.CreateEmptyMap());
@@ -110,6 +123,39 @@ public static class WebControllerProtocol
     /// <summary>Serializes the pad-assignment handshake the browser shows as "PAD #n". -1 means every slot is taken.</summary>
     public static string BuildPadAssignment(int padIndex) =>
         JsonSerializer.Serialize(new { pad = padIndex });
+
+    /// <summary>The handshake with the phone's name, which the page shows instead of a number.</summary>
+    public static string BuildPadAssignment(int padIndex, string? name) =>
+        string.IsNullOrWhiteSpace(name)
+            ? BuildPadAssignment(padIndex)
+            : JsonSerializer.Serialize(new { pad = padIndex, name = name.Trim() });
+
+    /// <summary>Every seat is taken. The page stops reconnecting on its own.</summary>
+    public static string BuildFull() => JsonSerializer.Serialize(new { full = true });
+
+    /// <summary>This phone was removed in the app; its link no longer works. The page stops reconnecting.</summary>
+    public static string BuildRevoked() => JsonSerializer.Serialize(new { revoked = true });
+
+    private static WebPadLayout? ReadLayout(JsonElement root)
+    {
+        if (!root.TryGetProperty("layout", out var element) || element.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        return element.GetString() switch
+        {
+            "xbox" => WebPadLayout.Xbox,
+            "xbox360" => WebPadLayout.Xbox,
+            "xboxone" => WebPadLayout.XboxOne,
+            "xboxseries" => WebPadLayout.XboxSeries,
+            "ds4" => WebPadLayout.DualShock4,
+            "dualsense" => WebPadLayout.DualSense,
+            "switch" => WebPadLayout.Nintendo,
+            "touch" => WebPadLayout.Touchpad,
+            _ => null,
+        };
+    }
 
     /// <summary>Serializes a rumble command for the browser's Vibration API.</summary>
     public static string BuildRumble(WebRumbleCommand command) =>

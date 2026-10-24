@@ -16,6 +16,17 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
     private readonly GameFlow.Infrastructure.Runtime.Input.IKeyboardStateSource keyboardStateSource;
     private readonly GameFlow.Infrastructure.Runtime.Input.IMouseStateSource mouseStateSource;
 
+    /// <summary>The user's keyboard &amp; mouse bindings. Null in hosts that register none, which read the defaults.</summary>
+    private readonly GameFlow.Infrastructure.Runtime.Input.KeyboardMouseMapStore? keyboardMouseMap;
+
+    /// <summary>
+    /// Per-mouse movement smoothing and wheel latch. A mouse read turns
+    /// counts into a speed, which needs the time since that mouse's last
+    /// read — see <see cref="GameFlow.Infrastructure.Runtime.Input.MouseMotionFilter"/>.
+    /// </summary>
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, MouseReadState> mouseStates =
+        new(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>Phones connected to the web controller server. Answered directly in <see cref="ReadDevice"/> — they never touch SDL.</summary>
     private readonly GameFlow.Infrastructure.Runtime.Web.WebControllerHub webControllerHub;
     private OpenedDevice? openedDevice;
@@ -106,14 +117,27 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
     /// <summary>Devices whose adaptive-trigger effect SDL refused, so the warning is logged once.</summary>
     private readonly HashSet<string> adaptiveRejected = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> adaptiveTriggerActive = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Capabilities SDL reported for each pad the worker has opened, by
+    /// stable id. Filled when a handle is created and kept after it closes:
+    /// the hardware does not change while unplugged, and the tuning editor
+    /// still needs the answer for an assigned pad that is offline. Worker
+    /// thread only.
+    /// </summary>
+    private readonly Dictionary<string, ControllerFeatures> detectedFeatures = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Player number last applied to pads whose LED row SDL drives by number. Worker thread only.</summary>
+    private readonly Dictionary<string, int> appliedPlayerIndex = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> loggedNonSdlSkips = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>Devices whose generic-joystick fallback note is already in the log. Worker thread only.</summary>
     private readonly HashSet<string> genericFallbackLogged = new(StringComparer.OrdinalIgnoreCase);
 
-    public SdlUnifiedInputSource(ILogger<SdlUnifiedInputSource> logger, InputDeviceCatalog inputDeviceCatalog, GameFlow.Infrastructure.Runtime.Input.ButtonMapStore buttonMapStore, GameFlow.Infrastructure.Runtime.Input.IKeyboardStateSource keyboardStateSource, GameFlow.Infrastructure.Runtime.Input.IMouseStateSource mouseStateSource, GameFlow.Infrastructure.Runtime.Web.WebControllerHub webControllerHub, GameFlow.Infrastructure.Runtime.Effects.ControllerEffectMailbox? effectMailbox = null)
+    public SdlUnifiedInputSource(ILogger<SdlUnifiedInputSource> logger, InputDeviceCatalog inputDeviceCatalog, GameFlow.Infrastructure.Runtime.Input.ButtonMapStore buttonMapStore, GameFlow.Infrastructure.Runtime.Input.IKeyboardStateSource keyboardStateSource, GameFlow.Infrastructure.Runtime.Input.IMouseStateSource mouseStateSource, GameFlow.Infrastructure.Runtime.Web.WebControllerHub webControllerHub, GameFlow.Infrastructure.Runtime.Effects.ControllerEffectMailbox? effectMailbox = null, GameFlow.Infrastructure.Runtime.Input.KeyboardMouseMapStore? keyboardMouseMap = null)
     {
         this.logger = logger;
+        this.keyboardMouseMap = keyboardMouseMap;
         this.inputDeviceCatalog = inputDeviceCatalog;
         this.buttonMapStore = buttonMapStore;
         this.keyboardStateSource = keyboardStateSource;
@@ -424,37 +448,72 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
     /// </summary>
     private ControllerSnapshot? SynthesizeNonSdl(string deviceId, InputDeviceInfo? info)
     {
-            if (info?.Category == DeviceCategory.Keyboard)
+        var map = keyboardMouseMap?.CompiledFor(deviceId) ?? GameFlow.Infrastructure.Runtime.Input.CompiledKeyboardMouseMap.Default;
+
+        if (info?.Category == DeviceCategory.Keyboard)
+        {
+            // Native readers group composite collections by canonical device
+            // identity. An idle device must not borrow another keyboard's keys.
+            var pressed = keyboardStateSource.GetPressedKeys(deviceId);
+            return GameFlow.Infrastructure.Runtime.Input.KeyboardGamepadSynthesizer
+                .Synthesize(info.DisplayName ?? deviceId, pressed, map)
+                with { Timestamp = DateTimeOffset.UtcNow };
+        }
+
+        if (info?.Category == DeviceCategory.Mouse)
+        {
+            var frame = mouseStateSource.ReadMouseFrame(deviceId);
+
+            var state = mouseStates.GetOrAdd(deviceId, static _ => new MouseReadState());
+            StickVector motion;
+            MouseButtonFlags wheel;
+            lock (state)
             {
-                // Per-device first; when that handle reports nothing,
-                // fall back to the union of ALL keyboards — Windows
-                // frequently splits one physical keyboard into several
-                // Raw Input handles, and the assigned id isn't always
-                // the one keystrokes arrive under.
-                var pressed = keyboardStateSource.GetPressedKeysWithAggregateFallback(deviceId);
-                return GameFlow.Infrastructure.Runtime.Input.KeyboardGamepadSynthesizer
-                    .Synthesize(info.DisplayName ?? deviceId, pressed)
-                    with
-                    {
-                        Timestamp = DateTimeOffset.UtcNow,
-                        // Carried unreduced so a full-layout keyboard theme
-                        // can light every key — the synthesized Buttons above
-                        // only cover the handful that map onto a ButtonId.
-                        PressedKeys = pressed
-                    };
+                (motion, wheel) = state.Advance(frame, map.Source);
             }
-            if (info?.Category == DeviceCategory.Mouse)
-            {
-                var frame = mouseStateSource.ReadMouseFrame(deviceId);
-                if (frame is { Dx: 0, Dy: 0, WheelDelta: 0, Left: false, Right: false, Middle: false, Button4: false, Button5: false })
-                {
-                    frame = mouseStateSource.ReadMouseFrameAggregate();
-                }
-                return GameFlow.Infrastructure.Runtime.Input.MouseGamepadSynthesizer
-                    .Synthesize(info.DisplayName ?? deviceId, frame)
-                    with { Timestamp = DateTimeOffset.UtcNow };
-            }
+
+            return GameFlow.Infrastructure.Runtime.Input.MouseGamepadSynthesizer
+                .Synthesize(info.DisplayName ?? deviceId, frame, motion, wheel, map)
+                with { Timestamp = DateTimeOffset.UtcNow };
+        }
+
         return null;
+    }
+
+    /// <summary>
+    /// What one mouse needs remembered between reads: when it was last
+    /// read, its smoothed speed, and how long a wheel notch stays held.
+    /// Guarded by locking the instance — a mouse can be read by a slot and
+    /// by a pinned dashboard panel.
+    /// </summary>
+    private sealed class MouseReadState
+    {
+        private readonly GameFlow.Infrastructure.Runtime.Input.MouseMotionFilter filter = new();
+        private long lastReadTimestamp;
+        private long wheelUpUntil;
+        private long wheelDownUntil;
+
+        public (StickVector Motion, MouseButtonFlags Wheel) Advance(
+            GameFlow.Infrastructure.Runtime.Input.MouseFrame frame,
+            GameFlow.Infrastructure.Runtime.Input.KeyboardMouseMap map)
+        {
+            var now = System.Diagnostics.Stopwatch.GetTimestamp();
+            var elapsed = lastReadTimestamp == 0
+                ? 0.001
+                : (now - lastReadTimestamp) / (double)System.Diagnostics.Stopwatch.Frequency;
+            lastReadTimestamp = now;
+
+            var hold = (long)(GameFlow.Infrastructure.Runtime.Input.MouseGamepadSynthesizer.WheelHoldTime.TotalSeconds
+                * System.Diagnostics.Stopwatch.Frequency);
+            if (frame.WheelDelta > 0) { wheelUpUntil = now + hold; }
+            if (frame.WheelDelta < 0) { wheelDownUntil = now + hold; }
+
+            var wheel = MouseButtonFlags.None;
+            if (now < wheelUpUntil) { wheel |= MouseButtonFlags.WheelUp; }
+            if (now < wheelDownUntil) { wheel |= MouseButtonFlags.WheelDown; }
+
+            return (filter.Update(frame.Dx, frame.Dy, elapsed, map), wheel);
+        }
     }
 
     /// <summary>Worker-only: opens (lazily) and reads one slot device. Blocking SDL calls live here, on the worker.</summary>
@@ -730,6 +789,7 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
             _ = tracedDeviceIds.Remove(deviceId);
             _ = adaptiveTriggerActive.Remove(deviceId);
             _ = adaptiveRejected.Remove(deviceId);
+            _ = appliedPlayerIndex.Remove(deviceId);
         }
     }
 
@@ -1591,7 +1651,10 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
                     DeviceCategory.Gamepad,
                     power.Percentage,
                     power.State,
-                    LogVirtualVerdict(gamepadId, gamepadPath, isVirtualGamepad)));
+                    LogVirtualVerdict(gamepadId, gamepadPath, isVirtualGamepad))
+                {
+                    Features = GetDetectedFeatures(gamepadId),
+                });
             }
         }
         finally
@@ -1648,7 +1711,10 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
                     DeviceCategory.Joystick,
                     power.Percentage,
                     power.State,
-                    LogVirtualVerdict(joystickId, joystickPath, isVirtualJoystick)));
+                    LogVirtualVerdict(joystickId, joystickPath, isVirtualJoystick))
+                {
+                    Features = GetDetectedFeatures(joystickId),
+                });
             }
         }
         finally
@@ -1804,15 +1870,48 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
                     _ = SdlInterop.SetGamepadLED(device.Handle, led.R, led.G, led.B);
                 }
 
+                // Impulse triggers have their own SDL call. SDL skips the
+                // HID write itself when the values have not changed, so
+                // repeating it with every state costs nothing at rest.
+                if ((device.Features & ControllerFeatures.TriggerRumble) != 0)
+                {
+                    _ = SdlInterop.RumbleGamepadTriggers(
+                        device.Handle,
+                        plan.LeftTriggerRumble,
+                        plan.RightTriggerRumble,
+                        0);
+                }
+
+                // Pads whose LED row SDL drives by player NUMBER (DualShock
+                // 3, Switch). The DualSense's row is written bit by bit in
+                // its own report below instead, which can show any pattern.
+                if (!device.SupportsAdaptiveTriggers
+                    && (device.Features & ControllerFeatures.PlayerLeds) != 0
+                    && plan.PlayerLeds is { } playerLeds)
+                {
+                    var playerIndex = GameFlow.Core.Pipeline.EffectSceneResolver.ToPlayerIndex(playerLeds);
+                    if ((!appliedPlayerIndex.TryGetValue(write.DeviceId, out var applied) || applied != playerIndex)
+                        && SdlInterop.SetGamepadPlayerIndex(device.Handle, playerIndex))
+                    {
+                        appliedPlayerIndex[write.DeviceId] = playerIndex;
+                    }
+                }
+
                 // A DualSense effect report is a whole device state, not a
                 // safe trigger delta. The FINAL write therefore repeats the
                 // current rumble (using SDL 3.4.2's firmware-specific mode)
                 // and requested LED alongside adaptive triggers. A later
                 // portable report would clear triggers; a trigger-only final
                 // report can restore audio haptics and stop steady rumble.
-                if (plan.ShouldSendTriggerReport(device.SupportsAdaptiveTriggers, triggerWasActive))
+                //
+                // It is also the only way to the player-LED row and the mic
+                // LED, so it goes out for those even with no trigger armed —
+                // but then WITHOUT trigger sections, leaving a pad whose
+                // triggers this process never touched exactly as it was.
+                var sendTriggers = plan.ShouldSendTriggerReport(device.SupportsAdaptiveTriggers, triggerWasActive);
+                if (plan.ShouldSendDualSenseReport(device.SupportsAdaptiveTriggers, triggerWasActive))
                 {
-                    if (plan.TryWriteDualSenseReport(effect, device.DualSenseRumbleMode))
+                    if (plan.TryWriteDualSenseReport(effect, device.DualSenseRumbleMode, includeTriggers: sendTriggers))
                     {
                         if (!SdlInterop.SendGamepadEffect(device.Handle, effect, effect.Length))
                         {
@@ -1831,11 +1930,11 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
                         else
                         {
                             _ = adaptiveRejected.Remove(write.DeviceId);
-                            if (plan.HasActiveTriggerEffect)
+                            if (sendTriggers && plan.HasActiveTriggerEffect)
                             {
                                 _ = adaptiveTriggerActive.Add(write.DeviceId);
                             }
-                            else
+                            else if (sendTriggers)
                             {
                                 _ = adaptiveTriggerActive.Remove(write.DeviceId);
                             }
@@ -2369,7 +2468,7 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
         Joystick
     }
 
-    private static OpenedDevice CreateOpenedDevice(
+    private OpenedDevice CreateOpenedDevice(
         string deviceId,
         string displayName,
         uint instanceId,
@@ -2386,6 +2485,17 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
                 SdlInterop.GetGamepadFirmwareVersion(handle))
             : GameFlow.Core.Pipeline.DualSenseRumbleMode.Legacy;
 
+        var features = DetectFeatures(handle, kind);
+        if (features != ControllerFeatures.None
+            && (!detectedFeatures.TryGetValue(deviceId, out var previous) || previous != features))
+        {
+            detectedFeatures[deviceId] = features;
+            logger.LogInformation(
+                "SDL device {DeviceName} reports: {Features}.",
+                displayName,
+                string.Join(", ", ControllerFeatureSet.Describe(features)));
+        }
+
         return new OpenedDevice(
             deviceId,
             displayName,
@@ -2393,8 +2503,90 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
             kind,
             handle,
             supportsAdaptiveTriggers,
-            rumbleMode);
+            rumbleMode,
+            features);
     }
+
+    /// <summary>
+    /// Asks SDL what an OPEN gamepad can do. The LED and rumble answers
+    /// come from the capability properties SDL's driver set when it opened
+    /// the pad — the same DualShock 4 can have a settable lightbar behind
+    /// one driver and not another, which no VID/PID table can know. The
+    /// rest comes from the real controller type and the sensor/touchpad
+    /// queries SDL already answers.
+    ///
+    /// <para>
+    /// None when the properties cannot be read. That is not "no features":
+    /// it leaves the hardware catalog to answer, which is better than
+    /// reporting a DualSense without a lightbar because one call failed.
+    /// </para>
+    /// </summary>
+    private ControllerFeatures DetectFeatures(IntPtr handle, DeviceKind kind)
+    {
+        if (kind != DeviceKind.Gamepad)
+        {
+            return ControllerFeatures.None;
+        }
+
+        try
+        {
+            var properties = SdlInterop.GetGamepadProperties(handle);
+            if (properties == 0)
+            {
+                return ControllerFeatures.None;
+            }
+
+            var features = ControllerFeatures.None;
+            void Check(string property, ControllerFeatures feature)
+            {
+                if (SdlInterop.GetBooleanProperty(properties, property, false))
+                {
+                    features |= feature;
+                }
+            }
+
+            Check(SdlInterop.PropCapRumble, ControllerFeatures.Rumble);
+            Check(SdlInterop.PropCapTriggerRumble, ControllerFeatures.TriggerRumble);
+            Check(SdlInterop.PropCapRgbLed, ControllerFeatures.RgbLight);
+            Check(SdlInterop.PropCapMonoLed, ControllerFeatures.MonoLight);
+            Check(SdlInterop.PropCapPlayerLed, ControllerFeatures.PlayerLeds);
+
+            switch (SdlInterop.GetRealGamepadType(handle))
+            {
+                case SdlInterop.GamepadType.PlayStation5:
+                    features |= ControllerFeatures.AdaptiveTriggers | ControllerFeatures.MicLed;
+                    break;
+                case SdlInterop.GamepadType.PlayStation4 when (features & ControllerFeatures.RgbLight) != 0:
+                    features |= ControllerFeatures.LightbarFlash;
+                    break;
+            }
+
+            if (SdlInterop.GetNumGamepadTouchpads(handle) > 0)
+            {
+                features |= ControllerFeatures.Touchpad;
+            }
+
+            if (SdlInterop.GamepadHasSensor(handle, SdlInterop.SensorType.Gyro)
+                || SdlInterop.GamepadHasSensor(handle, SdlInterop.SensorType.Accel))
+            {
+                features |= ControllerFeatures.Motion;
+            }
+
+            // A pad that reports nothing at all comes back as None and the
+            // catalog answers for it, which for an unknown pad is "rumble":
+            // offering a gain slider that does nothing is the lesser error.
+            return features;
+        }
+        catch (Exception exception)
+        {
+            logger.LogDebug(exception, "SDL capability query failed; falling back to the hardware catalog.");
+            return ControllerFeatures.None;
+        }
+    }
+
+    /// <summary>What SDL detected for a pad it has opened this session, or None.</summary>
+    private ControllerFeatures GetDetectedFeatures(string deviceId) =>
+        detectedFeatures.TryGetValue(deviceId, out var features) ? features : ControllerFeatures.None;
 
     private sealed record OpenedDevice(
         string DeviceId,
@@ -2403,7 +2595,8 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
         DeviceKind Kind,
         IntPtr Handle,
         bool SupportsAdaptiveTriggers,
-        GameFlow.Core.Pipeline.DualSenseRumbleMode DualSenseRumbleMode);
+        GameFlow.Core.Pipeline.DualSenseRumbleMode DualSenseRumbleMode,
+        ControllerFeatures Features = ControllerFeatures.None);
 
     private readonly record struct DevicePowerInfo(int? Percentage, DeviceBatteryState State)
     {

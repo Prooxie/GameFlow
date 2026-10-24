@@ -1,12 +1,45 @@
 using GameFlow.Core.Models;
 using GameFlow.Core.Pipeline;
 using GameFlow.Infrastructure.Runtime.Effects;
+using GameFlow.Infrastructure.Runtime;
+using GameFlow.Infrastructure.Runtime.Slots;
+using GameFlow.Infrastructure.Localization;
+using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Xunit;
 
 namespace GameFlow.Infrastructure.Tests.Runtime.Effects;
 
 public sealed class ControllerEffectProducerTests
 {
+    /// <summary>Checks that an idle effects pass creates no temporary collections.</summary>
+    [Fact]
+    public void ProduceOnceEmptyRegistryAllocatesNothingAfterWarmup()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "gameflow-effects-" + Guid.NewGuid().ToString("N") + ".json");
+        var slots = new SlotRegistry(NullLogger<SlotRegistry>.Instance, path);
+        var settings = new DeviceSettingsStore(NullLogger<DeviceSettingsStore>.Instance, path);
+        var catalog = new InputDeviceCatalog(Mock.Of<ILocalizationService>(),
+            new DeviceCategoryOverrideStore(NullLogger<DeviceCategoryOverrideStore>.Instance));
+        using var effects = new ControllerEffectsService(Mock.Of<IControllerEffectWriter>(),
+            NullLogger<ControllerEffectsService>.Instance);
+        using var producer = new ControllerEffectProducer(slots, new SlotSnapshotStore(), settings, catalog,
+            new RumbleFeedbackStore(), effects, NullLogger<ControllerEffectProducer>.Instance);
+        for (var index = 0; index < 100; index++)
+        {
+            producer.ProduceOnce();
+        }
+
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        for (var index = 0; index < 1000; index++)
+        {
+            producer.ProduceOnce();
+        }
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        Assert.Equal(0, allocated);
+    }
+
     private static ResolvedAdaptiveTrigger Resolved(AdaptiveTriggerSettings settings) =>
         ResolvedAdaptiveTrigger.From(settings);
 

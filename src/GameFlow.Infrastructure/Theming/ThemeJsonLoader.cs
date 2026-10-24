@@ -97,6 +97,9 @@ public static class ThemeJsonLoader
         var children  = root.TryGetProperty("children", out var childArr)
                         ? ParseChildren(childArr)
                         : [];
+        var touchpadInset = root.TryGetProperty("touchpadInset", out var insetElement)
+                        ? ParseInset(insetElement)
+                        : default;
 
         return new ThemeDocument
         {
@@ -106,8 +109,54 @@ public static class ThemeJsonLoader
             Version = version,
             Children = children,
             BaseDirectory = baseDirectory,
-            ThemesRootDirectory = themesRootDirectory
+            ThemesRootDirectory = themesRootDirectory,
+            TouchpadInset = touchpadInset
         };
+    }
+
+    /// <summary>
+    /// Parses GameFlow's optional <c>touchpadInset</c> extension: one number
+    /// for every edge, <c>[horizontal, vertical]</c>,
+    /// <c>[left, top, right, bottom]</c>, or an object with any of
+    /// <c>left</c>, <c>top</c>, <c>right</c> and <c>bottom</c>. Theme units.
+    /// Anything else is logged and ignored, like any other bad field.
+    /// </summary>
+    private static ThemeInset ParseInset(JsonElement element)
+    {
+        static double Number(JsonElement value) => value.ValueKind switch
+        {
+            JsonValueKind.Number => value.GetDouble(),
+            JsonValueKind.String when FleeNumber.TryParse(value.GetString()!, out var parsed) => parsed,
+            _ => double.NaN
+        };
+
+        var inset = element.ValueKind switch
+        {
+            JsonValueKind.Number or JsonValueKind.String when Number(element) is var all
+                => new ThemeInset(all, all, all, all),
+            JsonValueKind.Array => element.GetArrayLength() switch
+            {
+                2 => new ThemeInset(Number(element[0]), Number(element[1]), Number(element[0]), Number(element[1])),
+                4 => new ThemeInset(Number(element[0]), Number(element[1]), Number(element[2]), Number(element[3])),
+                _ => new ThemeInset(double.NaN, 0, 0, 0)
+            },
+            JsonValueKind.Object => new ThemeInset(
+                GetDouble(element, "left", 0),
+                GetDouble(element, "top", 0),
+                GetDouble(element, "right", 0),
+                GetDouble(element, "bottom", 0)),
+            _ => new ThemeInset(double.NaN, 0, 0, 0)
+        };
+
+        if (!double.IsFinite(inset.Left) || !double.IsFinite(inset.Top) ||
+            !double.IsFinite(inset.Right) || !double.IsFinite(inset.Bottom))
+        {
+            Log.Warning("Ignoring theme touchpadInset {Value}: expected a number, [h, v], [l, t, r, b] or an object.",
+                element.GetRawText());
+            return default;
+        }
+
+        return inset;
     }
 
     // ─── Element parsing ──────────────────────────────────────────────────────

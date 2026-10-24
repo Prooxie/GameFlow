@@ -11,12 +11,22 @@ namespace GameFlow.Core.Models;
 /// <para>
 /// At most ONE non-Base layer is active at a time (Latch's own doc: "press
 /// a different Latch button to SWITCH" — not stack). Rules tagged with a
-/// layer id apply only while that layer is active; untagged (Base) rules
-/// always apply. Whichever rule of a given type/target appears LATER in
-/// <see cref="ProfileDocument.Rules"/> wins for that tick — the same
-/// last-write-wins convention every other rule interaction in this
-/// pipeline already uses — so a layer's remap for South naturally
-/// overrides Base's remap for South as long as it's ordered after it.
+/// layer id apply only while that layer is active.
+/// </para>
+///
+/// <para>
+/// <b>A layer overrides Base by INPUT, not by rule order.</b> While a
+/// layer is active, every untagged (Base) rule whose source input — a
+/// button, a stick, a trigger, the touchpad or the gyro — is also a
+/// source of one of that layer's rules is skipped for the tick. So Base
+/// "South → West" plus a layer "South → North" gives North alone while
+/// the layer is held, not both. This used to rely on rule order and
+/// last-write-wins, which never worked for buttons: button outputs OR
+/// together, so the Base remap kept pressing West underneath the layer's
+/// North. Base rules on inputs the layer leaves alone keep running.
+/// Axis inversion is the one exception — it folds per axis instead (Base
+/// first, then the layer), so a layer that only flips the right stick
+/// does not throw away a Base inversion of the left one.
 /// </para>
 ///
 /// <para>
@@ -56,6 +66,19 @@ public sealed record ShiftLayer
     /// </summary>
     [JsonPropertyName("activatorButton")]
     public ButtonId ActivatorButton { get; init; } = ButtonId.None;
+
+    /// <summary>
+    /// When true, <see cref="ActivatorButton"/> (and, for Cycle,
+    /// <see cref="CyclePreviousButton"/>) never reaches the game while it
+    /// is held: it is a layer key, not a button. Off by default, which is
+    /// how layers have always behaved — the activator also presses
+    /// through — so existing profiles do not change. With this on, a
+    /// Toggle layer's short tap below <see cref="HoldToFireMs"/> is
+    /// swallowed too, because there is no telling a tap from a hold at
+    /// the moment the button goes down.
+    /// </summary>
+    [JsonPropertyName("suppressActivatorButton")]
+    public bool SuppressActivatorButton { get; init; }
 
     /// <summary>
     /// Toggle/Latch/Sticky only. A press shorter than this is a normal

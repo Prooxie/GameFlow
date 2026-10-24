@@ -51,6 +51,8 @@ public sealed class SlotRuntime : IAsyncDisposable
     private readonly Dictionary<string, (string Provider, IOutputSink Sink)> sinkCache = new(StringComparer.Ordinal);
     private readonly Dictionary<string, (IRumbleFeedbackSource Source, Action<double, double> Handler)> rumbleSubscriptions =
         new(StringComparer.Ordinal);
+    private readonly Dictionary<string, (Effects.ILightingFeedbackSource Source, Action<Effects.GameLighting> Handler)> lightingSubscriptions =
+        new(StringComparer.Ordinal);
 
     /// <summary>
     /// Time base for per-slot demo previews — one continuous clock for
@@ -282,6 +284,8 @@ public sealed class SlotRuntime : IAsyncDisposable
 
     private void AttachRumbleFeedback(string slotId, IOutputSink sink)
     {
+        AttachLightingFeedback(slotId, sink);
+
         if (sink is not IRumbleFeedbackSource source)
         {
             return;
@@ -314,6 +318,8 @@ public sealed class SlotRuntime : IAsyncDisposable
 
     private void DetachRumbleFeedback(string slotId)
     {
+        DetachLightingFeedback(slotId);
+
         if (rumbleSubscriptions.Remove(slotId, out var subscription))
         {
             subscription.Source.RumbleReceived -= subscription.Handler;
@@ -322,6 +328,37 @@ public sealed class SlotRuntime : IAsyncDisposable
         // A disposed or replaced virtual pad cannot send its final stop
         // after teardown, so clear any retained motor state explicitly.
         rumbleFeedbackStore.Clear(slotId);
+    }
+
+    /// <summary>
+    /// Routes the lighting a game sends to this slot's virtual pad into the
+    /// game-lighting store, keyed by slot exactly like rumble — which is how
+    /// a game's own lightbar colour reaches the physical pads assigned here.
+    /// Attached and detached alongside rumble so the two can never disagree
+    /// about which sink is live.
+    /// </summary>
+    private void AttachLightingFeedback(string slotId, IOutputSink sink)
+    {
+        if (sink is not Effects.ILightingFeedbackSource source)
+        {
+            return;
+        }
+
+        var lightingStore = rumbleFeedbackStore.Lighting;
+        Action<Effects.GameLighting> handler = lighting => lightingStore.Update(slotId, lighting);
+        source.LightingReceived += handler;
+        lightingSubscriptions[slotId] = (source, handler);
+    }
+
+    private void DetachLightingFeedback(string slotId)
+    {
+        if (lightingSubscriptions.Remove(slotId, out var subscription))
+        {
+            subscription.Source.LightingReceived -= subscription.Handler;
+        }
+
+        // The colour belonged to a virtual pad that no longer exists.
+        rumbleFeedbackStore.Lighting.Clear(slotId);
     }
 
     private async ValueTask DisposeSinkQuietlyAsync(string slotId, IOutputSink sink)
@@ -501,7 +538,11 @@ public sealed class SlotRuntime : IAsyncDisposable
                     profileId, slot.Id, sw.ElapsedMilliseconds, doc is not null);
                 if (doc is not null)
                 {
-                    layers.Add(doc);
+                    // Migrated here too, not only by the JSON repository:
+                    // the composer and pipeline must never see the legacy
+                    // header inversion, whatever repository loaded it.
+                    // Idempotent, so an already-migrated layer costs nothing.
+                    layers.Add(ProfileMigrator.Migrate(doc));
                 }
                 else
                 {

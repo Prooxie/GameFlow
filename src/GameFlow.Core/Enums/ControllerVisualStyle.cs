@@ -42,10 +42,13 @@ public enum ControllerVisualStyle
     // ─── Valve ───────────────────────────────────────────────────
     SteamController = 40,
     SteamDeck       = 41,
+    SteamControllerV2 = 42,
 
     // ─── Generic / other ─────────────────────────────────────────
     SimpleGamepad = 50,
     Arcade        = 51,
+    Joystick      = 52,
+    Wheel         = 53,
 
     /// <summary>
     /// Non-gamepad input hardware rendered with its own layout art —
@@ -55,4 +58,11 @@ public enum ControllerVisualStyle
     /// </summary>
     Keyboard = 60,
     Mouse    = 61,
+
+    /// <summary>
+    /// A keyboard and a mouse feeding one slot together, drawn as both
+    /// devices side by side. Without it the merged frame of the two had no
+    /// style of its own and fell through to "no theme installed".
+    /// </summary>
+    KeyboardMouse = 62,
 }

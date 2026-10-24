@@ -15,6 +15,7 @@ public sealed class LocalizationService(
 {
     private readonly IStringLocalizer<UiText> localizer = localizer;
     private readonly ILogger<LocalizationService> logger = logger;
+    private CultureInfo selectedCulture = CultureInfo.CurrentUICulture;
 
     /// <inheritdoc />
     public event EventHandler? CultureChanged;
@@ -37,7 +38,7 @@ public sealed class LocalizationService(
         ];
 
     /// <inheritdoc />
-    public string CurrentCulture => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    public string CurrentCulture => Volatile.Read(ref selectedCulture).TwoLetterISOLanguageName;
 
     /// <inheritdoc />
     public string this[string key] => Translate(key);
@@ -45,7 +46,14 @@ public sealed class LocalizationService(
     /// <inheritdoc />
     public string Translate(string key)
     {
-        return localizer[key].Value;
+        // Listener tasks may have captured the culture before the user changed it.
+        var previous = CultureInfo.CurrentUICulture;
+        try
+        {
+            CultureInfo.CurrentUICulture = Volatile.Read(ref selectedCulture);
+            return localizer[key].Value;
+        }
+        finally { CultureInfo.CurrentUICulture = previous; }
     }
 
     /// <inheritdoc />
@@ -68,6 +76,7 @@ public sealed class LocalizationService(
         }
 
         var previous = CultureInfo.CurrentUICulture.Name;
+        Volatile.Write(ref selectedCulture, culture);
 
         CultureInfo.DefaultThreadCurrentCulture = culture;
         CultureInfo.DefaultThreadCurrentUICulture = culture;

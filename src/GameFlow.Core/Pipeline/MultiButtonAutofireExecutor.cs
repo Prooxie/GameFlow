@@ -28,14 +28,17 @@ namespace GameFlow.Core.Pipeline;
 ///         find the step whose [holdStart, holdEnd) window contains
 ///         that elapsed value, and press its target button.</item>
 ///   <item>If <see cref="MultiButtonAutofireRule.SuppressSourceButton"/>
-///         is set, clear the source from the virtual snapshot.</item>
+///         is set, add the source to the suppressed set.</item>
 /// </list>
 /// </para>
 ///
 /// <para>
 /// Like <see cref="ButtonComboExecutor"/>, this uses "any-pressed
-/// wins" semantics — it only ever sets target bits to true, never
-/// clears them, so overlapping rules compose cleanly.
+/// wins" semantics — it only ever adds to the produced set and never
+/// clears a button, so overlapping rules compose cleanly. Suppression is
+/// a separate set for the same reason: it only hides the PHYSICAL press
+/// of the source, so it can neither erase another rule's output on that
+/// button nor this rule's own step when a step targets its own source.
 /// </para>
 /// </summary>
 public sealed class MultiButtonAutofireExecutor
@@ -49,14 +52,18 @@ public sealed class MultiButtonAutofireExecutor
         this.rule = rule;
     }
 
-    public void Apply(ControllerSnapshot physical, ref ButtonMask virtualButtons, DateTimeOffset now)
+    /// <param name="source">The input this tick, after SOCD cleaning.</param>
+    /// <param name="produced">Buttons rules are pressing this tick; a step's target is added here.</param>
+    /// <param name="suppressed">Physical presses to hide from the output; the source is added here when the rule suppresses it.</param>
+    /// <param name="now">Current tick timestamp.</param>
+    public void Apply(ControllerSnapshot source, ref ButtonMask produced, ref ButtonMask suppressed, DateTimeOffset now)
     {
         if (rule.SourceButton == ButtonId.None || rule.Steps.Count == 0)
         {
             return;
         }
 
-        var sourcePressed = physical.IsPressed(rule.SourceButton);
+        var sourcePressed = source.IsPressed(rule.SourceButton);
 
         // Rising edge — anchor the timeline.
         if (sourcePressed && !sourceWasPressed)
@@ -72,7 +79,7 @@ public sealed class MultiButtonAutofireExecutor
 
         if (rule.SuppressSourceButton)
         {
-            virtualButtons[rule.SourceButton] = false;
+            suppressed[rule.SourceButton] = true;
         }
 
         if (activationStart is null)
@@ -115,7 +122,7 @@ public sealed class MultiButtonAutofireExecutor
             if (position >= cursor && position < cursor + hold
                 && step.TargetButton != ButtonId.None)
             {
-                virtualButtons[step.TargetButton] = true;
+                produced[step.TargetButton] = true;
                 return;
             }
             cursor += stepLen;

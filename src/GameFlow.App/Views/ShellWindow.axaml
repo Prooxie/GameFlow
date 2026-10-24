@@ -53,86 +53,49 @@
 
     <!-- ── Header ─────────────────────────────────────────────────── -->
     <!--
-        Auto-height, not a fixed pixel row: the row is exactly as tall as
-        its content plus this padding, on purpose. Three attempts at
-        centering content within a taller fixed-height row (88px) never
-        visibly worked — screenshots kept showing the wordmark clustered
-        at the top with a large unexplained gap below it, regardless of
-        VerticalAlignment/RowDefinitions="*,Auto,*" changes that should
-        have centered it. Rather than keep chasing that, this sidesteps
-        the whole class of problem: with no excess row height to center
-        within, symmetric top/bottom padding is centering by definition.
+        One slim line: the brand on the left, the last action's status on
+        the right. It used to stack the wordmark, the version line and a
+        two-line status box, which made the band about three times taller
+        than anything in it needed; the version now sits at the bottom of
+        the sidebar. Auto height with symmetric padding is still what keeps
+        the row centred.
     -->
     <Border Grid.Row="0"
-            Padding="20,10"
+            Padding="16,7"
             Background="{DynamicResource AppSurface1}"
             BorderBrush="{DynamicResource AppBorder0}"
             BorderThickness="0,0,0,1">
-      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="16">
+      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="24">
 
-        <!-- Wordmark + status — LEFT-aligned, vertically centered in
-             the header band, sized up from the original tiny variant. -->
-        <StackPanel Grid.Column="0" Spacing="2"
-                    HorizontalAlignment="Left" VerticalAlignment="Center">
-          <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center"
-                      HorizontalAlignment="Left">
-            <Border Width="30" Height="30" CornerRadius="8"
-                    Background="{DynamicResource AppAccentSoft}"
-                    BorderBrush="{DynamicResource AppAccent}"
-                    BorderThickness="1"
-                    VerticalAlignment="Center">
-              <views:BrandMark Margin="3,0" />
-            </Border>
-            <!--
-                Single-line, two-tone wordmark. Deliberately not stacked
-                two-line text: a single shared baseline next to the icon
-                is what actually guarantees vertical centering, rather
-                than relying on two differently-sized lines happening to
-                average out.
-            -->
-            <StackPanel Orientation="Horizontal" Spacing="0" VerticalAlignment="Center">
-              <TextBlock Text="GAME" FontSize="20" FontWeight="Black"
-                         Foreground="{DynamicResource AppForeground}"
-                         VerticalAlignment="Center"
-                         LetterSpacing="0.8" />
-              <TextBlock Text="FLOW" FontSize="20" FontWeight="Black"
-                         Foreground="{DynamicResource AppAccent}"
-                         VerticalAlignment="Center"
-                         LetterSpacing="0.8" />
-            </StackPanel>
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+          <Border Width="26" Height="26" CornerRadius="7"
+                  Background="{DynamicResource AppAccentSoft}"
+                  BorderBrush="{DynamicResource AppAccent}"
+                  BorderThickness="1"
+                  VerticalAlignment="Center">
+            <views:BrandMark Margin="3,0" />
+          </Border>
+          <!-- Single-line, two-tone wordmark on one shared baseline. -->
+          <StackPanel Orientation="Horizontal" Spacing="0" VerticalAlignment="Center">
+            <TextBlock Text="GAME" FontSize="17" FontWeight="Black"
+                       Foreground="{DynamicResource AppForeground}"
+                       VerticalAlignment="Center" LetterSpacing="0.8" />
+            <TextBlock Text="FLOW" FontSize="17" FontWeight="Black"
+                       Foreground="{DynamicResource AppAccent}"
+                       VerticalAlignment="Center" LetterSpacing="0.8" />
           </StackPanel>
-          <!--
-              Flush with the icon's own left edge (no indent to align under
-              "GAMEFLOW" anymore) — a smaller, quieter second line directly
-              below the logo, not offset under the title.
-          -->
-          <TextBlock Text="{x:Static vm:ShellViewModel.AppFooterText}"
-                     FontSize="10.5"
-                     Height="14"
-                     HorizontalAlignment="Left"
-                     Foreground="{DynamicResource AppForegroundDim}" />
-          <!--
-              Fixed height, not Auto. This line carries transient status
-              ("Profile saved", "Import failed: …") and is empty the rest
-              of the time. On an Auto height the header row grew and shrank
-              with it, and because the header is row 0 of the window grid
-              every page below jumped a line each time a status appeared or
-              expired. Reserving the line keeps the shell still.
-          -->
-          <TextBlock Text="{Binding StatusText}" FontSize="12"
-                     Height="34"
-                     ToolTip.Tip="{Binding StatusText}"
-                     Foreground="{DynamicResource AppForeground}"
-                     HorizontalAlignment="Left"
-                     MaxWidth="1000"
-                     TextWrapping="Wrap"
-                     TextTrimming="CharacterEllipsis" />
         </StackPanel>
 
-        <!-- Language + Theme moved to Settings dialog (Localization & Appearance) -->
-
-        <!-- Right slot reserved for future quick-actions -->
-        <Border Grid.Column="2" Width="1" />
+        <!--
+            Transient status ("Profile saved", "OBS link copied"). One line,
+            trimmed, full text in the tooltip. A fixed single line keeps the
+            header from changing height as messages come and go.
+        -->
+        <TextBlock Grid.Column="1" Text="{Binding StatusText}" FontSize="12"
+                   ToolTip.Tip="{Binding StatusText}"
+                   Foreground="{DynamicResource AppForegroundDim}"
+                   HorizontalAlignment="Right" VerticalAlignment="Center"
+                   TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
       </Grid>
     </Border>
 
@@ -202,7 +165,7 @@
                 <DataTemplate>
                   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="2">
                     <Button Grid.Column="0" Classes="nav" Command="{Binding SelectCommand}">
-                      <Grid ColumnDefinitions="24,*,Auto" ColumnSpacing="6">
+                      <Grid ColumnDefinitions="24,*,Auto" ColumnSpacing="6" Opacity="{Binding RowOpacity}">
                         <TextBlock Grid.Column="0" Text="{Binding IconText}"
                                    FontSize="14" VerticalAlignment="Center" />
                         <StackPanel Grid.Column="1" Spacing="1" VerticalAlignment="Center">
@@ -237,9 +200,21 @@
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <TextBlock Text="(none)" FontSize="11" Margin="14,2"
+            <TextBlock Text="{DynamicResource Ui.UiNone}" FontSize="11" Margin="14,2"
                        Foreground="{DynamicResource AppForegroundDim}"
                        IsVisible="{Binding !PhysicalMenuItems.Count}" />
+            <!-- Mirrors "Add controller" under the virtual list: a phone is a
+                 physical controller here, added in one click. -->
+            <Button Classes="nav" Command="{Binding AddPhoneCommand}"
+                    ToolTip.Tip="{DynamicResource Ui.UiUseAPhoneOnYourNetworkAsAController}">
+              <Grid ColumnDefinitions="24,*" ColumnSpacing="6">
+                <TextBlock Grid.Column="0" Text="＋" FontSize="14" VerticalAlignment="Center"
+                           Foreground="{DynamicResource AppAccent}" />
+                <TextBlock Grid.Column="1" Text="{Binding SidebarAddPhoneLabel}"
+                           VerticalAlignment="Center" FontSize="12"
+                           Foreground="{DynamicResource AppForegroundDim}" />
+              </Grid>
+            </Button>
 
             <Border Classes="divider" Margin="0,10,0,4" />
 
@@ -248,20 +223,36 @@
             <ItemsControl ItemsSource="{Binding VirtualMenuItems}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                  <Button Classes="nav" Command="{Binding SelectCommand}">
-                    <Grid ColumnDefinitions="24,*" ColumnSpacing="6">
-                      <TextBlock Grid.Column="0" Text="{Binding IconText}"
-                                 FontSize="14" VerticalAlignment="Center" />
-                      <StackPanel Grid.Column="1" Spacing="1" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold"
-                                   TextTrimming="CharacterEllipsis" />
-                        <TextBlock Text="{Binding SecondaryText}" FontSize="9.5"
-                                   Foreground="{DynamicResource AppForegroundDim}"
-                                   TextTrimming="CharacterEllipsis"
-                                   IsVisible="{Binding HasSecondaryText}" />
-                      </StackPanel>
-                    </Grid>
-                  </Button>
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="2">
+                    <Button Grid.Column="0" Classes="nav" Command="{Binding SelectCommand}">
+                      <Grid ColumnDefinitions="24,*" ColumnSpacing="6" Opacity="{Binding RowOpacity}">
+                        <TextBlock Grid.Column="0" Text="{Binding IconText}"
+                                   FontSize="14" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" Spacing="1" VerticalAlignment="Center">
+                          <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold"
+                                     TextTrimming="CharacterEllipsis" />
+                          <TextBlock Text="{Binding SecondaryText}" FontSize="9.5"
+                                     Foreground="{DynamicResource AppForegroundDim}"
+                                     TextTrimming="CharacterEllipsis"
+                                     IsVisible="{Binding HasSecondaryText}" />
+                        </StackPanel>
+                      </Grid>
+                    </Button>
+                    <!-- Delete is a sibling of the select action, like the pin
+                         toggle above, and asks first: a slot carries its
+                         output type, assignments and tuning, and one stray
+                         click in a narrow column should not cost all three.
+                         A drawn icon, not an emoji: emoji fonts vary by
+                         system and rendered here as stray text. -->
+                    <Button Grid.Column="1" Classes="iconOnly navDelete" Margin="0,1"
+                            IsVisible="{Binding CanDelete}"
+                            ToolTip.Tip="{DynamicResource Ui.UiDeleteThisVirtualController}"
+                            AutomationProperties.Name="Delete virtual controller"
+                            Click="OnDeleteVirtualControllerClick">
+                      <Path Width="12" Height="12" Stretch="Uniform"
+                            Data="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4Z" />
+                    </Button>
+                  </Grid>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
@@ -291,8 +282,20 @@
                 furniture rather than something that appears once and is
                 then gone forever.
             -->
+            <!-- Keyboard & mouse gets a menu of its own: it is a controller
+                 in its own right here, with every pad control bindable to a
+                 key or mouse input, and nothing else in the app edits that. -->
             <Button Classes="nav" Padding="8,8"
-                    ToolTip.Tip="Walks you through connecting a controller and creating a virtual one."
+                    ToolTip.Tip="{DynamicResource Ui.UiChooseWhichKeysAndMouseInputsProduceEachController}"
+                    Command="{Binding OpenKeyboardMouseMapCommand}">
+              <Grid ColumnDefinitions="24,*" ColumnSpacing="6">
+                <TextBlock Grid.Column="0" Text="⌨" FontSize="14" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{Binding SidebarKeyboardMouseLabel}"
+                           FontSize="12" FontWeight="Medium" VerticalAlignment="Center" />
+              </Grid>
+            </Button>
+            <Button Classes="nav" Padding="8,8"
+                    ToolTip.Tip="{DynamicResource Ui.UiWalksYouThroughConnectingAControllerAndCreatingA}"
                     Command="{Binding OpenWalkthroughCommand}">
               <Grid ColumnDefinitions="24,*" ColumnSpacing="6">
                 <TextBlock Grid.Column="0" Text="🎓" FontSize="13" VerticalAlignment="Center" />
@@ -308,6 +311,11 @@
                            FontSize="12" FontWeight="Medium" VerticalAlignment="Center" />
               </Grid>
             </Button>
+            <!-- Version and copyright: reference information, so it lives
+                 at the foot of the sidebar instead of under the logo. -->
+            <TextBlock Text="{x:Static vm:ShellViewModel.AppFooterText}"
+                       FontSize="9.5" Margin="8,2,0,0" TextWrapping="Wrap"
+                       Foreground="{DynamicResource AppForegroundDim}" />
           </StackPanel>
         </Grid>
       </Border>
@@ -360,53 +368,21 @@
                         AllowAutoHide="False">
             <StackPanel Spacing="16" Margin="0,0,10,0">
 
-              <!-- Streaming / chroma-key background picker. Chroma green and
-                   chroma blue are OBS-standard key colours, so a streamer can
-                   key the controller panel onto a webcam feed. Persists with
-                   the dashboard preferences. -->
-              <StackPanel Orientation="Horizontal" Spacing="8"
-                          HorizontalAlignment="Right" VerticalAlignment="Center">
-                <TextBlock Text="{Binding DashboardBackgroundLabel}" FontSize="11"
-                           Foreground="{DynamicResource AppForegroundDim}"
-                           VerticalAlignment="Center" />
-                <ComboBox MinWidth="170"
-                          ItemsSource="{Binding PanelBackgroundOptions}"
-                          SelectedItem="{Binding SelectedPanelBackgroundOption, Mode=TwoWay}">
-                  <ComboBox.ItemTemplate>
-                    <DataTemplate>
-                      <TextBlock Text="{Binding Label}" />
-                    </DataTemplate>
-                  </ComboBox.ItemTemplate>
-                </ComboBox>
-              </StackPanel>
-
               <!-- PadForge-inspired slot overview: the dashboard answers
                    what each virtual controller is, what drives it, and
                    whether it is ready before asking the user to inspect a
                    full live controller surface. Clicking a card opens that
                    exact slot's focused configuration. -->
               <StackPanel Spacing="9" IsVisible="{Binding SlotsPanel.Slots.Count}">
-                <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="6">
-                  <TextBlock Grid.Column="0" Text="VIRTUAL CONTROLLERS" Classes="sectionLabel"
-                             VerticalAlignment="Center" />
-                  <!--
-                      Phone and OBS live here, beside the controllers they
-                      concern, rather than only inside Options. Both are
-                      things you reach for while looking at the dashboard —
-                      "put this on stream", "use my phone as a second pad" —
-                      and neither is a setting.
-                  -->
-                  <Button Grid.Column="1" Classes="ghost" Padding="8,4" FontSize="11"
-                          Content="📱 Use a phone"
-                          ToolTip.Tip="Turn a phone on your network into a controller. Opens the address to type into its browser."
-                          Command="{Binding OpenPhoneControllerCommand}" />
-                  <Button Grid.Column="2" Classes="ghost" Padding="8,4" FontSize="11"
-                          Content="📺 Copy OBS layout"
-                          ToolTip.Tip="Copies the browser-source URL for this controller's on-screen layout, ready to paste into OBS."
-                          Command="{Binding CopyOverlayUrlCommand}" />
-                  <Button Grid.Column="3" Classes="ghost" Padding="8,4" FontSize="11"
-                          Content="+ Add controller" Command="{Binding AddVirtualControllerCommand}" />
-                </Grid>
+                <!--
+                    Header only. "Use a phone" moved to Devices > Physical
+                    devices > Add phone, where a phone becomes a device like
+                    any other; "Copy OBS layout" moved onto each controller
+                    panel below, so the link names that controller instead of
+                    whichever one is first; adding a controller lives in the
+                    sidebar.
+                -->
+                <TextBlock Text="{DynamicResource Ui.SidebarVirtualHeader}" Classes="sectionLabel" />
                 <ItemsControl ItemsSource="{Binding SlotsPanel.Slots}">
                   <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -516,18 +492,42 @@
                                   Background="{Binding LightColor}"
                                   BorderBrush="{DynamicResource AppBorder0}" BorderThickness="1" />
                         </Grid>
+                        <WrapPanel Orientation="Horizontal">
+                          <TextBlock Text="{DynamicResource Ui.OverlayLinkOptions}" Classes="hint" Margin="0,0,12,0" VerticalAlignment="Center" />
+                          <CheckBox Content="{DynamicResource Ui.OverlayActiveInputs}" IsChecked="{Binding OverlayInputText}" Margin="0,0,12,0" />
+                          <CheckBox Content="{DynamicResource Ui.OverlayHoldTimes}" IsChecked="{Binding OverlayHoldTimes}" />
+                        </WrapPanel>
                         <Grid ColumnSpacing="14">
                           <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="{Binding PhysicalColumnWidth}" />
                             <ColumnDefinition Width="{Binding VirtualColumnWidth}" />
                           </Grid.ColumnDefinitions>
-                          <Border Grid.Column="0"
-                                  IsVisible="{Binding ShowPhysical}">
+                          <StackPanel Grid.Column="0" Spacing="6"
+                                      IsVisible="{Binding ShowPhysical}">
                             <views:ControllerSurface DataContext="{Binding PhysicalVisual}" />
-                          </Border>
-                          <Border Grid.Column="1"
-                                  IsVisible="{Binding ShowVirtual}"
-                                  Name="VirtualPanelBorder"
+                            <!-- Per-surface tools: this side's own background,
+                                 and an OBS link for exactly this controller. -->
+                            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+                              <TextBlock Text="{DynamicResource Ui.DashboardBackgroundLabel}" FontSize="10.5" VerticalAlignment="Center"
+                                         Foreground="{DynamicResource AppForegroundDim}" />
+                              <ComboBox MinWidth="150" FontSize="11" MinHeight="26"
+                                        ItemsSource="{Binding BackgroundOptions}"
+                                        SelectedItem="{Binding PhysicalBackground, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                  <DataTemplate>
+                                    <TextBlock Text="{Binding Label}" />
+                                  </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                              </ComboBox>
+                              <Button Classes="ghost" Padding="8,3" FontSize="11"
+                                      Content="{DynamicResource Ui.UiCopyOBSLink}"
+                                      ToolTip.Tip="{DynamicResource Ui.UiCopiesTheOBSBrowserSourceURLForThisPhysical}"
+                                      Command="{Binding CopyPhysicalOverlayCommand}" />
+                            </StackPanel>
+                          </StackPanel>
+                          <StackPanel Grid.Column="1" Spacing="6"
+                                      IsVisible="{Binding ShowVirtual}">
+                          <Border Name="VirtualPanelBorder"
                                   Cursor="Hand"
                                   Focusable="True"
                                   KeyDown="OnVirtualPanelKeyDown"
@@ -536,7 +536,7 @@
                                   BorderThickness="2"
                                   CornerRadius="6"
                                   BorderBrush="Transparent"
-                                  ToolTip.Tip="Open this controller's tuning (sticks, triggers, rumble, lighting, adaptive)"
+                                  ToolTip.Tip="{DynamicResource Ui.UiOpenThisControllerSTuningSticksTriggersRumbleLighting}"
                                   PointerPressed="OnVirtualPanelPressed"
                                   Tag="{Binding SlotId}">
                             <Border.Styles>
@@ -563,6 +563,24 @@
                                 every OTHER application, just not to itself.
                             -->
                           </Border>
+                          <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+                            <TextBlock Text="{DynamicResource Ui.DashboardBackgroundLabel}" FontSize="10.5" VerticalAlignment="Center"
+                                       Foreground="{DynamicResource AppForegroundDim}" />
+                            <ComboBox MinWidth="150" FontSize="11" MinHeight="26"
+                                      ItemsSource="{Binding BackgroundOptions}"
+                                      SelectedItem="{Binding VirtualBackground, Mode=TwoWay}">
+                              <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                  <TextBlock Text="{Binding Label}" />
+                                </DataTemplate>
+                              </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button Classes="ghost" Padding="8,3" FontSize="11"
+                                    Content="{DynamicResource Ui.UiCopyOBSLink}"
+                                    ToolTip.Tip="{DynamicResource Ui.UiCopiesTheOBSBrowserSourceURLForThisVirtual}"
+                                    Command="{Binding CopyVirtualOverlayCommand}" />
+                          </StackPanel>
+                          </StackPanel>
                           <!--
                               Both badges in ONE right-aligned strip.
 
@@ -600,7 +618,7 @@
                                 <TextBlock Text="⚠" FontSize="10"
                                            Foreground="{DynamicResource AppWarning}"
                                            VerticalAlignment="Center" />
-                                <TextBlock Text="NO OUTPUT" FontSize="9"
+                                <TextBlock Text="{DynamicResource Ui.UiNOOUTPUT}" FontSize="9"
                                            FontWeight="Bold" LetterSpacing="0.6"
                                            Foreground="{DynamicResource AppWarning}"
                                            VerticalAlignment="Center" />
@@ -630,10 +648,17 @@
         <!-- ═══ PROFILES ══════════════════════════════════════════════ -->
         <TabItem>
 
-          <Grid Margin="20,16" RowDefinitions="Auto,Auto,*" RowSpacing="14">
+          <Grid Margin="20,16" RowDefinitions="Auto,*" RowSpacing="14">
             <Border Grid.Row="0" Classes="panel" Padding="18,16">
               <StackPanel Spacing="14">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <!--
+                    Title on its own line and the actions on the full width
+                    below it. Sharing one row with the title left the buttons
+                    too little width, so the last one (Save) always wrapped
+                    onto a second line by itself. A WrapPanel still lets them
+                    wrap in languages with long labels.
+                -->
+                <StackPanel Spacing="10">
                   <StackPanel Spacing="3" VerticalAlignment="Center">
                     <TextBlock Text="{Binding ProfileEditorLabel}"
                                FontSize="15" FontWeight="SemiBold"
@@ -642,19 +667,7 @@
                                FontSize="12" Foreground="{DynamicResource AppForegroundDim}"
                                TextWrapping="Wrap" />
                   </StackPanel>
-                  <!--
-                      WrapPanel, not a horizontal StackPanel: seven
-                      buttons whose labels are translated into eight
-                      languages overflowed the row on the longer ones
-                      (German and Czech in particular), and a horizontal
-                      StackPanel has no way to give — it just pushed the
-                      title text into an ellipsis and clipped the last
-                      button off the card. Wrapping trades a second row
-                      of buttons for keeping all of them reachable.
-                  -->
-                  <WrapPanel Grid.Column="1" Orientation="Horizontal"
-                             HorizontalAlignment="Right" VerticalAlignment="Center"
-                             MaxWidth="740">
+                  <WrapPanel Orientation="Horizontal">
                     <Button Classes="ghost" Margin="0,0,8,4"
                             Command="{Binding CreateProfileCommand}"
                             Content="{Binding CreateProfileButtonLabel}" />
@@ -677,7 +690,7 @@
                             Command="{Binding SaveProfileCommand}"
                             Content="{Binding SaveProfileButtonLabel}" />
                   </WrapPanel>
-                </Grid>
+                </StackPanel>
 
                 <Grid ColumnDefinitions="180,*" ColumnSpacing="12">
                   <StackPanel Grid.Column="0" Spacing="5">
@@ -706,75 +719,7 @@
               </StackPanel>
             </Border>
 
-            <!--
-                Axis inversion lives with the PROFILE, not with the device
-                tuning on the Devices tab, and the two are not duplicates:
-                that one corrects a pad whose axis is wired backwards and
-                deliberately survives a profile switch, this one says what
-                one game expects and switches with it. Both apply, and
-                two flips cancel.
-
-                A WrapPanel for the same reason the toolbar above uses
-                one — three labelled groups do not fit side by side once
-                the window approaches its minimum width.
-            -->
-            <Border Grid.Row="1" Classes="panel" Padding="18,16">
-              <StackPanel Spacing="12">
-                <StackPanel Spacing="3">
-                  <TextBlock Text="Axis inversion"
-                             FontSize="15" FontWeight="SemiBold"
-                             Foreground="{DynamicResource AppForeground}" />
-                  <TextBlock Text="{Binding AxisInvertSummary}"
-                             FontSize="12" Foreground="{DynamicResource AppForegroundDim}"
-                             TextWrapping="Wrap" />
-                </StackPanel>
-
-                <WrapPanel Orientation="Horizontal">
-                  <StackPanel Spacing="6" Margin="0,0,36,10">
-                    <TextBlock Text="Left stick" Classes="sectionLabel" />
-                    <StackPanel Orientation="Horizontal" Spacing="14">
-                      <CheckBox Content="Invert X" IsChecked="{Binding InvertLeftStickX}"
-                                Foreground="{DynamicResource AppForeground}"
-                                ToolTip.Tip="Swaps left and right for this profile only.&#10;&#10;The stick still reads the same to everything else — only the virtual controller the game sees is flipped." />
-                      <CheckBox Content="Invert Y" IsChecked="{Binding InvertLeftStickY}"
-                                Foreground="{DynamicResource AppForeground}"
-                                ToolTip.Tip="Swaps up and down for this profile only.&#10;&#10;Use this when a game reads the stick the other way round — push up, character walks down." />
-                    </StackPanel>
-                  </StackPanel>
-
-                  <StackPanel Spacing="6" Margin="0,0,36,10">
-                    <TextBlock Text="Right stick" Classes="sectionLabel" />
-                    <StackPanel Orientation="Horizontal" Spacing="14">
-                      <CheckBox Content="Invert X" IsChecked="{Binding InvertRightStickX}"
-                                Foreground="{DynamicResource AppForeground}"
-                                ToolTip.Tip="Swaps left and right for this profile only." />
-                      <CheckBox Content="Invert Y" IsChecked="{Binding InvertRightStickY}"
-                                Foreground="{DynamicResource AppForeground}"
-                                ToolTip.Tip="Swaps up and down for this profile only.&#10;&#10;The usual one: inverted camera look in a game that offers no setting of its own." />
-                    </StackPanel>
-                  </StackPanel>
-
-                  <StackPanel Spacing="6" Margin="0,0,0,10">
-                    <TextBlock Text="Triggers" Classes="sectionLabel" />
-                    <StackPanel Orientation="Horizontal" Spacing="14">
-                      <CheckBox Content="Invert L2" IsChecked="{Binding InvertLeftTrigger}"
-                                Foreground="{DynamicResource AppForeground}"
-                                ToolTip.Tip="Reflects the trigger within its own range: released reads as fully pulled, and pulled reads as released.&#10;&#10;This is for hardware whose trigger axis runs backwards, not for games. Leave it off unless an untouched trigger is what you want the game to read as held." />
-                      <CheckBox Content="Invert R2" IsChecked="{Binding InvertRightTrigger}"
-                                Foreground="{DynamicResource AppForeground}"
-                                ToolTip.Tip="Reflects the trigger within its own range: released reads as fully pulled, and pulled reads as released.&#10;&#10;This is for hardware whose trigger axis runs backwards, not for games. Leave it off unless an untouched trigger is what you want the game to read as held." />
-                    </StackPanel>
-                  </StackPanel>
-                </WrapPanel>
-
-                <CheckBox Content="Show the inversion on the on-screen controller"
-                          IsChecked="{Binding ShowInvertedInLayout}"
-                          Foreground="{DynamicResource AppForeground}"
-                          ToolTip.Tip="Off by default: pushing up still draws as up, because the game is the thing reading it backwards, not you.&#10;&#10;Turn it on to make the virtual controller show exactly what the game receives." />
-              </StackPanel>
-            </Border>
-
-            <Grid Grid.Row="2" ColumnSpacing="14">
+            <Grid Grid.Row="1" ColumnSpacing="14">
               <Grid.ColumnDefinitions>
                 <!-- Was a hard 440. A fixed pane cannot give any width
                      back when the window approaches its minimum, which
@@ -901,14 +846,23 @@
                  children with infinite width. The text simply ran past
                  the page edge. A star column gives it a real width to
                  wrap or ellipsize against. -->
-            <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="16">
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,Auto,*" ColumnSpacing="16">
               <TextBlock Grid.Column="0" Text="{Binding TitleLabel}"
                          FontSize="18" FontWeight="SemiBold"
                          VerticalAlignment="Center" />
               <Button Grid.Column="1" Classes="ghost" Padding="12,6"
                       Content="{Binding RefreshLabel}" Command="{Binding RefreshCommand}"
                       VerticalAlignment="Center" />
-              <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4"
+              <!-- A phone is added here, as a physical device, rather than
+                   from the dashboard: it is listed (offline) straight away,
+                   so it can be assigned to a virtual controller before
+                   anyone picks it up. Up to 16, each with its own QR code. -->
+              <Button Grid.Column="2" Classes="primary" Padding="12,6"
+                      Content="{Binding #ShellRoot.((vm:ShellViewModel)DataContext).AddPhoneLabel}"
+                      Command="{Binding #ShellRoot.((vm:ShellViewModel)DataContext).AddPhoneCommand}"
+                      ToolTip.Tip="{DynamicResource Ui.UiTurnAPhoneOnYourNetworkIntoAController}"
+                      VerticalAlignment="Center" />
+              <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4"
                           VerticalAlignment="Center">
                 <StackPanel.Styles>
                   <Style Selector="TextBlock">
@@ -920,7 +874,7 @@
                 <TextBlock Text="{Binding TotalCount}" />
                 <TextBlock Text="{Binding TotalLabel}" />
               </StackPanel>
-              <TextBlock Grid.Column="3" Text="{Binding ProviderStatus}"
+              <TextBlock Grid.Column="4" Text="{Binding ProviderStatus}"
                          Foreground="{DynamicResource AppForegroundDim}"
                          VerticalAlignment="Center" FontSize="12"
                          TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
@@ -1024,7 +978,7 @@
                       <Border Classes="divider" />
 
                       <StackPanel Spacing="3" IsVisible="{Binding HasHardwareId}">
-                        <TextBlock Text="VID : PID" Classes="sectionLabel" />
+                        <TextBlock Text="{DynamicResource Ui.UiVIDPID}" Classes="sectionLabel" />
                         <StackPanel Orientation="Horizontal" Spacing="6">
                           <TextBlock Text="{Binding VendorIdHex}" FontFamily="Consolas" FontSize="12" />
                           <TextBlock Text=":" FontSize="12" Opacity="0.5" />
@@ -1033,13 +987,35 @@
                       </StackPanel>
 
                       <StackPanel Spacing="3">
-                        <TextBlock Text="DEVICE ID" Classes="sectionLabel" />
+                        <TextBlock Text="{DynamicResource Ui.UiDEVICEID}" Classes="sectionLabel" />
                         <TextBlock Text="{Binding Id}" Classes="mono" FontSize="11" TextWrapping="Wrap" />
                       </StackPanel>
 
                       <StackPanel Spacing="3" IsVisible="{Binding HasHardwareId}">
-                        <TextBlock Text="HARDWARE ID" Classes="sectionLabel" />
+                        <TextBlock Text="{DynamicResource Ui.UiHARDWAREID}" Classes="sectionLabel" />
                         <TextBlock Text="{Binding HardwareId}" Classes="mono" FontSize="11" TextWrapping="Wrap" />
+                      </StackPanel>
+                    </StackPanel>
+
+                    <!-- Phone (DevicesPanel scope): its sheet (name, link,
+                         QR code) and removal. Removing takes it out of every
+                         virtual controller and makes its link stop working. -->
+                    <StackPanel Spacing="8" IsVisible="{Binding IsPhoneSelected}">
+                      <Border Classes="divider" />
+                      <TextBlock Text="{DynamicResource Ui.UiPHONE}" Classes="sectionLabel" />
+                      <TextBlock Classes="hint" TextWrapping="Wrap"
+                                 Text="{DynamicResource Ui.UiThisPhoneHasItsOwnLinkAndQRCode}" />
+                      <!-- Live input: what the phone is sending right now. -->
+                      <Border Classes="inset" Padding="8" Height="300">
+                        <views:ControllerSurface DataContext="{Binding PhonePreview}" />
+                      </Border>
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="{DynamicResource Ui.UiShowQRCodeLink}"
+                                Command="{Binding #ShellRoot.((vm:ShellViewModel)DataContext).ShowPhoneCommand}"
+                                CommandParameter="{Binding SelectedDevice.Id}" />
+                        <Button Classes="danger" Content="{DynamicResource Ui.UiRemovePhone}"
+                                Tag="{Binding SelectedDevice.Id}"
+                                Click="OnRemovePhoneClick" />
                       </StackPanel>
                     </StackPanel>
 
@@ -1050,9 +1026,9 @@
                          dashboard all see the corrected type. -->
                     <StackPanel Spacing="6" IsVisible="{Binding HasCategoryOverrideTarget}">
                       <Border Classes="divider" />
-                      <TextBlock Text="TREAT AS" Classes="sectionLabel" />
+                      <TextBlock Text="{DynamicResource Ui.UiTREATAS}" Classes="sectionLabel" />
                       <TextBlock Classes="hint"
-                                 Text="If Windows identifies this device incorrectly (e.g. a HID controller listed as unknown, or a device stuck as keyboard/mouse), override its type here. Takes effect immediately and persists." />
+                                 Text="{DynamicResource Ui.UiIfWindowsIdentifiesThisDeviceIncorrectlyEGA}" />
                       <ComboBox ItemsSource="{Binding CategoryOverrideOptions}"
                                 SelectedItem="{Binding SelectedCategoryOverride, Mode=TwoWay}"
                                 MinHeight="28" FontSize="11" HorizontalAlignment="Stretch">
@@ -1065,16 +1041,16 @@
                     <!-- Button calibration (DevicesPanel scope) — gamepad/joystick only -->
                     <StackPanel Spacing="8" IsVisible="{Binding IsCalibratableSelected}">
                       <Border Classes="divider" />
-                      <TextBlock Text="BUTTON MAPPING" Classes="sectionLabel" />
+                      <TextBlock Text="{DynamicResource Ui.UiBUTTONMAPPING}" Classes="sectionLabel" />
                       <TextBlock Classes="hint"
-                                 Text="If this controller's buttons are recognized in the wrong places, calibrate it — you'll be prompted to press each button in turn. Calibrate the sticks and triggers separately when an analog lands on the wrong axis, which is common on PS2-to-USB and PS2-to-PS3 converters." />
+                                 Text="{DynamicResource Ui.UiIfThisControllerSButtonsAreRecognizedInThe}" />
                       <StackPanel Orientation="Horizontal" Spacing="8"
                                   IsVisible="{Binding !IsAnyCalibrating}">
-                        <Button Content="Calibrate buttons" Command="{Binding StartCalibrationCommand}" />
-                        <Button Content="Calibrate sticks &amp; triggers" Command="{Binding StartAxisCalibrationCommand}" />
-                        <Button Content="Clear mapping" Command="{Binding ClearButtonMapCommand}"
+                        <Button Content="{DynamicResource Ui.UiCalibrateButtons}" Command="{Binding StartCalibrationCommand}" />
+                        <Button Content="{DynamicResource Ui.UiCalibrateSticksTriggers}" Command="{Binding StartAxisCalibrationCommand}" />
+                        <Button Content="{DynamicResource Ui.UiClearMapping}" Command="{Binding ClearButtonMapCommand}"
                                 IsVisible="{Binding HasButtonMap}" />
-                        <TextBlock Text="✓ mapped" VerticalAlignment="Center" FontSize="11"
+                        <TextBlock Text="{DynamicResource Ui.UiMapped}" VerticalAlignment="Center" FontSize="11"
                                    Foreground="{DynamicResource AppAccent}"
                                    IsVisible="{Binding HasButtonMap}" />
                       </StackPanel>
@@ -1087,10 +1063,10 @@
                           <TextBlock Text="{Binding CalibrationHint}"
                                      Classes="fieldLabel" TextWrapping="Wrap" />
                           <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Button Content="Skip" Command="{Binding SkipButtonCommand}" />
-                            <Button Content="Silence" Command="{Binding SilenceAxisCommand}"
+                            <Button Content="{DynamicResource Ui.UiSkip}" Command="{Binding SkipButtonCommand}" />
+                            <Button Content="{DynamicResource Ui.UiSilence}" Command="{Binding SilenceAxisCommand}"
                                     IsVisible="{Binding IsAxisCalibrating}" />
-                            <Button Content="Cancel" Command="{Binding CancelCalibrationCommand}" />
+                            <Button Content="{DynamicResource Ui.MappingEditorCancelButton}" Command="{Binding CancelCalibrationCommand}" />
                           </StackPanel>
                         </StackPanel>
                       </Border>
@@ -1099,8 +1075,13 @@
                     <!-- Keyboard-as-gamepad reference (DevicesPanel scope) — keyboard only -->
                     <StackPanel Spacing="8" IsVisible="{Binding IsKeyboardSelected}">
                       <Border Classes="divider" />
-                      <TextBlock Text="KEYBOARD AS GAMEPAD" Classes="sectionLabel" />
-                      <TextBlock Classes="hint" Text="{Binding KeyboardHintLabel}" />
+                      <TextBlock Text="{DynamicResource Ui.UiKEYBOARDASGAMEPAD}" Classes="sectionLabel" />
+                      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <TextBlock Classes="hint" TextWrapping="Wrap" VerticalAlignment="Center"
+                                   Text="{DynamicResource Ui.UiKeysBoundToAControllerControlShowItOn}" />
+                        <Button Grid.Column="1" Content="{DynamicResource Ui.UiEditKeyboardMouseControls}"
+                                Command="{Binding #ShellRoot.((vm:ShellViewModel)DataContext).OpenKeyboardMouseMapCommand}" />
+                      </Grid>
                       <!--
                           Fixed-height live readout. The key list changes on
                           every keystroke, and while it was free to wrap it
@@ -1125,8 +1106,13 @@
                     <!-- Mouse-as-gamepad (DevicesPanel scope) — mouse only -->
                     <StackPanel Spacing="8" IsVisible="{Binding IsMouseSelected}">
                       <Border Classes="divider" />
-                      <TextBlock Text="MOUSE AS GAMEPAD" Classes="sectionLabel" />
-                      <TextBlock Classes="hint" Text="{Binding MouseHintLabel}" />
+                      <TextBlock Text="{DynamicResource Ui.UiMOUSEASGAMEPAD}" Classes="sectionLabel" />
+                      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <TextBlock Classes="hint" TextWrapping="Wrap" VerticalAlignment="Center"
+                                   Text="{DynamicResource Ui.UiEachButtonShowsTheControllerControlItIsBound}" />
+                        <Button Grid.Column="1" Content="{DynamicResource Ui.UiEditKeyboardMouseControls}"
+                                Command="{Binding #ShellRoot.((vm:ShellViewModel)DataContext).OpenKeyboardMouseMapCommand}" />
+                      </Grid>
                       <!-- Reserved height, same reasoning as the keyboard
                            readout above: this updates continuously as the
                            pointer moves. -->
@@ -1144,7 +1130,7 @@
                     <!-- Live raw state (DevicesPanel scope) -->
                     <StackPanel Spacing="10" IsVisible="{Binding HasRawState}">
                       <Border Classes="divider" />
-                      <TextBlock Text="LIVE STATE" Classes="sectionLabel" />
+                      <TextBlock Text="{DynamicResource Ui.UiLIVESTATE}" Classes="sectionLabel" />
 
                       <!-- Axes -->
                       <ItemsControl ItemsSource="{Binding RawAxes}">
@@ -1203,16 +1189,9 @@
           </Grid>
             </TabItem>
 
-            <!-- Per-device tuning: sticks, triggers, rumble, lighting,
-                 adaptive triggers. Lives here rather than under Virtual
-                 controllers because the settings belong to a PHYSICAL
-                 device (as used by a slot), and this is where physical
-                 devices are already selected. -->
-            <!-- Hidden outright until a virtual controller exists. Tuning is
-                 keyed per slot AND per device, so with no slot there is
-                 nothing to save under — the tab used to render an empty
-                 picker and a line explaining it was unusable, which is a
-                 whole tab spent saying "not yet". -->
+            <!-- Second and last tab: ShellViewModel.DevicesSubTabVirtual
+                 is this tab's index. Per-slot tuning lives inside the slot
+                 editor below rather than as a tab of its own. -->
             <TabItem Header="{Binding DevicesVirtualTabHeader}">
 
           <Grid x:Name="SlotsRoot" Margin="20,16" DataContext="{Binding SlotsPanel}"
@@ -1236,12 +1215,15 @@
                   <DataTemplate>
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="9">
                       <Panel Grid.Column="0" Width="9" Height="9" VerticalAlignment="Center">
+                        <!-- FallbackValue=False: with nothing selected the
+                             box renders this template with no item, and the
+                             dot used to sit over the placeholder text. -->
                         <Ellipse Width="9" Height="9"
                                  Fill="{DynamicResource AppSuccess}"
-                                 IsVisible="{Binding Enabled}" />
+                                 IsVisible="{Binding Enabled, FallbackValue=False}" />
                         <Ellipse Width="9" Height="9"
                                  Fill="{DynamicResource AppForegroundDim}"
-                                 IsVisible="{Binding !Enabled}" />
+                                 IsVisible="{Binding !Enabled, FallbackValue=False}" />
                       </Panel>
                       <StackPanel Grid.Column="1" Spacing="1">
                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
@@ -1308,9 +1290,11 @@
                     Adding a controller now makes one and you set its type
                     here, where the type is a property of something real.
                 -->
-                <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
-                  <TextBlock Grid.Column="0" Text="{Binding TemplateEditor.OutputDeviceLabel}"
-                             Classes="fieldLabel" VerticalAlignment="Center" />
+                <!-- No Save button: every field here saves the moment it
+                     changes, and a Save that did nothing extra only made
+                     people wonder what was still unsaved. -->
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
+                  <TextBlock Grid.Column="0" Text="{DynamicResource Ui.UiGamesSee}" Classes="fieldLabel" VerticalAlignment="Center" />
                   <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" MaxWidth="300"
                             ItemsSource="{Binding TemplateEditor.OutputKindOptions}"
                             SelectedItem="{Binding TemplateEditor.SelectedOutputKind}">
@@ -1319,13 +1303,12 @@
                     </ComboBox.ItemTemplate>
                   </ComboBox>
                   <CheckBox Grid.Column="2" Content="{Binding SlotEnabledLabel}"
+                            ToolTip.Tip="{DynamicResource Ui.UiTurnThisControllerOffWithoutDeletingIt}"
                             IsChecked="{Binding SlotEnabled}" VerticalAlignment="Center" />
                   <Button Grid.Column="3" Classes="ghost" Content="{Binding SlotDuplicateLabel}"
                           Command="{Binding DuplicateSlotCommand}" />
-                  <Button Grid.Column="4" Classes="primary" Content="{Binding SlotSaveLabel}"
-                          Command="{Binding SaveSlotCommand}" />
-                  <Button Grid.Column="5" Classes="danger" Content="{Binding SlotDeleteLabel}"
-                          Command="{Binding DeleteSlotCommand}" />
+                  <Button Grid.Column="4" Classes="danger" Content="{Binding SlotDeleteLabel}"
+                          Click="OnDeleteSelectedSlotClick" />
                 </Grid>
               </StackPanel>
             </Border>
@@ -1357,230 +1340,167 @@
                 -->
                 <TabItem Header="{Binding SetupTabHeader}">
                   <ScrollViewer>
-                    <StackPanel Spacing="12" Margin="0,10,0,0">
+                    <!--
+                        Three questions, top to bottom, each answered once:
+                        what drives this controller, what it looks like to a
+                        game (click a control to map it), and which profiles
+                        apply. The technical output options are folded away
+                        under Advanced. This page used to repeat the profile
+                        list twice and explain the mapping steps in three
+                        boxes; it now just shows the controls.
+                    -->
+                    <StackPanel Spacing="14" Margin="0,10,0,0">
+
+                      <!-- 1. What drives it -->
                       <Border Classes="card" Padding="14">
-                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                          <StackPanel Grid.Column="0" Spacing="4">
-                            <TextBlock Text="Map the controller you see" FontSize="15" FontWeight="SemiBold" />
-                            <TextBlock Classes="hint"
-                                       Text="Hover a virtual button, trigger, touchpad, or stick to identify it. Click it to choose that output and create its mapping rule." />
-                          </StackPanel>
-                          <Button Grid.Column="1" Classes="ghost" Content="Open all mappings"
-                                  Command="{Binding #ShellRoot.DataContext.OpenMappingsCommand}"
-                                  VerticalAlignment="Center" />
-                        </Grid>
-                      </Border>
-
-                      <Border Classes="panel" Padding="10" MinHeight="330" ClipToBounds="True">
-                        <!-- #ShellRoot.DataContext is typed object, so a compiled
-                             binding needs the cast to walk any further. -->
-                        <views:ControllerSurface DataContext="{Binding #ShellRoot.((vm:ShellViewModel)DataContext).SlotConfigurationController}" />
-                      </Border>
-
-                      <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
-                        <Border Grid.Column="0" Classes="inset" Padding="12">
-                          <StackPanel Spacing="3">
-                            <TextBlock Text="1  CHOOSE OUTPUT" Classes="sectionLabel" />
-                            <TextBlock Text="Click it on the controller" Classes="hint" />
-                          </StackPanel>
-                        </Border>
-                        <Border Grid.Column="1" Classes="inset" Padding="12">
-                          <StackPanel Spacing="3">
-                            <TextBlock Text="2  CHOOSE INPUT" Classes="sectionLabel" />
-                            <TextBlock Text="Pick the physical source" Classes="hint" />
-                          </StackPanel>
-                        </Border>
-                        <Border Grid.Column="2" Classes="inset" Padding="12">
-                          <StackPanel Spacing="3">
-                            <TextBlock Text="3  SAVE RULE" Classes="sectionLabel" />
-                            <TextBlock Text="The slot updates immediately" Classes="hint" />
-                          </StackPanel>
-                        </Border>
-                      </Grid>
-
-                      <TextBlock Text="Devices &amp; profiles" FontSize="16" FontWeight="SemiBold" Margin="0,8,0,0" />
-                      <TextBlock Classes="hint" Text="Which physical controller drives this slot, and which profiles apply to it." />
-                      <Separator Margin="0,2,0,4" Opacity="0.35" />
-
-                  <!-- Identity and lifecycle live above the tabs now, so
-                       renaming a controller does not mean leaving the tab
-                       you are working in. -->
-
-                  <!-- Device assignment -->
-                  <StackPanel Spacing="6">
-                    <TextBlock Text="ASSIGNED DEVICES" Classes="sectionLabel" />
-                    <ItemsControl ItemsSource="{Binding AssignedDevices}">
-                      <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                          <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                            <TextBlock Grid.Column="0" Text="{Binding DisplayName}"
-                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                            <Button Grid.Column="1" Classes="danger" Content="Remove" FontSize="11"
-                                    Command="{Binding #SlotsRoot.DataContext.UnassignDeviceCommand}"
-                                    CommandParameter="{Binding Id}" />
-                          </Grid>
-                        </DataTemplate>
-                      </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
-                    <!-- Demo preview: drives this virtual controller with
-                         the built-in animated waveform instead of its
-                         assigned devices — end-to-end (dashboard AND the
-                         real HIDMaestro output), no physical pad needed.
-                         While it's on, assigning devices is moot, so the
-                         Available list below is disabled. -->
-                    <CheckBox Content="{Binding TemplateEditor.DemoPreviewLabel}"
-                              IsChecked="{Binding TemplateEditor.DemoPreview}"
-                              ToolTip.Tip="{Binding TemplateEditor.DemoPreviewTooltip}"
-                              Margin="0,4,0,0" FontSize="12" />
-
-                    <StackPanel Spacing="6" IsEnabled="{Binding !TemplateEditor.DemoPreview}">
-                    <TextBlock Text="Available" Classes="fieldLabel" Margin="0,4,0,0" />
-                    <ItemsControl ItemsSource="{Binding AvailableDevices}">
-                      <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                          <Grid ColumnDefinitions="*,Auto" Margin="0,2">
-                            <TextBlock Grid.Column="0" Text="{Binding DisplayName}"
-                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                            <Button Grid.Column="1" Content="Add" FontSize="11"
-                                    Command="{Binding #SlotsRoot.DataContext.AssignDeviceCommand}"
-                                    CommandParameter="{Binding Id}" />
-                          </Grid>
-                        </DataTemplate>
-                      </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    </StackPanel>
-                  </StackPanel>
-
-                  <Border Classes="divider" />
-
-                  <!-- Layered profiles (SlotsPanel scope) -->
-                  <StackPanel Spacing="6">
-                    <TextBlock Text="PROFILES (LAYERED)" Classes="sectionLabel" />
-                    <TextBlock Text="Applied in order; later layers win. Empty = pass-through."
-                               Classes="hint" />
-                    <ItemsControl ItemsSource="{Binding AssignedProfiles}">
-                      <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                          <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,2">
-                            <TextBlock Grid.Column="0" Text="≡" Opacity="0.4"
-                                       Margin="0,0,8,0" VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="1" Text="{Binding Name}"
-                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                            <Button Grid.Column="2" Classes="danger" Content="Remove" FontSize="11"
-                                    Command="{Binding #SlotsRoot.DataContext.RemoveProfileCommand}"
-                                    CommandParameter="{Binding Id}" />
-                          </Grid>
-                        </DataTemplate>
-                      </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
-                      <ComboBox Grid.Column="0" HorizontalAlignment="Stretch"
-                                ItemsSource="{Binding AvailableProfiles}"
-                                SelectedItem="{Binding SelectedAvailableProfile}"
-                                PlaceholderText="Add a profile layer…">
-                        <ComboBox.ItemTemplate>
-                          <DataTemplate>
-                            <TextBlock Text="{Binding Name}" />
-                          </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                      </ComboBox>
-                      <Button Grid.Column="1" Content="Add" FontSize="11" Margin="8,0,0,0"
-                              Command="{Binding #SlotsRoot.DataContext.AddProfileCommand}" />
-                    </Grid>
-                  </StackPanel>
-
-                  <Border Classes="divider" />
-
-                  <!-- Output template (bound to SlotsPanel.TemplateEditor) -->
-                  <StackPanel Spacing="10" DataContext="{Binding TemplateEditor}"
-                              IsVisible="{Binding HasTemplate}">
-                    <TextBlock Text="OUTPUT TEMPLATE" Classes="sectionLabel" />
-                    <CheckBox Content="{Binding EmitLabel}"
-                              ToolTip.Tip="{Binding EmitTooltip}"
-                              IsChecked="{Binding Enabled}" />
-                    <!-- The controller-type picker lives above the tabs —
-                         there is exactly one of it, and it belongs with the
-                         controller's identity rather than repeated here.
-                         Output backend is implicit too: HIDMaestro is the
-                         sole Windows output backend, so there's nothing to
-                         pick — the old provider combo box was one item of
-                         dead choice. -->
-
-                    <!-- Full HIDMaestro catalog — lets this
-                         slot emit ANY supported controller, not just the
-                         four curated kinds above. Hidden until the catalog
-                         has been enumerated. -->
-                    <StackPanel Spacing="3" IsVisible="{Binding HasOutputProfileOptions}">
-                      <TextBlock Text="{Binding OutputProfileLabel}" Classes="fieldLabel" />
-                      <ComboBox ItemsSource="{Binding OutputProfileOptions}"
-                                SelectedItem="{Binding SelectedOutputProfile}"
-                                ToolTip.Tip="{Binding OutputProfileTooltip}"
-                                MaxDropDownHeight="420"
-                                HorizontalAlignment="Stretch">
-                        <ComboBox.ItemTemplate>
-                          <DataTemplate><TextBlock Text="{Binding Label}" /></DataTemplate>
-                        </ComboBox.ItemTemplate>
-                      </ComboBox>
-                    </StackPanel>
-
-                    <StackPanel Spacing="6" IsVisible="{Binding ShowGenericShape}">
-                      <TextBlock Text="Device shape" Classes="fieldLabel" />
-                      <Grid ColumnDefinitions="*,110" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="4">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Thumbsticks" FontSize="11" VerticalAlignment="Center" />
-                        <TextBox  Grid.Row="0" Grid.Column="1" Text="{Binding ThumbstickCount}" />
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Triggers" FontSize="11" VerticalAlignment="Center" />
-                        <TextBox  Grid.Row="1" Grid.Column="1" Text="{Binding TriggerCount}" />
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Buttons" FontSize="11" VerticalAlignment="Center" />
-                        <TextBox  Grid.Row="2" Grid.Column="1" Text="{Binding ButtonCount}" />
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="POVs" FontSize="11" VerticalAlignment="Center" />
-                        <TextBox  Grid.Row="3" Grid.Column="1" Text="{Binding PovCount}" />
-                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Product name" FontSize="11" VerticalAlignment="Center" />
-                        <TextBox  Grid.Row="4" Grid.Column="1" Text="{Binding ProductString}" PlaceholderText="GameFlow Game Controller" />
-                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Vendor ID (hex)" FontSize="11" VerticalAlignment="Center" />
-                        <TextBox  Grid.Row="5" Grid.Column="1" Text="{Binding GenericVidText}" />
-                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Product ID (hex)" FontSize="11" VerticalAlignment="Center" />
-                        <TextBox  Grid.Row="6" Grid.Column="1" Text="{Binding GenericPidText}" />
-                      </Grid>
-                    </StackPanel>
-                  </StackPanel>
-
-
-                      <Border Classes="card" Padding="16">
                         <StackPanel Spacing="8">
-                          <TextBlock Text="Mappings" FontSize="16" FontWeight="SemiBold" />
-                          <TextBlock Classes="hint"
-                                     Text="For the fastest setup, click the exact virtual control you want to produce on the controller above. The focused editor will ask for its physical source." />
-                          <Button Content="Open complete mapping rule editor"
-                                  Command="{Binding #ShellRoot.DataContext.OpenMappingsCommand}"
-                                  HorizontalAlignment="Left" />
-                        </StackPanel>
-                      </Border>
-
-                      <Border Classes="card" Padding="16">
-                        <StackPanel Spacing="8">
-                          <TextBlock Text="PROFILE LAYERS" Classes="sectionLabel" />
-                          <TextBlock Text="No profile layers · direct pass-through is active"
-                                     Classes="hint" IsVisible="{Binding !AssignedProfiles.Count}" />
-                          <ItemsControl ItemsSource="{Binding AssignedProfiles}">
+                          <TextBlock Text="{DynamicResource Ui.UiWhatDrivesIt}" FontSize="15" FontWeight="SemiBold" />
+                          <TextBlock Text="{DynamicResource Ui.UiNoDeviceYetAddOneBelow}" Classes="hint"
+                                     IsVisible="{Binding !AssignedDevices.Count}" />
+                          <ItemsControl ItemsSource="{Binding AssignedDevices}">
                             <ItemsControl.ItemTemplate>
                               <DataTemplate>
-                                <Border Classes="inset" Padding="10" Margin="0,0,0,6">
-                                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                                    <TextBlock Grid.Column="0" Text="●" FontSize="8"
-                                               Foreground="{DynamicResource AppSuccess}"
-                                               VerticalAlignment="Center" />
-                                    <TextBlock Grid.Column="1" Text="{Binding Name}"
-                                               TextTrimming="CharacterEllipsis" />
-                                  </Grid>
-                                </Border>
+                                <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                                  <TextBlock Grid.Column="0" Text="{Binding DisplayName}" FontWeight="SemiBold"
+                                             VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                  <Button Grid.Column="1" Classes="ghost" Content="{DynamicResource Ui.TouchpadRemove}" FontSize="11"
+                                          Command="{Binding #SlotsRoot.DataContext.UnassignDeviceCommand}"
+                                          CommandParameter="{Binding Id}" />
+                                </Grid>
                               </DataTemplate>
                             </ItemsControl.ItemTemplate>
                           </ItemsControl>
-                          <TextBlock Classes="hint"
-                                     Text="Add, remove, and reorder profile layers from Setup. Later layers take priority." />
+
+                          <StackPanel Spacing="4" IsEnabled="{Binding !TemplateEditor.DemoPreview}"
+                                      IsVisible="{Binding AvailableDevices.Count}">
+                            <TextBlock Text="{DynamicResource Ui.UiADDADEVICE}" Classes="sectionLabel" Margin="0,6,0,0" />
+                            <ItemsControl ItemsSource="{Binding AvailableDevices}">
+                              <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                  <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                                    <TextBlock Grid.Column="0" Text="{Binding DisplayName}"
+                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                    <Button Grid.Column="1" Content="{DynamicResource Ui.UiAdd}" FontSize="11"
+                                            Command="{Binding #SlotsRoot.DataContext.AssignDeviceCommand}"
+                                            CommandParameter="{Binding Id}" />
+                                  </Grid>
+                                </DataTemplate>
+                              </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                          </StackPanel>
+
+                          <!-- Demo preview: an animated pattern instead of a
+                               device, end to end, so a controller can be
+                               tried with nothing plugged in. -->
+                          <CheckBox Content="{Binding TemplateEditor.DemoPreviewLabel}"
+                                    IsChecked="{Binding TemplateEditor.DemoPreview}"
+                                    ToolTip.Tip="{Binding TemplateEditor.DemoPreviewTooltip}"
+                                    Margin="0,4,0,0" FontSize="12" />
                         </StackPanel>
                       </Border>
+
+                      <!-- 2. What games see, and mapping by clicking it -->
+                      <Border Classes="card" Padding="14">
+                        <StackPanel Spacing="8">
+                          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <StackPanel Spacing="2">
+                              <TextBlock Text="{DynamicResource Ui.UiWhatGamesSee}" FontSize="15" FontWeight="SemiBold" />
+                              <TextBlock Classes="hint" Text="{DynamicResource Ui.UiClickAnyButtonStickOrTriggerToChangeWhat}" />
+                            </StackPanel>
+                            <Button Grid.Column="1" Classes="ghost" Content="{DynamicResource Ui.UiAllMappingRules}"
+                                    Command="{Binding #ShellRoot.DataContext.OpenMappingsCommand}"
+                                    VerticalAlignment="Center" />
+                          </Grid>
+                          <Border Classes="panel" Padding="10" MinHeight="330" ClipToBounds="True">
+                            <!-- #ShellRoot.DataContext is typed object, so a compiled
+                                 binding needs the cast to walk any further. -->
+                            <views:ControllerSurface DataContext="{Binding #ShellRoot.((vm:ShellViewModel)DataContext).SlotConfigurationController}" />
+                          </Border>
+                        </StackPanel>
+                      </Border>
+
+                      <!-- 3. Profiles -->
+                      <Border Classes="card" Padding="14">
+                        <StackPanel Spacing="8">
+                          <TextBlock Text="{DynamicResource Ui.ProfilesTab}" FontSize="15" FontWeight="SemiBold" />
+                          <TextBlock Classes="hint"
+                                     Text="{DynamicResource Ui.UiProfilesHoldMappingRulesWithNoneTheControllerPasses}" />
+                          <ItemsControl ItemsSource="{Binding AssignedProfiles}">
+                            <ItemsControl.ItemTemplate>
+                              <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,2">
+                                  <TextBlock Grid.Column="0" Text="●" FontSize="8" Margin="0,0,8,0"
+                                             Foreground="{DynamicResource AppSuccess}" VerticalAlignment="Center" />
+                                  <TextBlock Grid.Column="1" Text="{Binding Name}"
+                                             VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                  <Button Grid.Column="2" Classes="ghost" Content="{DynamicResource Ui.TouchpadRemove}" FontSize="11"
+                                          Command="{Binding #SlotsRoot.DataContext.RemoveProfileCommand}"
+                                          CommandParameter="{Binding Id}" />
+                                </Grid>
+                              </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                          </ItemsControl>
+                          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <ComboBox Grid.Column="0" HorizontalAlignment="Stretch"
+                                      ItemsSource="{Binding AvailableProfiles}"
+                                      SelectedItem="{Binding SelectedAvailableProfile}"
+                                      PlaceholderText="{DynamicResource Ui.UiChooseAProfileToAdd}">
+                              <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                  <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                              </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button Grid.Column="1" Content="{DynamicResource Ui.UiAdd}"
+                                    Command="{Binding #SlotsRoot.DataContext.AddProfileCommand}" />
+                          </Grid>
+                        </StackPanel>
+                      </Border>
+
+                      <!-- Advanced: output details most people never touch. -->
+                      <Expander Header="{DynamicResource Ui.UiAdvanced}" HorizontalAlignment="Stretch">
+                        <StackPanel Spacing="10" DataContext="{Binding TemplateEditor}"
+                                    IsVisible="{Binding HasTemplate}" Margin="0,6,0,0">
+                          <CheckBox Content="{Binding EmitLabel}"
+                                    ToolTip.Tip="{Binding EmitTooltip}"
+                                    IsChecked="{Binding Enabled}" />
+
+                          <!-- Every model HIDMaestro can emulate, beyond the
+                               common types in the picker above. -->
+                          <StackPanel Spacing="3" IsVisible="{Binding HasOutputProfileOptions}">
+                            <TextBlock Text="{Binding OutputProfileLabel}" Classes="fieldLabel" />
+                            <ComboBox ItemsSource="{Binding OutputProfileOptions}"
+                                      SelectedItem="{Binding SelectedOutputProfile}"
+                                      ToolTip.Tip="{Binding OutputProfileTooltip}"
+                                      MaxDropDownHeight="420"
+                                      HorizontalAlignment="Stretch">
+                              <ComboBox.ItemTemplate>
+                                <DataTemplate><TextBlock Text="{Binding Label}" /></DataTemplate>
+                              </ComboBox.ItemTemplate>
+                            </ComboBox>
+                          </StackPanel>
+
+                          <StackPanel Spacing="6" IsVisible="{Binding ShowGenericShape}">
+                            <TextBlock Text="{DynamicResource Ui.UiDeviceShape}" Classes="fieldLabel" />
+                            <Grid ColumnDefinitions="*,110" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="4">
+                              <TextBlock Grid.Row="0" Grid.Column="0" Text="{DynamicResource Ui.UiThumbsticks}" FontSize="11" VerticalAlignment="Center" />
+                              <TextBox  Grid.Row="0" Grid.Column="1" Text="{Binding ThumbstickCount}" />
+                              <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource Ui.UiTriggers}" FontSize="11" VerticalAlignment="Center" />
+                              <TextBox  Grid.Row="1" Grid.Column="1" Text="{Binding TriggerCount}" />
+                              <TextBlock Grid.Row="2" Grid.Column="0" Text="{DynamicResource Ui.UiButtons}" FontSize="11" VerticalAlignment="Center" />
+                              <TextBox  Grid.Row="2" Grid.Column="1" Text="{Binding ButtonCount}" />
+                              <TextBlock Grid.Row="3" Grid.Column="0" Text="{DynamicResource Ui.UiPOVs}" FontSize="11" VerticalAlignment="Center" />
+                              <TextBox  Grid.Row="3" Grid.Column="1" Text="{Binding PovCount}" />
+                              <TextBlock Grid.Row="4" Grid.Column="0" Text="{DynamicResource Ui.UiProductName}" FontSize="11" VerticalAlignment="Center" />
+                              <TextBox  Grid.Row="4" Grid.Column="1" Text="{Binding ProductString}" PlaceholderText="{DynamicResource Ui.UiGameFlowGameController}" />
+                              <TextBlock Grid.Row="5" Grid.Column="0" Text="{DynamicResource Ui.UiVendorIDHex}" FontSize="11" VerticalAlignment="Center" />
+                              <TextBox  Grid.Row="5" Grid.Column="1" Text="{Binding GenericVidText}" />
+                              <TextBlock Grid.Row="6" Grid.Column="0" Text="{DynamicResource Ui.UiProductIDHex}" FontSize="11" VerticalAlignment="Center" />
+                              <TextBox  Grid.Row="6" Grid.Column="1" Text="{Binding GenericPidText}" />
+                            </Grid>
+                          </StackPanel>
+                        </StackPanel>
+                      </Expander>
                     </StackPanel>
                   </ScrollViewer>
                 </TabItem>
@@ -1808,18 +1728,18 @@
                     applies to a virtual controller's slot, so it belongs
                     with the rest of that slot's settings.
                 -->
-                <TabItem Header="Tuning">
+                <TabItem Header="{DynamicResource Ui.UiTuning}">
                   <Grid Margin="0,10,0,0" RowDefinitions="Auto,*" RowSpacing="10"
                         DataContext="{Binding $parent[Window].DataContext.DevicesPanel}">
                     <Button Grid.Row="0" HorizontalAlignment="Right" Padding="10,4"
-                            Content="Reset to defaults"
+                            Content="{DynamicResource Ui.ResetProfileButton}"
                             Command="{Binding ResetTuningCommand}"
                             IsEnabled="{Binding DeviceSettingsEditor.HasDevice}" />
                     <Panel Grid.Row="1">
                       <views:DeviceSettingsEditorView
                           DataContext="{Binding DeviceSettingsEditor}"
                           IsVisible="{Binding HasDevice}" />
-                      <TextBlock Text="Select a virtual controller to tune."
+                      <TextBlock Text="{DynamicResource Ui.UiSelectAVirtualControllerToTune}"
                                  HorizontalAlignment="Center" VerticalAlignment="Center"
                                  Opacity="0.55"
                                  IsVisible="{Binding !DeviceSettingsEditor.HasDevice}" />

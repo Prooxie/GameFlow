@@ -12,6 +12,30 @@ public sealed class RumbleFeedbackStore
     private readonly ConcurrentDictionary<string, RumbleFeedback> feedback =
         new(StringComparer.Ordinal);
 
+    public RumbleFeedbackStore()
+        : this(new GameLightingStore())
+    {
+    }
+
+    /// <summary>
+    /// Creates the store with the lighting store the game's LED requests
+    /// go to. The container supplies the shared singleton, so the effect
+    /// producer and the slot runtime see the same instance.
+    /// </summary>
+    public RumbleFeedbackStore(GameLightingStore lighting)
+    {
+        Lighting = lighting ?? throw new ArgumentNullException(nameof(lighting));
+    }
+
+    /// <summary>
+    /// The lighting half of what a game sends back. Reached through this
+    /// store, rather than injected beside it, because whatever wires a
+    /// slot's sink to its rumble already holds this store — the game's
+    /// light requests arrive on the same virtual pad, at the same moment,
+    /// and have to be routed by the same slot id.
+    /// </summary>
+    public GameLightingStore Lighting { get; }
+
     public void Set(string slotId, double lowFrequency, double highFrequency)
     {
         if (string.IsNullOrEmpty(slotId))

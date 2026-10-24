@@ -74,4 +74,28 @@ public sealed record InputDeviceInfo(
     /// <summary>True when the backend supplied a useful battery reading.</summary>
     public bool HasBattery => BatteryPercentage is >= 0 and <= 100
         && BatteryState is not DeviceBatteryState.NoBattery;
+
+    /// <summary>
+    /// What the input backend DETECTED this pad can do, or
+    /// <see cref="GameFlow.Core.Models.ControllerFeatures.None"/> when it
+    /// has not been asked — SDL can only answer for a pad it has open, and
+    /// the catalog lists pads it has not opened.
+    ///
+    /// <para>
+    /// An init-only property rather than a constructor parameter so every
+    /// existing positional construction keeps compiling and keeps meaning
+    /// "unknown". Read <see cref="EffectiveFeatures"/>, not this.
+    /// </para>
+    /// </summary>
+    public GameFlow.Core.Models.ControllerFeatures Features { get; init; }
+
+    /// <summary>
+    /// The capabilities to act on: the detected set merged with the
+    /// hardware catalog, or the catalog alone when nothing was detected.
+    /// Still <see cref="GameFlow.Core.Models.ControllerFeatures.None"/> for
+    /// a device with no identity — which callers treat as "unknown, hide
+    /// nothing".
+    /// </summary>
+    public GameFlow.Core.Models.ControllerFeatures EffectiveFeatures =>
+        GameFlow.Core.Models.ControllerHardwareCatalog.MergeDetected(Features, VendorId, ProductId);
 }

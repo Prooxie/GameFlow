@@ -29,7 +29,7 @@ public sealed record DeviceCategoryOption(DeviceCategory? Category, string Label
 /// surface: what's connected, its VID/PID, and which one is active.
 /// </para>
 /// </summary>
-public sealed class DevicesViewModel : ViewModelBase, IDisposable
+public sealed class DevicesViewModel : ViewModelBase, IDisposable, IKeyboardMouseVisualState
 {
     private readonly InputDeviceCatalog catalog;
     private readonly ILocalizationService localization;
@@ -129,8 +129,12 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable
     public DevicesViewModel(InputDeviceCatalog catalog, ILocalizationService localization, GameFlow.Infrastructure.Runtime.Templates.DeviceTemplateStore templateStore, GameFlow.Infrastructure.Runtime.Input.ButtonMapStore buttonMapStore, GameFlow.Infrastructure.Runtime.Input.IKeyboardStateSource keyboardStateSource, GameFlow.Infrastructure.Runtime.Input.IMouseStateSource mouseStateSource, GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfileCatalogService hidMaestroCatalog, DeviceCategoryOverrideStore categoryOverrides,
         GameFlow.Infrastructure.Runtime.DeviceSettingsStore deviceSettingsStore,
         GameFlow.Infrastructure.Runtime.Slots.SlotRegistry slotRegistry,
-        GameFlow.Infrastructure.Runtime.Slots.SlotSnapshotStore slotSnapshotStore)
+        GameFlow.Infrastructure.Runtime.Slots.SlotSnapshotStore slotSnapshotStore,
+        GameFlow.Infrastructure.Runtime.Web.WebControllerHub? webControllerHub = null)
     {
+        this.webControllerHub = webControllerHub;
+        PhonePreview = new ControllerVisualStateViewModel(_ => { }, localization);
+        PhonePreview.SetPanelKind(isPhysical: true);
         this.catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         this.localization = localization ?? throw new ArgumentNullException(nameof(localization));
         this.buttonMapStore = buttonMapStore ?? throw new ArgumentNullException(nameof(buttonMapStore));
@@ -192,10 +196,19 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable
 
     /// <summary>Selected device is a gamepad/joystick — i.e. button calibration applies.</summary>
     public bool IsCalibratableSelected =>
-        SelectedDevice?.Category is DeviceCategory.Gamepad or DeviceCategory.Joystick;
+        SelectedDevice?.Category is DeviceCategory.Gamepad or DeviceCategory.Joystick && !IsPhoneSelected;
 
     /// <summary>Selected device is a keyboard — show the keyboard-as-gamepad reference.</summary>
     public bool IsKeyboardSelected => SelectedDevice?.Category == DeviceCategory.Keyboard;
+    public string? KeyboardDeviceId => IsKeyboardSelected ? SelectedDevice?.Id : null;
+    public string? MouseDeviceId => IsMouseSelected ? SelectedDevice?.Id : null;
+    public event EventHandler<KeyboardMouseMapRequest>? InputMappingRequested;
+    public void RequestInputMapping(int key = 0, MouseInput mouse = MouseInput.None) =>
+        InputMappingRequested?.Invoke(this, new(SelectedDevice?.Id, key, mouse));
+
+    /// <summary>Selected device is a phone — show its link, QR code and removal.</summary>
+    public bool IsPhoneSelected =>
+        GameFlow.Infrastructure.Runtime.Web.WebControllerDeviceScanner.IsPhone(SelectedDevice?.Id);
 
     /// <summary>
     /// "Treat as" options for the selected device's category override —
@@ -206,15 +219,24 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable
     /// </summary>
     public IReadOnlyList<DeviceCategoryOption> CategoryOverrideOptions { get; } =
     [
-        new(null, "Auto (detected)"),
-        new(DeviceCategory.Gamepad, "Gamepad"),
+        new(null, UiTextResources.Get("UiAutoDetected")),
+        new(DeviceCategory.Gamepad, UiTextResources.Get("UiGamepad")),
         new(DeviceCategory.Joystick, "Joystick"),
-        new(DeviceCategory.Keyboard, "Keyboard"),
-        new(DeviceCategory.Mouse, "Mouse"),
+        new(DeviceCategory.Keyboard, UiTextResources.Get("UiKeyboard")),
+        new(DeviceCategory.Mouse, UiTextResources.Get("TouchpadMouseSection")),
     ];
 
     /// <summary>True once a device is selected — gates the override picker's visibility.</summary>
-    public bool HasCategoryOverrideTarget => SelectedDevice is not null;
+    public bool HasCategoryOverrideTarget => SelectedDevice is not null && !IsPhoneSelected;
+
+    private readonly GameFlow.Infrastructure.Runtime.Web.WebControllerHub? webControllerHub;
+
+    /// <summary>
+    /// The selected phone, drawn live. A phone never goes through SDL, so the
+    /// raw axis/button readout below has nothing to show for it; its own
+    /// frames are read from the hub instead.
+    /// </summary>
+    public ControllerVisualStateViewModel PhonePreview { get; }
 
     /// <summary>
     /// The active override for the selected device (Auto = no override).
@@ -281,7 +303,7 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable
     /// <summary>Endpoint (Canvas coords) for the MouseSurface aim-direction line.</summary>
     public Point MouseAimEndPoint { get => mouseAimEndPoint; private set => SetProperty(ref mouseAimEndPoint, value); }
 
-    private string mouseInfo = "(no movement)";
+    private string mouseInfo = UiTextResources.Get("UiNoMovement");
     /// <summary>Diagnostic: the selected mouse's movement + button state.</summary>
     public string MouseInfo
     {
@@ -320,9 +342,23 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable
             return;
         }
 
+        var seat = GameFlow.Infrastructure.Runtime.Web.WebControllerDeviceScanner.TryParsePadIndex(device.Id);
+        if (seat >= 0)
+        {
+            if (webControllerHub is not null)
+            {
+                PhonePreview.Update(
+                    "devices:phone",
+                    device.DisplayName,
+                    webControllerHub.GetSnapshot(seat),
+                    GameFlow.Infrastructure.Runtime.Web.WebPadLayoutStyles.ToVisualStyle(webControllerHub.GetLayout(seat)));
+            }
+            return;
+        }
+
         if (device.Category == DeviceCategory.Keyboard)
         {
-            var pressed = keyboardStateSource.GetPressedKeysWithAggregateFallback(device.Id);
+            var pressed = keyboardStateSource.GetPressedKeys(device.Id);
 
             // Change-gate: a keyboard at rest produces the same (usually
             // empty) set every tick — rebuilding the display string and
@@ -342,14 +378,14 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable
         }
         else if (device.Category == DeviceCategory.Mouse)
         {
-            var frame = mouseStateSource.ReadMouseFrame(device.Id);
+            var frame = mouseStateSource.ReadMousePreviewFrame(device.Id);
             var btns = string.Concat(
                 frame.Left ? "L" : "·", frame.Right ? "R" : "·", frame.Middle ? "M" : "·",
                 frame.Button4 ? "4" : "·", frame.Button5 ? "5" : "·");
             IsMouseScrollUp   = frame.WheelDelta > 0;
             IsMouseScrollDown = frame.WheelDelta < 0;
             var wheel = frame.WheelDelta == 0 ? "  --" : $"{frame.WheelDelta,4:+#;-#}";
-            MouseInfo = $"move {frame.Dx,4},{frame.Dy,4}   wheel {wheel}   buttons {btns}";
+            MouseInfo = UiTextResources.Format("UiMouseState", frame.Dx, frame.Dy, wheel, btns);
 
             IsMouseLeftDown    = frame.Left;
             IsMouseRightDown   = frame.Right;
@@ -378,11 +414,11 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable
         {
             if (IsCalibrating && calibrationIndex < CalibrationTargets.Length)
             {
-                return $"Press: {CalibrationTargets[calibrationIndex].Label}   ({calibrationIndex + 1} / {CalibrationTargets.Length})";
+                return UiTextResources.Format("UiCalibrationPress", UiTextResources.Get(CalibrationTargets[calibrationIndex].Label), calibrationIndex + 1, CalibrationTargets.Length);
             }
             if (IsAxisCalibrating && axisCalibrationIndex < AxisCalibrationTargets.Length)
             {
-                return $"{AxisCalibrationTargets[axisCalibrationIndex].Label}   ({axisCalibrationIndex + 1} / {AxisCalibrationTargets.Length})";
+                return $"{UiTextResources.Get(AxisCalibrationTargets[axisCalibrationIndex].Label)}   ({axisCalibrationIndex + 1} / {AxisCalibrationTargets.Length})";
             }
             return string.Empty;
         }
@@ -395,15 +431,15 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable
         {
             if (!IsAxisCalibrating)
             {
-                return "Press that button on the controller, or Skip to leave it unmapped.";
+                return UiTextResources.Get("UiCalibrationButtonHint");
             }
             // Saying so matters: until this clears, moving the control
             // does nothing, and a prompt that silently ignores input
             // reads as a broken controller rather than as a wizard
             // waiting its turn.
             return IsWaitingForRest
-                ? "Let go of the sticks and triggers — this step starts listening once everything is back at rest."
-                : "Hold it there until the prompt moves on. If this pad has no analog for it, press the button instead — it will be bound as an on/off trigger. Skip leaves it as-is; Silence forces it to zero.";
+                ? UiTextResources.Get("UiCalibrationRelease")
+                : UiTextResources.Get("UiCalibrationHold");
         }
     }
 
@@ -583,9 +619,11 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable
             // Push the selection back into the catalog so the runtime
             // switches its active input device — unless we're the ones
             // who just set it during a Rebuild (avoids a feedback loop).
-            if (!suppressSelectionWriteback)
+            // ListBox clears its selection briefly while moving between rows.
+            // Sending that transient null selects the first controller in SDL.
+            if (!suppressSelectionWriteback && value is not null)
             {
-                catalog.SetSelectedDevice(value?.Id);
+                catalog.SetSelectedDevice(value.Id);
             }
 
             UpdateInspectionTarget();
@@ -599,14 +637,17 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable
             OnPropertyChanged(nameof(HasButtonMap));
             OnPropertyChanged(nameof(IsKeyboardSelected));
             OnPropertyChanged(nameof(IsMouseSelected));
+            OnPropertyChanged(nameof(KeyboardDeviceId));
+            OnPropertyChanged(nameof(MouseDeviceId));
+            OnPropertyChanged(nameof(IsPhoneSelected));
             OnPropertyChanged(nameof(HasCategoryOverrideTarget));
             OnPropertyChanged(nameof(SelectedCategoryOverride));
             OnPropertyChanged(nameof(IsCalibratableSelected));
             OnPropertyChanged(nameof(ShowKeyboardGamepadPreview));
-            if (IsKeyboardSelected || IsMouseSelected)
+            if (IsKeyboardSelected || IsMouseSelected || IsPhoneSelected)
             {
                 KeyboardKeysDown = "(none)";
-                MouseInfo = "(no movement)";
+                MouseInfo = UiTextResources.Get("UiNoMovement");
                 keyboardPreviewTimer.Start();
             }
             else
@@ -817,21 +858,21 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable
 
     private static readonly (ButtonId Id, string Label)[] CalibrationTargets =
     [
-        (ButtonId.South, "bottom face button (A / Cross)"),
-        (ButtonId.East, "right face button (B / Circle)"),
-        (ButtonId.West, "left face button (X / Square)"),
-        (ButtonId.North, "top face button (Y / Triangle)"),
-        (ButtonId.LeftShoulder, "left shoulder (LB / L1)"),
-        (ButtonId.RightShoulder, "right shoulder (RB / R1)"),
-        (ButtonId.Back, "Back / Select / Share"),
-        (ButtonId.Start, "Start / Options"),
-        (ButtonId.Guide, "Guide / PS / Home"),
-        (ButtonId.LeftStick, "left stick click (L3)"),
-        (ButtonId.RightStick, "right stick click (R3)"),
-        (ButtonId.DpadUp, "D-pad Up"),
-        (ButtonId.DpadDown, "D-pad Down"),
-        (ButtonId.DpadLeft, "D-pad Left"),
-        (ButtonId.DpadRight, "D-pad Right"),
+        (ButtonId.South, "ButtonId.South"),
+        (ButtonId.East, "ButtonId.East"),
+        (ButtonId.West, "ButtonId.West"),
+        (ButtonId.North, "ButtonId.North"),
+        (ButtonId.LeftShoulder, "ButtonId.LeftShoulder"),
+        (ButtonId.RightShoulder, "ButtonId.RightShoulder"),
+        (ButtonId.Back, "ButtonId.Back"),
+        (ButtonId.Start, "ButtonId.Start"),
+        (ButtonId.Guide, "ButtonId.Guide"),
+        (ButtonId.LeftStick, "ButtonId.LeftStick"),
+        (ButtonId.RightStick, "ButtonId.RightStick"),
+        (ButtonId.DpadUp, "ButtonId.DpadUp"),
+        (ButtonId.DpadDown, "ButtonId.DpadDown"),
+        (ButtonId.DpadLeft, "ButtonId.DpadLeft"),
+        (ButtonId.DpadRight, "ButtonId.DpadRight"),
     ];
 
     private void StartCalibration()
@@ -969,12 +1010,12 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable
     /// </summary>
     private static readonly (AnalogTarget Target, string Label, bool IsTrigger)[] AxisCalibrationTargets =
     [
-        (AnalogTarget.LeftStickX, "Push the LEFT stick fully RIGHT", false),
-        (AnalogTarget.LeftStickY, "Push the LEFT stick fully UP", false),
-        (AnalogTarget.RightStickX, "Push the RIGHT stick fully RIGHT", false),
-        (AnalogTarget.RightStickY, "Push the RIGHT stick fully UP", false),
-        (AnalogTarget.LeftTrigger, "Pull L2 / LT all the way", true),
-        (AnalogTarget.RightTrigger, "Pull R2 / RT all the way", true),
+        (AnalogTarget.LeftStickX, "UiCalibrateLeftRight", false),
+        (AnalogTarget.LeftStickY, "UiCalibrateLeftUp", false),
+        (AnalogTarget.RightStickX, "UiCalibrateRightRight", false),
+        (AnalogTarget.RightStickY, "UiCalibrateRightUp", false),
+        (AnalogTarget.LeftTrigger, "UiCalibrateLeftTrigger", true),
+        (AnalogTarget.RightTrigger, "UiCalibrateRightTrigger", true),
     ];
 
     private void StartAxisCalibration()
@@ -1234,6 +1275,8 @@ public sealed class DevicesViewModel : ViewModelBase, IDisposable
 
     public void Dispose()
     {
+        keyboardPreviewTimer.Stop();
+        keyboardPreviewTimer.Tick -= OnInputPreviewTick;
         catalog.SetRawInspectionTarget(null);
         catalog.Updated -= OnCatalogUpdated;
         catalog.RawInspectionUpdated -= OnRawInspectionUpdated;

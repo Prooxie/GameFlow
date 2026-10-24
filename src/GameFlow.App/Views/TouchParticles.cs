@@ -91,6 +91,7 @@ public sealed class TouchParticles
 
     private readonly List<TouchParticle> particles = [];
     private readonly Dictionary<int, double> lastEmitByFinger = [];
+    internal int TrackedFingerCount => lastEmitByFinger.Count;
     private readonly Random random;
 
     public TouchParticles(int? seed = null) =>
@@ -108,6 +109,7 @@ public sealed class TouchParticles
 
         foreach (var contact in contacts)
         {
+            if (!float.IsFinite(contact.X) || !float.IsFinite(contact.Y) || !float.IsFinite(contact.Pressure)) { continue; }
             if (lastEmitByFinger.TryGetValue(contact.FingerIndex, out var last)
                 && nowSeconds - last < EmitIntervalSeconds)
             {
@@ -123,6 +125,7 @@ public sealed class TouchParticles
         }
 
         Prune(nowSeconds);
+
     }
 
     private TouchParticle Spawn(TouchContact contact, double nowSeconds)
@@ -159,6 +162,19 @@ public sealed class TouchParticles
             // A clock that jumped backwards would otherwise strand
             // particles in the future and keep the effect alive forever.
             || p.BornAt > nowSeconds + LifetimeSeconds);
+
+        List<int>? expired = null;
+        foreach (var (finger, emittedAt) in lastEmitByFinger)
+        {
+            if (nowSeconds - emittedAt > LifetimeSeconds || emittedAt > nowSeconds + LifetimeSeconds)
+            {
+                (expired ??= []).Add(finger);
+            }
+        }
+        if (expired is not null)
+        {
+            foreach (var finger in expired) { lastEmitByFinger.Remove(finger); }
+        }
 
         if (particles.Count > MaximumParticles)
         {

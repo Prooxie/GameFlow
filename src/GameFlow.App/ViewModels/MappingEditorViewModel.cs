@@ -117,6 +117,24 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(SaveButtonLabel));
         OnPropertyChanged(nameof(CancelButtonLabel));
         OnPropertyChanged(nameof(MappingRulesHeaderLabel));
+        OnPropertyChanged(nameof(RuleOrderHintLabel));
+        OnPropertyChanged(nameof(RuleOrderTipLabel));
+        OnPropertyChanged(nameof(ScriptTrustWarningLabel));
+        OnPropertyChanged(nameof(SectionInvertLeftStickLabel));
+        OnPropertyChanged(nameof(SectionInvertRightStickLabel));
+        OnPropertyChanged(nameof(SectionInvertTriggersLabel));
+        OnPropertyChanged(nameof(InvertXLabel));
+        OnPropertyChanged(nameof(InvertYLabel));
+        OnPropertyChanged(nameof(InvertL2Label));
+        OnPropertyChanged(nameof(InvertR2Label));
+        OnPropertyChanged(nameof(InvertShowInLayoutLabel));
+        OnPropertyChanged(nameof(InvertHintLabel));
+        OnPropertyChanged(nameof(TipInvertLeftXLabel));
+        OnPropertyChanged(nameof(TipInvertLeftYLabel));
+        OnPropertyChanged(nameof(TipInvertRightXLabel));
+        OnPropertyChanged(nameof(TipInvertRightYLabel));
+        OnPropertyChanged(nameof(TipInvertTriggerLabel));
+        OnPropertyChanged(nameof(TipInvertShowInLayoutLabel));
     }
 
     // ─── Localised labels for AXAML bindings ──────────────────────────────────
@@ -130,7 +148,7 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
     public string SuppressSourceButtonLabel   => Localized("MappingEditorSuppressSource",   "Suppress source button");
     public string EnabledLabel                => Localized("MappingEditorEnabled",          "Enabled");
     public string DeadzoneLabel               => Localized("MappingEditorDeadzoneLabel",    "Deadzone and threshold");
-    public string StoreScriptLabel            => Localized("MappingEditorStoreScript",      "Store a script for the selected control. Runtime execution is a planned step.");
+    public string StoreScriptLabel            => Localized("MappingEditorStoreScript",      "The script runs on every update while the rule is on.");
     public string SelectRuleToEditLabel       => Localized("MappingEditorSelectRuleToEdit", "Select a rule to edit");
     public string OrUseAddRuleLabel           => Localized("MappingEditorOrUseAddRule",     "Or use 'Add rule' to create a new mapping.");
     public string SaveButtonLabel             => Localized("MappingEditorSaveButton",       "Save");
@@ -155,30 +173,60 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
     public string SectionStepTargetLabel => Localized("MEV_SectionStepTarget", "TARGET");
     public string SectionScriptLabel => Localized("MEV_SectionScript", "SCRIPT");
     public string SectionTargetControlKeyLabel => Localized("MEV_SectionTargetControlKey", "TARGET CONTROL KEY");
-    public string SuppressRawAfterShapingLabel => Localized("MEV_SuppressRawAfterShaping", "Suppress raw source stick after shaping");
+    public string SuppressRawAfterShapingLabel => Localized("MEV_SuppressRawAfterShaping", "Use this stick only as a source for other rules");
     public string SuppressSourceStickOutputLabel => Localized("MEV_SuppressSourceStickOutput", "Suppress source stick output");
-    public string SuppressSourceInputStoredLabel => Localized("MEV_SuppressSourceInputStored", "Suppress source input (stored for future runtime)");
+    public string SuppressSourceInputStoredLabel => Localized("MEV_SuppressSourceInputStored", "Suppress the source button");
     public string SuppressActivationWhileFreezingLabel => Localized("MEV_SuppressActivationWhileFreezing", "Suppress activation button while freezing");
     public string SuppressCapturedWhileFrozenLabel => Localized("MEV_SuppressCapturedWhileFrozen", "Suppress captured stick output while frozen");
     public string PulseWhileFrozenLabel => Localized("MEV_PulseWhileFrozen", "Pulse while frozen (autofire while held)");
     public string EditButtonLabel => Localized("MEV_EditButton", "Edit");
     public string DeleteButtonLabel => Localized("MEV_DeleteButton", "Delete");
     public string AddStepLabel => Localized("MEV_AddStep", "+ Add step");
-    public string NoStepsYetLabel => Localized("MEV_NoStepsYet", "No steps yet — add at least one for the loop to do anything.");
-    public string HintDeadzoneLabel => Localized("MEV_HintDeadzone", "Ignore stick movement below this threshold.");
-    public string HintFullAtLabel => Localized("MEV_HintFullAt", "Reach 100% output at this raw stick magnitude.");
+    public string NoStepsYetLabel => Localized("MEV_NoStepsYet", "Add at least one step.");
+    public string HintDeadzoneLabel => Localized("MEV_HintDeadzone", "Movement below this is ignored.");
+    public string HintFullAtLabel => Localized("MEV_HintFullAt", "Output reaches 100% here.");
     public string HoldMsLabel => Localized("MEV_HoldMs", "HOLD ms");
     public string ReleaseMsLabel => Localized("MEV_ReleaseMs", "RELEASE ms");
     public string DelayMsLabel => Localized("MEV_DelayMs", "DELAY ms");
     public string SectionTriggerButtonToggleLabel => Localized("MEV_SectionTriggerButtonToggle", "TRIGGER BUTTON (press to toggle)");
     public string SectionRulesToToggleLabel => Localized("MEV_SectionRulesToToggle", "RULES TO TOGGLE");
-    public string ToggleHintLabel => Localized("MEV_ToggleHint", "Each press of the trigger flips the enabled state of the checked rules.");
-    public string NoOtherRulesLabel => Localized("MEV_NoOtherRules", "No other rules exist yet to target.");
+    public string ToggleHintLabel => Localized("MEV_ToggleHint", "Each press turns the checked rules on or off.");
+    public string NoOtherRulesLabel => Localized("MEV_NoOtherRules", "There are no other rules yet.");
     public string SectionTimingLabel => Localized("MEV_SectionTiming", "TIMING");
     public string TimingHoldLabel => Localized("MEV_TimingHold", "HOLD");
     public string TimingReleaseLabel => Localized("MEV_TimingRelease", "RELEASE");
-    public string HintHoldLabel => Localized("MEV_HintHold", "How long the virtual button is held (pressed phase).");
-    public string HintReleaseLabel => Localized("MEV_HintRelease", "How long the virtual button is released between pulses.");
+    public string HintHoldLabel => Localized("MEV_HintHold", "How long each press lasts.");
+    public string HintReleaseLabel => Localized("MEV_HintRelease", "The pause between presses.");
+
+    /// <summary>
+    /// Under the rule list: the pipeline runs rules grouped by TYPE in a
+    /// fixed order, so moving a rule up or down only changes anything among
+    /// rules of its own type. Without saying so, the arrows suggest the list
+    /// is the execution order, and it is not. One line on screen; the full
+    /// order is in <see cref="RuleOrderTipLabel"/>, its tooltip.
+    /// </summary>
+    public string RuleOrderHintLabel => Localized("MEV_RuleOrderHint", "Moving a rule only changes its order among rules of the same type.");
+
+    public string RuleOrderTipLabel => Localized("MEV_RuleOrderTip", "Rules run in this order: rule toggles, stick thresholds, SOCD, remaps, autofire, multi-button autofire, combos, stick autofire, freeze, stick trim, gyro, touchpad, multi-source rows, scripts, axis inversion.");
+
+    public string ScriptTrustWarningLabel => Localized("MEV_ScriptTrustWarning", "Only enable scripts from authors you trust.");
+
+    // ── Axis inversion: the header card's explanations, now as tooltips ──
+    public string SectionInvertLeftStickLabel => Localized("MEV_SectionInvertLeftStick", "LEFT STICK");
+    public string SectionInvertRightStickLabel => Localized("MEV_SectionInvertRightStick", "RIGHT STICK");
+    public string SectionInvertTriggersLabel => Localized("MEV_SectionInvertTriggers", "TRIGGERS");
+    public string InvertXLabel => Localized("MEV_InvertX", "Invert X");
+    public string InvertYLabel => Localized("MEV_InvertY", "Invert Y");
+    public string InvertL2Label => Localized("MEV_InvertL2", "Invert L2");
+    public string InvertR2Label => Localized("MEV_InvertR2", "Invert R2");
+    public string InvertShowInLayoutLabel => Localized("MEV_InvertShowInLayout", "Show the inversion on the on-screen controller");
+    public string InvertHintLabel => Localized("MEV_InvertHint", "Applied last, so other rules still see the stick as you push it.");
+    public string TipInvertLeftXLabel => Localized("MEV_TipInvertLeftX", "Swaps left and right for this profile only.\n\nOther rules still see the stick as you push it. Only the game gets the flip.");
+    public string TipInvertLeftYLabel => Localized("MEV_TipInvertLeftY", "Swaps up and down for this profile only.\n\nUse it when a game reads the stick upside down: you push up and the character walks down.");
+    public string TipInvertRightXLabel => Localized("MEV_TipInvertRightX", "Swaps left and right for this profile only.");
+    public string TipInvertRightYLabel => Localized("MEV_TipInvertRightY", "Swaps up and down for this profile only.\n\nThe common case: inverted camera in a game without its own setting.");
+    public string TipInvertTriggerLabel => Localized("MEV_TipInvertTrigger", "Flips the trigger within its range, so released reads as fully pulled.\n\nMeant for hardware with a reversed trigger axis, not for games. Leave it off unless the game should read an untouched trigger as held.");
+    public string TipInvertShowInLayoutLabel => Localized("MEV_TipInvertShowInLayout", "Off by default, so pushing up still shows as up.\n\nTurn it on to see exactly what the game receives.");
 
     /// <summary>
     /// Internal helper: looks up <paramref name="key"/> via the optional
@@ -255,7 +303,7 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
         private set => SetProperty(ref field, value);
     }
 
-    public string EditPanelTitle => IsAddingNew ? "Add new rule" : $"Edit: {EditingRule?.Name ?? "rule"}";
+    public string EditPanelTitle => IsAddingNew ? UiTextResources.Get("UiAddNewRule") : UiTextResources.Format("UiEditRule", EditingRule?.Name ?? UiTextResources.Get("UiNewRule"));
 
     public ICommand AddRuleCommand { get; }
     public IRelayCommand<MappingRuleViewModel> EditRuleCommand { get; }
@@ -475,23 +523,23 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
                 case RuleKind.ButtonRemap:
                     viewModel.SourceButton = button;
                     viewModel.TargetButton = button;
-                    viewModel.Name = $"Remap {ControlRuleMatcher.FormatButtonLabel(button)}";
+                    viewModel.Name = UiTextResources.Format("UiRemapControl", ControlRuleMatcher.FormatButtonLabel(button));
                     break;
 
                 case RuleKind.ButtonAutofire:
                     viewModel.SourceButton = button;
                     viewModel.TargetButton = button;
-                    viewModel.Name = $"Turbo {ControlRuleMatcher.FormatButtonLabel(button)}";
+                    viewModel.Name = UiTextResources.Format("UiAutofireControl", ControlRuleMatcher.FormatButtonLabel(button));
                     break;
 
                 case RuleKind.FreezeLastDirection:
                     viewModel.ActivationButton = button;
-                    viewModel.Name = $"Freeze via {ControlRuleMatcher.FormatButtonLabel(button)}";
+                    viewModel.Name = UiTextResources.Format("UiFreezeControl", ControlRuleMatcher.FormatButtonLabel(button));
                     break;
 
                 case RuleKind.MultiButtonAutofire:
                     viewModel.SourceButton = button;
-                    viewModel.Name = $"Multi-fire via {ControlRuleMatcher.FormatButtonLabel(button)}";
+                    viewModel.Name = UiTextResources.Format("UiAutofireControl", ControlRuleMatcher.FormatButtonLabel(button));
                     if (viewModel.Steps.Count == 0)
                     {
                         viewModel.Steps.Add(new MultiButtonStepViewModel { TargetButton = button });
@@ -500,12 +548,12 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
 
                 case RuleKind.RuleToggle:
                     viewModel.SourceButton = button;
-                    viewModel.Name = $"Toggle via {ControlRuleMatcher.FormatButtonLabel(button)}";
+                    viewModel.Name = UiTextResources.Format("UiToggleControl", ControlRuleMatcher.FormatButtonLabel(button));
                     break;
 
                 case RuleKind.Script:
                     viewModel.ControlKey = normalizedKey;
-                    viewModel.Name = $"Script {ControlRuleMatcher.GetTitle(normalizedKey)}";
+                    viewModel.Name = UiTextResources.Format("UiScriptControl", ControlRuleMatcher.GetTitle(normalizedKey));
                     break;
             }
 
@@ -518,24 +566,24 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
             {
                 case RuleKind.StickThreshold:
                     viewModel.TargetStick = stick;
-                    viewModel.Name = $"Threshold {ControlRuleMatcher.FormatStickLabel(stick)}";
+                    viewModel.Name = UiTextResources.Format("UiThresholdControl", ControlRuleMatcher.FormatStickLabel(stick));
                     break;
 
                 case RuleKind.StickAutofire:
                     viewModel.SourceStick = stick;
                     viewModel.TargetStick = stick;
-                    viewModel.Name = $"Autofire {ControlRuleMatcher.FormatStickLabel(stick)}";
+                    viewModel.Name = UiTextResources.Format("UiAutofireControl", ControlRuleMatcher.FormatStickLabel(stick));
                     break;
 
                 case RuleKind.FreezeLastDirection:
                     viewModel.CaptureStick = stick;
                     viewModel.TargetStick = stick;
-                    viewModel.Name = $"Freeze {ControlRuleMatcher.FormatStickLabel(stick)}";
+                    viewModel.Name = UiTextResources.Format("UiFreezeControl", ControlRuleMatcher.FormatStickLabel(stick));
                     break;
 
                 case RuleKind.Script:
                     viewModel.ControlKey = normalizedKey;
-                    viewModel.Name = $"Script {ControlRuleMatcher.GetTitle(normalizedKey)}";
+                    viewModel.Name = UiTextResources.Format("UiScriptControl", ControlRuleMatcher.GetTitle(normalizedKey));
                     break;
             }
 
@@ -545,7 +593,7 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
         if (kind == RuleKind.Script)
         {
             viewModel.ControlKey = normalizedKey;
-            viewModel.Name = $"Script {ControlRuleMatcher.GetTitle(normalizedKey)}";
+            viewModel.Name = UiTextResources.Format("UiScriptControl", ControlRuleMatcher.GetTitle(normalizedKey));
         }
 
         return viewModel;
@@ -568,44 +616,7 @@ public sealed class MappingEditorViewModel : ViewModelBase, IDisposable
             };
     }
 
-    private IReadOnlyList<RuleKindOption> BuildRuleKindOptions()
-    {
-        return
-        [
-            new RuleKindOption(RuleKind.ButtonRemap,
-                Localized("RuleKindButtonRemapLabel",            "Button Remap"),
-                Localized("RuleKindButtonRemapDescription",      "Route one physical button to the selected virtual output."),
-                "#4F8CFF"),
-            new RuleKindOption(RuleKind.ButtonAutofire,
-                Localized("RuleKindButtonAutofireLabel",         "Button Autofire / Turbo"),
-                Localized("RuleKindButtonAutofireDescription",   "Rapid-fire a button at a configurable rate."),
-                "#F97316"),
-            new RuleKindOption(RuleKind.StickThreshold,
-                Localized("RuleKindStickThresholdLabel",         "Stick Threshold"),
-                Localized("RuleKindStickThresholdDescription",   "Deadzone and threshold shaping for a stick."),
-                "#10B981"),
-            new RuleKindOption(RuleKind.StickAutofire,
-                Localized("RuleKindStickAutofireLabel",          "Stick Autofire"),
-                Localized("RuleKindStickAutofireDescription",    "Pulse one stick output from another stick."),
-                "#A78BFA"),
-            new RuleKindOption(RuleKind.FreezeLastDirection,
-                Localized("RuleKindFreezeLastDirectionLabel",    "Freeze Last Direction"),
-                Localized("RuleKindFreezeLastDirectionDescription", "Hold the last observed stick direction while a button is held."),
-                "#00D4FF"),
-            new RuleKindOption(RuleKind.MultiButtonAutofire,
-                Localized("RuleKindMultiButtonAutofireLabel",    "Multi-Button Autofire"),
-                Localized("RuleKindMultiButtonAutofireDescription", "Loop a sequence of button presses with per-step timing while held."),
-                "#FB7185"),
-            new RuleKindOption(RuleKind.RuleToggle,
-                Localized("RuleKindRuleToggleLabel",             "Rule Toggle"),
-                Localized("RuleKindRuleToggleDescription",       "Press a button to enable or disable one or more other rules."),
-                "#34D399"),
-            new RuleKindOption(RuleKind.Script,
-                Localized("RuleKindScriptLabel",                 "Control Script"),
-                Localized("RuleKindScriptDescription",           "Store script text for a specific control."),
-                "#FACC15")
-        ];
-    }
+    private static IReadOnlyList<RuleKindOption> BuildRuleKindOptions() => MappingRuleViewModel.BuildRuleKindOptions();
 
     public void Dispose()
     {

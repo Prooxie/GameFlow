@@ -2,6 +2,28 @@
 
 namespace GameFlow.Core.Models;
 
+/// <summary>Mouse inputs currently active on a mouse-fed snapshot.</summary>
+[Flags]
+public enum MouseButtonFlags
+{
+    None = 0,
+    Left = 1,
+    Right = 2,
+    Middle = 4,
+
+    /// <summary>Side button 4.</summary>
+    Back = 8,
+
+    /// <summary>Side button 5.</summary>
+    Forward = 16,
+
+    /// <summary>The wheel turned up recently. Held briefly so a single notch is visible and pressable.</summary>
+    WheelUp = 32,
+
+    /// <summary>The wheel turned down recently.</summary>
+    WheelDown = 64,
+}
+
 public sealed record ControllerSnapshot
 {
     public string DeviceName { get; init; } = string.Empty;
@@ -98,6 +120,27 @@ public sealed record ControllerSnapshot
     public IReadOnlySet<int> PressedKeys { get; init; } = EmptyKeys;
 
     private static readonly IReadOnlySet<int> EmptyKeys = new HashSet<int>();
+
+    /// <summary>
+    /// Mouse buttons held, and the wheel direction of the last notch, when
+    /// a mouse feeds this snapshot. <see cref="MouseButtonFlags.None"/> for
+    /// every other source.
+    ///
+    /// <para>
+    /// Carried for the same reason as <see cref="PressedKeys"/>: what the
+    /// mouse turns into is decided by the user's binding map, so the
+    /// gamepad fields alone cannot tell a picture of the mouse which of
+    /// its own buttons is down.
+    /// </para>
+    /// </summary>
+    public MouseButtonFlags MouseButtons { get; init; }
+
+    /// <summary>
+    /// Smoothed mouse velocity on the same −1‥1 scale the bound stick
+    /// receives, Y up — what the mouse picture draws as its movement arrow.
+    /// Zero for every other source.
+    /// </summary>
+    public StickVector MouseMotion { get; init; } = StickVector.Zero;
 
     public int TouchContactCount { get; init; }
 

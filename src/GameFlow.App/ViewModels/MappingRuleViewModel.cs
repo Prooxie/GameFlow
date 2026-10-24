@@ -5,44 +5,44 @@ using GameFlow.Core.Models.Rules;
 
 namespace GameFlow.App.ViewModels;
 
-public sealed record ButtonIdOption(ButtonId Button, string Label)
+public sealed class ButtonIdOption(ButtonId button) : ViewModelBase
 {
-    public override string ToString()
-    {
-        return Label;
-    }
+    public ButtonId Button { get; } = button;
+    public string Label => UiTextResources.EnumValue(Button);
+    public override string ToString() => Label;
 }
 
-public sealed record StickIdOption(StickId Stick, string Label)
+public sealed class StickIdOption(StickId stick) : ViewModelBase
 {
-    public override string ToString()
-    {
-        return Label;
-    }
+    public StickId Stick { get; } = stick;
+    public string Label => UiTextResources.EnumValue(Stick);
+    public override string ToString() => Label;
 }
 
-public sealed record BlendModeOption(StickBlendMode Mode, string Label)
+public sealed class BlendModeOption(StickBlendMode mode) : ViewModelBase
 {
-    public override string ToString()
-    {
-        return Label;
-    }
+    public StickBlendMode Mode { get; } = mode;
+    public string Label => UiTextResources.EnumValue(Mode);
+    public override string ToString() => Label;
 }
 
-public sealed record RuleModeOption(RuleMode Mode, string Label)
+public sealed class RuleModeOption(RuleMode mode) : ViewModelBase
 {
-    public override string ToString()
-    {
-        return Label;
-    }
+    public RuleMode Mode { get; } = mode;
+    public string Label => UiTextResources.EnumValue(Mode);
+    public override string ToString() => Label;
 }
 
-public sealed record RuleKindOption(RuleKind Kind, string Label, string Description, string BadgeColor)
+public sealed class RuleKindOption(RuleKind kind, string badgeColor) : ViewModelBase
 {
-    public override string ToString()
-    {
-        return Label;
-    }
+    public RuleKind Kind { get; } = kind;
+    public string BadgeColor { get; } = badgeColor;
+    public string Label => GetLabel(Kind);
+    public string Description => UiTextResources.Get(TranslationPrefix(Kind) + "Description");
+    public static string GetLabel(RuleKind kind) => UiTextResources.Get(kind == RuleKind.Preserved
+        ? "MappedControlGenericTitle" : TranslationPrefix(kind) + "Label");
+    private static string TranslationPrefix(RuleKind kind) => "RuleKind" + kind;
+    public override string ToString() => Label;
 }
 
 public enum RuleKind
@@ -65,7 +65,8 @@ public enum RuleKind
     FreezeLastDirection,
     MultiButtonAutofire,
     RuleToggle,
-    Script
+    Script,
+    AxisInvert
 }
 
 /// <summary>
@@ -82,7 +83,7 @@ public sealed class MultiButtonStepViewModel : ViewModelBase
     private double delayAfterMs;
 
     public IReadOnlyList<ButtonIdOption> ButtonOptions { get; } =
-        [.. Enum.GetValues<ButtonId>().Select(b => new ButtonIdOption(b, ControlRuleMatcher.FormatButtonLabel(b)))];
+        [.. Enum.GetValues<ButtonId>().Select(b => new ButtonIdOption(b))];
 
     public ButtonId TargetButton
     {
@@ -200,7 +201,7 @@ public sealed class MappingRuleViewModel : ViewModelBase
     private static readonly IReadOnlyList<RuleKindOption> KindOptionsSource = BuildRuleKindOptions();
 
     private RuleKind kind = RuleKind.ButtonRemap;
-    private string name = "New rule";
+    private string name = UiTextResources.Get("UiNewRule");
     private bool enabled = true;
     private RuleMode mode = RuleMode.Modify;
     private ButtonId sourceButton = ButtonId.South;
@@ -223,6 +224,16 @@ public sealed class MappingRuleViewModel : ViewModelBase
     private string controlKey = string.Empty;
     private string scriptCode = string.Empty;
     private bool suppressScriptSourceInput;
+
+    /// <summary>
+    /// The inversion being edited, carried whole so ticking one box rewrites
+    /// ONE axis and leaves the others exactly as loaded — including null.
+    /// Rebuilding it from the checkboxes would give the rule an explicit
+    /// opinion about every axis the moment anyone touched one, and an
+    /// explicit "off" overrides an inversion folded in before it where a
+    /// null defers to it.
+    /// </summary>
+    private AxisInvert axes = new();
 
     /// <summary>The verbatim original for <see cref="RuleKind.Preserved"/> rows — see that member's doc.</summary>
     private MappingRule? preservedRule;
@@ -300,6 +311,15 @@ public sealed class MappingRuleViewModel : ViewModelBase
 
     public string Id { get; private set; } = Guid.NewGuid().ToString("N");
 
+    /// <summary>
+    /// The shift layer this rule belongs to; empty = Base. Not editable here
+    /// (layers assign their rules elsewhere), but carried through
+    /// <see cref="FromRule"/>/<see cref="ToRule"/> — it used to be dropped,
+    /// and because every edit rebuilds every rule, ANY edit in this list
+    /// quietly turned every layer rule in the profile into a Base rule.
+    /// </summary>
+    public string LayerId { get; private set; } = string.Empty;
+
     public IReadOnlyList<ButtonIdOption> ButtonOptions => ButtonOptionsSource;
     public IReadOnlyList<StickIdOption> StickOptions => StickOptionsSource;
     public IReadOnlyList<BlendModeOption> BlendModeOptions => BlendModeOptionsSource;
@@ -327,6 +347,7 @@ public sealed class MappingRuleViewModel : ViewModelBase
             OnPropertyChanged(nameof(IsMultiButtonAutofire));
             OnPropertyChanged(nameof(IsRuleToggle));
             OnPropertyChanged(nameof(IsScriptRule));
+            OnPropertyChanged(nameof(IsAxisInvert));
             OnPropertyChanged(nameof(HasTiming));
             OnPropertyChanged(nameof(ShowPulseTiming));
             OnPropertyChanged(nameof(KindLabel));
@@ -681,6 +702,70 @@ public sealed class MappingRuleViewModel : ViewModelBase
         }
     }
 
+    public bool InvertLeftX
+    {
+        get => axes.LeftX is true;
+        set => MutateAxes(axes with { LeftX = value }, nameof(InvertLeftX));
+    }
+
+    public bool InvertLeftY
+    {
+        get => axes.LeftY is true;
+        set => MutateAxes(axes with { LeftY = value }, nameof(InvertLeftY));
+    }
+
+    public bool InvertRightX
+    {
+        get => axes.RightX is true;
+        set => MutateAxes(axes with { RightX = value }, nameof(InvertRightX));
+    }
+
+    public bool InvertRightY
+    {
+        get => axes.RightY is true;
+        set => MutateAxes(axes with { RightY = value }, nameof(InvertRightY));
+    }
+
+    public bool InvertLeftTrigger
+    {
+        get => axes.LeftTrigger is true;
+        set => MutateAxes(axes with { LeftTrigger = value }, nameof(InvertLeftTrigger));
+    }
+
+    public bool InvertRightTrigger
+    {
+        get => axes.RightTrigger is true;
+        set => MutateAxes(axes with { RightTrigger = value }, nameof(InvertRightTrigger));
+    }
+
+    public bool ShowInvertInLayout
+    {
+        get => axes.ShowInLayout is true;
+        set => MutateAxes(axes with { ShowInLayout = value }, nameof(ShowInvertInLayout));
+    }
+
+    /// <summary>
+    /// Applies one checkbox's edit. A write that would not change what the
+    /// box shows is ignored, so a binding echoing a loaded value back never
+    /// turns a null ("no opinion") into an explicit false.
+    /// </summary>
+    private void MutateAxes(AxisInvert updated, string propertyName)
+    {
+        var shownBefore = DescribeShown(axes);
+        if (DescribeShown(updated) == shownBefore)
+        {
+            return;
+        }
+
+        axes = updated;
+        OnPropertyChanged(propertyName);
+        OnPropertyChanged(nameof(SummaryText));
+
+        static (bool, bool, bool, bool, bool, bool, bool) DescribeShown(AxisInvert a) =>
+            (a.LeftX is true, a.LeftY is true, a.RightX is true, a.RightY is true,
+             a.LeftTrigger is true, a.RightTrigger is true, a.ShowInLayout is true);
+    }
+
     public bool IsButtonRemap => Kind == RuleKind.ButtonRemap;
     public bool IsButtonAutofire => Kind == RuleKind.ButtonAutofire;
     public bool IsStickThreshold => Kind == RuleKind.StickThreshold;
@@ -689,6 +774,7 @@ public sealed class MappingRuleViewModel : ViewModelBase
     public bool IsMultiButtonAutofire => Kind == RuleKind.MultiButtonAutofire;
     public bool IsRuleToggle => Kind == RuleKind.RuleToggle;
     public bool IsScriptRule => Kind == RuleKind.Script;
+    public bool IsAxisInvert => Kind == RuleKind.AxisInvert;
     public bool HasTiming => Kind is RuleKind.ButtonAutofire or RuleKind.StickAutofire or RuleKind.FreezeLastDirection;
     public bool ShowPulseTiming => HasTiming && (Kind != RuleKind.FreezeLastDirection || PulseEnabled);
 
@@ -746,18 +832,7 @@ public sealed class MappingRuleViewModel : ViewModelBase
         }
     }
 
-    public string KindLabel => Kind switch
-    {
-        RuleKind.ButtonRemap => "Button Remap",
-        RuleKind.ButtonAutofire => "Button Autofire / Turbo",
-        RuleKind.StickThreshold => "Stick Threshold",
-        RuleKind.StickAutofire => "Stick Autofire",
-        RuleKind.FreezeLastDirection => "Freeze Last Direction",
-        RuleKind.MultiButtonAutofire => "Multi-Button Autofire",
-        RuleKind.RuleToggle => "Rule Toggle",
-        RuleKind.Script => "Control Script",
-        _ => "Rule"
-    };
+    public string KindLabel => RuleKindOption.GetLabel(Kind);
 
     public string KindBadgeColor => Kind switch
     {
@@ -769,31 +844,14 @@ public sealed class MappingRuleViewModel : ViewModelBase
         RuleKind.MultiButtonAutofire => "#FB7185",
         RuleKind.RuleToggle => "#34D399",
         RuleKind.Script => "#FACC15",
+        RuleKind.AxisInvert => ControlRuleMatcher.AxisInvertBadgeColor,
         _ => "#64748B"
     };
 
-    public string SummaryText => Kind switch
-    {
-        RuleKind.Preserved =>
-            $"{preservedRule?.GetType().Name ?? "Rule"} — no visual editor yet; preserved as-is (edit via profile JSON).",
-        RuleKind.ButtonRemap =>
-            $"{ControlRuleMatcher.FormatButtonLabel(SourceButton)} → {ControlRuleMatcher.FormatButtonLabel(TargetButton)} · {FormatMode(Mode)}{FormatSuffix(SuppressSourceButton, "suppress src")}",
-        RuleKind.ButtonAutofire =>
-            $"{ControlRuleMatcher.FormatButtonLabel(SourceButton)} → {ControlRuleMatcher.FormatButtonLabel(TargetButton)} · {HoldMs:0}/{ReleaseMs:0} ms · {FormatMode(Mode)}{FormatSuffix(SuppressSourceButton, "suppress src")}",
-        RuleKind.StickThreshold =>
-            $"{ControlRuleMatcher.FormatStickLabel(TargetStick)} · deadzone {Deadzone:0.00} · full {FullAt:0.00} · {FormatMode(Mode)}{FormatSuffix(SuppressThresholdSourceStick, "suppress raw")}",
-        RuleKind.StickAutofire =>
-            $"{ControlRuleMatcher.FormatStickLabel(SourceStick)} → {ControlRuleMatcher.FormatStickLabel(TargetStick)} · dz {Deadzone:0.00} · full {FullAt:0.00} · {HoldMs:0}/{ReleaseMs:0} ms · {FormatMode(Mode)}{FormatSuffix(SuppressSourceStick, "suppress src")}",
-        RuleKind.FreezeLastDirection =>
-            $"{ControlRuleMatcher.FormatButtonLabel(ActivationButton)} → freeze {ControlRuleMatcher.FormatStickLabel(CaptureStick)} into {ControlRuleMatcher.FormatStickLabel(TargetStick)} · {FormatMode(Mode)}{FormatSuffix(SuppressActivationButton, "suppress btn")}{FormatSuffix(SuppressCaptureStick, "suppress stick")}",
-        RuleKind.MultiButtonAutofire =>
-            $"{ControlRuleMatcher.FormatButtonLabel(SourceButton)} → loop {Steps.Count} step(s) · {FormatMode(Mode)}{FormatSuffix(SuppressSourceButton, "suppress src")}",
-        RuleKind.RuleToggle =>
-            $"{ControlRuleMatcher.FormatButtonLabel(SourceButton)} → toggle {ToggleTargets.Count(t => t.IsSelected)} rule(s){FormatSuffix(SuppressSourceButton, "suppress src")}",
-        RuleKind.Script =>
-            $"{(string.IsNullOrWhiteSpace(ControlKey) ? "No control selected" : ControlRuleMatcher.GetTitle(ControlKey))} · script{FormatSuffix(SuppressScriptSourceInput, "suppress src")}",
-        _ => string.Empty
-    };
+    /// <summary>Gets the same translated rule summary as the controller inspector.</summary>
+    public string SummaryText => Kind == RuleKind.Preserved
+        ? UiTextResources.Format("UiPreservedRule", preservedRule?.GetType().Name ?? KindLabel)
+        : ControlRuleMatcher.CreateEntry(ToRule()).Value;
 
     public RuleKindOption? SelectedKindOption
     {
@@ -907,10 +965,10 @@ public sealed class MappingRuleViewModel : ViewModelBase
     {
         if (Kind == RuleKind.Preserved && preservedRule is not null)
         {
-            return preservedRule with { Name = Name, Enabled = Enabled, Mode = Mode };
+            return preservedRule with { Name = Name, Enabled = Enabled, Mode = Mode, LayerId = LayerId };
         }
 
-        return Kind switch
+        MappingRule rule = Kind switch
         {
             RuleKind.ButtonRemap => new ButtonRemapRule
             {
@@ -1028,8 +1086,20 @@ public sealed class MappingRuleViewModel : ViewModelBase
                 ScriptCode = ScriptCode,
                 SuppressSourceInput = SuppressScriptSourceInput
             },
+            RuleKind.AxisInvert => new AxisInvertRule
+            {
+                Id = Id,
+                Name = Name,
+                Enabled = Enabled,
+                Mode = Mode,
+                Axes = axes
+            },
             _ => throw new InvalidOperationException($"Unknown rule kind: {Kind}")
         };
+
+        // Once, here, rather than in every initializer above, so a kind
+        // added later cannot forget it — see LayerId.
+        return rule with { LayerId = LayerId };
     }
 
     public MappingRuleViewModel Clone()
@@ -1042,6 +1112,7 @@ public sealed class MappingRuleViewModel : ViewModelBase
         var viewModel = new MappingRuleViewModel
         {
             Id = rule.Id,
+            LayerId = rule.LayerId,
             name = rule.Name,
             enabled = rule.Enabled,
             mode = rule.Mode
@@ -1130,6 +1201,11 @@ public sealed class MappingRuleViewModel : ViewModelBase
                 viewModel.suppressScriptSourceInput = typedRule.SuppressSourceInput;
                 break;
 
+            case AxisInvertRule typedRule:
+                viewModel.kind = RuleKind.AxisInvert;
+                viewModel.axes = typedRule.Axes;
+                break;
+
             default:
                 viewModel.kind = RuleKind.Preserved;
                 viewModel.preservedRule = rule;
@@ -1144,33 +1220,22 @@ public sealed class MappingRuleViewModel : ViewModelBase
         return new()
         {
             kind = kind,
-            name = kind switch
-            {
-                RuleKind.ButtonRemap => "Button Remap",
-                RuleKind.ButtonAutofire => "Button Autofire",
-                RuleKind.StickThreshold => "Stick Threshold",
-                RuleKind.StickAutofire => "Stick Autofire",
-                RuleKind.FreezeLastDirection => "Freeze Last Direction",
-                RuleKind.MultiButtonAutofire => "Multi-Button Autofire",
-                RuleKind.RuleToggle => "Rule Toggle",
-                RuleKind.Script => "Control Script",
-                _ => "Rule"
-            },
+            name = RuleKindOption.GetLabel(kind),
             controlKey = kind == RuleKind.Script ? "South" : string.Empty
         };
     }
 
     private static IReadOnlyList<ButtonIdOption> BuildButtonOptions()
     {
-        return [.. Enum.GetValues<ButtonId>().Select(button => new ButtonIdOption(button, ControlRuleMatcher.FormatButtonLabel(button)))];
+        return [.. Enum.GetValues<ButtonId>().Select(button => new ButtonIdOption(button))];
     }
 
     private static IReadOnlyList<StickIdOption> BuildStickOptions()
     {
         return
         [
-            new StickIdOption(StickId.Left, ControlRuleMatcher.FormatStickLabel(StickId.Left)),
-            new StickIdOption(StickId.Right, ControlRuleMatcher.FormatStickLabel(StickId.Right))
+            new StickIdOption(StickId.Left),
+            new StickIdOption(StickId.Right)
         ];
     }
 
@@ -1178,8 +1243,8 @@ public sealed class MappingRuleViewModel : ViewModelBase
     {
         return
         [
-            new BlendModeOption(StickBlendMode.Replace, "Replace — overwrite target"),
-            new BlendModeOption(StickBlendMode.Additive, "Additive — add to target")
+            new BlendModeOption(StickBlendMode.Replace),
+            new BlendModeOption(StickBlendMode.Additive)
         ];
     }
 
@@ -1187,24 +1252,25 @@ public sealed class MappingRuleViewModel : ViewModelBase
     {
         return
         [
-            new RuleModeOption(RuleMode.Modify, "Modify"),
-            new RuleModeOption(RuleMode.Passthrough, "Passthrough"),
-            new RuleModeOption(RuleMode.DoNothing, "Ignore / block")
+            new RuleModeOption(RuleMode.Modify),
+            new RuleModeOption(RuleMode.Passthrough),
+            new RuleModeOption(RuleMode.DoNothing)
         ];
     }
 
-    private static IReadOnlyList<RuleKindOption> BuildRuleKindOptions()
+    internal static IReadOnlyList<RuleKindOption> BuildRuleKindOptions()
     {
         return
         [
-            new RuleKindOption(RuleKind.ButtonRemap, "Button Remap", "Route one button to another.", "#4F8CFF"),
-            new RuleKindOption(RuleKind.ButtonAutofire, "Button Autofire / Turbo", "Rapid-fire a button at a configurable rate.", "#F97316"),
-            new RuleKindOption(RuleKind.StickThreshold, "Stick Threshold", "Deadzone and threshold shaping for a stick.", "#10B981"),
-            new RuleKindOption(RuleKind.StickAutofire, "Stick Autofire", "Pulse one stick output from another stick.", "#A78BFA"),
-            new RuleKindOption(RuleKind.FreezeLastDirection, "Freeze Last Direction", "Hold the last observed stick direction while a button is held.", "#00D4FF"),
-            new RuleKindOption(RuleKind.MultiButtonAutofire, "Multi-Button Autofire", "Loop a sequence of button presses with per-step timing while held.", "#FB7185"),
-            new RuleKindOption(RuleKind.RuleToggle, "Rule Toggle", "Press a button to enable/disable one or more other rules.", "#34D399"),
-            new RuleKindOption(RuleKind.Script, "Control Script", "Store script text for a specific control.", "#FACC15")
+            new RuleKindOption(RuleKind.ButtonRemap, "#4F8CFF"),
+            new RuleKindOption(RuleKind.ButtonAutofire, "#F97316"),
+            new RuleKindOption(RuleKind.StickThreshold, "#10B981"),
+            new RuleKindOption(RuleKind.StickAutofire, "#A78BFA"),
+            new RuleKindOption(RuleKind.FreezeLastDirection, "#00D4FF"),
+            new RuleKindOption(RuleKind.MultiButtonAutofire, "#FB7185"),
+            new RuleKindOption(RuleKind.RuleToggle, "#34D399"),
+            new RuleKindOption(RuleKind.Script, "#FACC15"),
+            new RuleKindOption(RuleKind.AxisInvert, ControlRuleMatcher.AxisInvertBadgeColor)
         ];
     }
 
@@ -1212,27 +1278,11 @@ public sealed class MappingRuleViewModel : ViewModelBase
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return "No script stored yet.";
+            return UiTextResources.Get("UiNoScript");
         }
 
         var singleLine = value.Replace("\r", " ").Replace("\n", " ").Trim();
         return singleLine.Length <= 88 ? singleLine : singleLine[..85] + "...";
-    }
-
-    private static string FormatMode(RuleMode mode)
-    {
-        return mode switch
-        {
-            RuleMode.Modify => "modify",
-            RuleMode.Passthrough => "passthrough",
-            RuleMode.DoNothing => "ignore",
-            _ => mode.ToString()
-        };
-    }
-
-    private static string FormatSuffix(bool enabled, string text)
-    {
-        return enabled ? $" · {text}" : string.Empty;
     }
 
     private static bool TryParseDouble(string? value, out double parsed)

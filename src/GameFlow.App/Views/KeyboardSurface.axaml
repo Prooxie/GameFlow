@@ -1,49 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:GameFlow.App.ViewModels"
-             x:Class="GameFlow.App.Views.KeyboardSurface"
-             x:DataType="vm:DevicesViewModel"
-             x:CompileBindings="True">
-
-  <UserControl.Styles>
-    <Style Selector="Border.keycap">
-      <Setter Property="BorderBrush" Value="{DynamicResource AppBorder0}" />
-      <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="CornerRadius" Value="4" />
-      <Setter Property="Padding" Value="2,0" />
-      <Setter Property="HorizontalAlignment" Value="Left" />
-      <Setter Property="VerticalAlignment" Value="Top" />
-    </Style>
-    <Style Selector="Border.keycap > StackPanel">
-      <Setter Property="HorizontalAlignment" Value="Center" />
-      <Setter Property="VerticalAlignment" Value="Center" />
-    </Style>
-    <Style Selector="Border.keycap TextBlock.keylabel">
-      <Setter Property="HorizontalAlignment" Value="Center" />
-      <Setter Property="VerticalAlignment" Value="Center" />
-      <Setter Property="FontWeight" Value="SemiBold" />
-      <Setter Property="FontSize" Value="10.5" />
-      <Setter Property="FontFamily" Value="Consolas, monospace" />
-    </Style>
-    <Style Selector="Border.keycap TextBlock.keyhint">
-      <Setter Property="HorizontalAlignment" Value="Center" />
-      <Setter Property="FontSize" Value="7.5" />
-      <Setter Property="LineHeight" Value="8" />
-      <Setter Property="Opacity" Value="0.62" />
-    </Style>
-  </UserControl.Styles>
-
-  <Border Background="{DynamicResource AppSurface0}"
-          BorderBrush="{DynamicResource AppBorder0}"
-          BorderThickness="1"
-          CornerRadius="10"
-          Padding="14,12">
-    <!--
-      Children are generated from KeyboardPhysicalLayout.Ansi104 in the
-      code-behind. Keeping the 104 identifiers and rectangles in one typed,
-      testable table prevents the displayed geometry from drifting away from
-      the raw-input mapping as individual keys are added or corrected.
-    -->
-    <Canvas x:Name="KeyCanvas" Width="770" Height="208" />
-  </Border>
+             x:Class="GameFlow.App.Views.KeyboardSurface">
+  <Canvas x:Name="InputCanvas" />
 </UserControl>

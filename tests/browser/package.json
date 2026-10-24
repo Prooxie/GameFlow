@@ -1,0 +1,11 @@
+{
+  "name": "gameflow-browser-tests",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node --test --test-timeout=20000 *.test.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

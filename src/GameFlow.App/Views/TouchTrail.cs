@@ -52,6 +52,7 @@ public sealed class TouchTrail
     private const double MinimumSampleDistance = 0.004;
 
     private readonly Dictionary<int, List<TouchTrailSample>> byFinger = [];
+    internal int TrackedFingerCount => byFinger.Count;
 
     /// <summary>True while any point is still fading — the surface has to keep repainting to animate it.</summary>
     public bool HasPoints { get; private set; }
@@ -63,6 +64,7 @@ public sealed class TouchTrail
 
         foreach (var contact in contacts)
         {
+            if (!float.IsFinite(contact.X) || !float.IsFinite(contact.Y) || !float.IsFinite(contact.Pressure)) { continue; }
             if (!byFinger.TryGetValue(contact.FingerIndex, out var samples))
             {
                 samples = [];
@@ -109,6 +111,7 @@ public sealed class TouchTrail
     public void Prune(double nowSeconds)
     {
         var live = false;
+        List<int>? expired = null;
 
         foreach (var (finger, samples) in byFinger)
         {
@@ -136,8 +139,12 @@ public sealed class TouchTrail
             {
                 live = true;
             }
+            else { (expired ??= []).Add(finger); }
 
-            _ = finger;
+        }
+        if (expired is not null)
+        {
+            foreach (var finger in expired) { byFinger.Remove(finger); }
         }
 
         HasPoints = live;

@@ -94,6 +94,56 @@ public static class AppThemeService
     };
 
     /// <summary>
+    /// The theme the app last ran with, read synchronously from a one-line
+    /// file so the splash window can open in it.
+    /// </summary>
+    /// <remarks>
+    /// The real choice lives in the active profile, which loads seconds
+    /// later. Until then the app painted its default palette, so anyone on
+    /// another theme watched the splash switch colours halfway through
+    /// loading. Reading the last applied theme at startup avoids that, and
+    /// the profile still has the final word once it loads.
+    /// </remarks>
+    public static AppThemeKind LastApplied()
+    {
+        try
+        {
+            var text = File.Exists(LastThemeFile) ? File.ReadAllText(LastThemeFile).Trim() : string.Empty;
+            return Enum.TryParse<AppThemeKind>(text, ignoreCase: true, out var kind) && Enum.IsDefined(kind)
+                ? kind
+                : AppThemeKind.CyberBlue;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            return AppThemeKind.CyberBlue;
+        }
+    }
+
+    private static string LastThemeFile =>
+        Path.Combine(GameFlow.Infrastructure.Configuration.AppPaths.BaseDirectory, "last-theme.txt");
+
+    private static AppThemeKind? lastWritten;
+
+    private static void RememberLastApplied(AppThemeKind kind)
+    {
+        if (lastWritten == kind)
+        {
+            return;
+        }
+
+        try
+        {
+            File.WriteAllText(LastThemeFile, kind.ToString());
+            lastWritten = kind;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            // Cosmetic: the next start opens in the default palette.
+            Serilog.Log.Debug(exception, "Could not remember the app theme for the next start.");
+        }
+    }
+
+    /// <summary>
     /// Applies the supplied theme to the running Avalonia app: toggles the
     /// requested theme variant (Dark / Light) and overwrites the accent
     /// colour entries in the merged resource dictionary.
@@ -104,9 +154,11 @@ public static class AppThemeService
     {
         if (Application.Current is null)
         {
-            Serilog.Log.Debug("AppThemeService.Apply called with no active Application — ignoring.");
+            Serilog.Log.Debug("AppThemeService.Apply called with no active Application; ignoring.");
             return;
         }
+
+        RememberLastApplied(kind);
 
         var palette = kind switch
         {

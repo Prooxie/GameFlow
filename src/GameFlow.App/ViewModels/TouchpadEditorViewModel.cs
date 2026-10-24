@@ -207,8 +207,8 @@ public sealed class TouchpadEditorViewModel : ViewModelBase, IDisposable
         ButtonOptions = BuildButtonOptions();
         StickOptions =
         [
-            new TouchOption<StickId>(StickId.Left, Loc("TouchpadStickLeft", "Left stick")),
-            new TouchOption<StickId>(StickId.Right, Loc("TouchpadStickRight", "Right stick")),
+            new TouchOption<StickId>(StickId.Left, Loc("TouchpadStickLeft", UiTextResources.Get("StickLeftLabel"))),
+            new TouchOption<StickId>(StickId.Right, Loc("TouchpadStickRight", UiTextResources.Get("StickRightLabel"))),
         ];
         targetStick = StickOptions[1];
 
@@ -391,7 +391,7 @@ public sealed class TouchpadEditorViewModel : ViewModelBase, IDisposable
     public string DpadEightWayLabel => Loc("TouchpadDpadEightWay", "8-way (diagonals)");
     public string DpadDeadzoneLabel => Loc("TouchpadDpadDeadzone", "Deadzone radius");
 
-    public string MouseSectionLabel => Loc("TouchpadMouseSection", "Mouse");
+    public string MouseSectionLabel => Loc("TouchpadMouseSection", UiTextResources.Get("TouchpadMouseSection"));
     public string MouseHint => Loc("TouchpadMouseHint",
         "Moves the cursor from frame to frame, the way a laptop touchpad does.");
     public string MouseEnabledLabel => Loc("TouchpadMouseEnabled", "Map touch to the mouse");
@@ -578,13 +578,13 @@ public sealed class TouchpadEditorViewModel : ViewModelBase, IDisposable
 
     private IReadOnlyList<TouchOption<TouchSwipeDirection>> BuildSwipeOptions() =>
     [
-        new(TouchSwipeDirection.Up, Loc("TouchDirUp", "Up")),
+        new(TouchSwipeDirection.Up, Loc("TouchDirUp", UiTextResources.Get("UiUp"))),
         new(TouchSwipeDirection.UpRight, Loc("TouchDirUpRight", "Up-right")),
-        new(TouchSwipeDirection.Right, Loc("TouchDirRight", "Right")),
+        new(TouchSwipeDirection.Right, Loc("TouchDirRight", UiTextResources.Get("UiRight"))),
         new(TouchSwipeDirection.DownRight, Loc("TouchDirDownRight", "Down-right")),
-        new(TouchSwipeDirection.Down, Loc("TouchDirDown", "Down")),
+        new(TouchSwipeDirection.Down, Loc("TouchDirDown", UiTextResources.Get("UiDown"))),
         new(TouchSwipeDirection.DownLeft, Loc("TouchDirDownLeft", "Down-left")),
-        new(TouchSwipeDirection.Left, Loc("TouchDirLeft", "Left")),
+        new(TouchSwipeDirection.Left, Loc("TouchDirLeft", UiTextResources.Get("UiLeft"))),
         new(TouchSwipeDirection.UpLeft, Loc("TouchDirUpLeft", "Up-left")),
     ];
 

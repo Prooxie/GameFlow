@@ -333,6 +333,7 @@ public sealed partial class ControllerVisualStateViewModel
                 AvailableThemeVariants.Add(v);
             }
             OnPropertyChanged(nameof(HasThemeVariants));
+            OnPropertyChanged(nameof(ShowThemeVariantPicker));
         }
 
         // Re-pick a variant: keep the existing one if it's still
@@ -348,6 +349,12 @@ public sealed partial class ControllerVisualStateViewModel
         {
             preferred = variants.FirstOrDefault(v =>
                 string.Equals(v.Id, preferredVariantId, StringComparison.OrdinalIgnoreCase));
+            if (preferred is null && registry?.GetThemeById(preferredVariantId) is { } previous)
+            {
+                preferred = variants.FirstOrDefault(v =>
+                    v.PreferredStyle == previous.PreferredStyle &&
+                    string.Equals(v.DisplayName, previous.DisplayName, StringComparison.OrdinalIgnoreCase));
+            }
         }
         preferred ??= variants.FirstOrDefault();
 

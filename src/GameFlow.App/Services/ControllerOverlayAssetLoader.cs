@@ -96,7 +96,7 @@ public static class ControllerOverlayAssetLoader
         // ─── Source 2: bundled avares:// resource (fallback) ──────────
         foreach (var stem in stems)
         {
-            var uri = new Uri($"avares://GameFlow.App/Assets/ControllerOverlays/{stem}.png");
+            var uri = new Uri($"avares://GameFlow/Assets/ControllerOverlays/{stem}.png");
             try
             {
                 using var stream = AssetLoader.Open(uri);

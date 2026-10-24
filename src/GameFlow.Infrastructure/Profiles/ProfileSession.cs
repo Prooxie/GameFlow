@@ -52,7 +52,10 @@ public sealed class ProfileSession(
 
             await userSettings.InitializeAsync(cancellationToken);
 
-            var current = await repository.LoadAsync(Settings.ActiveProfileId, cancellationToken);
+            // The STORED shape, not the migrated one: comparing the two is
+            // how start-up knows the file is in an older shape and should
+            // be rewritten. Every other read takes the migrated profile.
+            var current = await repository.LoadStoredAsync(Settings.ActiveProfileId, cancellationToken);
             if (current is null)
             {
                 var fallback = ProfileDefaults.CreateSpeedrunnerDefault();
@@ -65,7 +68,7 @@ public sealed class ProfileSession(
             }
             else
             {
-                var migrated = MigrateProfile(current);
+                var migrated = ProfileMigrator.Migrate(current);
                 if (!ReferenceEquals(migrated, current) && migrated != current)
                 {
                     current = migrated;
@@ -157,8 +160,16 @@ public sealed class ProfileSession(
         return true;
     }
 
+    /// <remarks>
+    /// Every save of the current profile funnels through here, so this is
+    /// also where it is migrated: whatever the caller built — raw JSON from
+    /// the editor, an import, or an edit made from an older in-memory copy
+    /// that still carries the v6 header inversion — is written, and becomes
+    /// <see cref="CurrentProfile"/>, in the current shape only.
+    /// </remarks>
     private async Task PersistAsCurrentAsync(ProfileDocument profile, CancellationToken cancellationToken)
     {
+        profile = ProfileMigrator.Migrate(profile);
         ProfileValidator.Validate(profile);
         await repository.SaveAsync(profile, cancellationToken);
         await SetActiveProfileIdAsync(profile.Id, cancellationToken);
@@ -242,7 +253,7 @@ public sealed class ProfileSession(
             }
 
             var previousId = CurrentProfile.Id;
-            var migrated = MigrateProfile(profile);
+            var migrated = ProfileMigrator.Migrate(profile);
             ProfileValidator.Validate(migrated);
             await SetActiveProfileIdAsync(profileId, cancellationToken);
             CurrentProfile = migrated;
@@ -279,6 +290,16 @@ public sealed class ProfileSession(
     /// Saves a copy of the currently-active profile under a new id and
     /// <paramref name="newName"/>, then makes the copy active.
     /// </summary>
+    /// <remarks>
+    /// Rule ids are deliberately kept, not re-issued. Rule toggles refer to
+    /// their targets by id, so fresh ids would break every toggle in the
+    /// copy; and an equal id across profiles is how a slot's profile stack
+    /// knows two rules are the SAME rule — the composer lets the later
+    /// profile's copy replace the earlier one instead of running both (see
+    /// <c>SlotProfileComposer</c>). That includes the copied
+    /// <c>axis-invert-&lt;original id&gt;</c> rule: stacking a profile on its
+    /// own duplicate keeps one inversion, the top one.
+    /// </remarks>
     public async Task<ProfileDocument> DuplicateCurrentProfileAsync(string newName, CancellationToken cancellationToken = default)
     {
         var id = $"profile-{Guid.NewGuid():N}";
@@ -331,6 +352,9 @@ public sealed class ProfileSession(
             Rules = profile.Rules?.Select(rule => rule is GameFlow.Core.Models.Rules.ControlScriptRule script
                 ? script with { Enabled = false } : rule).ToArray()!
         };
+        // After the new id, so a legacy header inversion becomes a rule
+        // whose id derives from THIS profile, not the one it was exported from.
+        profile = ProfileMigrator.Migrate(profile);
         ProfileValidator.Validate(profile);
 
         logger.LogInformation(
@@ -339,67 +363,5 @@ public sealed class ProfileSession(
             profile.Name);
 
         await SaveCurrentProfileAsync(profile, cancellationToken);
-    }
-
-    /// <summary>Polling rate shipped as the default in profile versions up to 4.</summary>
-    private const int LegacyDefaultPollingRateHz = 250;
-
-    private static ProfileDocument MigrateProfile(ProfileDocument profile)
-    {
-        var inputProvider = NormalizeInputProvider(profile.InputProvider);
-        var preferredInputDeviceId = profile.PreferredInputDeviceId?.Trim() ?? string.Empty;
-        // v6 added ProfileDocument.Invert. Nothing to rewrite: every axis
-        // on it defaults to "no opinion", which is exactly what a
-        // pre-v6 profile meant by not having the field at all. The
-        // version still moves so the file records which shape it was
-        // last written in.
-        var version = Math.Max(profile.Version, 6);
-
-        // v5: the polling-rate default went from 250 Hz to 1000.
-        //
-        // Only rewritten when it still holds EXACTLY the old default on a
-        // profile written before v5 — that value was shipped, not chosen,
-        // and leaving it would mean the new default never reaching anyone
-        // who already had a profile, which is everyone. Any other value is
-        // a deliberate choice and is left alone, including a deliberate
-        // 250 set after this migration has stamped the version.
-        var pollingRateHz = profile.Version < 5 && profile.PollingRateHz == LegacyDefaultPollingRateHz
-            ? 1000
-            : profile.PollingRateHz;
-
-        return version == profile.Version &&
-            pollingRateHz == profile.PollingRateHz &&
-            string.Equals(inputProvider, profile.InputProvider, StringComparison.Ordinal) &&
-            string.Equals(preferredInputDeviceId, profile.PreferredInputDeviceId, StringComparison.Ordinal)
-            ? profile
-            : (profile with
-            {
-                Version = version,
-                PollingRateHz = pollingRateHz,
-                InputProvider = inputProvider,
-                PreferredInputDeviceId = preferredInputDeviceId
-            });
-    }
-
-    private static string NormalizeInputProvider(string? inputProvider)
-    {
-        return string.IsNullOrWhiteSpace(inputProvider)
-            ? "sdl"
-            : inputProvider.Trim().ToLowerInvariant() switch
-            {
-                "sdlgamepad" => "sdl",
-                "sdl3" => "sdl",
-                "sdl-unified" => "sdl",
-                "sdl-unified-gamepad" => "sdl",
-                // Retired providers — profiles that referenced them keep
-                // working by migrating to the SDL3 unified source.
-                "xinput" => "sdl",
-                "openxinput" => "sdl",
-                "x360ce" => "sdl",
-                "ps3" or "dualshock3" => "sdl",
-                "gameinput" => "sdl",
-                "windows-midi" or "winmidi" or "midi" => "sdl",
-                _ => inputProvider.Trim().ToLowerInvariant()
-            };
     }
 }

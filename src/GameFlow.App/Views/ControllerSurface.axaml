@@ -109,8 +109,8 @@
                 installed for the current style.
             -->
             <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,0,0,8"
-                  IsVisible="{Binding HasThemeVariants}">
-                <TextBlock Text="Skin" VerticalAlignment="Center" Margin="0,0,10,0"
+                  IsVisible="{Binding ShowThemeVariantPicker}">
+                <TextBlock Text="{DynamicResource Ui.UiSkin}" VerticalAlignment="Center" Margin="0,0,10,0"
                            Classes="sectionLabel" />
                 <ComboBox Grid.Column="1"
                           ItemsSource="{Binding AvailableThemeVariants}"
@@ -138,16 +138,20 @@
                                     VerticalAlignment="Stretch" />
 
                 <!--
-                    Keyboards get the real keyboard, not a theme pack.
-                    This is the same control the Devices page draws, so
-                    the same hardware now looks the same in both places —
-                    it did not before, because the dashboard went through
-                    the theme engine and one of its two keyboard packs
-                    ships no art at all.
+                    Keyboards and mice get the real pictures, not theme
+                    packs. These are the same controls the Devices page
+                    draws, so the same hardware looks the same in both
+                    places and shows the same presses, clicks and movement.
+                    A keyboard + mouse slot shows both side by side.
                 -->
-                <Viewbox IsVisible="{Binding IsKeyboardStyle}"
+                <Viewbox IsVisible="{Binding !IsThemedStyle}"
                          Stretch="Uniform" StretchDirection="DownOnly">
-                  <views:KeyboardSurface />
+                  <StackPanel Orientation="Horizontal" Spacing="16">
+                    <views:KeyboardSurface IsVisible="{Binding ShowKeyboardSurface}"
+                                           VerticalAlignment="Center" />
+                    <views:MouseSurface IsVisible="{Binding ShowMouseSurface}"
+                                        VerticalAlignment="Center" />
+                  </StackPanel>
                 </Viewbox>
             </Grid>
 

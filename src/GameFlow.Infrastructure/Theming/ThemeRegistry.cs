@@ -186,14 +186,14 @@ public sealed class ThemeRegistry
                         .Replace(Path.AltDirectorySeparatorChar, '-')
                         .ToLowerInvariant();
 
+                    var style = GuessStyleFromFolderName(relative);
+                    doc = ThemeCompatibility.Normalize(doc, style);
                     loaded.Add(new InstalledTheme(
                         Id: id,
-                        DisplayName: string.IsNullOrWhiteSpace(doc.Name)
-                            ? Path.GetFileName(sub) ?? id
-                            : doc.Name,
+                        DisplayName: ThemeCompatibility.DisplayName(doc, style),
                         DirectoryPath: sub,
                         Document: doc,
-                        PreferredStyle: GuessStyleFromFolderName(relative)));
+                        PreferredStyle: style));
                     Log.Information("Loaded theme '{Name}' from {Path}.", doc.Name, manifest);
                 }
                 catch (Exception ex)
@@ -244,6 +244,11 @@ public sealed class ThemeRegistry
                     result.Add(theme);
                 }
             }
+            // Prefer the higher-resolution variant of known colour duplicates.
+            // Keep all installed entries available by id for existing profiles.
+            result = result.GroupBy(theme => theme.DisplayName, StringComparer.OrdinalIgnoreCase)
+                .Select(group => group.OrderByDescending(theme => theme.Document.Width).ThenBy(theme => theme.Id, StringComparer.Ordinal).First())
+                .ToList();
             result.Sort(static (a, b) => string.Compare(
                 a.DisplayName, b.DisplayName, StringComparison.OrdinalIgnoreCase));
             return result;
@@ -404,6 +409,9 @@ public sealed class ThemeRegistry
     internal static ControllerVisualStyle GuessStyleFromFolderName(string folder)
     {
         var name = folder.ToLowerInvariant();
+        if (name.Contains("generic-joystick", StringComparison.Ordinal)) { return ControllerVisualStyle.Joystick; }
+        if (name.Contains("generic-wheel", StringComparison.Ordinal)) { return ControllerVisualStyle.Wheel; }
+        if (name.Contains("steam-controller-v2", StringComparison.Ordinal)) { return ControllerVisualStyle.SteamControllerV2; }
         // Composite Simple Gamepad skin names intentionally carry the
         // legend they render (for example simple-gamepad-xbox and
         // simple-gamepad-nintendo).  Resolve the family marker first so

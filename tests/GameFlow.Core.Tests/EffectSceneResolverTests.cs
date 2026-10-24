@@ -10,12 +10,12 @@ public sealed class LightSceneTests
         new() { Mode = mode, Color = color, Brightness = brightness };
 
     [Fact]
-    public void OffMeansNoColourAtAll()
+    public void OffIsAnExplicitBlack()
     {
-        // Null rather than black: the writer skips the LED entirely, which
-        // is not the same as driving it to zero on hardware that treats
-        // "off" and "black" differently.
-        Assert.Null(EffectSceneResolver.ResolveLight(Mode(LightbarMode.Off), new EffectSceneContext(0)));
+        // Black rather than "no colour": downstream, a missing colour means
+        // "leave the LED alone", which is how Off used to leave the bar lit
+        // in whatever colour it last showed.
+        Assert.Equal(LightColor.Black, EffectSceneResolver.ResolveLight(Mode(LightbarMode.Off), new EffectSceneContext(0)));
     }
 
     [Fact]
@@ -39,8 +39,8 @@ public sealed class LightSceneTests
         var full = EffectSceneResolver.ResolveLight(Mode(LightbarMode.Solid, "#FFFFFF"), new EffectSceneContext(0));
         var half = EffectSceneResolver.ResolveLight(Mode(LightbarMode.Solid, "#FFFFFF", brightness: 0.5f), new EffectSceneContext(0));
 
-        Assert.Equal(255, full!.Value.R);
-        Assert.InRange(half!.Value.R, 120, 136);
+        Assert.Equal(255, full.R);
+        Assert.InRange(half.R, 120, 136);
     }
 
     [Theory]
@@ -71,7 +71,7 @@ public sealed class LightSceneTests
         var fifth = EffectSceneResolver.ResolveLight(Mode(LightbarMode.PlayerNumber), new EffectSceneContext(0, PlayerIndex: 4));
 
         Assert.Equal(first, fifth);
-        Assert.NotEqual(LightColor.Black, fifth!.Value);
+        Assert.NotEqual(LightColor.Black, fifth);
     }
 
     [Fact]
@@ -80,8 +80,7 @@ public sealed class LightSceneTests
         var result = EffectSceneResolver.ResolveLight(
             Mode(LightbarMode.PlayerNumber), new EffectSceneContext(0, PlayerIndex: -1));
 
-        Assert.NotNull(result);
-        Assert.NotEqual(LightColor.Black, result!.Value);
+        Assert.NotEqual(LightColor.Black, result);
     }
 
     [Fact]
@@ -90,7 +89,7 @@ public sealed class LightSceneTests
         // A lightbar that goes fully dark looks like the pad disconnected.
         for (var t = 0.0; t < 8.0; t += 0.05)
         {
-            var c = EffectSceneResolver.ResolveLight(Mode(LightbarMode.Breathing, "#FFFFFF"), new EffectSceneContext(t))!.Value;
+            var c = EffectSceneResolver.ResolveLight(Mode(LightbarMode.Breathing, "#FFFFFF"), new EffectSceneContext(t));
             Assert.True(c.R > 0, $"breathing went black at t={t}");
         }
     }
@@ -102,7 +101,7 @@ public sealed class LightSceneTests
         for (var t = 0.0; t < 4.0; t += 0.05)
         {
             samples.Add(EffectSceneResolver.ResolveLight(
-                Mode(LightbarMode.Breathing, "#FFFFFF"), new EffectSceneContext(t))!.Value.R);
+                Mode(LightbarMode.Breathing, "#FFFFFF"), new EffectSceneContext(t)).R);
         }
 
         Assert.True(samples.Max() > 240, "breathing should reach close to full brightness");
@@ -116,7 +115,7 @@ public sealed class LightSceneTests
         var total = 0;
         for (var t = 0.0; t < 5.0; t += 0.01)
         {
-            var c = EffectSceneResolver.ResolveLight(Mode(LightbarMode.Strobe, "#FFFFFF"), new EffectSceneContext(t))!.Value;
+            var c = EffectSceneResolver.ResolveLight(Mode(LightbarMode.Strobe, "#FFFFFF"), new EffectSceneContext(t));
             if (c.R > 0) { on++; }
             total++;
         }
@@ -131,7 +130,7 @@ public sealed class LightSceneTests
         bool sawRed = false, sawGreen = false, sawBlue = false;
         for (var t = 0.0; t < 6.0; t += 0.02)
         {
-            var c = EffectSceneResolver.ResolveLight(Mode(LightbarMode.Rainbow), new EffectSceneContext(t))!.Value;
+            var c = EffectSceneResolver.ResolveLight(Mode(LightbarMode.Rainbow), new EffectSceneContext(t));
             if (c.R > 200 && c.G < 80 && c.B < 80) { sawRed = true; }
             if (c.G > 200 && c.R < 80 && c.B < 80) { sawGreen = true; }
             if (c.B > 200 && c.R < 80 && c.G < 80) { sawBlue = true; }
@@ -161,7 +160,7 @@ public sealed class LightSceneTests
         // "No reading" and "about to die" are different things, and showing
         // red for the first would send the user hunting for a charger.
         var unknown = EffectSceneResolver.ResolveLight(
-            Mode(LightbarMode.BatteryLevel), new EffectSceneContext(0, BatteryPercent: null))!.Value;
+            Mode(LightbarMode.BatteryLevel), new EffectSceneContext(0, BatteryPercent: null));
 
         Assert.NotEqual(new LightColor(0xFF, 0x22, 0x22), unknown);
     }
@@ -181,9 +180,9 @@ public sealed class LightSceneTests
     public void RumbleReactiveBrightensWithRumbleAndStaysLitAtRest()
     {
         var idle = EffectSceneResolver.ResolveLight(
-            Mode(LightbarMode.RumbleReactive, "#FFFFFF"), new EffectSceneContext(0, RumbleLevel: 0))!.Value;
+            Mode(LightbarMode.RumbleReactive, "#FFFFFF"), new EffectSceneContext(0, RumbleLevel: 0));
         var shaking = EffectSceneResolver.ResolveLight(
-            Mode(LightbarMode.RumbleReactive, "#FFFFFF"), new EffectSceneContext(0, RumbleLevel: 1))!.Value;
+            Mode(LightbarMode.RumbleReactive, "#FFFFFF"), new EffectSceneContext(0, RumbleLevel: 1));
 
         Assert.True(idle.R > 0, "an idle pad should still be lit");
         Assert.True(shaking.R > idle.R);
@@ -193,9 +192,9 @@ public sealed class LightSceneTests
     public void TriggerReactiveGoesRedOnlyWhileHeld()
     {
         var released = EffectSceneResolver.ResolveLight(
-            Mode(LightbarMode.TriggerReactive, "#0066FF"), new EffectSceneContext(0, TriggerLevel: 0))!.Value;
+            Mode(LightbarMode.TriggerReactive, "#0066FF"), new EffectSceneContext(0, TriggerLevel: 0));
         var held = EffectSceneResolver.ResolveLight(
-            Mode(LightbarMode.TriggerReactive, "#0066FF"), new EffectSceneContext(0, TriggerLevel: 1))!.Value;
+            Mode(LightbarMode.TriggerReactive, "#0066FF"), new EffectSceneContext(0, TriggerLevel: 1));
 
         Assert.Equal(new LightColor(0x00, 0x66, 0xFF), released);
         Assert.True(held.R > held.B);
@@ -206,7 +205,7 @@ public sealed class LightSceneTests
     {
         // Profiles are hand-editable, so a bad colour is expected input.
         var result = EffectSceneResolver.ResolveLight(Mode(LightbarMode.Solid, "not-a-colour"), new EffectSceneContext(0));
-        Assert.NotNull(result);
+        Assert.Equal(new LightColor(0x00, 0x66, 0xFF), result);
     }
 }
 

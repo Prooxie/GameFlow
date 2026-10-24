@@ -12,7 +12,7 @@ public sealed class RawAxisRowViewModel(int index) : ViewModelBase
     private short raw;
 
     public int Index { get; } = index;
-    public string Label => $"Axis {Index}";
+    public string Label => UiTextResources.Format("UiAxisNumber", Index);
 
     /// <summary>
     /// The unscaled SDL reading. The analog calibration wizard compares
@@ -76,7 +76,7 @@ public sealed class RawHatRowViewModel(int index) : ViewModelBase
     private byte mask;
 
     public int Index { get; } = index;
-    public string Label => $"Hat {Index}";
+    public string Label => UiTextResources.Format("UiHatNumber", Index);
 
     /// <summary>
     /// The raw SDL direction mask. Exposed so the calibration wizard can
@@ -87,13 +87,13 @@ public sealed class RawHatRowViewModel(int index) : ViewModelBase
     public string Direction => mask switch
     {
         0 => "Centered",
-        Up => "Up",
+        Up => UiTextResources.Get("UiUp"),
         Up | Right => "Up-Right",
-        Right => "Right",
+        Right => UiTextResources.Get("UiRight"),
         Down | Right => "Down-Right",
-        Down => "Down",
+        Down => UiTextResources.Get("UiDown"),
         Down | Left => "Down-Left",
-        Left => "Left",
+        Left => UiTextResources.Get("UiLeft"),
         Up | Left => "Up-Left",
         _ => "Centered",
     };

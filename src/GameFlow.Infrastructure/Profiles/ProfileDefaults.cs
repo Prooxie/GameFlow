@@ -12,7 +12,7 @@ public static class ProfileDefaults
         {
             Id = "default-profile",
             Name = "Default Profile",
-            Version = 5,
+            Version = ProfileMigrator.CurrentVersion,
             PollingRateHz = 1000,
             InputProvider = "sdl",
             // The platform's sole real output backend (HIDMaestro on

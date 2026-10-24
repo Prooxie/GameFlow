@@ -1,79 +1,62 @@
-using System.Globalization;
+using System.ComponentModel;
+using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Data;
-using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
-using GameFlow.App.Converters;
+using GameFlow.App.Services;
 using GameFlow.App.ViewModels;
+using GameFlow.Core.Enums;
 using GameFlow.Infrastructure.Runtime.Input;
 
 namespace GameFlow.App.Views;
 
+/// <summary>The same native keyboard geometry and legends that OBS receives.</summary>
 public partial class KeyboardSurface : UserControl
 {
-    private static readonly VkPressedToBrushConverter KeyBrush = new();
+    private bool attached;
+    private INotifyPropertyChanged? legendContext;
 
     public KeyboardSurface()
     {
-        InitializeComponent();
-        BuildKeyboard();
+        AvaloniaXamlLoader.Load(this);
+        DataContextChanged += (_, _) => BindLegendContext();
+        ApplyLegend();
     }
 
-    private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
-
-    private void BuildKeyboard()
+    private void BindLegendContext()
     {
-        var canvas = this.FindControl<Canvas>("KeyCanvas")
-            ?? throw new InvalidOperationException("Keyboard surface canvas was not loaded.");
-        canvas.Width = KeyboardPhysicalLayout.SurfaceWidth;
-        canvas.Height = KeyboardPhysicalLayout.SurfaceHeight;
-
-        foreach (var key in KeyboardPhysicalLayout.Ansi104)
-        {
-            var keyCap = new Border
-            {
-                Width = key.Width,
-                Height = key.Height,
-                Child = CreateLegend(key),
-            };
-            keyCap.Classes.Add("keycap");
-            keyCap.Bind(
-                Border.BackgroundProperty,
-                new Binding(nameof(DevicesViewModel.PressedKeysSet))
-                {
-                    Converter = KeyBrush,
-                    ConverterParameter = key.VirtualKey.ToString("X", CultureInfo.InvariantCulture),
-                });
-
-            Canvas.SetLeft(keyCap, key.X);
-            Canvas.SetTop(keyCap, key.Y);
-            canvas.Children.Add(keyCap);
-        }
+        if (legendContext is not null) { legendContext.PropertyChanged -= OnLegendContextChanged; }
+        legendContext = attached ? DataContext as INotifyPropertyChanged : null;
+        if (legendContext is not null) { legendContext.PropertyChanged += OnLegendContextChanged; }
+        ApplyLegend();
     }
 
-    private static Control CreateLegend(PhysicalKeyboardKey key)
+    private void OnLegendContextChanged(object? sender, PropertyChangedEventArgs e)
     {
-        var label = new TextBlock { Text = key.Label };
-        if (key.Width <= KeyboardPhysicalLayout.KeyWidth && key.Label.Length >= 5)
-        {
-            // Pause and keypad Enter must fit a one-unit key without
-            // clipping; ordinary legends keep the theme's larger size.
-            label.FontSize = 8.25;
-        }
-        label.Classes.Add("keylabel");
-        if (key.Hint is null)
-        {
-            return label;
-        }
+        if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == "KeyboardDeviceId") { ApplyLegend(); }
+    }
 
-        var hint = new TextBlock { Text = key.Hint };
-        hint.Classes.Add("keyhint");
-        return new StackPanel
-        {
-            Spacing = 0,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-            Children = { label, hint },
-        };
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        attached = true;
+        BindLegendContext();
+        KeyboardMouseLegend.Changed += OnLegendChanged;
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        attached = false;
+        BindLegendContext();
+        KeyboardMouseLegend.Changed -= OnLegendChanged;
+    }
+
+    private void OnLegendChanged(object? sender, EventArgs e) => ApplyLegend();
+
+    private void ApplyLegend()
+    {
+        var model = DataContext as IKeyboardMouseVisualState;
+        var layout = InputSurfacePresentation.Create(ControllerVisualStyle.Keyboard, model?.KeyboardDeviceId, model?.MouseDeviceId);
+        InputSurfaceViewBuilder.Populate(this.FindControl<Canvas>("InputCanvas")!, layout, model);
     }
 }

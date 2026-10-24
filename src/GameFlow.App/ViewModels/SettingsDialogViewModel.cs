@@ -103,11 +103,18 @@ public sealed partial class SettingsDialogViewModel : ObservableObject, IDisposa
     public MotionServerPanelViewModel MotionServer { get; }
 
     /// <summary>
-    /// The stream-overlay section: builds the URL for an OBS browser
-    /// source. Like <see cref="MotionServer"/> it is outside
-    /// <see cref="ApplyAsync"/> / <see cref="RestoreDefaults"/> — it
-    /// persists nothing at all, so there is neither anything to apply nor
-    /// anything to restore.
+    /// The web server's network side, shown on the "Network &amp; phones"
+    /// tab: the phone-sharing switch, the private-link reset and the
+    /// firewall reachability warning. Only those members are bound here —
+    /// the OBS overlay URL moved onto each controller panel on the
+    /// dashboard, and phones are added one at a time from Devices, each
+    /// with its own link, so this dialog no longer shows a URL of any kind.
+    ///
+    /// <para>
+    /// Like <see cref="MotionServer"/> it is outside
+    /// <see cref="ApplyAsync"/> / <see cref="RestoreDefaults"/>: sharing
+    /// saves the moment it is toggled, so there is nothing to apply.
+    /// </para>
     /// </summary>
     public OverlayPanelViewModel Overlay { get; }
 
@@ -117,6 +124,71 @@ public sealed partial class SettingsDialogViewModel : ObservableObject, IDisposa
     /// <see cref="ApplyAsync"/> / <see cref="RestoreDefaults"/>.
     /// </summary>
     public AppProfilePanelViewModel AppProfiles { get; }
+
+    // ─── Tabs ─────────────────────────────────────────────────────────────────
+
+    // Positions of the dialog's TabItems, in XAML order: General, Input &
+    // performance, Profiles, Network & phones, Advanced. A reorder in
+    // SettingsDialog.axaml has to be mirrored here.
+    private const int GeneralTabIndex = 0;
+    private const int InputPerformanceTabIndex = 1;
+    private const int TabCount = 5;
+
+    /// <summary>
+    /// The tab last shown, kept for the life of the process.
+    /// </summary>
+    /// <remarks>
+    /// Static because the view-model is transient — a fresh one per
+    /// opening — and the point is to survive that: someone adjusting the
+    /// motion server, closing Options to try it, and reopening to tweak
+    /// the port should land back on that page, not on General. Not
+    /// persisted to settings; a new session starts on General, which is
+    /// the right first page for someone who has not been here in a while.
+    /// </remarks>
+    private static int lastSelectedTabIndex = GeneralTabIndex;
+
+    /// <summary>
+    /// Bound two-way to the dialog's TabControl.
+    /// </summary>
+    /// <remarks>
+    /// Negative values are ignored rather than stored: a TabControl
+    /// reports -1 while it has no selection (as its items are torn down
+    /// when the window closes), and remembering that would reopen the
+    /// dialog on a blank page.
+    /// </remarks>
+    public int SelectedTabIndex
+    {
+        get => lastSelectedTabIndex;
+        set
+        {
+            if (value < 0 || value >= TabCount || value == lastSelectedTabIndex)
+            {
+                return;
+            }
+
+            lastSelectedTabIndex = value;
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>Tab headers. English fallbacks until the catalogs carry the keys.</summary>
+    public string GeneralTabHeader => UiTextResources.Get("UiGeneral");
+    public string InputPerformanceTabHeader => UiTextResources.Get("UiInputPerformance");
+    public string ProfilesTabHeader => localization["ProfilesTab"];
+    public string NetworkTabHeader => UiTextResources.Get("UiNetworkPhones");
+    public string AdvancedTabHeader => UiTextResources.Get("UiAdvanced");
+
+    /// <summary>
+    /// Looks up <paramref name="key"/>, falling back to English when no
+    /// catalog has it. The localizer answers a missing key with the key
+    /// itself, and a tab labelled "SettingsDialogNetworkTab" is worse than
+    /// an untranslated one.
+    /// </summary>
+    private string Loc(string key, string fallback)
+    {
+        var value = localization[key];
+        return string.Equals(value, key, StringComparison.Ordinal) ? fallback : value;
+    }
 
     // ─── Localised labels ─────────────────────────────────────────────────────
 
@@ -213,32 +285,10 @@ public sealed partial class SettingsDialogViewModel : ObservableObject, IDisposa
         Reload();
     }
 
-    private void OnCultureChanged(object? sender, EventArgs e)
-    {
-        OnPropertyChanged(nameof(TitleLabel));
-        OnPropertyChanged(nameof(DiagnosticsHeaderLabel));
-        OnPropertyChanged(nameof(LogLevelLabel));
-        OnPropertyChanged(nameof(LogLevelHintLabel));
-        OnPropertyChanged(nameof(WindowHeaderLabel));
-        OnPropertyChanged(nameof(RememberWindowSizeLabel));
-        OnPropertyChanged(nameof(WindowWidthLabel));
-        OnPropertyChanged(nameof(WindowHeightLabel));
-        OnPropertyChanged(nameof(PollingHeaderLabel));
-        OnPropertyChanged(nameof(DashboardRefreshLabel));
-        OnPropertyChanged(nameof(PollingRateLabel));
-        OnPropertyChanged(nameof(PollingHintLabel));
-        OnPropertyChanged(nameof(PathsHeaderLabel));
-        OnPropertyChanged(nameof(ProfilesDirectoryLabel));
-        OnPropertyChanged(nameof(LogsDirectoryLabel));
-        OnPropertyChanged(nameof(LogsPathHintLabel));
-        OnPropertyChanged(nameof(BrowseButtonLabel));
-        OnPropertyChanged(nameof(StartupHeaderLabel));
-        OnPropertyChanged(nameof(CheckUpdatesLabel));
-        OnPropertyChanged(nameof(CheckRequirementsLabel));
-        OnPropertyChanged(nameof(ApplyButtonLabel));
-        OnPropertyChanged(nameof(CancelButtonLabel));
-        OnPropertyChanged(nameof(RestoreDefaultsButtonLabel));
-    }
+    // One list of label names, in RefreshLocalisedLabels: this used to
+    // carry its own copy, and two copies of a list that must stay
+    // identical is how a new label ends up refreshing on one path only.
+    private void OnCultureChanged(object? sender, EventArgs e) => RefreshLocalisedLabels();
 
     /// <summary>
     /// Unsubscribes from <see cref="ILocalizationService.CultureChanged"/>.
@@ -300,6 +350,27 @@ public sealed partial class SettingsDialogViewModel : ObservableObject, IDisposa
     [RelayCommand]
     public async Task<bool> ApplyAsync()
     {
+        // The two rate boxes are the only fields that can be rejected, and
+        // both live on the Input & performance tab. The error lands in the
+        // footer, which every tab shares — so without switching to that tab,
+        // someone pressing Apply from General reads "enter a rate between 30
+        // and 1000" with no rate box anywhere in sight. Validated apart from
+        // the save below so that only THIS failure moves the user.
+        int? dashboardRefreshHz;
+        int? pollingRateHz;
+        try
+        {
+            dashboardRefreshHz = ParseOptionalInt(DashboardRefreshHzText, min: 30, max: 1000);
+            pollingRateHz = ParseOptionalInt(PollingRateHzText, min: 30, max: 1000);
+        }
+        catch (FormatException exception)
+        {
+            logger.LogInformation("Settings dialog Apply rejected a polling rate: {Message}", exception.Message);
+            SelectedTabIndex = InputPerformanceTabIndex;
+            StatusMessage = string.Format(localization["SettingsDialogApplyFailedStatus"], exception.Message);
+            return false;
+        }
+
         try
         {
             // Read the dialog on the UI thread, before the change runs under
@@ -308,8 +379,6 @@ public sealed partial class SettingsDialogViewModel : ObservableObject, IDisposa
             var rememberWindowSize = RememberWindowSize;
             var windowWidth = ClampWindowDimension(WindowWidth, defaultValue: 1280);
             var windowHeight = ClampWindowDimension(WindowHeight, defaultValue: 800);
-            var dashboardRefreshHz = ParseOptionalInt(DashboardRefreshHzText, min: 30, max: 1000);
-            var pollingRateHz = ParseOptionalInt(PollingRateHzText, min: 30, max: 1000);
             var profilesDirectory = string.IsNullOrWhiteSpace(ProfilesDirectoryOverride) ? null : ProfilesDirectoryOverride.Trim();
             var logsDirectory = string.IsNullOrWhiteSpace(LogsDirectoryOverride) ? null : LogsDirectoryOverride.Trim();
             var checkForUpdates = CheckForUpdatesOnStartup;
@@ -378,6 +447,11 @@ public sealed partial class SettingsDialogViewModel : ObservableObject, IDisposa
         OnPropertyChanged(nameof(ApplyButtonLabel));
         OnPropertyChanged(nameof(CancelButtonLabel));
         OnPropertyChanged(nameof(RestoreDefaultsButtonLabel));
+        OnPropertyChanged(nameof(GeneralTabHeader));
+        OnPropertyChanged(nameof(InputPerformanceTabHeader));
+        OnPropertyChanged(nameof(ProfilesTabHeader));
+        OnPropertyChanged(nameof(NetworkTabHeader));
+        OnPropertyChanged(nameof(AdvancedTabHeader));
     }
 
     /// <summary>

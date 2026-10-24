@@ -14,12 +14,28 @@ public sealed class InputDeviceCatalog
     private readonly ILocalizationService localization;
     private readonly DeviceCategoryOverrideStore categoryOverrides;
     private readonly Lock gate = new();
+    private readonly TimeProvider clock;
 
     private IReadOnlyList<InputDeviceInfo> devices = [];
     private Dictionary<string, InputDeviceInfo> devicesById = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, IReadOnlyList<InputDeviceInfo>> devicesBySource = new(StringComparer.Ordinal);
     private IReadOnlySet<string> ignoredDeviceIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     private IReadOnlyList<(ushort Vid, ushort Pid, DateTimeOffset ActivatedAt)> ignoredHardwareSignatures = [];
+
+    /// <summary>
+    /// Identities an output sink has claimed directly, before and while its
+    /// pad exists. See <see cref="ClaimHardwareSignature"/>. Guarded by
+    /// <see cref="gate"/>.
+    /// </summary>
+    private readonly List<HardwareClaim> claims = [];
+
+    /// <summary>
+    /// How long a released claim keeps hiding its identity. A torn-down
+    /// pad does not leave Windows instantly, and the next enumeration can
+    /// still list it; without this it reappeared as physical hardware for
+    /// the moment between teardown and the OS noticing.
+    /// </summary>
+    internal static readonly TimeSpan ClaimReleaseGrace = TimeSpan.FromSeconds(5);
 
     /// <summary>
     /// UTC time each device id was first observed this session. Ignore
@@ -58,9 +74,11 @@ public sealed class InputDeviceCatalog
     /// <param name="localization">Localization service used to resolve the catalog's
     /// idle/no-provider status string.</param>
     /// <param name="categoryOverrides">Saved user overrides applied to detected device categories.</param>
-    public InputDeviceCatalog(ILocalizationService localization, DeviceCategoryOverrideStore categoryOverrides)
+    /// <param name="clock">Clock for endpoint arrival and release grace.</param>
+    public InputDeviceCatalog(ILocalizationService localization, DeviceCategoryOverrideStore categoryOverrides, TimeProvider? clock = null)
     {
         this.localization = localization;
+        this.clock = clock ?? TimeProvider.System;
         this.localization.CultureChanged += OnCultureChanged;
         this.categoryOverrides = categoryOverrides;
         this.categoryOverrides.OverrideChanged += (_, _) => ReapplyOverrides();
@@ -266,7 +284,7 @@ public sealed class InputDeviceCatalog
     /// <summary>Flattens all source slices into one filtered, deduped list (caller holds <see cref="gate"/>).</summary>
     private IReadOnlyList<InputDeviceInfo> MergeSources()
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = clock.GetUtcNow();
 
         // "First seen" means first seen in the device's CURRENT period of
         // presence, so the record has to be dropped when it goes away.
@@ -305,12 +323,22 @@ public sealed class InputDeviceCatalog
             }
         }
 
+        // A virtual endpoint can outlive its output sink. Remember identities
+        // already matched until they actually disappear from enumeration.
+        hiddenVirtualDeviceIds.IntersectWith(present);
+        PurgeExpiredClaims(now);
+
         return
         [
             .. devicesBySource.Values
                 .SelectMany(list => list)
+                // GameFlow's own pads are never physical devices. The path
+                // verdict is known from the very first enumeration, so this
+                // is what keeps a new virtual pad out of the device lists
+                // even before any sink has published its identity.
+                .Where(d => !d.IsVirtual)
                 .Where(d => !ignoredDeviceIds.Contains(d.Id))
-                .Where(d => !MatchesIgnoredHardwareSignature(d))
+                .Where(d => !IsKnownVirtualDevice(d))
                 .GroupBy(d => d.Id, StringComparer.OrdinalIgnoreCase)
                 .Select(g => g.First())
                 .Select(categoryOverrides.Apply)
@@ -508,14 +536,14 @@ public sealed class InputDeviceCatalog
     /// <returns>True if the device is hardware-signature-filtered.</returns>
     private bool MatchesIgnoredHardwareSignature(InputDeviceInfo device)
     {
-        if (ignoredHardwareSignatures.Count == 0 || (device.VendorId == 0 && device.ProductId == 0))
+        if ((ignoredHardwareSignatures.Count == 0 && claims.Count == 0) || (device.VendorId == 0 && device.ProductId == 0))
         {
             return false;
         }
 
         var firstSeen = firstSeenById.TryGetValue(device.Id, out var seen)
             ? seen
-            : DateTimeOffset.UtcNow;
+            : clock.GetUtcNow();
 
         for (var i = 0; i < ignoredHardwareSignatures.Count; i++)
         {
@@ -526,7 +554,94 @@ public sealed class InputDeviceCatalog
                 return true;
             }
         }
+
+        for (var i = 0; i < claims.Count; i++)
+        {
+            var claim = claims[i];
+            if (claim.Vid == device.VendorId && claim.Pid == device.ProductId
+                && firstSeen >= claim.ActivatedAt.AddSeconds(-3))
+            {
+                return true;
+            }
+        }
         return false;
+    }
+
+    private readonly HashSet<string> hiddenVirtualDeviceIds = new(StringComparer.OrdinalIgnoreCase);
+
+    private bool IsKnownVirtualDevice(InputDeviceInfo device)
+    {
+        if (hiddenVirtualDeviceIds.Contains(device.Id)) { return true; }
+        if (!MatchesIgnoredHardwareSignature(device)) { return false; }
+        hiddenVirtualDeviceIds.Add(device.Id);
+        return true;
+    }
+
+    /// <summary>
+    /// Hides devices with this identity that appear from
+    /// <paramref name="activatedAt"/> on, effective immediately, until the
+    /// returned claim is disposed (plus <see cref="ClaimReleaseGrace"/>).
+    ///
+    /// <para>
+    /// This is how an output sink keeps its own pad out of the physical
+    /// device lists. The sink used to reserve its identity in a field read
+    /// only by the runtime coordinator after the whole tick, and creating a
+    /// pad holds the sink's lock for the length of the call — so the SDL
+    /// worker, re-enumerating every quarter second, routinely listed the
+    /// new pad as physical before anything could hide it. A claim lives
+    /// here, where enumeration is filtered, so there is no window.
+    /// </para>
+    /// </summary>
+    /// <remarks>
+    /// Never call back into a sink from here: sinks call this while holding
+    /// their own lock.
+    /// </remarks>
+    public IDisposable ClaimHardwareSignature(ushort vid, ushort pid, DateTimeOffset activatedAt)
+    {
+        var claim = new HardwareClaim(this, vid, pid, activatedAt);
+        bool changed;
+        lock (gate)
+        {
+            claims.Add(claim);
+            var filtered = devices.Where(d => !IsKnownVirtualDevice(d)).ToArray();
+            changed = filtered.Length != devices.Count;
+            if (changed)
+            {
+                devices = filtered;
+                RebuildIndex();
+            }
+        }
+
+        if (changed)
+        {
+            RaiseUpdated();
+        }
+        return claim;
+    }
+
+    private void ReleaseClaim(HardwareClaim claim)
+    {
+        lock (gate)
+        {
+            claim.ReleasedAt ??= clock.GetUtcNow();
+        }
+    }
+
+    /// <summary>Drops claims whose grace has run out. Caller holds <see cref="gate"/>.</summary>
+    private void PurgeExpiredClaims(DateTimeOffset now) =>
+        claims.RemoveAll(claim => claim.ReleasedAt is { } released && now - released > ClaimReleaseGrace);
+
+    /// <summary>One sink's hold on an identity. Disposing starts the release grace.</summary>
+    private sealed class HardwareClaim(InputDeviceCatalog owner, ushort vid, ushort pid, DateTimeOffset activatedAt) : IDisposable
+    {
+        public ushort Vid { get; } = vid;
+        public ushort Pid { get; } = pid;
+        public DateTimeOffset ActivatedAt { get; } = activatedAt;
+
+        /// <summary>When the claim was given up. Guarded by the catalog's gate.</summary>
+        public DateTimeOffset? ReleasedAt { get; set; }
+
+        public void Dispose() => owner.ReleaseClaim(this);
     }
 
     /// <summary>Reference-and-value-equality compare for the status args array.</summary>

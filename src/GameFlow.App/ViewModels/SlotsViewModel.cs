@@ -12,6 +12,9 @@ namespace GameFlow.App.ViewModels;
 /// <summary>Row in the slots list (display only).</summary>
 public sealed class SlotRowViewModel : ViewModelBase
 {
+    private ControllerSlot? currentSlot;
+    private IReadOnlyList<InputDeviceInfo>? currentDevices;
+
     public SlotRowViewModel(ControllerSlot slot, IReadOnlyList<InputDeviceInfo>? devices = null)
     {
         Id = slot.Id;
@@ -47,10 +50,12 @@ public sealed class SlotRowViewModel : ViewModelBase
     private string profileSummary = string.Empty;
     public string ProfileSummary { get => profileSummary; private set => SetProperty(ref profileSummary, value); }
 
-    public string SlotLabel => $"SLOT {Index}";
+    public string SlotLabel => UiTextResources.Format("UiSlotNumber", Index);
 
     public void Apply(ControllerSlot slot, IReadOnlyList<InputDeviceInfo>? devices = null)
     {
+        currentSlot = slot;
+        currentDevices = devices;
         Name = slot.Name;
         Index = slot.Index;
         KindLabel = SlotsViewModel.KindLabelFor(slot.OutputTemplate);
@@ -72,31 +77,42 @@ public sealed class SlotRowViewModel : ViewModelBase
         var connected = assigned.Where(device => device?.IsConnected == true).Cast<InputDeviceInfo>().ToArray();
 
         DeviceSummary = slot.OutputTemplate.DemoPreview
-            ? "Animated demo input"
+            ? UiTextResources.Get("UiDemoInput")
             : slot.InputDeviceIds.Count == 0
-                ? "No physical device assigned"
+                ? UiTextResources.Get("UiNoAssignedInput")
                 : connected.Length == 0
-                    ? "Assigned device is offline"
+                    ? UiTextResources.Get("UiAssignedInputOffline")
                     : connected.Length == 1
                         ? connected[0].DisplayName
                         : $"{connected[0].DisplayName} +{connected.Length - 1}";
 
         ProfileSummary = slot.ProfileIds.Count switch
         {
-            0 => "Pass-through mapping",
-            1 => "1 profile layer",
-            _ => $"{slot.ProfileIds.Count} profile layers",
+            0 => UiTextResources.Get("UiPassThroughMapping"),
+            1 => UiTextResources.Format("UiProfileLayerCount", 1),
+            _ => UiTextResources.Format("UiProfileLayerCount", slot.ProfileIds.Count),
         };
 
         (StatusLabel, StatusBrush) = !slot.Enabled
-            ? ("Disabled", "#64748B")
+            ? (UiTextResources.Get("UiDisabled"), "#64748B")
             : slot.OutputTemplate.DemoPreview
-                ? ("Demo", "#38BDF8")
+                ? (UiTextResources.Get("UiDemo"), "#38BDF8")
                 : slot.InputDeviceIds.Count == 0
-                    ? ("Needs input", "#F59E0B")
+                    ? (UiTextResources.Get("UiNeedsInput"), "#F59E0B")
                     : connected.Length == 0
-                        ? ("Offline", "#F87171")
-                        : ("Ready", "#4ADE80");
+                        ? (UiTextResources.Get("UiOffline"), "#F87171")
+                        : (UiTextResources.Get("UiREADY"), "#4ADE80");
+    }
+
+    /// <inheritdoc />
+    internal override void RefreshResourceText()
+    {
+        if (currentSlot is not null)
+        {
+            Apply(currentSlot, currentDevices);
+        }
+
+        base.RefreshResourceText();
     }
 }
 
@@ -403,7 +419,7 @@ public sealed class SlotsViewModel : ViewModelBase, IDisposable
     /// The remaining headers stay defined because the strings are still
     /// used as section titles inside it.
     /// </remarks>
-    public string SetupTabHeader => Loc("DevicesSlotSetupPageTab", "Controller");
+    public string SetupTabHeader => UiTextResources.Get("UiController");
 
     private string slotName = string.Empty;
     public string SlotName
@@ -496,12 +512,24 @@ public sealed class SlotsViewModel : ViewModelBase, IDisposable
     {
         if (SelectedSlot is not null)
         {
-            var slotId = SelectedSlot.Id;
-            if (registry.DeleteSlot(slotId))
-            {
-                deviceSettingsStore.RemoveSlot(slotId);
-            }
+            DeleteSlotById(SelectedSlot.Id);
         }
+    }
+
+    /// <summary>
+    /// Deletes one slot and the per-device tuning saved under it. Shared by
+    /// this page's Delete button and the sidebar's per-row delete, so both
+    /// leave the same nothing behind.
+    /// </summary>
+    public bool DeleteSlotById(string? slotId)
+    {
+        if (string.IsNullOrWhiteSpace(slotId) || !registry.DeleteSlot(slotId))
+        {
+            return false;
+        }
+
+        deviceSettingsStore.RemoveSlot(slotId);
+        return true;
     }
 
     private void AssignDevice(string? deviceId)

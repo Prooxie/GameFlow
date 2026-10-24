@@ -45,10 +45,10 @@ public sealed class ProfileFileDialogService : IProfileFileDialogService
             files = await storageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 AllowMultiple = false,
-                Title = "Import profile",
+                Title = UiTextResources.Get("ImportProfileDialogTitle"),
                 FileTypeFilter =
                 [
-                    new FilePickerFileType("JSON profile")
+                    new FilePickerFileType(UiTextResources.Get("JsonProfileFileTypeLabel"))
                     {
                         Patterns = ["*.json"]
                     }
@@ -111,12 +111,12 @@ public sealed class ProfileFileDialogService : IProfileFileDialogService
         {
             file = await storageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
-                Title = "Export profile",
+                Title = UiTextResources.Get("ExportProfileDialogTitle"),
                 SuggestedFileName = suggestedFileName,
                 DefaultExtension = "json",
                 FileTypeChoices =
                 [
-                    new FilePickerFileType("JSON profile")
+                    new FilePickerFileType(UiTextResources.Get("JsonProfileFileTypeLabel"))
                     {
                         Patterns = ["*.json"]
                     }

@@ -22,7 +22,7 @@ namespace GameFlow.App.ViewModels;
 /// </summary>
 public sealed partial class ControllerVisualStateViewModel : ViewModelBase
 {
-    public string MissingThemeHint => $"No controller theme is installed for this style. Install a VSCView-compatible theme in {GameFlow.Infrastructure.Configuration.AppPaths.ThemesDirectory}, then restart GameFlow.";
+    public string MissingThemeHint => UiTextResources.Format("UiMissingTheme", GameFlow.Infrastructure.Configuration.AppPaths.ThemesDirectory);
     // ─── Static property-name lists ───────────────────────────────────────────
     private static readonly string[] IdentityProps =
     [
@@ -101,7 +101,7 @@ public sealed partial class ControllerVisualStateViewModel : ViewModelBase
 
     private readonly Action<string> onElementSelected;
     private readonly ILocalizationService? localization;
-    private ControllerSnapshot snapshot = ControllerSnapshot.Empty("No controller detected");
+    private ControllerSnapshot snapshot = ControllerSnapshot.Empty(string.Empty);
     private ControllerVisualStyle visualStyle = ControllerVisualStyle.Auto;
     private string panelId = "physical";
 
@@ -119,10 +119,17 @@ public sealed partial class ControllerVisualStateViewModel : ViewModelBase
     /// keyboard, drawn one way.
     /// </para>
     /// </summary>
-    public bool IsKeyboardStyle => visualStyle == ControllerVisualStyle.Keyboard;
+    public bool IsKeyboardStyle => ShowKeyboardSurface;
 
-    /// <summary>Whether this panel is drawn by the theme engine — everything that is not a keyboard.</summary>
-    public bool IsThemedStyle => !IsKeyboardStyle;
+    /// <summary>
+    /// Whether this panel is drawn by the theme engine — everything that is
+    /// not a keyboard or a mouse. Those two are drawn by their own controls;
+    /// see <see cref="ShowKeyboardSurface"/> and <see cref="ShowMouseSurface"/>.
+    /// </summary>
+    public bool IsThemedStyle => !ShowKeyboardSurface && !ShowMouseSurface;
+
+    /// <summary>The skin picker belongs to themed art only; a keyboard has no skins to offer.</summary>
+    public bool ShowThemeVariantPicker => IsThemedStyle && HasThemeVariants;
 
     /// <summary>
     /// Lazy-loaded asset-pack overlay PNG for <see cref="visualStyle"/>.
@@ -162,8 +169,16 @@ public sealed partial class ControllerVisualStateViewModel : ViewModelBase
     /// </summary>
     public void RefreshLocalizedLabels()
     {
+        RebuildLiveCachedStrings();
         OnPropertyChanged(nameof(StyleLabel));
         OnPropertyChanged(nameof(MinimalSummaryText));
+    }
+
+    /// <inheritdoc />
+    internal override void RefreshResourceText()
+    {
+        RebuildLiveCachedStrings();
+        base.RefreshResourceText();
     }
 
     // ─── Update (called every refresh tick from ShellViewModel) ───────────────
@@ -244,6 +259,12 @@ public sealed partial class ControllerVisualStateViewModel : ViewModelBase
         {
             OnPropertyChanged(nameof(IsKeyboardStyle));
             OnPropertyChanged(nameof(IsThemedStyle));
+            OnPropertyChanged(nameof(ShowThemeVariantPicker));
+        }
+
+        if (liveChanged || styleChanged)
+        {
+            UpdateKeyboardMouseState(styleChanged);
         }
 
         if (styleChanged)
@@ -302,7 +323,7 @@ public sealed partial class ControllerVisualStateViewModel : ViewModelBase
 
     // ─── Identity properties ──────────────────────────────────────────────────
 
-    public string PanelTitle { get; private set; } = "Controller";
+    public string PanelTitle { get; private set; } = UiTextResources.Get("UiController");
 
     /// <summary>
     /// Alias for <see cref="PanelTitle"/>. The AXAML binds
@@ -391,16 +412,17 @@ public sealed partial class ControllerVisualStateViewModel : ViewModelBase
     }
 
     public string DeviceName =>
-        string.IsNullOrWhiteSpace(snapshot.DeviceName) ? "No controller detected" : snapshot.DeviceName;
+        string.IsNullOrWhiteSpace(snapshot.DeviceName) ? UiTextResources.Get("UiNoController") : snapshot.DeviceName;
 
     public bool IsConnected =>
-        !DeviceName.Contains("No controller", StringComparison.OrdinalIgnoreCase) &&
+        !string.IsNullOrWhiteSpace(snapshot.DeviceName) &&
+        !snapshot.DeviceName.Contains("No controller", StringComparison.OrdinalIgnoreCase) &&
         !DeviceName.Contains("No compatible", StringComparison.OrdinalIgnoreCase) &&
         !DeviceName.Contains("Select a controller", StringComparison.OrdinalIgnoreCase) &&
         !DeviceName.Contains("disabled", StringComparison.OrdinalIgnoreCase) &&
         !DeviceName.Contains("Waiting", StringComparison.OrdinalIgnoreCase);
 
-    public string ConnectionLabel => IsConnected ? "LIVE" : "IDLE";
+    public string ConnectionLabel => IsConnected ? UiTextResources.Get("UiLive") : UiTextResources.Get("UiIdle");
     public string ConnectionBrush => IsConnected ? AccentBrush : "#64748B";
     public string PanelBorderBrush => IsConnected ? AccentBrush : "#334155";
 
@@ -487,6 +509,9 @@ public sealed partial class ControllerVisualStateViewModel : ViewModelBase
         ControllerVisualStyle.PlayStation5    => Localized("StyleLabelPlayStation5",    "DualSense layout"),
         ControllerVisualStyle.NintendoSwitch  => Localized("StyleLabelNintendoSwitch",  "Switch layout"),
         ControllerVisualStyle.SteamController => Localized("StyleLabelSteamController", "Steam Controller layout"),
+        ControllerVisualStyle.SteamControllerV2 => UiTextResources.Get("StyleLabelSteamControllerV2"),
+        ControllerVisualStyle.Joystick => UiTextResources.Get("StyleLabelJoystick"),
+        ControllerVisualStyle.Wheel => UiTextResources.Get("StyleLabelWheel"),
         ControllerVisualStyle.SteamDeck       => Localized("StyleLabelSteamDeck",       "Steam Deck layout"),
         ControllerVisualStyle.Arcade          => Localized("StyleLabelArcade",          "Arcade layout"),
         ControllerVisualStyle.SimpleGamepad   => Localized("StyleLabelSimpleGamepad",   "Simple gamepad layout"),
@@ -706,13 +731,13 @@ public sealed partial class ControllerVisualStateViewModel : ViewModelBase
     public string RightStickValueText { get; private set; } = "+0.00, +0.00";
     public string TriggerSummaryText { get; private set; } = "0% / 0%";
     public string PressedButtonsText { get; private set; } = "—";
-    public string TouchSummaryText { get; private set; } = "No touch";
+    public string TouchSummaryText { get; private set; } = UiTextResources.Get("UiNoTouch");
 
     public string TouchpadLabel => snapshot.TouchContactCount switch
     {
-        <= 0 => IsPlayStation ? "Touchpad" : "Surface",
-        1 => "1 finger",
-        _ => $"{snapshot.TouchContactCount} fingers"
+        <= 0 => UiTextResources.Get("PhoneTouchpad"),
+        1 => UiTextResources.Format("UiTouchCount", 1),
+        _ => UiTextResources.Format("UiTouchCount", snapshot.TouchContactCount)
     };
 
     public bool ShowTouchFinger1 => ShowTouchpad && snapshot.TouchContactCount >= 1;
@@ -732,9 +757,9 @@ public sealed partial class ControllerVisualStateViewModel : ViewModelBase
 
         TouchSummaryText = snapshot.TouchContactCount switch
         {
-            <= 0 => "No touch",
-            1 => "1 touch",
-            _ => $"{snapshot.TouchContactCount} touches"
+            <= 0 => UiTextResources.Get("UiNoTouch"),
+            1 => UiTextResources.Format("UiTouchCount", 1),
+            _ => UiTextResources.Format("UiTouchCount", snapshot.TouchContactCount)
         };
 
         var pressed = new List<string>(6);
@@ -825,31 +850,8 @@ public sealed partial class ControllerVisualStateViewModel : ViewModelBase
             : ControllerVisualStyle.Auto;
     }
 
-    private static string FormatButton(ButtonId b)
-    {
-        return b switch
-        {
-            ButtonId.South => "South",
-            ButtonId.East => "East",
-            ButtonId.West => "West",
-            ButtonId.North => "North",
-            ButtonId.LeftShoulder => "L1/LB",
-            ButtonId.RightShoulder => "R1/RB",
-            ButtonId.LeftTriggerButton => "L2/LT",
-            ButtonId.RightTriggerButton => "R2/RT",
-            ButtonId.Back => "Back",
-            ButtonId.Start => "Start",
-            ButtonId.Guide => "Guide",
-            ButtonId.LeftStick => "L3",
-            ButtonId.RightStick => "R3",
-            ButtonId.DpadUp => "D↑",
-            ButtonId.DpadDown => "D↓",
-            ButtonId.DpadLeft => "D←",
-            ButtonId.DpadRight => "D→",
-            ButtonId.Touchpad => "Touch",
-            _ => b.ToString()
-        };
-    }
+    /// <summary>Gets the translated name of a pressed button.</summary>
+    private static string FormatButton(ButtonId button) => UiTextResources.EnumValue(button);
 
     private static double Active(bool isActive)
     {

@@ -25,7 +25,10 @@ namespace GameFlow.Infrastructure.Runtime.Effects;
 /// <item><b>Rate limit.</b> Each device is written at most once per
 ///   interval, EXCEPT that going silent is never delayed: a motor that
 ///   should stop must stop, or the pad buzzes on after the game stopped
-///   asking.</item>
+///   asking. A change to the LIGHTS alone waits for the longer
+///   lighting interval: an animated mode produces a new colour every
+///   frame, which no dedupe can absorb, and at 30 Hz the animation still
+///   looks smooth while a Bluetooth pad gets half the reports.</item>
 /// </list>
 ///
 /// <para>
@@ -34,13 +37,22 @@ namespace GameFlow.Infrastructure.Runtime.Effects;
 /// thread or a device.
 /// </para>
 /// </summary>
-public sealed class EffectDispatchQueue(TimeSpan minimumWriteInterval)
+public sealed class EffectDispatchQueue(TimeSpan minimumWriteInterval, TimeSpan? lightingOnlyInterval = null)
 {
     private readonly Lock gate = new();
     private readonly Dictionary<string, DeviceEntry> devices = new(StringComparer.Ordinal);
 
     /// <summary>Minimum spacing between two writes to the same device.</summary>
     public TimeSpan MinimumWriteInterval { get; } = minimumWriteInterval;
+
+    /// <summary>
+    /// Minimum spacing when the only thing that changed is the lights.
+    /// Never shorter than <see cref="MinimumWriteInterval"/>.
+    /// </summary>
+    public TimeSpan LightingOnlyInterval { get; } =
+        lightingOnlyInterval is { } lighting && lighting > minimumWriteInterval
+            ? lighting
+            : minimumWriteInterval;
 
     /// <summary>Devices currently tracked. For diagnostics.</summary>
     public int TrackedDeviceCount
@@ -102,8 +114,12 @@ public sealed class EffectDispatchQueue(TimeSpan minimumWriteInterval)
                 // Rule 3: rate limit, with silence exempt. A stop must not
                 // wait behind the interval — a motor left running is the
                 // one failure a user cannot ignore.
+                var interval = entry.HasWritten && entry.LastWritten.DiffersOnlyInLighting(pending)
+                    ? LightingOnlyInterval
+                    : MinimumWriteInterval;
+
                 if (entry.HasWritten && !pending.IsSilent &&
-                    now - entry.LastWriteTime < MinimumWriteInterval)
+                    now - entry.LastWriteTime < interval)
                 {
                     continue;
                 }

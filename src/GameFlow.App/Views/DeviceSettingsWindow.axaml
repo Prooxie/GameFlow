@@ -5,7 +5,7 @@
         x:Class="GameFlow.App.Views.DeviceSettingsWindow"
         x:DataType="vm:DeviceSettingsEditorViewModel"
         x:CompileBindings="True"
-        Title="Controller settings"
+        Title="{DynamicResource Ui.UiControllerSettings}"
         Width="720" Height="620"
         MinWidth="560" MinHeight="460"
         WindowStartupLocation="CenterOwner"
@@ -16,8 +16,8 @@
 
     <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right"
                 Spacing="8" Margin="0,12,0,0">
-      <Button Content="Reset to defaults" Click="OnResetClick" />
-      <Button Content="Close" Click="OnCloseClick" IsDefault="True" />
+      <Button Content="{DynamicResource Ui.ResetProfileButton}" Click="OnResetClick" />
+      <Button Content="{DynamicResource Ui.UiClose}" Click="OnCloseClick" IsDefault="True" />
     </StackPanel>
   </Grid>
 </Window>

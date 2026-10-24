@@ -43,15 +43,23 @@
       <Border Grid.Row="0" Padding="14,12" CornerRadius="14"
               Background="{DynamicResource AppSurface1}"
               BorderBrush="{DynamicResource AppBorder0}" BorderThickness="1">
-        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-          <StackPanel Spacing="4">
+        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+          <StackPanel Grid.ColumnSpan="2" Spacing="4">
             <TextBlock Text="{Binding MappingRulesHeaderLabel}" FontSize="10" FontWeight="Bold"
                        Foreground="{DynamicResource AppForegroundDim}" LetterSpacing="1" />
-            <ComboBox ItemsSource="{Binding RuleKindOptions}"
+            <ComboBox x:Name="RuleKindPicker" ItemsSource="{Binding RuleKindOptions}"
                       SelectedItem="{Binding SelectedNewRuleKind}"
+                      HorizontalAlignment="Stretch" MinWidth="200"
                       ItemTemplate="{StaticResource RuleKindTemplate}" />
+            <!-- The ↑/↓ buttons on each card look like they set execution
+                 order. They don't, except among rules of one type; this
+                 says what does. -->
+            <TextBlock Text="{Binding RuleOrderHintLabel}" FontSize="11"
+                       Foreground="{DynamicResource AppForegroundDim}"
+                       ToolTip.Tip="{Binding RuleOrderTipLabel}"
+                       TextWrapping="Wrap" Margin="0,2,0,0" />
           </StackPanel>
-          <Button Grid.Column="1" Classes="primary" VerticalAlignment="Bottom"
+          <Button Grid.Row="1" Grid.Column="1" Classes="primary" Margin="0,8,0,0"
                   Padding="16,10" Command="{Binding AddRuleCommand}"
                   Content="{Binding AddRuleButtonLabel}" />
         </Grid>
@@ -77,7 +85,7 @@
                     </Border>
                     <CheckBox IsChecked="{Binding Enabled}"
                               HorizontalAlignment="Center"
-                              ToolTip.Tip="Enable / disable this rule" />
+                              ToolTip.Tip="{DynamicResource Ui.UiEnableDisableThisRule}" />
                   </StackPanel>
 
                   <!-- Name + summary -->
@@ -106,11 +114,11 @@
                       <Button Grid.Column="0" Classes="ghost" Padding="6,5" FontSize="11"
                               Command="{Binding #EditorRoot.DataContext.MoveUpCommand}"
                               CommandParameter="{Binding}"
-                              Content="↑" ToolTip.Tip="Move up" />
+                              Content="↑" ToolTip.Tip="{DynamicResource Ui.UiMoveUp}" />
                       <Button Grid.Column="1" Classes="ghost" Padding="6,5" FontSize="11"
                               Command="{Binding #EditorRoot.DataContext.MoveDownCommand}"
                               CommandParameter="{Binding}"
-                              Content="↓" ToolTip.Tip="Move down" />
+                              Content="↓" ToolTip.Tip="{DynamicResource Ui.UiMoveDown}" />
                     </Grid>
                     <Button Classes="danger" Padding="10,5" FontSize="11"
                             Command="{Binding #EditorRoot.DataContext.DeleteRuleCommand}"
@@ -352,13 +360,13 @@
 
             <!-- ── Script rule fields ──────────────────────────────── -->
             <StackPanel Spacing="12" IsVisible="{Binding IsScriptRule}">
-              <TextBlock Classes="hint" Text="Lua runs inside GameFlow. Review scripts before enabling them. Imported scripts start disabled; only run code from authors you trust." TextWrapping="Wrap" Foreground="{DynamicResource AppWarning}" />
+              <TextBlock Classes="hint" Text="{Binding #EditorRoot.DataContext.ScriptTrustWarningLabel}" TextWrapping="Wrap" Foreground="{DynamicResource AppWarning}" />
               <Border Classes="divider" />
               <StackPanel Spacing="5">
                 <TextBlock Text="{Binding #EditorRoot.DataContext.SectionTargetControlKeyLabel}" FontSize="10" FontWeight="SemiBold"
                             Foreground="{DynamicResource AppWarning}" LetterSpacing="0.8" />
                 <TextBox Text="{Binding ControlKey}"
-                         PlaceholderText="South / LeftStick / RightTrigger.Analog" />
+                         PlaceholderText="{DynamicResource Ui.UiSouthLeftStickRightTriggerAnalog}" />
                 <CheckBox IsChecked="{Binding SuppressScriptSourceInput}"
                           Content="{Binding #EditorRoot.DataContext.SuppressSourceInputStoredLabel}" />
                 <TextBlock Text="{Binding #EditorRoot.DataContext.StoreScriptLabel}"
@@ -517,6 +525,60 @@
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
+            </StackPanel>
+
+            <!-- ── Axis inversion fields ──────────────────────────── -->
+            <!-- Was a fixed card in the profile header; as a rule it can
+                 sit on a shift layer and be flipped by a rule toggle.
+                 The card's explanations live on in the tooltips. A WrapPanel for
+                 the reason the card used one: three labelled groups do
+                 not fit side by side once the form is at its narrowest. -->
+            <StackPanel Spacing="12" IsVisible="{Binding IsAxisInvert}">
+              <Border Classes="divider" />
+              <TextBlock Text="{Binding #EditorRoot.DataContext.InvertHintLabel}"
+                         FontSize="11" Foreground="{DynamicResource AppForegroundDim}"
+                         TextWrapping="Wrap" />
+              <WrapPanel Orientation="Horizontal">
+                <StackPanel Spacing="6" Margin="0,0,28,10">
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.SectionInvertLeftStickLabel}" FontSize="10" FontWeight="SemiBold"
+                             Foreground="{DynamicResource AppAccent}" LetterSpacing="0.8" />
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <CheckBox IsChecked="{Binding InvertLeftX}"
+                              Content="{Binding #EditorRoot.DataContext.InvertXLabel}"
+                              ToolTip.Tip="{Binding #EditorRoot.DataContext.TipInvertLeftXLabel}" />
+                    <CheckBox IsChecked="{Binding InvertLeftY}"
+                              Content="{Binding #EditorRoot.DataContext.InvertYLabel}"
+                              ToolTip.Tip="{Binding #EditorRoot.DataContext.TipInvertLeftYLabel}" />
+                  </StackPanel>
+                </StackPanel>
+                <StackPanel Spacing="6" Margin="0,0,28,10">
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.SectionInvertRightStickLabel}" FontSize="10" FontWeight="SemiBold"
+                             Foreground="{DynamicResource AppAccent}" LetterSpacing="0.8" />
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <CheckBox IsChecked="{Binding InvertRightX}"
+                              Content="{Binding #EditorRoot.DataContext.InvertXLabel}"
+                              ToolTip.Tip="{Binding #EditorRoot.DataContext.TipInvertRightXLabel}" />
+                    <CheckBox IsChecked="{Binding InvertRightY}"
+                              Content="{Binding #EditorRoot.DataContext.InvertYLabel}"
+                              ToolTip.Tip="{Binding #EditorRoot.DataContext.TipInvertRightYLabel}" />
+                  </StackPanel>
+                </StackPanel>
+                <StackPanel Spacing="6" Margin="0,0,0,10">
+                  <TextBlock Text="{Binding #EditorRoot.DataContext.SectionInvertTriggersLabel}" FontSize="10" FontWeight="SemiBold"
+                             Foreground="{DynamicResource AppAccent}" LetterSpacing="0.8" />
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <CheckBox IsChecked="{Binding InvertLeftTrigger}"
+                              Content="{Binding #EditorRoot.DataContext.InvertL2Label}"
+                              ToolTip.Tip="{Binding #EditorRoot.DataContext.TipInvertTriggerLabel}" />
+                    <CheckBox IsChecked="{Binding InvertRightTrigger}"
+                              Content="{Binding #EditorRoot.DataContext.InvertR2Label}"
+                              ToolTip.Tip="{Binding #EditorRoot.DataContext.TipInvertTriggerLabel}" />
+                  </StackPanel>
+                </StackPanel>
+              </WrapPanel>
+              <CheckBox IsChecked="{Binding ShowInvertInLayout}"
+                        Content="{Binding #EditorRoot.DataContext.InvertShowInLayoutLabel}"
+                        ToolTip.Tip="{Binding #EditorRoot.DataContext.TipInvertShowInLayoutLabel}" />
             </StackPanel>
 
             <!-- ── Timing fields ──────────────────────────────────── -->

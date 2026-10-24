@@ -23,12 +23,21 @@ internal sealed class HidMaestroRumbleRouter(ILogger logger)
     private readonly HashSet<HMOutputSource> firstOutputLogged = [];
     private readonly HashSet<int> unrecognisedXInputShapes = [];
     private bool decodedRumbleLogged;
+    private bool decodedLightingLogged;
     private bool xinputRumbleLogged;
     private int declinedReportsLogged;
     private int outputWarningLogged;
 
     /// <summary>Raised with the low and high motor values, each from 0 to 1.</summary>
     public event Action<double, double>? RumbleReceived;
+
+    /// <summary>
+    /// Raised with the lights a decoded Sony report authorised — the
+    /// lightbar colour, DualShock 4 flash, DualSense player and mic LEDs.
+    /// These used to be dropped as "declined" reports; they are what lets
+    /// a game's own low-health flash reach the physical pad.
+    /// </summary>
+    public event Action<GameFlow.Infrastructure.Runtime.Effects.GameLighting>? LightingReceived;
 
     /// <summary>Handles one raw packet. Only XInput packets carry rumble.</summary>
     public void OnOutputReceived(HMController sender, HMOutputPacket packet)
@@ -106,8 +115,10 @@ internal sealed class HidMaestroRumbleRouter(ILogger logger)
                 return;
             }
 
+            var carriedRumble = false;
             if (HidMaestroRumbleDecoder.TryDecodeSemanticFields(fields, out var low, out var high))
             {
+                carriedRumble = true;
                 if (!decodedRumbleLogged)
                 {
                     decodedRumbleLogged = true;
@@ -118,16 +129,33 @@ internal sealed class HidMaestroRumbleRouter(ILogger logger)
 
                 RumbleReceived?.Invoke(low, high);
             }
-            else if (declinedReportsLogged < MaxDeclinedReportsLogged)
+
+            // Independently of the motors: one report can carry both, and a
+            // light-only report is the common case for a game's lightbar.
+            var carriedLighting = false;
+            if (HidMaestroRumbleDecoder.TryDecodeLighting(fields, out var lighting))
+            {
+                carriedLighting = true;
+                if (!decodedLightingLogged)
+                {
+                    decodedLightingLogged = true;
+                    logger.LogInformation(
+                        "HIDMaestro: first lighting request from the host — {Lighting}.", lighting);
+                }
+
+                LightingReceived?.Invoke(lighting);
+            }
+
+            if (!carriedRumble && !carriedLighting && declinedReportsLogged < MaxDeclinedReportsLogged)
             {
                 // The decoder declined. Log the values, not just the names: the
                 // decision turns on the Sony validity flags, so flags and motor
-                // bytes together tell a correct rejection (LED-only padding) from
-                // a wrong one. Several reports, because the first report a host
-                // sends is usually LED or configuration, not rumble.
+                // bytes together tell a correct rejection (padding) from a
+                // wrong one. Several reports, because the first report a host
+                // sends is usually configuration, not rumble or lights.
                 declinedReportsLogged++;
                 logger.LogInformation(
-                    "HIDMaestro: decoded output report {Index}/{Max} carried no rumble the validity " +
+                    "HIDMaestro: decoded output report {Index}/{Max} carried no rumble or lighting the validity " +
                     "flags authorise. Fields: {Fields}",
                     declinedReportsLogged,
                     MaxDeclinedReportsLogged,

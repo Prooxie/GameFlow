@@ -93,6 +93,69 @@ public sealed record RumbleSettings
     /// <summary>Swaps the two motors — some pads wire them opposite to what games assume.</summary>
     [JsonPropertyName("swapMotors")]
     public bool SwapMotors { get; init; }
+
+    /// <summary>
+    /// What drives the impulse-trigger motors of an Xbox One / Series pad.
+    /// Off by default so a pad that never had trigger rumble does not
+    /// suddenly gain it; ignored on pads without those motors.
+    /// </summary>
+    [JsonPropertyName("triggerRumbleSource")]
+    public TriggerRumbleSource TriggerRumbleSource { get; init; } = TriggerRumbleSource.Off;
+
+    /// <summary>
+    /// Impulse-trigger strength, 0..2. Separate from <see cref="Gain"/>
+    /// because trigger motors sit under the fingers: the level that feels
+    /// right in the grips is usually too much in the triggers.
+    /// </summary>
+    [JsonPropertyName("triggerRumbleGain")]
+    public float TriggerRumbleGain { get; init; } = 1.0f;
+}
+
+/// <summary>Where impulse-trigger rumble comes from.</summary>
+public enum TriggerRumbleSource
+{
+    /// <summary>The trigger motors stay still.</summary>
+    Off,
+
+    /// <summary>
+    /// The game's body rumble is mirrored into the triggers: left trigger
+    /// follows the heavy motor, right trigger the light one. Games reach a
+    /// virtual pad through XInput, which has no trigger channel at all, so
+    /// this is how a game's rumble reaches a real Xbox pad's triggers.
+    /// </summary>
+    Motors,
+}
+
+/// <summary>What the player-indicator LED row shows (DualSense, DualShock 3, Switch).</summary>
+public enum PlayerLedMode
+{
+    /// <summary>All player LEDs dark.</summary>
+    Off,
+
+    /// <summary>The slot number, in the console's own pattern.</summary>
+    PlayerNumber,
+
+    /// <summary>One LED per fifth of charge, like a phone's battery bar.</summary>
+    Battery,
+
+    /// <summary>Whatever the game asked the virtual pad to show; the slot number until it asks.</summary>
+    Game,
+
+    /// <summary>The fixed pattern in <see cref="LightingSettings.PlayerLedMask"/>.</summary>
+    Custom,
+}
+
+/// <summary>What the DualSense microphone-mute LED does.</summary>
+public enum MicLedMode
+{
+    Off,
+    On,
+
+    /// <summary>The firmware's own slow pulse — a "something needs attention" signal.</summary>
+    Pulse,
+
+    /// <summary>Follows the game's mute LED requests; off until it sends one.</summary>
+    Game,
 }
 
 /// <summary>How a DualSense-class lightbar behaves when no game is driving it.</summary>
@@ -134,7 +197,27 @@ public enum LightbarMode
     /// Red while a trigger is held, configured colour otherwise — a
     /// firing indicator.
     /// </summary>
-    TriggerReactive
+    TriggerReactive,
+
+    // ── Added with per-controller lighting ───────────────────────────
+    // Appended, never inserted: device-settings.json stores this enum as
+    // a NUMBER, so every value above must keep its ordinal.
+
+    /// <summary>
+    /// The game decides. Whatever lightbar colour the game sends to the
+    /// virtual DualSense / DualShock 4 is shown, for as long as it last
+    /// asked, with no idle fallback. Until the game sends anything the
+    /// slot colour is shown.
+    /// </summary>
+    GameControlled,
+
+    /// <summary>
+    /// Another program decides, through the external lighting API
+    /// (Options → Network &amp; phones) — Home Assistant, a Wallpaper
+    /// Engine helper, a script. Game colours are ignored; while nothing
+    /// external is active the configured colour is shown.
+    /// </summary>
+    External,
 }
 
 public sealed record LightingSettings
@@ -146,13 +229,80 @@ public sealed record LightingSettings
     [JsonPropertyName("color")]
     public string Color { get; init; } = "#0066FF";
 
+    /// <summary>
+    /// The second colour of the two-colour modes: what
+    /// <see cref="LightbarMode.Strobe"/> alternates with, what
+    /// <see cref="LightbarMode.Breathing"/> fades to, and the firing colour
+    /// of <see cref="LightbarMode.TriggerReactive"/>. Empty keeps each
+    /// mode's original behaviour (dark, a dim floor, red), so profiles
+    /// saved before this existed look exactly as they did.
+    /// </summary>
+    [JsonPropertyName("secondaryColor")]
+    public string SecondaryColor { get; init; } = string.Empty;
+
     /// <summary>0..1.</summary>
     [JsonPropertyName("brightness")]
     public float Brightness { get; init; } = 1.0f;
 
-    /// <summary>Player-indicator LED row brightness (DualSense) / Guide button brightness (Xbox), 0..1.</summary>
+    /// <summary>
+    /// Player-indicator LED row brightness, 0..1. The DualSense has three
+    /// firmware steps, so this is rounded to bright / medium / dim; 0
+    /// switches the row off.
+    /// </summary>
     [JsonPropertyName("indicatorBrightness")]
     public float IndicatorBrightness { get; init; } = 1.0f;
+
+    /// <summary>
+    /// Speed multiplier for the animated modes, 0.25..4. One number for
+    /// all of them: a user who finds breathing too slow finds the rainbow
+    /// too slow as well.
+    /// </summary>
+    [JsonPropertyName("animationSpeed")]
+    public float AnimationSpeed { get; init; } = 1.0f;
+
+    /// <summary>
+    /// Lets a game's own lightbar colour take over from the configured
+    /// mode while the game is actively sending one — the "flash red at low
+    /// health" a game already does on a real DualSense or DualShock 4.
+    /// On by default: a game that drives its lightbar is the case the
+    /// player expects to see.
+    /// </summary>
+    [JsonPropertyName("followGame")]
+    public bool FollowGame { get; init; } = true;
+
+    /// <summary>
+    /// Seconds after the game's LAST lightbar update before the configured
+    /// mode comes back. Most games set a colour once on start-up, which
+    /// would otherwise freeze the configured mode out for the whole
+    /// session; games that animate their lightbar keep re-sending and stay
+    /// in control. 0 holds the game's colour indefinitely.
+    /// </summary>
+    [JsonPropertyName("gameIdleFallbackSeconds")]
+    public float GameIdleFallbackSeconds { get; init; } = 10f;
+
+    /// <summary>
+    /// Pulse the light red when the pad's battery runs low, over every
+    /// other mode. On by default — a pad dying mid-session is worse than a
+    /// lightbar briefly ignoring its setting — but it was previously
+    /// impossible to turn off, which is wrong for a pad that is always
+    /// near a cable.
+    /// </summary>
+    [JsonPropertyName("lowBatteryAlert")]
+    public bool LowBatteryAlert { get; init; } = true;
+
+    [JsonPropertyName("playerLedMode")]
+    public PlayerLedMode PlayerLedMode { get; init; } = PlayerLedMode.PlayerNumber;
+
+    /// <summary>
+    /// Five-bit pattern for <see cref="PlayerLedMode.Custom"/>, bit 0 the
+    /// leftmost LED — the DualSense's own layout. Pads with four LEDs show
+    /// the nearest player number.
+    /// </summary>
+    [JsonPropertyName("playerLedMask")]
+    public int PlayerLedMask { get; init; } = 0b00100;
+
+    [JsonPropertyName("micLedMode")]
+    public MicLedMode MicLedMode { get; init; } = MicLedMode.Off;
 }
 
 /// <summary>DualSense adaptive trigger effect. Values mirror the hardware's own effect set.</summary>

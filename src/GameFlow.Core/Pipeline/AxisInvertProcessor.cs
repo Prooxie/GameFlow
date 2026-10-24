@@ -3,7 +3,8 @@ using GameFlow.Core.Models;
 namespace GameFlow.Core.Pipeline;
 
 /// <summary>
-/// Applies a profile's <see cref="AxisInvert"/> to a finished virtual
+/// Applies the <see cref="AxisInvert"/> folded from a profile's
+/// <see cref="Models.Rules.AxisInvertRule"/>s to a finished virtual
 /// snapshot.
 ///
 /// <para>

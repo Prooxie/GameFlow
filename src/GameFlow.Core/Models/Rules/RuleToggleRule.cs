@@ -22,6 +22,16 @@ namespace GameFlow.Core.Models.Rules;
 ///         in the profile JSON stays authoritative across app launches;
 ///         toggles reset to that default on every restart, which is the
 ///         normal mental model for a "press-this-to-mute" macro.</item>
+///   <item>The overlay holds an explicit on/off per target, not just a
+///         "muted" set, so a target SAVED disabled is switched ON by the
+///         first press — a profile can ship a rule that starts off and
+///         is brought in on demand.</item>
+///   <item>The toggle itself obeys the same gates as any rule: its own
+///         Enabled flag (and any toggle aimed at it), its
+///         <see cref="MappingRule.LayerId"/>, and Base-override by an
+///         active layer. Its source button's edge is tracked even while
+///         it is inactive, so a layer engaging under an already-held
+///         button does not read as a fresh press.</item>
 /// </list>
 /// </para>
 ///

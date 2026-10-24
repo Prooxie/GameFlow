@@ -105,7 +105,7 @@ public sealed class MotionServerPanelViewModel : ViewModelBase
     public void Refresh()
     {
         if (saveError is not null) { Status = saveError; return; }
-        if (HasPortError) { Status = "Port is not valid. The previous saved port is still in use."; return; }
+        if (HasPortError) { Status = UiTextResources.Get("UiInvalidMotionPort"); return; }
         if (!IsEnabled)
         {
             Status = "Stopped";
@@ -127,9 +127,9 @@ public sealed class MotionServerPanelViewModel : ViewModelBase
         var clients = server.ConnectedClientCount;
         Status = clients switch
         {
-            0 => $"Listening on UDP {server.ListenEndpoint} — no emulator connected yet",
-            1 => $"Listening on UDP {server.ListenEndpoint} — 1 emulator connected",
-            _ => $"Listening on UDP {server.ListenEndpoint} — {clients} emulators connected"
+            0 => UiTextResources.Format("UiMotionListening", server.ListenEndpoint, 0),
+            1 => UiTextResources.Format("UiMotionListening", server.ListenEndpoint, 1),
+            _ => UiTextResources.Format("UiMotionListening", server.ListenEndpoint, clients)
         };
     }
 
@@ -182,7 +182,7 @@ public sealed class MotionServerPanelViewModel : ViewModelBase
                 logger.LogError(exception, "Could not save the motion server settings.");
                 if (revision == Volatile.Read(ref saveRevision))
                 {
-                    saveError = "Changes were not saved: " + exception.Message;
+                    saveError = UiTextResources.Format("UiSettingsSaveFailed", exception.Message);
                     Refresh();
                 }
             }

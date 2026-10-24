@@ -11,7 +11,7 @@
         MinHeight="760"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource AppSurface0}"
-        Title="Control mapping">
+        Title="{DynamicResource Ui.UiControlMapping}">
 
   <Grid RowDefinitions="132,*" RowSpacing="0">
     <Border Grid.Row="0"

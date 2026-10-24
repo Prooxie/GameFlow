@@ -8,6 +8,26 @@ namespace GameFlow.Infrastructure.Tests.Runtime.Input.Linux;
 public sealed class LinuxRawInputReaderTests
 {
     [Fact]
+    public void PreviewAndRuntimeReceiveTheSameMovementWithoutConsumingEachOther()
+    {
+        var transport = new FakeTransport { Devices = [new("/dev/input/event9", "Test mouse", false, true)] };
+        using var reader = new LinuxRawInputReader(NullLogger<LinuxRawInputReader>.Instance, transport, watchForChanges: false);
+        var id = EvdevDeviceDiscovery.BuildDeviceId("mouse", "/dev/input/event9");
+        transport.Events.Enqueue(new EvdevInterop.InputEvent { Type = EvdevInterop.EV_REL, Code = EvdevInterop.REL_X, Value = 42 });
+        transport.Events.Enqueue(new EvdevInterop.InputEvent { Type = EvdevInterop.EV_REL, Code = EvdevInterop.REL_WHEEL, Value = 1 });
+        transport.Events.Enqueue(new EvdevInterop.InputEvent { Type = EvdevInterop.EV_KEY, Code = EvdevInterop.BTN_LEFT, Value = 1 });
+        Assert.True(SpinWait.SpinUntil(() => reader.ReadMouseFrame(id).Left, TimeSpan.FromSeconds(3)));
+        // The polling runtime above drained its own deltas. The preview must retain them.
+        var preview = reader.ReadMousePreviewFrame(id);
+        Assert.Equal(42, preview.Dx);
+        Assert.Equal(120, preview.WheelDelta);
+        Assert.True(preview.Left);
+        Assert.Equal(0, reader.ReadMousePreviewFrame(id).Dx);
+        Assert.Equal(0, reader.ReadMouseFrame(id).Dx);
+        Assert.Equal(default, reader.ReadMousePreviewFrame("another mouse"));
+    }
+
+    [Fact]
     public void UnplugClearsHeldKeysAndReconnectStartsANewReader()
     {
         var transport = new FakeTransport();

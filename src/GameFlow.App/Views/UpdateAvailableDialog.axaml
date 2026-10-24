@@ -6,7 +6,7 @@
         CanResize="False"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource AppSurface0}"
-        Title="Update available">
+        Title="{DynamicResource Ui.UiUpdateAvailable}">
 
   <Border Margin="0"
           ClipToBounds="True"
@@ -18,7 +18,7 @@
 
       <!-- Header -->
       <StackPanel Grid.Row="0" Spacing="6">
-        <TextBlock Text="A new version of GameFlow is available"
+        <TextBlock Text="{DynamicResource Ui.UiANewVersionOfGameFlowIsAvailable}"
                    FontSize="18"
                    FontWeight="Bold"
                    Foreground="{DynamicResource AppForeground}" />
@@ -39,13 +39,13 @@
                    Foreground="{DynamicResource AppAccentHover}"
                    TextWrapping="Wrap" />
           <TextBlock Name="DownloadHint" TextWrapping="Wrap" Classes="hint"
-                     Text="Downloads a verified archive. You will extract it and replace the application yourself; GameFlow does not install it automatically." />
+                     Text="{DynamicResource Ui.UiDownloadsAVerifiedArchiveYouWillExtractItAnd}" />
         </StackPanel>
       </Border>
 
       <!-- Release notes link -->
       <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="6">
-        <TextBlock Text="Read the release notes:"
+        <TextBlock Text="{DynamicResource Ui.UiReadTheReleaseNotes}"
                    FontSize="12"
                    Foreground="{DynamicResource AppForegroundDim}"
                    VerticalAlignment="Center" />
@@ -53,7 +53,7 @@
                 Click="OnReleaseNotesClick"
                 VerticalAlignment="Center">
           <TextBlock Name="ReleaseNotesLinkText"
-                     Text="open in browser"
+                     Text="{DynamicResource Ui.UiOpenInBrowser}"
                      FontSize="12"
                      Foreground="{DynamicResource AppAccentHover}"
                      TextDecorations="Underline"
@@ -82,23 +82,23 @@
         <Button Grid.Column="0"
                 Name="SkipButton"
                 Classes="ghost"
-                Content="Skip this update"
+                Content="{DynamicResource Ui.UiSkipThisUpdate}"
                 Click="OnSkipClick"
                 Padding="14,9" />
 
         <Button Grid.Column="1"
                 Name="DontAskButton"
                 Classes="ghost"
-                Content="Don't ask again"
+                Content="{DynamicResource Ui.UiDonTAskAgain}"
                 Click="OnDontAskClick"
                 Padding="14,9" />
 
         <StackPanel Grid.Column="3" Spacing="6">
-        <Button Name="CancelDownloadButton" IsVisible="False" Content="Cancel download" Click="OnCancelDownloadClick" />
+        <Button Name="CancelDownloadButton" IsVisible="False" Content="{DynamicResource Ui.UiCancelDownload}" Click="OnCancelDownloadClick" />
         <Button
                 Name="InstallButton"
                 Classes="primary"
-                Content="Download update"
+                Content="{DynamicResource Ui.UiDownloadUpdate}"
                 IsDefault="True"
                 Click="OnInstallClick"
                 Padding="16,9" />

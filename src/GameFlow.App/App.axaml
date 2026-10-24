@@ -11,7 +11,7 @@
       <!-- DesignTokens supplies the shared spacing, radius and typography
            scales consumed by Typography.axaml and the reusable app styles. -->
       <ResourceDictionary.MergedDictionaries>
-        <ResourceInclude Source="avares://GameFlow.App/Themes/DesignTokens.axaml" />
+        <ResourceInclude Source="avares://GameFlow/Themes/DesignTokens.axaml" />
       </ResourceDictionary.MergedDictionaries>
 
       <SolidColorBrush x:Key="AppAccent"       Color="#00D4FF" />
@@ -44,9 +44,10 @@
     </ResourceDictionary>
   </Application.Resources>
 
+
   <Application.Styles>
     <themes:FluentTheme />
-    <StyleInclude Source="avares://GameFlow.App/Assets/Styles/AppTheme.axaml" />
-    <StyleInclude Source="avares://GameFlow.App/Themes/Typography.axaml" />
+    <StyleInclude Source="avares://GameFlow/Assets/Styles/AppTheme.axaml" />
+    <StyleInclude Source="avares://GameFlow/Themes/Typography.axaml" />
   </Application.Styles>
 </Application>

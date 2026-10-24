@@ -20,15 +20,30 @@ public sealed class OverlayFeed(
     ThemeRegistry themes,
     SlotRegistry slots,
     SlotSnapshotStore snapshots,
-    OverlayThemeChoices choices)
+    OverlayThemeChoices choices,
+    PhysicalPanelPinService? pins = null,
+    InputDeviceCatalog? catalog = null)
 {
     private readonly ThemeRegistry themes = themes;
     private readonly SlotRegistry slots = slots;
     private readonly SlotSnapshotStore snapshots = snapshots;
     private readonly OverlayThemeChoices choices = choices;
+    private readonly PhysicalPanelPinService? pins = pins;
+    private readonly InputDeviceCatalog? catalog = catalog;
 
     /// <summary>What a connection asked for, parsed out of the query string.</summary>
-    public sealed record Request(string? ThemeId, string? SlotId, bool Physical);
+    /// <param name="ThemeId">Explicit skin, or null to follow the dashboard.</param>
+    /// <param name="SlotId">Virtual controller to show; null means the first.</param>
+    /// <param name="Physical">Show the pad in the player's hands rather than what the game receives.</param>
+    /// <param name="DeviceId">
+    /// A physical device shown on its own (a dashboard panel pinned from the
+    /// sidebar, with no virtual controller). Takes precedence over
+    /// <paramref name="SlotId"/>; always the physical side.
+    /// </param>
+    public sealed record Request(string? ThemeId, string? SlotId, bool Physical, string? DeviceId = null);
+
+    /// <summary>Panel id the dashboard gives a pinned device; the key its skin is recorded under.</summary>
+    public static string PinnedPanelId(string deviceId) => "phys:" + deviceId;
 
     /// <summary>
     /// Every slot that could be shown, for the app's URL builder and for
@@ -38,6 +53,23 @@ public sealed class OverlayFeed(
 
     /// <summary>Themes the overlay can serve, in registry order.</summary>
     public IReadOnlyList<InstalledTheme> Themes() => themes.Themes;
+
+    /// <summary>The exact dashboard layout, including native keyboard and mouse pictures.</summary>
+    public OverlayProgram? ResolveProgram(Request request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (themes.GetThemeById(request.ThemeId) is { } explicitTheme)
+        {
+            return OverlayProgramBuilder.Build(explicitTheme);
+        }
+        var key = !string.IsNullOrWhiteSpace(request.DeviceId)
+            ? PinnedPanelId(request.DeviceId) : FindSlot(request.SlotId)?.Id;
+        if (key is not null && choices.GetInput(key, !string.IsNullOrWhiteSpace(request.DeviceId) || request.Physical) is { } input)
+        {
+            return input;
+        }
+        return ResolveTheme(request) is { } theme ? OverlayProgramBuilder.Build(theme) : null;
+    }
 
     /// <summary>
     /// Resolves the theme to draw. The order is:
@@ -64,6 +96,11 @@ public sealed class OverlayFeed(
         if (explicitTheme is not null)
         {
             return explicitTheme;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.DeviceId))
+        {
+            return ResolveDeviceTheme(request.DeviceId);
         }
 
         var slot = FindSlot(request.SlotId);
@@ -107,6 +144,13 @@ public sealed class OverlayFeed(
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        if (!string.IsNullOrWhiteSpace(request.DeviceId))
+        {
+            // Frames for a lone device flow only while its dashboard panel
+            // is pinned, which is the only place its OBS link is offered.
+            return pins?.GetSnapshot(request.DeviceId) ?? ControllerSnapshot.Empty();
+        }
+
         var slot = FindSlot(request.SlotId);
         if (slot is null)
         {
@@ -128,7 +172,7 @@ public sealed class OverlayFeed(
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        if (request.Physical)
+        if (request.Physical || !string.IsNullOrWhiteSpace(request.DeviceId))
         {
             return null;
         }
@@ -138,6 +182,29 @@ public sealed class OverlayFeed(
         return template is { LightingEnabled: true }
             ? $"#FF{template.LightR:X2}{template.LightG:X2}{template.LightB:X2}"
             : null;
+    }
+
+    /// <summary>
+    /// A lone device's skin: the one its pinned dashboard panel shows, or the
+    /// default for what the catalog says the device is.
+    /// </summary>
+    private InstalledTheme? ResolveDeviceTheme(string deviceId)
+    {
+        var chosen = choices.Get(PinnedPanelId(deviceId), physical: true);
+        if (chosen is not null)
+        {
+            return chosen;
+        }
+
+        if (catalog is null || !catalog.TryGetById(deviceId, out var device) || device is null)
+        {
+            return null;
+        }
+
+        var style = ControllerHardwareCatalog.Resolve(device.VendorId, device.ProductId);
+        return style == Core.Enums.ControllerVisualStyle.Auto
+            ? null
+            : themes.GetThemeForStyle(themes.ResolveRenderableStyle(style));
     }
 
     /// <summary>

@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -74,6 +74,13 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     private readonly AppRuntimeOptions runtimeOptions;
     private readonly GameFlow.Infrastructure.Configuration.IUserSettingsService userSettings;
 
+    /// <summary>Phones' seats and layouts. Null in hosts without the web controller.</summary>
+    private readonly GameFlow.Infrastructure.Runtime.Web.WebControllerHub? webControllerHub;
+    private readonly GameFlow.Infrastructure.Runtime.Web.PhoneRegistry? phoneRegistry;
+
+    /// <summary>Per-surface dashboard backgrounds. Null in hosts that register none.</summary>
+    private readonly GameFlow.Infrastructure.Runtime.PanelAppearanceStore? panelAppearance;
+
     /// <summary>
     /// Dashboard UI tick rate, in Hz. The per-user setting supersedes the
     /// appsettings.json value, matching the contract documented on
@@ -143,11 +150,11 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     public static string AppVersion { get; } =
         Assembly.GetEntryAssembly()?.GetName().Version is { } v
-            ? $"v{v.Major}.{v.Minor}.{v.Build} Beta"
-            : "v1.0.3 Beta";
+            ? $"v{v.Major}.{v.Minor}.{v.Build}"
+            : "v1.0.9";
 
-    public static string AppFooterText { get; } =
-        $"Made by Proxy Darkness  ·  {AppVersion}  ·  © 2026";
+    public static string AppFooterText =>
+        UiTextResources.Format("UiMadeBy", "Proxy Darkness", AppVersion, 2026);
 
     public ShellViewModel(
         ProfileSession profileSession,
@@ -173,9 +180,15 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         GameFlow.Infrastructure.Configuration.IUserSettingsService userSettings,
         ILoggerFactory loggerFactory,
         ILogger<ShellViewModel> logger,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        GameFlow.Infrastructure.Runtime.Web.WebControllerHub? webControllerHub = null,
+        GameFlow.Infrastructure.Runtime.Web.PhoneRegistry? phoneRegistry = null,
+        GameFlow.Infrastructure.Runtime.PanelAppearanceStore? panelAppearance = null)
     {
         this.userSettings = userSettings;
+        this.webControllerHub = webControllerHub;
+        this.phoneRegistry = phoneRegistry;
+        this.panelAppearance = panelAppearance;
         MotionServerPanel = motionServerPanel;
         this.profileSession = profileSession;
         this.runtimeSnapshotStore = runtimeSnapshotStore;
@@ -203,8 +216,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         OpenSettingsCommand              = new AsyncRelayCommand(OpenSettingsAsync);
         AddVirtualControllerCommand      = new RelayCommand(AddVirtualControllerFromSidebar);
         OpenWalkthroughCommand           = new RelayCommand(() => WalkthroughRequested?.Invoke(this, EventArgs.Empty));
-        OpenPhoneControllerCommand       = new RelayCommand(() => PhoneControllerRequested?.Invoke(this, EventArgs.Empty));
-        CopyOverlayUrlCommand            = new RelayCommand(() => OverlayUrlCopyRequested?.Invoke(this, EventArgs.Empty));
+        AddPhoneCommand                  = new RelayCommand(AddPhone);
+        OpenKeyboardMouseMapCommand      = new RelayCommand(() => KeyboardMouseMapRequested?.Invoke(this, new(null)));
+        ShowPhoneCommand                 = new RelayCommand<string>(ShowPhone);
+        RemovePhoneCommand               = new RelayCommand<string>(RemovePhone);
         OpenVirtualControllerCommand     = new RelayCommand<string>(SelectVirtualMenuItem);
         OpenMappingsCommand              = new RelayCommand(() => OuterNavSelectedIndex = OuterNavProfiles);
 
@@ -216,6 +231,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         MappingEditor          = new MappingEditorViewModel(loggerFactory.CreateLogger<MappingEditorViewModel>(), localizationService);
         MappingEditor.RulesChanged += OnMappingRulesChanged;
         DevicesPanel           = devicesPanel ?? throw new ArgumentNullException(nameof(devicesPanel));
+        DevicesPanel.InputMappingRequested += OnInputMappingRequested;
         SlotsPanel             = new SlotsViewModel(slotRegistry, inputDeviceCatalog, deviceTemplateStore, profileSession, localizationService, hidMaestroCatalog, deviceSettingsStore);
 
         // Tuning follows the virtual-controller selection rather than
@@ -270,7 +286,11 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             .FirstOrDefault(l => l.Code == localizationService.CurrentCulture)
             ?? SupportedLanguages.FirstOrDefault();
 
-        selectedTheme = ThemeOptions.FirstOrDefault(t => t.Kind == AppThemeKind.CyberBlue)
+        // Start from the palette App.Initialize already painted (the last
+        // theme used), so loading a profile with a different theme is a real
+        // change that re-applies, and one with the same theme costs nothing.
+        var startupTheme = AppThemeService.LastApplied();
+        selectedTheme = ThemeOptions.FirstOrDefault(t => t.Kind == startupTheme)
             ?? ThemeOptions.FirstOrDefault();
 
         PhysicalController = new ControllerVisualStateViewModel(OnControllerElementSelected, localizationService);
@@ -334,26 +354,85 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     /// <summary>Sidebar "Setup guide": opens the walkthrough on demand.</summary>
     public IRelayCommand OpenWalkthroughCommand { get; }
 
-    /// <summary>Dashboard "Use a phone": opens the phone-controller sheet.</summary>
-    public IRelayCommand OpenPhoneControllerCommand { get; }
+    /// <summary>Devices → Physical devices "Add phone": registers a phone and opens its sheet.</summary>
+    public IRelayCommand AddPhoneCommand { get; }
+
+    /// <summary>Opens the sheet (name, link, QR code) of the phone whose catalog id is the parameter.</summary>
+    public IRelayCommand<string> ShowPhoneCommand { get; }
+
+    /// <summary>Removes the phone whose catalog id is the parameter; its link stops working.</summary>
+    public IRelayCommand<string> RemovePhoneCommand { get; }
 
     /// <summary>Raised when the sidebar asks for the setup walkthrough.</summary>
     public event EventHandler? WalkthroughRequested;
 
-    /// <summary>Raised when the user asks to add a phone as a controller.</summary>
-    public event EventHandler? PhoneControllerRequested;
+    /// <summary>Opens the keyboard &amp; mouse controller map editor.</summary>
+    public IRelayCommand OpenKeyboardMouseMapCommand { get; }
+
+    /// <summary>Raised when the keyboard &amp; mouse controller map editor should open.</summary>
+    public event EventHandler<KeyboardMouseMapRequest>? KeyboardMouseMapRequested;
+    private void OnInputMappingRequested(object? sender, KeyboardMouseMapRequest request) => KeyboardMouseMapRequested?.Invoke(this, request);
+
+    public string SidebarKeyboardMouseLabel => Localized("SidebarKeyboardMouse", "Keyboard & mouse");
+
+    /// <summary>Raised with a phone's seat when its sheet should open.</summary>
+    public event EventHandler<int>? PhoneControllerRequested;
 
     /// <summary>
-    /// Raised when the dashboard's OBS button is pressed.
+    /// Raised with a ready overlay URL when a dashboard panel's OBS button is
+    /// pressed. An event rather than the view-model doing the copy itself:
+    /// the clipboard hangs off a TopLevel, which only the window has.
     /// </summary>
-    /// <remarks>
-    /// An event rather than the view-model doing the copy itself: the
-    /// clipboard hangs off a TopLevel, which only the window has.
-    /// </remarks>
-    public event EventHandler? OverlayUrlCopyRequested;
+    public event EventHandler<string>? OverlayUrlCopyRequested;
 
-    /// <summary>Copies this session's stream-overlay URL to the clipboard.</summary>
-    public IRelayCommand CopyOverlayUrlCommand { get; }
+    private void AddPhone()
+    {
+        if (phoneRegistry is null)
+        {
+            return;
+        }
+
+        var phone = phoneRegistry.Add();
+        if (phone is null)
+        {
+            StatusText = UiTextResources.Get("UiPhoneLimit");
+            return;
+        }
+
+        PhoneControllerRequested?.Invoke(this, phone.Seat);
+    }
+
+    private void ShowPhone(string? deviceId)
+    {
+        var seat = GameFlow.Infrastructure.Runtime.Web.WebControllerDeviceScanner.TryParsePadIndex(deviceId ?? string.Empty);
+        if (seat >= 0)
+        {
+            phoneRegistry?.EnsureRegistered(seat);
+            PhoneControllerRequested?.Invoke(this, seat);
+        }
+    }
+
+    private void RemovePhone(string? deviceId)
+    {
+        var seat = GameFlow.Infrastructure.Runtime.Web.WebControllerDeviceScanner.TryParsePadIndex(deviceId ?? string.Empty);
+        if (seat < 0 || phoneRegistry is null)
+        {
+            return;
+        }
+
+        // A slot that still lists the phone would keep waiting for a device
+        // that can no longer connect; take it out of every slot first.
+        foreach (var slot in slotRegistry.GetSlots())
+        {
+            if (slot.InputDeviceIds.Contains(deviceId!, StringComparer.Ordinal))
+            {
+                slotRegistry.UnassignDevice(slot.Id, deviceId!);
+            }
+        }
+
+        phoneRegistry.Remove(seat);
+    }
+
 
     /// <summary>
     /// Puts a message on the shell's status line.
@@ -367,11 +446,12 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     public void ReportStatus(string message) => StatusText = message;
 
     public string SidebarWalkthroughLabel => Localized("SidebarWalkthrough", "Setup guide");
-    public string SidebarPhoneControllerLabel => Localized("SidebarPhoneController", "Use a phone");
+    public string AddPhoneLabel => "📱 " + Localized("DevicesAddPhone", "Add phone");
     public IRelayCommand<string> OpenVirtualControllerCommand { get; }
     public IRelayCommand OpenMappingsCommand { get; }
 
     public string SidebarAddControllerLabel => Localized("SidebarAddController", "Add controller");
+    public string SidebarAddPhoneLabel => Localized("SidebarAddPhone", "Add phone");
 
     private void AddVirtualControllerFromSidebar()
     {
@@ -470,18 +550,16 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     /// Positions of the Devices page's inner tabs, in declaration order.
     /// </summary>
     /// <remarks>
-    /// Named rather than written inline at each call site. When the
-    /// Tuning tab was inserted between Physical and Virtual, every
-    /// "jump to the slot editor" path kept its literal 1 and silently
-    /// started landing on Tuning instead. These indices count declared
-    /// tabs, not visible ones, so <see cref="DevicesSubTabVirtual"/>
-    /// stays correct even while Tuning is hidden.
+    /// Named rather than written inline at each call site, and they must
+    /// match the TabItems declared in ShellWindow.axaml one for one.
+    /// Tuning used to sit between the two and was later moved into the
+    /// slot editor; the virtual index stayed at 2, which no longer
+    /// existed, so the TabControl fell back to the first tab and every
+    /// "open this virtual controller" click landed on the physical list.
     /// </remarks>
     public const int DevicesSubTabPhysical = 0;
     /// <inheritdoc cref="DevicesSubTabPhysical"/>
-    public const int DevicesSubTabTuning = 1;
-    /// <inheritdoc cref="DevicesSubTabPhysical"/>
-    public const int DevicesSubTabVirtual = 2;
+    public const int DevicesSubTabVirtual = 1;
 
     private int outerNavSelectedIndex;
     public int OuterNavSelectedIndex
@@ -557,7 +635,8 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         var physical = new List<MenuColumnItemViewModel>();
         foreach (var device in inputDeviceCatalog.Devices)
         {
-            var icon = device.Category switch
+            var isPhone = GameFlow.Infrastructure.Runtime.Web.WebControllerDeviceScanner.IsPhone(device.Id);
+            var icon = isPhone ? "📱" : device.Category switch
             {
                 DeviceCategory.Gamepad  => "🎮",
                 DeviceCategory.Joystick => "🕹",
@@ -566,16 +645,18 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                 _                       => "■",
             };
             var capturedId = device.Id;
-            var deviceType = device.Category switch
+            var deviceType = isPhone
+                ? (device.IsConnected ? UiTextResources.Get("UiPHONE") : UiTextResources.Get("UiPhoneOffline"))
+                : device.Category switch
             {
-                DeviceCategory.Gamepad => "Gamepad",
-                DeviceCategory.Joystick => "Controller / HID",
-                DeviceCategory.Keyboard => "Keyboard",
-                DeviceCategory.Mouse => "Mouse",
-                _ => "Input device",
+                DeviceCategory.Gamepad => UiTextResources.Get("UiGamepad"),
+                DeviceCategory.Joystick => UiTextResources.Get("UiGenericHid"),
+                DeviceCategory.Keyboard => UiTextResources.Get("UiKeyboard"),
+                DeviceCategory.Mouse => UiTextResources.Get("TouchpadMouseSection"),
+                _ => UiTextResources.Get("InputMapDevice"),
             };
             physical.Add(new MenuColumnItemViewModel(
-                device.Id, device.DisplayName, icon, isConnected: true,
+                device.Id, device.DisplayName, icon, isConnected: device.IsConnected,
                 onSelect: () => SelectPhysicalMenuItem(capturedId),
                 isPinned: physicalPanelPins.IsPinned(capturedId),
                 onTogglePin: () => physicalPanelPins.TogglePin(capturedId),
@@ -589,7 +670,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         var virtualItems = new List<MenuColumnItemViewModel>();
         foreach (var slot in slotRegistry.GetSlots())
         {
-            var name = string.IsNullOrWhiteSpace(slot.Name) ? "(unnamed)" : slot.Name;
+            var name = string.IsNullOrWhiteSpace(slot.Name) ? UiTextResources.Get("UiUnnamed") : slot.Name;
             var capturedId = slot.Id;
             var row = SlotsPanel.Slots.FirstOrDefault(item => item.Id == slot.Id);
             virtualItems.Add(new MenuColumnItemViewModel(
@@ -597,7 +678,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                 onSelect: () => SelectVirtualMenuItem(capturedId),
                 secondaryText: row is null
                     ? SlotsViewModel.KindLabelFor(slot.OutputTemplate)
-                    : $"{row.KindLabel} · {row.StatusLabel}"));
+                    : $"{row.KindLabel} · {row.StatusLabel}")
+            {
+                DeleteCommand = new RelayCommand(() => SlotsPanel.DeleteSlotById(capturedId)),
+            });
         }
 
         ReconcileMenu(VirtualMenuItems, virtualItems);
@@ -605,13 +689,15 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     private void SelectPhysicalMenuItem(string deviceId)
     {
-        OuterNavSelectedIndex = OuterNavDevices;
-        DevicesSubTabIndex = DevicesSubTabPhysical;
+        // Select first, then show the page: the other way round drew the
+        // previously selected device for a frame before switching.
         var row = DevicesPanel.Devices.FirstOrDefault(d => string.Equals(d.Id, deviceId, StringComparison.Ordinal));
         if (row is not null)
         {
             DevicesPanel.SelectedDevice = row;
         }
+        OuterNavSelectedIndex = OuterNavDevices;
+        DevicesSubTabIndex = DevicesSubTabPhysical;
     }
 
     private void SelectVirtualMenuItem(string? slotId)
@@ -621,13 +707,13 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             return;
         }
 
-        OuterNavSelectedIndex = OuterNavDevices;
-        DevicesSubTabIndex = DevicesSubTabVirtual;
         var row = SlotsPanel.Slots.FirstOrDefault(s => string.Equals(s.Id, slotId, StringComparison.Ordinal));
         if (row is not null)
         {
             SlotsPanel.SelectedSlot = row;
         }
+        OuterNavSelectedIndex = OuterNavDevices;
+        DevicesSubTabIndex = DevicesSubTabVirtual;
     }
 
     /// <summary>"VIRTUAL" badge shown on every virtual/output panel, top-level and per-slot alike.</summary>
@@ -661,12 +747,50 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     private ControllerVisualStyle ResolveSlotPhysicalStyle(
         GameFlow.Infrastructure.Runtime.Slots.ControllerSlot slot)
     {
+        var devices = new List<InputDeviceInfo>(slot.InputDeviceIds.Count);
         foreach (var deviceId in slot.InputDeviceIds)
         {
-            var device = inputDeviceCatalog.Devices.FirstOrDefault(d => d.Id == deviceId);
-            if (device is null)
+            if (inputDeviceCatalog.TryGetById(deviceId, out var device) && device is not null)
             {
-                continue;
+                devices.Add(device);
+            }
+        }
+
+        return PhysicalStyleFor(devices);
+    }
+
+    /// <summary>
+    /// Art for the physical side of a panel, from what its devices ARE
+    /// rather than from their frames.
+    /// </summary>
+    /// <remarks>
+    /// A pad is drawn as that pad. Without one, a keyboard and a mouse are
+    /// drawn as themselves — both of them when a slot has both, which is
+    /// what a keyboard + mouse controller looks like. Deciding this from
+    /// the category matters: a merged keyboard + mouse frame is named
+    /// "Merged" and carries no vendor id, so frame-based detection found
+    /// nothing and the panel read "no controller theme installed".
+    /// </remarks>
+    private ControllerVisualStyle PhysicalStyleFor(IReadOnlyList<InputDeviceInfo> devices)
+    {
+        var hasKeyboard = false;
+        var hasMouse = false;
+        foreach (var device in devices)
+        {
+            switch (device.Category)
+            {
+                case DeviceCategory.Keyboard:
+                    hasKeyboard = true;
+                    continue;
+                case DeviceCategory.Mouse:
+                    hasMouse = true;
+                    continue;
+            }
+
+            var phoneStyle = PhoneStyleFor(device.Id);
+            if (phoneStyle is { } phone)
+            {
+                return phone;
             }
 
             var style = GameFlow.Core.Models.ControllerHardwareCatalog.Resolve(
@@ -677,10 +801,34 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             }
         }
 
-        // Nothing assigned yet, or hardware the catalog does not know.
-        // Auto still resolves once a frame arrives, so this is a head
-        // start rather than a replacement for it.
-        return ControllerVisualStyle.Auto;
+        return (hasKeyboard, hasMouse) switch
+        {
+            (true, true) => ControllerVisualStyle.KeyboardMouse,
+            (true, false) => ControllerVisualStyle.Keyboard,
+            (false, true) => ControllerVisualStyle.Mouse,
+
+            // Nothing assigned yet, or a pad the catalog does not know.
+            // Auto still resolves once a frame arrives, so this is a head
+            // start rather than a replacement for it.
+            _ => ControllerVisualStyle.Auto,
+        };
+    }
+
+    /// <summary>
+    /// A phone is drawn as the controller its page is laid out as, so its
+    /// panel shows a pad instead of "no theme installed" — a phone has no
+    /// vendor id of its own to look up. Null for anything that is not a phone.
+    /// </summary>
+    private ControllerVisualStyle? PhoneStyleFor(string deviceId)
+    {
+        var padIndex = GameFlow.Infrastructure.Runtime.Web.WebControllerDeviceScanner.TryParsePadIndex(deviceId);
+        if (padIndex < 0)
+        {
+            return null;
+        }
+
+        return GameFlow.Infrastructure.Runtime.Web.WebPadLayoutStyles.ToVisualStyle(
+            webControllerHub?.GetLayout(padIndex) ?? GameFlow.Infrastructure.Runtime.Web.WebPadLayout.Xbox);
     }
 
     private static ControllerVisualStyle ResolveSlotVirtualStyle(GameFlow.Infrastructure.Runtime.Slots.ControllerSlot slot)
@@ -694,7 +842,13 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     private void RebuildControllerPanels()
     {
-        var connected = inputDeviceCatalog.Devices.Select(d => d.Id).ToHashSet(StringComparer.Ordinal);
+        // CONNECTED devices, not merely listed ones: registered phones are
+        // listed while offline so they can be assigned ahead of time, and
+        // an offline phone must not keep a dashboard panel alive.
+        var connected = inputDeviceCatalog.Devices
+            .Where(d => d.IsConnected)
+            .Select(d => d.Id)
+            .ToHashSet(StringComparer.Ordinal);
         var allEnabled = slotRegistry.GetSlots().Where(s => s.Enabled).ToList();
         slotDerivedVirtualStyle = allEnabled.Count > 0
             ? ResolveSlotVirtualStyle(allEnabled[0])
@@ -722,6 +876,13 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             {
                 ControllerPanels.RemoveAt(i);
                 panel.Dispose();
+
+                // A deleted controller's backgrounds go with it; a disabled
+                // one keeps them for when it comes back.
+                if (!panel.IsPhysicalOnly && slotRegistry.GetSlot(panel.SlotId) is null)
+                {
+                    panelAppearance?.RemovePanel(panel.SlotId);
+                }
             }
         }
 
@@ -732,32 +893,13 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             var existing = ControllerPanels.FirstOrDefault(p => p.SlotId == slot.Id);
             if (existing is null)
             {
-                var physicalVisual = new ControllerVisualStateViewModel(OnControllerElementSelected, localizationService);
-                physicalVisual.SetPanelKind(isPhysical: true);
-                var virtualVisual = new ControllerVisualStateViewModel(OnControllerElementSelected, localizationService);
-                virtualVisual.SetPanelKind(isPhysical: false);
-
-                // New panels start on whatever background the dashboard
-                // already has selected, so they match the top-level pair
-                // and each other from the first frame instead of popping
-                // to a default and then jumping when the picker is next
-                // touched.
-                var currentBackground = PhysicalController?.PanelBackgroundBrush;
-                if (currentBackground is not null)
-                {
-                    physicalVisual.PanelBackgroundBrush = currentBackground;
-                    virtualVisual.PanelBackgroundBrush = currentBackground;
-                }
-
-                var panel = new DashboardControllerPanelViewModel(
-                    slot.Id, slot.Name, physicalVisual, virtualVisual, VirtualBadgeLabel, overlayThemeChoices)
-                {
-                    LightColor = LightColorForSlot(slot),
-                    VirtualStyle = ResolveSlotVirtualStyle(slot),
-                    PhysicalStyle = ResolveSlotPhysicalStyle(slot),
-                    IsDemoPreview = slot.OutputTemplate.DemoPreview,
-                };
+                var panel = CreatePanel(slot.Id, slot.Name, isPhysicalOnly: false);
+                panel.LightColor = LightColorForSlot(slot);
+                panel.VirtualStyle = ResolveSlotVirtualStyle(slot);
+                panel.PhysicalStyle = ResolveSlotPhysicalStyle(slot);
+                panel.IsDemoPreview = slot.OutputTemplate.DemoPreview;
                 ControllerPanels.Insert(Math.Min(idx, ControllerPanels.Count), panel);
+                existing = panel;
             }
             else
             {
@@ -772,40 +914,157 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                     ControllerPanels.Move(cur, idx);
                 }
             }
+            var inputs = inputDeviceCatalog.Devices.Where(device => slot.InputDeviceIds.Contains(device.Id)).ToArray();
+            existing.PhysicalVisual.SetInputDeviceIds(
+                inputs.FirstOrDefault(device => device.Category == DeviceCategory.Keyboard)?.Id,
+                inputs.FirstOrDefault(device => device.Category == DeviceCategory.Mouse)?.Id);
         }
 
         // Pinned layout-only panels follow after the slot panels.
         foreach (var deviceId in pinnedIds)
         {
-            var panelId = "phys:" + deviceId;
+            var panelId = GameFlow.Infrastructure.Runtime.Web.Overlay.OverlayFeed.PinnedPanelId(deviceId);
             var existing = ControllerPanels.FirstOrDefault(p => p.SlotId == panelId);
-            var deviceName = inputDeviceCatalog.Devices
-                .FirstOrDefault(d => string.Equals(d.Id, deviceId, StringComparison.Ordinal))?.DisplayName ?? deviceId;
+            _ = inputDeviceCatalog.TryGetById(deviceId, out var device);
+            var deviceName = device?.DisplayName ?? deviceId;
+            var style = device is null ? ControllerVisualStyle.Auto : PhysicalStyleFor([device]);
             if (existing is null)
             {
-                var physicalVisual = new ControllerVisualStateViewModel(OnControllerElementSelected, localizationService);
-                physicalVisual.SetPanelKind(isPhysical: true);
-                var pinnedBackground = PhysicalController?.PanelBackgroundBrush;
-                if (pinnedBackground is not null)
-                {
-                    physicalVisual.PanelBackgroundBrush = pinnedBackground;
-                }
-                var virtualVisual = new ControllerVisualStateViewModel(OnControllerElementSelected, localizationService);
-                virtualVisual.SetPanelKind(isPhysical: false);
-                ControllerPanels.Add(new DashboardControllerPanelViewModel(
-                    panelId, deviceName, physicalVisual, virtualVisual, VirtualBadgeLabel)
-                {
-                    IsPhysicalOnly = true,
-                });
+                var panel = CreatePanel(panelId, deviceName, isPhysicalOnly: true);
+                panel.PhysicalStyle = style;
+                ControllerPanels.Add(panel);
+                existing = panel;
             }
             else
             {
                 existing.Title = deviceName;
+                existing.PhysicalStyle = style;
             }
+            existing.PhysicalVisual.SetInputDeviceIds(
+                device?.Category == DeviceCategory.Keyboard ? deviceId : null,
+                device?.Category == DeviceCategory.Mouse ? deviceId : null);
         }
 
         OnPropertyChanged(nameof(HasControllerPanels));
         OnPropertyChanged(nameof(HasNoControllerPanels));
+    }
+
+    /// <summary>
+    /// A new dashboard panel with its surfaces, its stored backgrounds and
+    /// its OBS links wired up.
+    /// </summary>
+    /// <remarks>
+    /// Pinned layout-only panels get the overlay theme registry too, under
+    /// their "phys:" id: their OBS link shows the device on its own, and the
+    /// overlay follows the skin the panel shows the same way a slot's does.
+    /// </remarks>
+    private DashboardControllerPanelViewModel CreatePanel(string panelId, string title, bool isPhysicalOnly)
+    {
+        var physicalVisual = new ControllerVisualStateViewModel(OnControllerElementSelected, localizationService);
+        physicalVisual.SetPanelKind(isPhysical: true);
+        physicalVisual.InputMappingRequested += OnInputMappingRequested;
+        var virtualVisual = new ControllerVisualStateViewModel(OnControllerElementSelected, localizationService);
+        virtualVisual.SetPanelKind(isPhysical: false);
+
+        var panel = new DashboardControllerPanelViewModel(
+            panelId, title, physicalVisual, virtualVisual, VirtualBadgeLabel, overlayThemeChoices)
+        {
+            IsPhysicalOnly = isPhysicalOnly,
+            BackgroundOptions = PanelSurfaceBackgroundOptions,
+        };
+
+        ApplyStoredBackgrounds(panel);
+        panel.BackgroundPicked += OnPanelBackgroundPicked;
+        panel.OverlayLinkRequested += OnPanelOverlayLinkRequested;
+        return panel;
+    }
+
+    /// <summary>
+    /// Background choices apply to this surface alone.
+    /// </summary>
+    private IReadOnlyList<PanelSurfaceBackground> PanelSurfaceBackgroundOptions =>
+        panelSurfaceBackgroundOptions ??=
+        [
+            .. PanelBackgroundOptions.Select(option => new PanelSurfaceBackground(option.Label, option.BrushValue)),
+        ];
+
+    private IReadOnlyList<PanelSurfaceBackground>? panelSurfaceBackgroundOptions;
+
+    /// <summary>Paints a panel's two surfaces from the store, falling back to the dashboard default.</summary>
+    private void ApplyStoredBackgrounds(DashboardControllerPanelViewModel panel)
+    {
+        var physicalOwn = panelAppearance?.GetBackground(
+            GameFlow.Infrastructure.Runtime.PanelAppearanceStore.PhysicalKey(panel.SlotId));
+        var virtualOwn = panelAppearance?.GetBackground(
+            GameFlow.Infrastructure.Runtime.PanelAppearanceStore.VirtualKey(panel.SlotId));
+
+        panel.PhysicalVisual.PanelBackgroundBrush = physicalOwn ?? string.Empty;
+        panel.VirtualVisual.PanelBackgroundBrush = virtualOwn ?? string.Empty;
+        panel.ShowBackgrounds(FindSurfaceBackground(physicalOwn), FindSurfaceBackground(virtualOwn));
+    }
+
+    private PanelSurfaceBackground FindSurfaceBackground(string? brush)
+    {
+        var options = PanelSurfaceBackgroundOptions;
+        if (brush is null)
+        {
+            return options[0];
+        }
+
+        var normalized = IsThemeDefaultBrushValue(brush) ? string.Empty : brush;
+        return options.FirstOrDefault(option =>
+                   string.Equals(option.Brush, normalized, StringComparison.OrdinalIgnoreCase))
+               ?? options[0];
+    }
+
+    private void OnPanelBackgroundPicked(object? sender, bool physical)
+    {
+        if (sender is not DashboardControllerPanelViewModel panel)
+        {
+            return;
+        }
+
+        var choice = physical ? panel.PhysicalBackground : panel.VirtualBackground;
+        var key = physical
+            ? GameFlow.Infrastructure.Runtime.PanelAppearanceStore.PhysicalKey(panel.SlotId)
+            : GameFlow.Infrastructure.Runtime.PanelAppearanceStore.VirtualKey(panel.SlotId);
+        panelAppearance?.SetBackground(key, choice?.Brush);
+
+        var brush = choice?.Brush ?? string.Empty;
+        (physical ? panel.PhysicalVisual : panel.VirtualVisual).PanelBackgroundBrush = brush;
+    }
+
+    /// <summary>
+    /// Builds the OBS link for one panel surface. The background travels
+    /// with it, so a chroma colour picked for this controller keys the same
+    /// way in the stream; with no colour the overlay stays transparent.
+    /// </summary>
+    private void OnPanelOverlayLinkRequested(object? sender, bool physical)
+    {
+        if (sender is not DashboardControllerPanelViewModel panel)
+        {
+            return;
+        }
+
+        if (serviceProvider.GetService(typeof(GameFlow.Infrastructure.Runtime.Web.WebControllerServer))
+                is not GameFlow.Infrastructure.Runtime.Web.WebControllerServer server
+            || !server.IsRunning
+            || string.IsNullOrEmpty(server.ListenUrl))
+        {
+            OverlayUrlCopyRequested?.Invoke(this, string.Empty);
+            return;
+        }
+
+        var visual = physical || panel.IsPhysicalOnly ? panel.PhysicalVisual : panel.VirtualVisual;
+        var url = GameFlow.Infrastructure.Runtime.Web.Overlay.OverlayUrl.Build(
+            server.LocalUrl,
+            slotId: panel.IsPhysicalOnly ? null : panel.SlotId,
+            deviceId: panel.IsPhysicalOnly ? panel.SlotId[5..] : null,
+            physical: physical,
+            background: visual.PanelBackgroundBrush,
+            inputText: panel.OverlayInputText,
+            holdTimes: panel.OverlayHoldTimes);
+        OverlayUrlCopyRequested?.Invoke(this, url);
     }
 
     private static string LightColorForSlot(GameFlow.Infrastructure.Runtime.Slots.ControllerSlot slot)
@@ -1192,8 +1451,13 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         && BackgroundEquals(VirtualController.PanelBackgroundBrush, brushValue)
         && BackgroundEquals(SlotConfigurationController.PanelBackgroundBrush, brushValue)
         && ControllerPanels.All(panel =>
-            BackgroundEquals(panel.PhysicalVisual.PanelBackgroundBrush, brushValue)
-            && BackgroundEquals(panel.VirtualVisual.PanelBackgroundBrush, brushValue));
+            (HasOwnBackground(panel, physical: true) || BackgroundEquals(panel.PhysicalVisual.PanelBackgroundBrush, brushValue))
+            && (HasOwnBackground(panel, physical: false) || BackgroundEquals(panel.VirtualVisual.PanelBackgroundBrush, brushValue)));
+
+    private bool HasOwnBackground(DashboardControllerPanelViewModel panel, bool physical) =>
+        panelAppearance?.GetBackground(physical
+            ? GameFlow.Infrastructure.Runtime.PanelAppearanceStore.PhysicalKey(panel.SlotId)
+            : GameFlow.Infrastructure.Runtime.PanelAppearanceStore.VirtualKey(panel.SlotId)) is not null;
 
     private static bool BackgroundEquals(string? left, string? right) =>
         string.Equals(left ?? string.Empty, right ?? string.Empty, StringComparison.OrdinalIgnoreCase);
@@ -1204,10 +1468,12 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         PhysicalController.PanelBackgroundBrush = normalized;
         VirtualController.PanelBackgroundBrush = normalized;
         SlotConfigurationController.PanelBackgroundBrush = normalized;
+
+        // The dashboard default only reaches surfaces that follow it; a
+        // surface given its own colour keeps it.
         foreach (var panel in ControllerPanels)
         {
-            panel.PhysicalVisual.PanelBackgroundBrush = normalized;
-            panel.VirtualVisual.PanelBackgroundBrush = normalized;
+            ApplyStoredBackgrounds(panel);
         }
     }
 
@@ -1333,125 +1599,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         }
     } = 250;
 
-    // ─── Per-profile axis inversion ───────────────────────────────────────────
-
-    /// <summary>
-    /// The profile's inversion as loaded, carried verbatim so a toggle
-    /// rewrites ONE axis and leaves the rest as they were — including
-    /// leaving them null. Rebuilding the whole record from the six
-    /// checkboxes would give the profile an explicit opinion about every
-    /// axis the moment anyone touched one of them, and an explicit
-    /// "false" overrides a layered profile underneath where a null would
-    /// have deferred to it.
-    /// </summary>
-    private AxisInvert currentAxisInvert = AxisInvert.None;
-
-    /// <summary>Set while pushing the profile's values INTO the checkboxes, so loading a profile doesn't save it straight back.</summary>
-    private bool suppressAxisInvertSave;
-
-    public bool InvertLeftStickX
-    {
-        get; set { if (SetProperty(ref field, value)) { MutateAxisInvert(i => i with { LeftX = value }); } }
-    }
-
-    public bool InvertLeftStickY
-    {
-        get; set { if (SetProperty(ref field, value)) { MutateAxisInvert(i => i with { LeftY = value }); } }
-    }
-
-    public bool InvertRightStickX
-    {
-        get; set { if (SetProperty(ref field, value)) { MutateAxisInvert(i => i with { RightX = value }); } }
-    }
-
-    public bool InvertRightStickY
-    {
-        get; set { if (SetProperty(ref field, value)) { MutateAxisInvert(i => i with { RightY = value }); } }
-    }
-
-    public bool InvertLeftTrigger
-    {
-        get; set { if (SetProperty(ref field, value)) { MutateAxisInvert(i => i with { LeftTrigger = value }); } }
-    }
-
-    public bool InvertRightTrigger
-    {
-        get; set { if (SetProperty(ref field, value)) { MutateAxisInvert(i => i with { RightTrigger = value }); } }
-    }
-
-    public bool ShowInvertedInLayout
-    {
-        get; set { if (SetProperty(ref field, value)) { MutateAxisInvert(i => i with { ShowInLayout = value }); } }
-    }
-
-    /// <summary>Reads back what is currently inverted, for the card's subtitle.</summary>
-    public string AxisInvertSummary
-    {
-        get
-        {
-            var inverted = new List<string>(6);
-            if (InvertLeftStickX)  { inverted.Add("left X"); }
-            if (InvertLeftStickY)  { inverted.Add("left Y"); }
-            if (InvertRightStickX) { inverted.Add("right X"); }
-            if (InvertRightStickY) { inverted.Add("right Y"); }
-            if (InvertLeftTrigger) { inverted.Add("L2"); }
-            if (InvertRightTrigger) { inverted.Add("R2"); }
-
-            return inverted.Count == 0
-                ? "Nothing inverted — the game gets the axes exactly as you push them."
-                : $"Inverted for this profile: {string.Join(", ", inverted)}.";
-        }
-    }
-
-    private void MutateAxisInvert(Func<AxisInvert, AxisInvert> mutate)
-    {
-        OnPropertyChanged(nameof(AxisInvertSummary));
-
-        if (suppressAxisInvertSave)
-        {
-            return;
-        }
-
-        currentAxisInvert = mutate(currentAxisInvert);
-        _ = SaveAxisInvertAsync(currentAxisInvert);
-    }
-
-    /// <summary>
-    /// Pulls the current profile's inversion into the checkboxes.
-    ///
-    /// <para>
-    /// Called from every path that swaps <c>CurrentProfile</c>, not just
-    /// from the dashboard resync — create, duplicate, import, and switch
-    /// all set <c>isSwitchingProfile</c>, which is precisely the flag
-    /// that makes <c>OnProfileChanged</c> skip the resync. Miss one and
-    /// the checkboxes keep describing the profile the user just left,
-    /// and the next toggle carries that profile's other axes into this
-    /// one.
-    /// </para>
-    /// </summary>
-    private void ReloadAxisInvert() => LoadAxisInvertFromProfile(profileSession.CurrentProfile.Invert);
-
-    private void LoadAxisInvertFromProfile(AxisInvert? invert)
-    {
-        currentAxisInvert = invert ?? AxisInvert.None;
-
-        suppressAxisInvertSave = true;
-        try
-        {
-            InvertLeftStickX   = currentAxisInvert.LeftX ?? false;
-            InvertLeftStickY   = currentAxisInvert.LeftY ?? false;
-            InvertRightStickX  = currentAxisInvert.RightX ?? false;
-            InvertRightStickY  = currentAxisInvert.RightY ?? false;
-            InvertLeftTrigger  = currentAxisInvert.LeftTrigger ?? false;
-            InvertRightTrigger = currentAxisInvert.RightTrigger ?? false;
-            ShowInvertedInLayout = currentAxisInvert.ShowInLayout ?? false;
-        }
-        finally
-        {
-            suppressAxisInvertSave = false;
-        }
-    }
-
     // ─── Lifecycle ────────────────────────────────────────────────────────────
 
     public async Task InitializeAsync()
@@ -1546,7 +1693,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             var selectedPair = slotSnapshotStore.Get(selectedSlot.Id);
             SlotConfigurationController.Update(
                 selectedSlot.Id + ":virtual",
-                "Virtual output · click a control to map it",
+                UiTextResources.Get("UiVirtualOutputHint"),
                 selectedPair.Virtual,
                 ResolveSlotVirtualStyle(selectedSlot));
         }
@@ -1564,7 +1711,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                 // service; no virtual half exists.
                 var deviceSnapshot = physicalPanelPins.GetSnapshot(panel.SlotId[5..]);
                 panel.PhysicalVisual.Update(panel.SlotId + ":physical", PhysicalInputLabel,
-                    deviceSnapshot, ControllerVisualStyle.Auto);
+                    deviceSnapshot, panel.PhysicalStyle);
                 continue;
             }
 
@@ -1677,7 +1824,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         catch (Exception exception)
         {
             logger.LogError(exception, "Failed to apply dashboard preferences.");
-            StatusText = $"Apply failed: {exception.Message}";
+            StatusText = UiTextResources.Format("UiApplyFailed", exception.Message);
         }
     }
 
@@ -1729,7 +1876,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         catch (Exception exception)
         {
             logger.LogError(exception, "Failed to save profile.");
-            StatusText = $"Save failed: {exception.Message}";
+            StatusText = UiTextResources.Format("UiSaveFailed", exception.Message);
         }
     }
 
@@ -1752,7 +1899,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         catch (Exception exception)
         {
             logger.LogError(exception, "Failed to reset profile.");
-            StatusText = $"Reset failed: {exception.Message}";
+            StatusText = UiTextResources.Format("UiResetFailed", exception.Message);
         }
         finally
         {
@@ -1765,12 +1912,11 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         isSwitchingProfile = true;
         try
         {
-            var desired = $"Profile {DateTime.Now:HHmmss}";
+            var desired = UiTextResources.Format("UiProfileNumber", DateTime.Now.ToString("HHmmss", System.Globalization.CultureInfo.CurrentCulture));
             var unique = await MakeUniqueProfileNameAsync(desired);
             var profile = await profileSession.CreateNewProfileAsync(unique);
             await RefreshAvailableProfilesAsync();
             ProfileName = profile.Name;
-            ReloadAxisInvert();
             var target = AvailableProfiles.FirstOrDefault(o => o.Id == profile.Id);
             if (target is not null)
             {
@@ -1782,7 +1928,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         catch (Exception exception)
         {
             logger.LogError(exception, "Failed to create profile.");
-            StatusText = $"Create profile failed: {exception.Message}";
+            StatusText = UiTextResources.Format("UiCreateProfileFailed", exception.Message);
         }
         finally
         {
@@ -1795,12 +1941,11 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         isSwitchingProfile = true;
         try
         {
-            var desired = $"{profileSession.CurrentProfile.Name} Copy";
+            var desired = UiTextResources.Format("UiProfileCopy", profileSession.CurrentProfile.Name);
             var unique = await MakeUniqueProfileNameAsync(desired);
             var copy = await profileSession.DuplicateCurrentProfileAsync(unique);
             await RefreshAvailableProfilesAsync();
             ProfileName = copy.Name;
-            ReloadAxisInvert();
             var target = AvailableProfiles.FirstOrDefault(o => o.Id == copy.Id);
             if (target is not null)
             {
@@ -1812,7 +1957,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         catch (Exception exception)
         {
             logger.LogError(exception, "Failed to duplicate profile.");
-            StatusText = $"Duplicate profile failed: {exception.Message}";
+            StatusText = UiTextResources.Format("UiDuplicateProfileFailed", exception.Message);
         }
         finally
         {
@@ -1839,12 +1984,11 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
                 ruleSummaryDirty = true;
                 RebuildControlConfigurationCards();
                 ProfileName = profileSession.CurrentProfile.Name;
-                ReloadAxisInvert();
                 await RefreshRuntimeAsync();
                 var scripts = profileSession.CurrentProfile.Rules.OfType<GameFlow.Core.Models.Rules.ControlScriptRule>().Count();
                 StatusText = scripts > 0
-                    ? $"Profile imported. {scripts} Lua script(s) are disabled; review them in the mapping editor before enabling."
-                    : "Profile imported.";
+                    ? UiTextResources.Format("UiImportedScripts", scripts)
+                    : UiTextResources.Get("UiProfileImported");
             }
             finally
             {
@@ -1854,7 +1998,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         catch (Exception exception)
         {
             logger.LogError(exception, "Failed to import profile.");
-            StatusText = $"Import failed: {exception.Message}";
+            StatusText = UiTextResources.Format("UiImportFailed", exception.Message);
         }
     }
 
@@ -1869,7 +2013,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         catch (Exception exception)
         {
             logger.LogError(exception, "Failed to export profile.");
-            StatusText = $"Export failed: {exception.Message}";
+            StatusText = UiTextResources.Format("UiExportFailed", exception.Message);
         }
     }
 
@@ -1904,7 +2048,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         catch (Exception exception)
         {
             logger.LogError(exception, "Failed to rename profile.");
-            StatusText = $"Rename failed: {exception.Message}";
+            StatusText = UiTextResources.Format("UiRenameFailed", exception.Message);
         }
         finally
         {
@@ -1976,7 +2120,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         catch (Exception exception)
         {
             logger.LogError(exception, "Failed to delete profile {ProfileId}.", target.Id);
-            StatusText = $"Delete failed: {exception.Message}";
+            StatusText = UiTextResources.Format("UiDeleteFailed", exception.Message);
         }
     }
 
@@ -2095,10 +2239,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         ApplyVariantPreferenceForStyle(VirtualController,  profile.Ui.VirtualControllerStyle,  profile.Ui);
 
         // Background brush — applies to both panels uniformly.
-        ApplyPanelBackgroundToAll(pendingPanelBackgroundBrush ?? profile.Ui.ControllerPanelBackground);
+        ApplyPanelBackgroundToAll(string.Empty);
         OnPropertyChanged(nameof(SelectedPanelBackgroundOption));
 
-        ReloadAxisInvert();
     }
 
     /// <summary>
@@ -2178,7 +2321,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             isSwitchingProfile = true;
             await profileSession.SwitchToProfileAsync(profileId);
             MappingEditor.LoadFromProfile(profileSession.CurrentProfile);
-            ReloadAxisInvert();
             RebuildControlConfigurationCards();
             ProfileJson      = profileSession.SerializeCurrentProfile();
             ruleSummaryDirty = true;
@@ -2188,7 +2330,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         catch (Exception exception)
         {
             logger.LogError(exception, "Failed to switch profile to {ProfileId}.", profileId);
-            StatusText = $"Profile switch failed: {exception.Message}";
+            StatusText = UiTextResources.Format("UiProfileSwitchFailed", exception.Message);
         }
         finally
         {
@@ -2339,52 +2481,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         _ = SaveRulesAsync(rules);
     }
 
-    /// <summary>
-    /// Persists a change to the profile's axis inversion. Saves on the
-    /// toggle rather than waiting for the Save button, matching how rule
-    /// edits already behave — and the runtime notices because
-    /// SaveCurrentProfileAsync swaps in a NEW CurrentProfile instance,
-    /// which is the reference the slot rebuild compares against.
-    /// </summary>
-    private async Task SaveAxisInvertAsync(AxisInvert invert)
-    {
-        if (disposed)
-        {
-            return;
-        }
-
-        // Read before the first await: the edit belongs to the profile on
-        // screen now, not to the one that is current after the wait.
-        var profileId = profileSession.CurrentProfile.Id;
-
-        // Shares the rule gate deliberately: both write the whole
-        // profile document, so letting them overlap would let one
-        // clobber the other's edit.
-        await rulesSaveGate.WaitAsync();
-        try
-        {
-            if (!await profileSession.UpdateCurrentProfileAsync(profileId, profile => profile with { Invert = invert }))
-            {
-                StatusText = DroppedEditStatus;
-                return;
-            }
-
-            ProfileJson = profileSession.SerializeCurrentProfile();
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(exception, "Failed to save axis inversion.");
-            StatusText = $"Invert save failed: {exception.Message}";
-        }
-        finally
-        {
-            _ = rulesSaveGate.Release();
-        }
-    }
-
     /// <summary>Status line when a profile switch came between an edit and its save.</summary>
-    private const string DroppedEditStatus =
-        "The profile changed before the last edit was saved, so that edit was not applied.";
+    private static string DroppedEditStatus =>
+        UiTextResources.Get("UiProfileChanged");
 
     private async Task SaveRulesAsync(IReadOnlyList<MappingRule> rules)
     {
@@ -2393,7 +2492,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             return;
         }
 
-        // Read before the first await, as in SaveAxisInvertAsync. Before
+        // Read before the first await. Before
         // this, a profile switch during the wait wrote these rules over the
         // rules of the new profile.
         var profileId = profileSession.CurrentProfile.Id;
@@ -2414,7 +2513,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         catch (Exception exception)
         {
             logger.LogError(exception, "Failed to save mapping rules.");
-            StatusText = $"Rule save failed: {exception.Message}";
+            StatusText = UiTextResources.Format("UiRuleSaveFailed", exception.Message);
         }
         finally
         {
@@ -2499,25 +2598,25 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     {
         if (TryParseButton(elementKey, out var button))
         {
-            return snapshot.IsPressed(button) ? "Current state: pressed" : "Current state: released";
+            return snapshot.IsPressed(button) ? UiTextResources.Get("UiCurrentPressed") : UiTextResources.Get("UiCurrentReleased");
         }
 
         return elementKey.StartsWith("LeftTrigger", StringComparison.OrdinalIgnoreCase)
-            ? $"Current value: {snapshot.LeftTrigger:P0}"
+            ? UiTextResources.Format("UiCurrentValue", snapshot.LeftTrigger)
             : elementKey.StartsWith("RightTrigger", StringComparison.OrdinalIgnoreCase)
-            ? $"Current value: {snapshot.RightTrigger:P0}"
+            ? UiTextResources.Format("UiCurrentValue", snapshot.RightTrigger)
             : elementKey.StartsWith("LeftStick", StringComparison.OrdinalIgnoreCase)
-            ? $"Current vector: {snapshot.LeftStick.X:0.00}, {snapshot.LeftStick.Y:0.00}"
+            ? UiTextResources.Format("UiCurrentVector", snapshot.LeftStick.X, snapshot.LeftStick.Y)
             : elementKey.StartsWith("RightStick", StringComparison.OrdinalIgnoreCase)
-            ? $"Current vector: {snapshot.RightStick.X:0.00}, {snapshot.RightStick.Y:0.00}"
+            ? UiTextResources.Format("UiCurrentVector", snapshot.RightStick.X, snapshot.RightStick.Y)
             : elementKey.Equals("Touchpad", StringComparison.OrdinalIgnoreCase)
             ? snapshot.TouchContactCount switch
             {
-                <= 0 => "Current state: no active touches",
-                1    => "Current state: 1 touch contact",
-                _    => $"Current state: {snapshot.TouchContactCount} touch contacts"
+                <= 0 => UiTextResources.Format("UiCurrentTouches", 0),
+                1    => UiTextResources.Format("UiCurrentTouches", 1),
+                _    => UiTextResources.Format("UiCurrentTouches", snapshot.TouchContactCount)
             }
-            : "Current state unavailable.";
+            : UiTextResources.Get("UiCurrentUnavailable");
     }
 
     private string BuildRuleMatches(string elementKey)
@@ -2529,7 +2628,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             .ToArray();
 
         return lines.Length == 0
-            ? "No rule is using this control yet."
+            ? UiTextResources.Get("UiNoControlRules")
             : string.Join(Environment.NewLine, lines);
     }
 
@@ -2540,10 +2639,10 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     private void ResetSelectionInspector()
     {
-        SelectedControlTitle = "Click any control on either controller surface.";
-        SelectedControlValue = "The inspector shows the current live state of the selected element.";
-        SelectedControlRules = "Matching rules for the selected control will appear here.";
-        SelectedControlHint  = "Physical controls configure input behavior; virtual controls create output mappings.";
+        SelectedControlTitle = UiTextResources.Get("UiSelectControl");
+        SelectedControlValue = UiTextResources.Get("UiInspectorHint");
+        SelectedControlRules = UiTextResources.Get("UiInspectorRules");
+        SelectedControlHint  = UiTextResources.Get("UiInspectorScope");
     }
 
     // ─── Localised text refresh ───────────────────────────────────────────────
@@ -2771,6 +2870,15 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             new ControllerStyleOption(ControllerVisualStyle.Xbox,         Localized("ControllerStyleXbox",         "Xbox")),
             new ControllerStyleOption(ControllerVisualStyle.PlayStation4, Localized("ControllerStylePlayStation4", "PlayStation 4")),
             new ControllerStyleOption(ControllerVisualStyle.PlayStation5, Localized("ControllerStylePlayStation5", "PlayStation 5")),
+            new ControllerStyleOption(ControllerVisualStyle.Xbox360, UiTextResources.Get("StyleLabelXbox360")),
+            new ControllerStyleOption(ControllerVisualStyle.XboxOne, UiTextResources.Get("StyleLabelXboxOne")),
+            new ControllerStyleOption(ControllerVisualStyle.XboxSeries, UiTextResources.Get("StyleLabelXboxSeries")),
+            new ControllerStyleOption(ControllerVisualStyle.SteamController, UiTextResources.Get("StyleLabelSteamController")),
+            new ControllerStyleOption(ControllerVisualStyle.SteamControllerV2, UiTextResources.Get("StyleLabelSteamControllerV2")),
+            new ControllerStyleOption(ControllerVisualStyle.SimpleGamepad, UiTextResources.Get("StyleLabelSimpleGamepad")),
+            new ControllerStyleOption(ControllerVisualStyle.Joystick, UiTextResources.Get("StyleLabelJoystick")),
+            new ControllerStyleOption(ControllerVisualStyle.Wheel, UiTextResources.Get("StyleLabelWheel")),
+            new ControllerStyleOption(ControllerVisualStyle.Arcade, UiTextResources.Get("StyleLabelArcade")),
             new ControllerStyleOption(ControllerVisualStyle.None,         Localized("ControllerStyleMinimal",      "Minimal")),
         ];
     }
@@ -2879,16 +2987,16 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     private static string FormatElementName(string k)
     {
-        return k.Replace("LeftStick",    "Left stick",    StringComparison.OrdinalIgnoreCase)
-                .Replace("RightStick",   "Right stick",   StringComparison.OrdinalIgnoreCase)
-                .Replace("LeftTrigger",  "Left trigger",  StringComparison.OrdinalIgnoreCase)
-                .Replace("RightTrigger", "Right trigger", StringComparison.OrdinalIgnoreCase)
-                .Replace(".Analog", " · Analog", StringComparison.OrdinalIgnoreCase)
-                .Replace(".Button", " · Click",  StringComparison.OrdinalIgnoreCase)
-                .Replace(".Up",     " · Up",     StringComparison.OrdinalIgnoreCase)
-                .Replace(".Down",   " · Down",   StringComparison.OrdinalIgnoreCase)
-                .Replace(".Left",   " · Left",   StringComparison.OrdinalIgnoreCase)
-                .Replace(".Right",  " · Right",  StringComparison.OrdinalIgnoreCase);
+        return k.Replace("LeftStick",    UiTextResources.Get("StickLeftLabel"),    StringComparison.OrdinalIgnoreCase)
+                .Replace("RightStick",   UiTextResources.Get("StickRightLabel"),   StringComparison.OrdinalIgnoreCase)
+                .Replace("LeftTrigger",  UiTextResources.Get("UiLeftTrigger"),  StringComparison.OrdinalIgnoreCase)
+                .Replace("RightTrigger", UiTextResources.Get("UiRightTrigger"), StringComparison.OrdinalIgnoreCase)
+                .Replace(".Analog", " · " + UiTextResources.Get("UiAnalog"), StringComparison.OrdinalIgnoreCase)
+                .Replace(".Button", " · " + UiTextResources.Get("UiClick"), StringComparison.OrdinalIgnoreCase)
+                .Replace(".Up", " · " + UiTextResources.Get("UiUp"), StringComparison.OrdinalIgnoreCase)
+                .Replace(".Down", " · " + UiTextResources.Get("UiDown"), StringComparison.OrdinalIgnoreCase)
+                .Replace(".Left", " · " + UiTextResources.Get("UiLeft"), StringComparison.OrdinalIgnoreCase)
+                .Replace(".Right", " · " + UiTextResources.Get("UiRight"), StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool TryParseButton(string elementKey, out ButtonId button)
@@ -2978,6 +3086,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         profileSession.Changed             -= OnProfileChanged;
         MappingEditor.RulesChanged         -= OnMappingRulesChanged;
         MappingEditor.Dispose();
+        DevicesPanel.InputMappingRequested -= OnInputMappingRequested;
         DevicesPanel.Dispose();
         foreach (var panel in ControllerPanels)
         {

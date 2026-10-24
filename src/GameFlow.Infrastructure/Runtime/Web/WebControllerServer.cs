@@ -45,9 +45,14 @@ public sealed class WebControllerServer(
     Overlay.OverlayFeed overlay,
     WindowsFirewallAccess firewall,
     ILogger<WebControllerServer> logger,
-    IUserSettingsService? userSettings = null) : BackgroundService
+    IUserSettingsService? userSettings = null,
+    PhoneRegistry? phones = null,
+    LightingApi? lightingApi = null,
+    GameFlow.Infrastructure.Localization.ILocalizationService? localization = null) : BackgroundService
 {
+    private readonly LightingApi? lightingApi = lightingApi;
     private readonly WebControllerHub hub = hub;
+    private readonly PhoneRegistry? phones = phones;
     private readonly Overlay.OverlayFeed overlay = overlay;
     private readonly WindowsFirewallAccess firewall = firewall;
     private readonly ILogger<WebControllerServer> logger = logger;
@@ -91,6 +96,18 @@ public sealed class WebControllerServer(
     public string AccessToken => userSettings?.Current.WebAccessToken ?? string.Empty;
     public string LocalUrl => $"http://localhost:{Port}";
     public string SharedUrl => $"http://{GetLocalAddress()}:{Port}";
+
+    /// <summary>
+    /// The link one registered phone opens: the shared address, the access
+    /// token, and the phone's seat, so it always becomes that phone. Empty
+    /// while sharing is off or the server is not reachable from the network.
+    /// </summary>
+    public string PhoneLink(int seat) =>
+        AllowsRemote && IsRunning && ListenUrl is { } listen
+            && !listen.Contains("localhost", StringComparison.OrdinalIgnoreCase)
+            && seat is >= 0 and < WebControllerHub.MaxPads
+            ? $"{SharedUrl}/?token={Uri.EscapeDataString(AccessToken)}&seat={seat}"
+            : string.Empty;
 
     public async Task SetRemoteAccessAsync(bool enabled)
     {
@@ -233,6 +250,18 @@ public sealed class WebControllerServer(
         {
             context.Response.Headers["Referrer-Policy"] = "no-referrer";
             context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+
+            // The lighting API answers before the page check below. That
+            // check accepts the token from the query string, which is right
+            // for a phone link and wrong for an API credential, and answers
+            // with an HTML page a script cannot read. The API applies its
+            // own, stricter rule (bearer header only, even on loopback).
+            if (lightingApi is not null && LightingApi.IsApiPath(context.Request.Url?.AbsolutePath))
+            {
+                await HandleLightingApiAsync(context, stoppingToken);
+                return;
+            }
+
             if (!IsAuthorized(context))
             {
                 context.Response.StatusCode = AllowsRemote ? 401 : 403;
@@ -263,11 +292,11 @@ public sealed class WebControllerServer(
             var path = context.Request.Url?.AbsolutePath ?? "/";
             if (path is "/" or "/index.html")
             {
-                await WriteHtmlAsync(context, WebControllerAssets.ControllerPage, stoppingToken);
+                await WriteHtmlAsync(context, WebControllerAssets.RenderControllerPage(localization), stoppingToken);
             }
             else if (path is "/overlay" or "/overlay/")
             {
-                await WriteHtmlAsync(context, Overlay.OverlayAssets.OverlayPage, stoppingToken);
+                await WriteHtmlAsync(context, Overlay.OverlayAssets.RenderOverlayPage(localization), stoppingToken);
             }
             else if (path is "/overlay/asset")
             {
@@ -377,20 +406,38 @@ public sealed class WebControllerServer(
         }
 
         var socket = socketContext.WebSocket;
-        var lease = hub.ClaimPad(context.Request.QueryString["client"]);
+        var clientId = context.Request.QueryString["client"];
+        var requestedSeat = ParseSeat(context.Request.QueryString["seat"]);
+
+        // A phone's own link claims its seat outright. A link for a phone
+        // that has since been removed is refused, so a forgotten browser tab
+        // cannot quietly come back as a controller. The general link takes
+        // any seat no registered phone is waiting for, and that seat becomes
+        // a registered phone from then on.
+        if (requestedSeat is { } removedSeat && phones is not null && !phones.IsRegistered(removedSeat))
+        {
+            await RefuseAsync(socket, WebControllerProtocol.BuildRevoked(), "removed", stoppingToken);
+            return;
+        }
+
+        var lease = requestedSeat is { } seat
+            ? hub.ClaimSeat(seat, clientId)
+            : hub.ClaimPad(clientId, phones?.Seats);
         var padIndex = lease.PadIndex;
 
         try
         {
-            // Tell the phone which pad it is (or that we're full) before anything else.
-            await SendAsync(socket, WebControllerProtocol.BuildPadAssignment(padIndex), stoppingToken);
             if (padIndex < 0)
             {
                 logger.LogInformation("Web controller: a phone connected but all {Max} pads are in use.", WebControllerHub.MaxPads);
-                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "full", stoppingToken);
+                await RefuseAsync(socket, WebControllerProtocol.BuildFull(), "full", stoppingToken);
                 return;
             }
 
+            phones?.EnsureRegistered(padIndex);
+
+            // Tell the phone which pad it is before anything else.
+            await SendAsync(socket, WebControllerProtocol.BuildPadAssignment(padIndex, phones?.NameOf(padIndex)), stoppingToken);
             logger.LogInformation("Web controller: phone connected as pad #{Pad}.", padIndex + 1);
 
             using var session = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
@@ -429,6 +476,31 @@ public sealed class WebControllerServer(
                 hub.ReleasePad(lease);
                 logger.LogInformation("Web controller: pad #{Pad} disconnected.", padIndex + 1);
             }
+            try { socket.Dispose(); } catch { /* already gone */ }
+        }
+    }
+
+    /// <summary>A seat number from the query string, or null when absent or out of range.</summary>
+    private static int? ParseSeat(string? value) =>
+        int.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var seat)
+            && seat is >= 0 and < WebControllerHub.MaxPads
+            ? seat
+            : null;
+
+    /// <summary>Sends a terminal message and closes. The page shows it and stops reconnecting.</summary>
+    private static async Task RefuseAsync(WebSocket socket, string message, string reason, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await SendAsync(socket, message, cancellationToken);
+            await socket.CloseAsync(WebSocketCloseStatus.PolicyViolation, reason, cancellationToken);
+        }
+        catch (WebSocketException)
+        {
+            // The browser left first — nothing to tell it.
+        }
+        finally
+        {
             try { socket.Dispose(); } catch { /* already gone */ }
         }
     }
@@ -478,8 +550,8 @@ public sealed class WebControllerServer(
             }
 
             var json = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
-            var snapshot = WebControllerProtocol.TryParseInput(json, lease.PadIndex);
-            if (snapshot is not null && !hub.UpdatePad(lease, snapshot))
+            var snapshot = WebControllerProtocol.TryParseInput(json, lease.PadIndex, out var layout);
+            if (snapshot is not null && !hub.UpdatePad(lease, snapshot, layout))
             {
                 return;
             }
@@ -498,12 +570,27 @@ public sealed class WebControllerServer(
         Func<bool> isAuthorized)
     {
         using var timer = new PeriodicTimer(PhoneFeedbackInterval);
+        var sentName = phones?.NameOf(lease.PadIndex);
         while (socket.State == WebSocketState.Open
                && await timer.WaitForNextTickAsync(cancellationToken))
         {
             if (!hub.IsLeaseCurrent(lease) || !isAuthorized())
             {
+                // Removed in the app: say so, so the page stops reconnecting
+                // instead of retrying a link that will never work again.
+                if (phones is not null && !phones.IsRegistered(lease.PadIndex))
+                {
+                    await SendAsync(socket, WebControllerProtocol.BuildRevoked(), cancellationToken);
+                }
                 return;
+            }
+
+            // A rename in the app reaches the phone's own header.
+            var name = phones?.NameOf(lease.PadIndex);
+            if (!string.Equals(name, sentName, StringComparison.Ordinal))
+            {
+                sentName = name;
+                await SendAsync(socket, WebControllerProtocol.BuildPadAssignment(lease.PadIndex, name), cancellationToken);
             }
 
             while (hub.TryDequeueRumble(lease, out var rumble))
@@ -561,22 +648,23 @@ public sealed class WebControllerServer(
             // Virtual is the default: it is what the game receives, which
             // is what an input-display overlay is for. The physical pad
             // is a query away for anyone who wants the hardware instead.
-            Physical: string.Equals(query["side"], "physical", StringComparison.OrdinalIgnoreCase));
+            Physical: string.Equals(query["side"], "physical", StringComparison.OrdinalIgnoreCase),
+            DeviceId: query["device"]);
 
         var socket = socketContext.WebSocket;
         try
         {
-            var theme = overlay.ResolveTheme(request);
-            if (theme is null)
+            var program = overlay.ResolveProgram(request);
+            if (program is null)
             {
                 await SendAsync(socket, Overlay.OverlayProtocol.BuildError(
-                    "No theme to draw. Pick one in GameFlow, or add ?theme=<id> to this URL."), stoppingToken);
-                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "no theme", stoppingToken);
+                    localization?["OverlayNoLayout"] ?? "No layout is available. Open this panel in GameFlow and choose a skin."), stoppingToken);
+                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "no layout", stoppingToken);
                 return;
             }
 
-            var program = await SendProgramAsync(socket, theme, stoppingToken);
-            logger.LogInformation("Overlay: a browser source connected, drawing theme {Theme}.", theme.Id);
+            await SendProgramAsync(socket, program, stoppingToken);
+            logger.LogInformation("Overlay: a browser source connected, drawing {Theme}.", program.ThemeId);
 
             // One symbol table for the life of the connection — rebinding
             // a snapshot is a field assignment, and this runs 60x/sec.
@@ -593,12 +681,12 @@ public sealed class WebControllerServer(
 
                     // Null means the slot is gone. Keep the last layout: the
                     // controller goes neutral, which is better than a blank scene.
-                    var latest = overlay.ResolveTheme(request);
-                    if (latest is not null && !ReferenceEquals(latest, theme))
+                    var latest = overlay.ResolveProgram(request);
+                    if (latest is not null && !ReferenceEquals(latest, program))
                     {
-                        logger.LogInformation("Overlay: layout changed from {Old} to {New}.", theme.Id, latest.Id);
-                        theme = latest;
-                        program = await SendProgramAsync(socket, theme, stoppingToken);
+                        logger.LogInformation("Overlay: layout changed from {Old} to {New}.", program.ThemeId, latest.ThemeId);
+                        program = latest;
+                        await SendProgramAsync(socket, program, stoppingToken);
                     }
                 }
 
@@ -626,28 +714,119 @@ public sealed class WebControllerServer(
         }
     }
 
-    /// <summary>Compiles <paramref name="theme"/> and sends it as the page's program message.</summary>
-    private async Task<Overlay.OverlayProgram> SendProgramAsync(
+    /// <summary>Sends a compiled layout to the browser.</summary>
+    private async Task SendProgramAsync(
         WebSocket socket,
-        InstalledTheme theme,
+        Overlay.OverlayProgram program,
         CancellationToken cancellationToken)
     {
-        var program = Overlay.OverlayProgramBuilder.Build(theme);
         if (program.MissingImages.Count > 0)
         {
             logger.LogWarning(
                 "Overlay: theme {Theme} references {Count} image(s) that are not on disk; they will not draw.",
-                theme.Id, program.MissingImages.Count);
+                program.ThemeId, program.MissingImages.Count);
         }
 
-        await SendAsync(socket, Overlay.OverlayProtocol.BuildProgram(program), cancellationToken);
-        return program;
+        var labels = Enum.GetValues<GameFlow.Core.Enums.ButtonId>().ToDictionary(button => (int)button,
+            button => localization?["ButtonId." + button] ?? button.ToString());
+        string Label(string key, string fallback) => localization?[key] ?? fallback;
+        string[] axes = [Label("StickId.Left", "Left stick"), Label("StickId.Right", "Right stick"),
+            Label("OverlayLeftTrigger", "Left trigger"), Label("OverlayRightTrigger", "Right trigger"),
+            Label("MouseInput.None", "Mouse movement")];
+        await SendAsync(socket, Overlay.OverlayProtocol.BuildProgram(program, labels, axes), cancellationToken);
     }
 
     private static Task SendAsync(WebSocket socket, string json, CancellationToken cancellationToken)
     {
         var bytes = Encoding.UTF8.GetBytes(json);
         return socket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
+    }
+
+    /// <summary>
+    /// Adapts one HTTP request to <see cref="LightingApi"/> and writes its
+    /// answer. The body is read only for POST, and never past
+    /// <see cref="LightingApi.MaxBodyBytes"/> + 1 — enough to tell an
+    /// oversized body from a full one without buffering whatever a caller
+    /// chooses to send.
+    /// </summary>
+    private async Task HandleLightingApiAsync(HttpListenerContext context, CancellationToken stoppingToken)
+    {
+        var request = context.Request;
+        var response = context.Response;
+        response.Headers["Cache-Control"] = "no-store";
+
+        try
+        {
+            ReadOnlyMemory<byte> body = ReadOnlyMemory<byte>.Empty;
+            var method = request.HttpMethod.ToUpperInvariant();
+            var tooLarge = request.ContentLength64 > LightingApi.MaxBodyBytes;
+            if (method == "POST" && request.HasEntityBody && !tooLarge)
+            {
+                var buffer = new byte[LightingApi.MaxBodyBytes + 1];
+                var read = 0;
+                int chunk;
+                while (read < buffer.Length
+                       && (chunk = await request.InputStream.ReadAsync(buffer.AsMemory(read), stoppingToken)) > 0)
+                {
+                    read += chunk;
+                }
+
+                body = buffer.AsMemory(0, read);
+            }
+            else if (tooLarge)
+            {
+                // Signalled to the policy as one byte past the limit.
+                body = new byte[LightingApi.MaxBodyBytes + 1];
+            }
+
+            var answer = lightingApi!.Handle(
+                new LightingApiRequest(
+                    method,
+                    request.Url?.AbsolutePath ?? "/",
+                    request.QueryString["target"],
+                    request.Headers["Authorization"],
+                    request.ContentType,
+                    IPAddress.IsLoopback(request.RemoteEndPoint.Address),
+                    WebRequestPolicy.Allows(request.Url, request.Headers["Origin"], request.LocalEndPoint.Address),
+                    body),
+                AllowsRemote,
+                AccessToken);
+
+            response.StatusCode = answer.StatusCode;
+            if (answer.ChallengeBearer)
+            {
+                response.Headers["WWW-Authenticate"] = "Bearer";
+            }
+
+            if (answer.Allow is { } allow)
+            {
+                response.Headers["Allow"] = allow;
+            }
+
+            if (answer.RetryAfterSeconds is { } retryAfter)
+            {
+                response.Headers["Retry-After"] = retryAfter.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            }
+
+            if (answer.Json is { } json)
+            {
+                var bytes = Encoding.UTF8.GetBytes(json);
+                response.ContentType = "application/json; charset=utf-8";
+                response.ContentLength64 = bytes.Length;
+                await response.OutputStream.WriteAsync(bytes, stoppingToken);
+            }
+
+            if (answer.StatusCode >= 400 && answer.StatusCode != 429)
+            {
+                logger.LogDebug(
+                    "Lighting API: {Method} {Path} answered {Status}.",
+                    method, request.Url?.AbsolutePath, answer.StatusCode);
+            }
+        }
+        finally
+        {
+            response.Close();
+        }
     }
 
     private bool IsAuthorized(HttpListenerContext context) => WebAccessPolicy.IsAuthorized(

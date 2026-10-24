@@ -112,7 +112,7 @@
   <sys:Double x:Key="Text.Caption.Size">11</sys:Double>
   <sys:Double x:Key="Text.Label.Size">10</sys:Double>
 
-  <FontFamily x:Key="Font.Sans">avares://GameFlow.App/#Inter, Segoe UI, ui-sans-serif, system-ui</FontFamily>
+  <FontFamily x:Key="Font.Sans">avares://GameFlow/#Inter, Segoe UI, ui-sans-serif, system-ui</FontFamily>
   <FontFamily x:Key="Font.Mono">Cascadia Mono, Consolas, ui-monospace, monospace</FontFamily>
 
   <!-- ════════ FOCUS / OUTLINE ════════════════════════════════════════ -->

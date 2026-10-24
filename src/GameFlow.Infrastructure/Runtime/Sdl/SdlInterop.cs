@@ -217,6 +217,55 @@ internal static partial class SdlInterop
     internal static partial bool SendGamepadEffect(IntPtr gamepad, ReadOnlySpan<byte> data, int size);
 
     /// <summary>
+    /// Impulse-trigger motors (Xbox One / Series). Separate from
+    /// <see cref="RumbleGamepad"/> because the trigger motors are separate
+    /// hardware; SDL rejects the call on pads without them, which is why
+    /// it is only made for pads whose capabilities say they have them.
+    /// </summary>
+    [LibraryImport("SDL3", EntryPoint = "SDL_RumbleGamepadTriggers")]
+    [return: MarshalAs(UnmanagedType.I1)]
+    internal static partial bool RumbleGamepadTriggers(
+        IntPtr gamepad, ushort leftRumble, ushort rightRumble, uint durationMs);
+
+    /// <summary>
+    /// Sets the player number a pad shows on its own LED row (DualShock 3,
+    /// Switch). -1 turns the indicator off. A HID write, so callers only
+    /// make it when the number actually changes.
+    /// </summary>
+    [LibraryImport("SDL3", EntryPoint = "SDL_SetGamepadPlayerIndex")]
+    [return: MarshalAs(UnmanagedType.I1)]
+    internal static partial bool SetGamepadPlayerIndex(IntPtr gamepad, int playerIndex);
+
+    /// <summary>The SDL_PropertiesID of an open gamepad; 0 on failure.</summary>
+    [LibraryImport("SDL3", EntryPoint = "SDL_GetGamepadProperties")]
+    internal static partial uint GetGamepadProperties(IntPtr gamepad);
+
+    [LibraryImport("SDL3", EntryPoint = "SDL_GetBooleanProperty", StringMarshalling = StringMarshalling.Utf8)]
+    [return: MarshalAs(UnmanagedType.I1)]
+    internal static partial bool GetBooleanProperty(
+        uint properties, string name, [MarshalAs(UnmanagedType.I1)] bool defaultValue);
+
+    // Capability keys an SDL gamepad driver sets when the pad is opened.
+    // Checked against the strings in the bundled SDL3-CS.Native 3.4.2 build
+    // rather than written from memory: SDL_PROP_GAMEPAD_CAP_* resolve to the
+    // joystick-level names below.
+
+    /// <summary>The pad has an LED whose COLOUR can be set.</summary>
+    internal const string PropCapRgbLed = "SDL.joystick.cap.rgb_led";
+
+    /// <summary>The pad has an LED whose BRIGHTNESS can be set; SDL drives it from the brightest RGB channel.</summary>
+    internal const string PropCapMonoLed = "SDL.joystick.cap.mono_led";
+
+    /// <summary>The pad shows its player index on LEDs.</summary>
+    internal const string PropCapPlayerLed = "SDL.joystick.cap.player_led";
+
+    /// <summary>The pad has the two body rumble motors.</summary>
+    internal const string PropCapRumble = "SDL.joystick.cap.rumble";
+
+    /// <summary>The pad has impulse-trigger motors.</summary>
+    internal const string PropCapTriggerRumble = "SDL.joystick.cap.trigger_rumble";
+
+    /// <summary>
     /// SDL_SensorType — values verified against upstream
     /// include/SDL3/SDL_sensor.h, not written from memory.
     /// </summary>

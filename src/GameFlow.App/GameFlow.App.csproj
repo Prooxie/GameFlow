@@ -2,7 +2,10 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <RootNamespace>GameFlow.App</RootNamespace>
-    <AssemblyName>GameFlow.App</AssemblyName>
+    <!-- The executable is GameFlow.exe; the project and namespaces keep
+         the .App suffix. Avalonia resource URIs use the assembly name
+         (avares://GameFlow/...). -->
+    <AssemblyName>GameFlow</AssemblyName>
     <UseWindowsForms>false</UseWindowsForms>
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
     <!--
@@ -97,4 +100,5 @@
       <Visible>false</Visible>
     </Content>
   </ItemGroup>
+  <Import Project="../../build/Localization.targets" />
 </Project>

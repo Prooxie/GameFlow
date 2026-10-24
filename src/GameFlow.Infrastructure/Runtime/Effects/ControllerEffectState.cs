@@ -14,8 +14,30 @@ public readonly record struct ControllerEffectState
     /// <summary>High-frequency (light) motor, 0–1.</summary>
     public double HighFrequencyRumble { get; init; }
 
-    /// <summary>Lightbar / player LED colour. Null leaves the LED alone.</summary>
+    /// <summary>
+    /// Lightbar / LED colour. Null leaves the LED alone; "off" is an
+    /// explicit black, never null.
+    /// </summary>
     public EffectColor? LedColor { get; init; }
+
+    /// <summary>Left impulse-trigger motor, 0–1. Only pads with trigger motors act on it.</summary>
+    public double LeftTriggerRumble { get; init; }
+
+    /// <summary>Right impulse-trigger motor, 0–1.</summary>
+    public double RightTriggerRumble { get; init; }
+
+    /// <summary>
+    /// Player-indicator LED bits in the DualSense layout (bit 0 = leftmost
+    /// of five). Null leaves the LEDs alone. Pads whose LEDs SDL drives by
+    /// player number get the nearest number instead.
+    /// </summary>
+    public byte? PlayerLeds { get; init; }
+
+    /// <summary>Brightness step for <see cref="PlayerLeds"/>. Null leaves it alone.</summary>
+    public GameFlow.Core.Pipeline.IndicatorBrightnessLevel? PlayerLedBrightness { get; init; }
+
+    /// <summary>DualSense mic-mute LED. Null leaves it alone.</summary>
+    public GameFlow.Core.Pipeline.MicLedState? MicLed { get; init; }
 
     /// <summary>
     /// Left adaptive-trigger effect. Null leaves the trigger alone;
@@ -48,9 +70,29 @@ public readonly record struct ControllerEffectState
     public bool IsSilent =>
         LowFrequencyRumble <= 0d &&
         HighFrequencyRumble <= 0d &&
+        LeftTriggerRumble <= 0d &&
+        RightTriggerRumble <= 0d &&
         LedColor is null &&
+        PlayerLeds is null &&
+        MicLed is null &&
         IsReleased(LeftTrigger) &&
         IsReleased(RightTrigger);
+
+    /// <summary>
+    /// True when <paramref name="other"/> differs from this state ONLY in
+    /// its lights. The dispatch queue paces those changes more coarsely
+    /// than motor changes: an animated lightbar changes every frame, and
+    /// over Bluetooth every one of those frames is a report.
+    /// </summary>
+    public bool DiffersOnlyInLighting(in ControllerEffectState other) =>
+        this != other &&
+        this with
+        {
+            LedColor = other.LedColor,
+            PlayerLeds = other.PlayerLeds,
+            PlayerLedBrightness = other.PlayerLedBrightness,
+            MicLed = other.MicLed,
+        } == other;
 
     private static bool IsReleased(AdaptiveTriggerCommand? command) =>
         command is null || command.Value.Effect == AdaptiveTriggerEffect.Off;

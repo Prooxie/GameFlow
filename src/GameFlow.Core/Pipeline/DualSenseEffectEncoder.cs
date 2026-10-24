@@ -39,21 +39,37 @@ public static class DualSenseEffectEncoder
     private const int OffsetEnableBits2 = 1;
     private const int OffsetRumbleRight = 2;
     private const int OffsetRumbleLeft = 3;
+    private const int OffsetMicLight = 8;
     private const int OffsetRightTriggerEffect = 10;
     private const int OffsetLeftTriggerEffect = 21;
     private const int OffsetEnableBits3 = 38;
+    private const int OffsetPlayerLedBrightness = 42;
+    private const int OffsetPlayerLeds = 43;
     private const int OffsetLedRed = 44;
     private const int OffsetLedGreen = 45;
     private const int OffsetLedBlue = 46;
 
     // Enable bits. Without the matching bit the firmware ignores that
-    // section entirely, whatever it contains.
+    // section entirely, whatever it contains. The LED bits match SDL's
+    // HIDAPI_DriverPS5_UpdateEffects and the kernel's hid-playstation
+    // (valid_flag1 MIC_MUTE_LED / LIGHTBAR / PLAYER_INDICATOR, valid_flag2
+    // LED brightness).
     private const byte Enable1LegacyRumble = 0x01;
     private const byte Enable1DisableAudioHaptics = 0x02;
     private const byte Enable1RightTrigger = 0x04;
     private const byte Enable1LeftTrigger = 0x08;
+    private const byte Enable2MicLight = 0x01;
     private const byte Enable2Lightbar = 0x04;
+    private const byte Enable2PlayerLeds = 0x10;
+    private const byte Enable3PlayerLedBrightness = 0x01;
     private const byte Enable3EnhancedRumble = 0x04;
+
+    /// <summary>
+    /// Set alongside the player-LED bits: switch instantly rather than
+    /// fading. SDL sets it too, and a fade on every animation step would
+    /// smear a battery bar or a game's indicator changes.
+    /// </summary>
+    private const byte PlayerLedsInstant = 0x20;
 
     // SDL 3.4.2 uses the enhanced rumble lane for Sony pads on firmware
     // 0x0224+, for unknown Sony firmware (the Bluetooth fallback), and for
@@ -73,6 +89,19 @@ public static class DualSenseEffectEncoder
     /// which must be at least <see cref="EffectStateLength"/> bytes.
     /// Returns false rather than throwing on a short buffer.
     /// </summary>
+    /// <param name="destination">Destination for the complete report.</param>
+    /// <param name="leftTrigger">Left trigger effect, or null to leave it unchanged.</param>
+    /// <param name="rightTrigger">Right trigger effect, or null to leave it unchanged.</param>
+    /// <param name="led">Lightbar colour, or null to leave it unchanged.</param>
+    /// <param name="lowFrequencyRumble">Low-frequency motor amplitude.</param>
+    /// <param name="highFrequencyRumble">High-frequency motor amplitude.</param>
+    /// <param name="rumbleMode">Rumble encoding supported by the controller firmware.</param>
+    /// <param name="playerLeds">
+    /// Player-indicator bits (bit 0 = leftmost of five), or null to leave
+    /// the LEDs as they are. 0 switches them all off.
+    /// </param>
+    /// <param name="playerLedBrightness">Brightness step for the player LEDs, or null to leave it.</param>
+    /// <param name="micLed">Mic-mute LED state, or null to leave it.</param>
     public static bool TryWrite(
         Span<byte> destination,
         AdaptiveTriggerSettings? leftTrigger,
@@ -80,7 +109,10 @@ public static class DualSenseEffectEncoder
         LightColor? led,
         ushort lowFrequencyRumble,
         ushort highFrequencyRumble,
-        DualSenseRumbleMode rumbleMode)
+        DualSenseRumbleMode rumbleMode,
+        byte? playerLeds = null,
+        IndicatorBrightnessLevel? playerLedBrightness = null,
+        MicLedState? micLed = null)
     {
         if (destination.Length < EffectStateLength)
         {
@@ -132,6 +164,24 @@ public static class DualSenseEffectEncoder
             report[OffsetLedRed] = color.R;
             report[OffsetLedGreen] = color.G;
             report[OffsetLedBlue] = color.B;
+        }
+
+        if (playerLeds is { } leds)
+        {
+            enable2 |= Enable2PlayerLeds;
+            report[OffsetPlayerLeds] = (byte)((leds & 0x1F) | PlayerLedsInstant);
+        }
+
+        if (playerLedBrightness is { } level)
+        {
+            report[OffsetEnableBits3] |= Enable3PlayerLedBrightness;
+            report[OffsetPlayerLedBrightness] = (byte)Math.Clamp((int)level, 0, 2);
+        }
+
+        if (micLed is { } mic)
+        {
+            enable2 |= Enable2MicLight;
+            report[OffsetMicLight] = (byte)Math.Clamp((int)mic, 0, 2);
         }
 
         report[OffsetEnableBits1] = enable1;

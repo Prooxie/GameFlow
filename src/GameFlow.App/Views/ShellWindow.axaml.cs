@@ -256,6 +256,7 @@ public partial class ShellWindow : Window
             shellViewModel.WalkthroughRequested -= OnWalkthroughRequested;
             shellViewModel.PhoneControllerRequested -= OnPhoneControllerRequested;
             shellViewModel.OverlayUrlCopyRequested -= OnOverlayUrlCopyRequested;
+            shellViewModel.KeyboardMouseMapRequested -= OnKeyboardMouseMapRequested;
         }
 
         base.OnDataContextChanged(e);
@@ -268,6 +269,28 @@ public partial class ShellWindow : Window
             shellViewModel.WalkthroughRequested += OnWalkthroughRequested;
             shellViewModel.PhoneControllerRequested += OnPhoneControllerRequested;
             shellViewModel.OverlayUrlCopyRequested += OnOverlayUrlCopyRequested;
+            shellViewModel.KeyboardMouseMapRequested += OnKeyboardMouseMapRequested;
+        }
+    }
+
+    /// <summary>Opens the keyboard &amp; mouse controller map editor.</summary>
+    private async void OnKeyboardMouseMapRequested(object? sender, KeyboardMouseMapRequest request)
+    {
+        if (isClosing || services?.GetService(typeof(KeyboardMouseMapEditorViewModel)) is not KeyboardMouseMapEditorViewModel editor)
+        {
+            return;
+        }
+
+        try
+        {
+            var selected = shellViewModel?.DevicesPanel.SelectedDevice;
+            editor.SelectDevice(request.DeviceId ?? (selected?.Category is GameFlow.Infrastructure.Runtime.DeviceCategory.Keyboard or GameFlow.Infrastructure.Runtime.DeviceCategory.Mouse ? selected.Id : null));
+            editor.PrepareInput(request.Key, request.Mouse);
+            await new KeyboardMouseMapWindow { DataContext = editor }.ShowDialog(this);
+        }
+        catch (Exception exception)
+        {
+            Log.Error(exception, "Keyboard & mouse map editor failed to open.");
         }
     }
 
@@ -293,10 +316,87 @@ public partial class ShellWindow : Window
         }
     }
 
-    /// <summary>Dashboard "Use a phone" — opens the phone-controller sheet.</summary>
-    private async void OnPhoneControllerRequested(object? sender, EventArgs e)
+    /// <summary>Sidebar trash button on a virtual controller: asks, then deletes it.</summary>
+    private async void OnDeleteVirtualControllerClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (isClosing || services is null)
+        if (sender is not Control { DataContext: MenuColumnItemViewModel { DeleteCommand: { } delete } row })
+        {
+            return;
+        }
+
+        try
+        {
+            if (await ConfirmDialog.AskAsync(this, UiTextResources.Format("UiDeleteName", row.Name), row.DeleteConfirmText, UiTextResources.Get("UiDelete")))
+            {
+                delete.Execute(null);
+            }
+        }
+        catch (Exception exception)
+        {
+            Log.Error(exception, "Deleting a virtual controller from the sidebar failed.");
+        }
+    }
+
+    /// <summary>The virtual controller editor's Delete: asks, then deletes the selected controller.</summary>
+    private async void OnDeleteSelectedSlotClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var slots = shellViewModel?.SlotsPanel;
+        if (slots?.SelectedSlot is not { } slot)
+        {
+            return;
+        }
+
+        try
+        {
+            var name = string.IsNullOrWhiteSpace(slot.Name) ? "this virtual controller" : slot.Name;
+            if (await ConfirmDialog.AskAsync(
+                    this,
+                    UiTextResources.Format("UiDeleteName", name),
+                    UiTextResources.Get("UiDeleteVirtual"),
+                    UiTextResources.Get("UiDelete")))
+            {
+                slots.DeleteSlotById(slot.Id);
+            }
+        }
+        catch (Exception exception)
+        {
+            Log.Error(exception, "Deleting a virtual controller failed.");
+        }
+    }
+
+    /// <summary>Devices page "Remove phone": asks, then removes the phone and revokes its link.</summary>
+    private async void OnRemovePhoneClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (sender is not Control { Tag: string deviceId } || shellViewModel is null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (await ConfirmDialog.AskAsync(
+                    this,
+                    UiTextResources.Get("UiRemovePhoneTitle"),
+                    UiTextResources.Get("UiRemovePhoneMessage"),
+                    UiTextResources.Get("UiRemove")))
+            {
+                shellViewModel.RemovePhoneCommand.Execute(deviceId);
+            }
+        }
+        catch (Exception exception)
+        {
+            Log.Error(exception, "Removing a phone failed.");
+        }
+    }
+
+    /// <summary>Opens one phone's sheet: name, QR code of its own link, connection state.</summary>
+    private async void OnPhoneControllerRequested(object? sender, int seat)
+    {
+        if (isClosing
+            || services?.GetService(typeof(OverlayPanelViewModel)) is not OverlayPanelViewModel network
+            || services.GetService(typeof(GameFlow.Infrastructure.Runtime.Web.PhoneRegistry)) is not GameFlow.Infrastructure.Runtime.Web.PhoneRegistry registry
+            || services.GetService(typeof(GameFlow.Infrastructure.Runtime.Web.WebControllerHub)) is not GameFlow.Infrastructure.Runtime.Web.WebControllerHub hub
+            || services.GetService(typeof(GameFlow.Infrastructure.Runtime.Web.WebControllerServer)) is not GameFlow.Infrastructure.Runtime.Web.WebControllerServer server)
         {
             return;
         }
@@ -305,7 +405,7 @@ public partial class ShellWindow : Window
         {
             var window = new PhoneControllerWindow
             {
-                DataContext = services.GetService(typeof(OverlayPanelViewModel)),
+                DataContext = new PhoneSheetViewModel(network, registry, hub, server, seat),
             };
             await window.ShowDialog(this);
         }
@@ -316,23 +416,18 @@ public partial class ShellWindow : Window
     }
 
     /// <summary>
-    /// Dashboard "Copy OBS layout" — puts the stream-overlay URL on the
-    /// clipboard without a trip through Options.
+    /// A dashboard panel's "Copy OBS link" — puts that surface's overlay URL
+    /// on the clipboard. The panel built the URL; only the window owns the
+    /// clipboard.
     /// </summary>
-    /// <remarks>
-    /// The overlay view-model is built fresh per press rather than held:
-    /// it reads the live slot and theme lists on construction, and the
-    /// URL names a slot that may have been created since the last press.
-    /// </remarks>
-    private async void OnOverlayUrlCopyRequested(object? sender, EventArgs e)
+    private async void OnOverlayUrlCopyRequested(object? sender, string url)
     {
-        if (services?.GetService(typeof(OverlayPanelViewModel)) is not OverlayPanelViewModel overlay ||
-            GetTopLevel(this)?.Clipboard is not { } clipboard)
+        if (GetTopLevel(this)?.Clipboard is not { } clipboard)
         {
             return;
         }
 
-        if (!overlay.CanCopy)
+        if (string.IsNullOrEmpty(url))
         {
             shellViewModel?.ReportStatus("The web server is not running, so there is no overlay URL yet.");
             return;
@@ -340,8 +435,8 @@ public partial class ShellWindow : Window
 
         try
         {
-            await clipboard.SetTextAsync(overlay.Url);
-            shellViewModel?.ReportStatus("Overlay URL copied — paste it into an OBS Browser source.");
+            await clipboard.SetTextAsync(url);
+            shellViewModel?.ReportStatus("OBS link copied — add a Browser source in OBS and paste it as the URL.");
         }
         catch (Exception exception)
         {
@@ -356,6 +451,7 @@ public partial class ShellWindow : Window
     /// </summary>
     private void OnVirtualPanelPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
     {
+        if (GameFlow.App.Services.ControllerPanelInput.IsControlInteraction(e.Source)) { return; }
         if (sender is not Border { Tag: string slotId } || string.IsNullOrWhiteSpace(slotId))
         {
             return;
@@ -373,6 +469,7 @@ public partial class ShellWindow : Window
 
     private void OnVirtualPanelKeyDown(object? sender, Avalonia.Input.KeyEventArgs e)
     {
+        if (GameFlow.App.Services.ControllerPanelInput.IsControlInteraction(e.Source)) { return; }
         if (e.Key is Avalonia.Input.Key.Enter or Avalonia.Input.Key.Space && sender is Border { Tag: string slotId })
         {
             (DataContext as ShellViewModel)?.OpenDeviceSettingsCommand.Execute(slotId);
@@ -476,6 +573,7 @@ public partial class ShellWindow : Window
             shellViewModel.WalkthroughRequested -= OnWalkthroughRequested;
             shellViewModel.PhoneControllerRequested -= OnPhoneControllerRequested;
             shellViewModel.OverlayUrlCopyRequested -= OnOverlayUrlCopyRequested;
+            shellViewModel.KeyboardMouseMapRequested -= OnKeyboardMouseMapRequested;
         }
         shellViewModel = null;
 

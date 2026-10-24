@@ -210,6 +210,15 @@ public static class AppPaths
     /// <summary>Per-device button remaps (canonical button → raw index).</summary>
     public static string ButtonMapsFile => Path.Combine(BaseDirectory, "device-button-maps.json");
 
+    /// <summary>Keyboard &amp; mouse → controller bindings — see <see cref="Runtime.Input.KeyboardMouseMapStore"/>.</summary>
+    public static string KeyboardMouseMapFile => Path.Combine(BaseDirectory, "keyboard-mouse-map.json");
+
+    /// <summary>Phones added as controllers — see <see cref="Runtime.Web.PhoneRegistry"/>.</summary>
+    public static string PhonesFile => Path.Combine(BaseDirectory, "phones.json");
+
+    /// <summary>Per-panel dashboard backgrounds — see <see cref="Runtime.PanelAppearanceStore"/>.</summary>
+    public static string PanelAppearanceFile => Path.Combine(BaseDirectory, "panel-appearance.json");
+
     /// <summary>Per-device category overrides — see <see cref="Runtime.DeviceCategoryOverrideStore"/>.</summary>
     public static string DeviceCategoryOverridesFile => Path.Combine(BaseDirectory, "device-category-overrides.json");
 

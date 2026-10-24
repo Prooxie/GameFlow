@@ -10,7 +10,7 @@
         CanResize="True"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource AppSurface0}"
-        Title="Missing requirements">
+        Title="{DynamicResource Ui.UiMissingRequirements}">
 
   <Border Margin="0"
           ClipToBounds="True"
@@ -22,11 +22,11 @@
 
       <!-- Header -->
       <StackPanel Grid.Row="0" Spacing="6">
-        <TextBlock Text="Some optional components aren't installed"
+        <TextBlock Text="{DynamicResource Ui.UiSomeOptionalComponentsArenTInstalled}"
                    FontSize="18"
                    FontWeight="Bold"
                    Foreground="{DynamicResource AppForeground}" />
-        <TextBlock Text="GameFlow can run without them, but parts of the feature set will be unavailable until they're installed."
+        <TextBlock Text="{DynamicResource Ui.UiGameFlowCanRunWithoutThemButPartsOfThe}"
                    FontSize="12"
                    Foreground="{DynamicResource AppForegroundDim}"
                    TextWrapping="Wrap" />
@@ -54,7 +54,7 @@
                   </StackPanel>
                   <Button Grid.Column="1"
                           Classes="ghost"
-                          Content="Open install page"
+                          Content="{DynamicResource Ui.UiOpenInstallPage}"
                           Tag="{Binding}"
                           Click="OnOpenInstallPageClick"
                           VerticalAlignment="Center" />
@@ -69,11 +69,11 @@
       <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
         <CheckBox Grid.Column="0"
                   Name="DontAskAgainCheckbox"
-                  Content="Don't check at startup again"
+                  Content="{DynamicResource Ui.UiDonTCheckAtStartupAgain}"
                   VerticalAlignment="Center" />
 
         <Button Grid.Column="2"
-                Content="Close"
+                Content="{DynamicResource Ui.UiClose}"
                 IsDefault="True"
                 IsCancel="True"
                 Click="OnCloseClick"

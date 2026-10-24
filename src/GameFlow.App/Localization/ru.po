@@ -238,7 +238,7 @@ msgid "MappingEditorSuppressRawStick"
 msgstr "Подавлять сырой стик после обработки"
 
 msgid "MappingEditorDeadzoneLabel"
-msgstr "Мёртвая зона"
+msgstr "Мёртвая зона и порог"
 
 msgid "MappingEditorDeadzoneHint"
 msgstr "Значения внутри мёртвой зоны принудительно обнуляются."
@@ -267,6 +267,7 @@ msgstr "Полная активация при"
 msgid "MappingEditorTargetControlKeyLabel"
 msgstr "Ключ целевого элемента"
 
+#. invariant: control syntax or product name
 msgid "MappingEditorControlKeyWatermark"
 msgstr "LeftStick / South / Touchpad …"
 
@@ -335,7 +336,6 @@ msgstr "Невозможно удалить: это единственный п�
 
 msgid "ProfileDeletedStatus"
 msgstr "Профиль {0} удалён."
-
 
 msgid "ThemeLabel"
 msgstr "Тема"
@@ -421,7 +421,6 @@ msgstr "Восстановлены значения по умолчанию — 
 msgid "SettingsDialogApplyFailedStatus"
 msgstr "Не удалось сохранить настройки: {0}"
 
-
 msgid "ThemeNameCyberBlue"
 msgstr "Кибер-синий"
 
@@ -473,6 +472,7 @@ msgstr "ViGEm DualShock 4"
 msgid "OutputProviderViGEmDs4Description"
 msgstr "Виртуальный контроллер DualShock 4 через ViGEm Bus. Требуется драйвер ViGEm Bus."
 
+#. invariant: control syntax or product name
 msgid "OutputProviderViGEmDs5Label"
 msgstr "ViGEm DualSense (DS5)"
 
@@ -499,7 +499,6 @@ msgstr "PlayStation 5"
 
 msgid "ControllerStyleMinimal"
 msgstr "Минимальный"
-
 
 msgid "StyleLabelXbox"
 msgstr "Раскладка Xbox"
@@ -568,37 +567,37 @@ msgid "RuleKindButtonRemapLabel"
 msgstr "Переназначение кнопки"
 
 msgid "RuleKindButtonRemapDescription"
-msgstr "Перенаправить одну кнопку на другую."
+msgstr "Отправляет одну кнопку как другую."
 
 msgid "RuleKindButtonAutofireLabel"
 msgstr "Автоогонь / Турбо кнопки"
 
 msgid "RuleKindButtonAutofireDescription"
-msgstr "Быстрый огонь кнопкой с настраиваемой частотой."
+msgstr "Повторяет кнопку, пока вы её держите."
 
 msgid "RuleKindStickThresholdLabel"
 msgstr "Порог стика"
 
 msgid "RuleKindStickThresholdDescription"
-msgstr "Настройка мёртвой зоны и порога для стика."
+msgstr "Задаёт мёртвую зону и полный диапазон стика."
 
 msgid "RuleKindStickAutofireLabel"
 msgstr "Автоогонь стика"
 
 msgid "RuleKindStickAutofireDescription"
-msgstr "Пульсация вывода одного стика от другого."
+msgstr "Пульсирует одним стиком по другому."
 
 msgid "RuleKindFreezeLastDirectionLabel"
 msgstr "Заморозить последнее направление"
 
 msgid "RuleKindFreezeLastDirectionDescription"
-msgstr "Удерживает последнее наблюдавшееся направление стика, пока удерживается кнопка."
+msgstr "Удерживает направление стика, пока зажата кнопка."
 
 msgid "RuleKindScriptLabel"
 msgstr "Скрипт элемента"
 
 msgid "RuleKindScriptDescription"
-msgstr "Сохранить текст скрипта для конкретного элемента."
+msgstr "Запускает Lua-скрипт для одного элемента управления."
 
 msgid "MappingEditorAddRule"
 msgstr "+ Добавить правило"
@@ -624,27 +623,20 @@ msgstr "Подавить исходную кнопку (блокировать �
 msgid "MappingEditorEnabled"
 msgstr "Включено"
 
-msgid "MappingEditorDeadzoneLabel"
-msgstr "Мёртвая зона и порог"
-
 msgid "MappingEditorStoreScript"
-msgstr "Сохранить скрипт для выбранного элемента. Выполнение во время работы запланировано."
+msgstr "Скрипт выполняется при каждом обновлении, пока правило включено."
 
 msgid "MappingEditorSelectRuleToEdit"
 msgstr "Выберите правило для редактирования"
 
 msgid "MappingEditorOrUseAddRule"
-msgstr "Или используйте „Добавить правило" для создания нового сопоставления."
+msgstr "Или используйте „Добавить правило"
 
 msgid "MappingEditorSaveButton"
 msgstr "Сохранить правило"
 
-msgid "MappingEditorCancelButton"
-msgstr "Отмена"
-
 msgid "MappingEditorRulesHeader"
 msgstr "ПРАВИЛА СОПОСТАВЛЕНИЯ"
-
 
 msgid "InputProviderOpenXInputLabel"
 msgstr "OpenXInput"
@@ -680,15 +672,13 @@ msgid "OutputProviderHidMaestroLabel"
 msgstr "Виртуальный HID HidMaestro"
 
 msgid "OutputProviderHidMaestroDescription"
-msgstr "User-mode virtual controller platform — no kernel driver or reboot. Presents as real hardware to XInput, DirectInput, SDL3 and WGI. Windows only. Activates automatically when HIDMaestro.Core.dll is present next to the executable. Does not fall back to ViGEm — if it can't activate, this slot has no output."
+msgstr "Виртуальные контроллеры для Windows. Установите совместимую среду HIDMaestro отдельно. Без неё у слота не будет выхода."
 
 msgid "OutputProviderWindowsMidiOutLabel"
 msgstr "Выход MIDI Windows"
 
 msgid "OutputProviderWindowsMidiOutDescription"
 msgstr "Выдаёт MIDI-события из активности геймпада. Заглушка — требуется Windows MIDI Services и сопоставление в профиле."
-
-# ── UI/UX localization pass (auto-added) ──
 
 msgid "CommonRefresh"
 msgstr "Refresh"
@@ -700,7 +690,7 @@ msgid "DevicesActiveDevice"
 msgstr "Active device"
 
 msgid "DevicesEmptyList"
-msgstr "No input devices detected. Connect a controller and click Refresh."
+msgstr "Устройства ввода не найдены. Подключите устройство и обновите список."
 
 msgid "DevicesHardwareId"
 msgstr "Hardware ID"
@@ -718,7 +708,7 @@ msgid "DevicesMouseHint"
 msgstr "Движение управляет правым стиком (прицеливание); левая кнопка = правый триггер (огонь), правая = левый триггер (прицеливание), средняя = R3, боковые = LB/RB. Назначьте мышь слоту, чтобы использовать её."
 
 msgid "DevicesNoSelection"
-msgstr "Select a device to see its details."
+msgstr "Выберите устройство для просмотра сведений."
 
 msgid "DevicesOnlineTotal"
 msgstr " online of "
@@ -769,13 +759,13 @@ msgid "ProviderStatus_SdlActive"
 msgstr "Ввод SDL3 активен — обнаружено устройств: {0}"
 
 msgid "RuleKindMultiButtonAutofireDescription"
-msgstr "Loop a sequence of button presses with per-step timing while held."
+msgstr "Повторяет последовательность нажатий, пока вы держите кнопку."
 
 msgid "RuleKindMultiButtonAutofireLabel"
-msgstr "Multi-Button Autofire"
+msgstr "Автоогонь нескольких кнопок"
 
 msgid "RuleKindRuleToggleDescription"
-msgstr "Press a button to enable or disable one or more other rules."
+msgstr "Включает и выключает другие правила кнопкой."
 
 msgid "RuleKindRuleToggleLabel"
 msgstr "Rule Toggle"
@@ -790,10 +780,10 @@ msgid "StyleLabelPlayStation3"
 msgstr "DualShock 3 layout"
 
 msgid "StyleLabelSimpleGamepad"
-msgstr "Simple gamepad layout"
+msgstr "Универсальный геймпад"
 
 msgid "StyleLabelSteamController"
-msgstr "Steam Controller layout"
+msgstr "Steam Controller"
 
 msgid "StyleLabelSteamDeck"
 msgstr "Steam Deck layout"
@@ -822,13 +812,11 @@ msgstr "SDL3 активен — геймпады не обнаружены"
 msgid "ProviderStatus_NoControllerSelected"
 msgstr "Контроллер не выбран. Автовыбор возьмёт первое обнаруженное устройство."
 
-# ── Mapping editor localization pass ──
-
 msgid "MEV_SectionTriggerButton"
 msgstr "TRIGGER BUTTON"
 
 msgid "MEV_SectionTriggerButtonHold"
-msgstr "TRIGGER BUTTON (hold to loop)"
+msgstr "Удерживать для повтора"
 
 msgid "MEV_SectionOutputButton"
 msgstr "OUTPUT BUTTON"
@@ -849,22 +837,22 @@ msgid "MEV_SectionDeadzone"
 msgstr "DEADZONE"
 
 msgid "MEV_SectionFullAt"
-msgstr "FULL AT (saturation)"
+msgstr "Полный выход при"
 
 msgid "MEV_SectionActivationDeadzone"
-msgstr "ACTIVATION DEADZONE"
+msgstr "Мёртвая зона активации"
 
 msgid "MEV_SectionActivationFullAt"
 msgstr "ACTIVATION FULL AT"
 
 msgid "MEV_SectionActivationButton"
-msgstr "ACTIVATION BUTTON (hold to freeze)"
+msgstr "Удерживать для фиксации"
 
 msgid "MEV_SectionBlendMode"
 msgstr "BLEND MODE"
 
 msgid "MEV_SectionSequenceSteps"
-msgstr "SEQUENCE STEPS (loop while held)"
+msgstr "Шаги, повторяемые при удержании"
 
 msgid "MEV_SectionStepTarget"
 msgstr "TARGET"
@@ -876,22 +864,22 @@ msgid "MEV_SectionTargetControlKey"
 msgstr "TARGET CONTROL KEY"
 
 msgid "MEV_SuppressRawAfterShaping"
-msgstr "Suppress raw source stick after shaping"
+msgstr "Использовать стик только как источник для других правил"
 
 msgid "MEV_SuppressSourceStickOutput"
-msgstr "Suppress source stick output"
+msgstr "Подавлять исходный стик"
 
 msgid "MEV_SuppressSourceInputStored"
-msgstr "Suppress source input (stored for future runtime)"
+msgstr "Подавлять исходную кнопку"
 
 msgid "MEV_SuppressActivationWhileFreezing"
-msgstr "Suppress activation button while freezing"
+msgstr "Подавлять кнопку активации при фиксации"
 
 msgid "MEV_SuppressCapturedWhileFrozen"
-msgstr "Suppress captured stick output while frozen"
+msgstr "Подавлять захваченный стик при фиксации"
 
 msgid "MEV_PulseWhileFrozen"
-msgstr "Pulse while frozen (autofire while held)"
+msgstr "Автоогонь при фиксации"
 
 msgid "MEV_EditButton"
 msgstr "Edit"
@@ -903,25 +891,25 @@ msgid "MEV_AddStep"
 msgstr "+ Add step"
 
 msgid "MEV_NoStepsYet"
-msgstr "No steps yet — add at least one for the loop to do anything."
+msgstr "Добавьте хотя бы один шаг."
 
 msgid "MEV_HintDeadzone"
-msgstr "Ignore stick movement below this threshold."
+msgstr "Движение ниже этого значения игнорируется."
 
 msgid "MEV_HintFullAt"
-msgstr "Reach 100% output at this raw stick magnitude."
+msgstr "Здесь выход достигает 100 %."
 
 msgid "SidebarPhysicalHeader"
 msgstr "PHYSICAL DEVICES"
 
 msgid "SidebarVirtualHeader"
-msgstr "VIRTUAL CONTROLLERS"
+msgstr "Виртуальные контроллеры"
 
 msgid "DevicesPhysicalTabHeader"
 msgstr "Physical devices"
 
 msgid "DevicesVirtualTabHeader"
-msgstr "Virtual controllers"
+msgstr "Виртуальные контроллеры"
 
 msgid "SlotsAddControllerLabel"
 msgstr "Add controller"
@@ -939,7 +927,7 @@ msgid "MappedControlAutofireTitle"
 msgstr "Autofire"
 
 msgid "MappedControlStickThresholdTitle"
-msgstr "Deadzone / Threshold"
+msgstr "Мёртвая зона и порог"
 
 msgid "MappedControlStickAutofireTitle"
 msgstr "Stick autofire"
@@ -993,13 +981,13 @@ msgid "StickRightLabel"
 msgstr "Right stick"
 
 msgid "MappedControlHintStickClick"
-msgstr "Stick click: passthrough, ignore, remap, autofire, script."
+msgstr "Нажатие стика: передача, игнорирование, назначение, автоогонь или скрипт."
 
 msgid "MappedControlHintAnalogTrigger"
-msgstr "Analog trigger: passthrough, ignore, script, future analog remap."
+msgstr "Аналоговый курок: передача, игнорирование или скрипт."
 
 msgid "MappedControlHintButton"
-msgstr "Button: passthrough, ignore, remap, autofire, script."
+msgstr "Кнопка: передача, игнорирование, назначение, автоогонь или скрипт."
 
 msgid "MEV_HoldMs"
 msgstr "HOLD ms"
@@ -1011,16 +999,16 @@ msgid "MEV_DelayMs"
 msgstr "DELAY ms"
 
 msgid "MEV_SectionTriggerButtonToggle"
-msgstr "TRIGGER BUTTON (press to toggle)"
+msgstr "Нажать для переключения"
 
 msgid "MEV_SectionRulesToToggle"
 msgstr "RULES TO TOGGLE"
 
 msgid "MEV_ToggleHint"
-msgstr "Each press of the trigger flips the enabled state of the checked rules."
+msgstr "Каждое нажатие включает или выключает отмеченные правила."
 
 msgid "MEV_NoOtherRules"
-msgstr "No other rules exist yet to target."
+msgstr "Других правил пока нет."
 
 msgid "MEV_SectionTiming"
 msgstr "TIMING"
@@ -1032,10 +1020,10 @@ msgid "MEV_TimingRelease"
 msgstr "RELEASE"
 
 msgid "MEV_HintHold"
-msgstr "How long the virtual button is held (pressed phase)."
+msgstr "Сколько длится каждое нажатие."
 
 msgid "MEV_HintRelease"
-msgstr "How long the virtual button is released between pulses."
+msgstr "Пауза между нажатиями."
 
 msgid "TemplateOutputProviderLabel"
 msgstr "Провайдер вывода"
@@ -1054,8 +1042,6 @@ msgstr "Сохранить"
 
 msgid "DashboardNoControllerConnected"
 msgstr "Контроллер не подключён"
-
-# ── Touchpad tab: joystick / D-pad / mouse mapping + gestures ──
 
 msgid "DevicesTouchpadTab"
 msgstr "Тачпад"
@@ -1284,3 +1270,1719 @@ msgstr "Управляет этим виртуальным контроллер�
 
 msgid "TemplateOutputProfileTooltip"
 msgstr "Определяет, каким контроллером этот слот представляется играм. По умолчанию использует стандартный профиль выбранного выше устройства вывода; список охватывает широкий каталог геймпадов и аркадных контроллеров HIDMaestro. Профили рулей и авиасимуляторов пока скрыты."
+
+msgid "RuleKindAxisInvertLabel"
+msgstr "Инверсия осей"
+
+msgid "RuleKindAxisInvertDescription"
+msgstr "Инвертирует оси стиков или триггеры."
+
+msgid "MEV_SectionInvertLeftStick"
+msgstr "ЛЕВЫЙ СТИК"
+
+msgid "MEV_SectionInvertRightStick"
+msgstr "ПРАВЫЙ СТИК"
+
+msgid "MEV_SectionInvertTriggers"
+msgstr "ТРИГГЕРЫ"
+
+msgid "MEV_InvertX"
+msgstr "Инвертировать X"
+
+msgid "MEV_InvertY"
+msgstr "Инвертировать Y"
+
+msgid "MEV_InvertL2"
+msgstr "Инвертировать L2"
+
+msgid "MEV_InvertR2"
+msgstr "Инвертировать R2"
+
+msgid "MEV_InvertShowInLayout"
+msgstr "Показывать инверсию на экранном контроллере"
+
+msgid "MEV_InvertHint"
+msgstr "Применяется последним, поэтому другие правила видят стик так, как вы его толкаете."
+
+msgid "MEV_TipInvertLeftX"
+msgstr "Меняет местами лево и право только для этого профиля.\n\nДругие правила видят стик так, как вы его толкаете. Инверсию получает только игра."
+
+msgid "MEV_TipInvertLeftY"
+msgstr "Меняет местами верх и низ только для этого профиля.\n\nДля игр, которые читают стик наоборот: вы толкаете вверх, а персонаж идёт вниз."
+
+msgid "MEV_TipInvertRightX"
+msgstr "Меняет местами лево и право только для этого профиля."
+
+msgid "MEV_TipInvertRightY"
+msgstr "Меняет местами верх и низ только для этого профиля.\n\nОбычный случай: инвертированная камера в игре без своей настройки."
+
+msgid "MEV_TipInvertTrigger"
+msgstr "Отражает триггер в его диапазоне, поэтому отпущенный читается как нажатый до упора.\n\nДля устройств с обратной осью триггера, а не для игр. Оставьте выключенным, если игра не должна считать нетронутый триггер зажатым."
+
+msgid "MEV_TipInvertShowInLayout"
+msgstr "По умолчанию выключено, поэтому движение вверх по-прежнему видно как вверх.\n\nВключите, чтобы видеть ровно то, что получает игра."
+
+msgid "MEV_RuleOrderHint"
+msgstr "Перемещение правила меняет порядок только среди правил того же типа."
+
+msgid "MappedControlAxisInvertTitle"
+msgstr "Инверсия осей"
+
+msgid "MappedControlAxisInvertNothing"
+msgstr "ничего не инвертировано"
+
+msgid "MappedControlAxisInvertShown"
+msgstr "показано на раскладке"
+
+msgid "MEV_RuleOrderTip"
+msgstr "Правила выполняются в таком порядке: переключатели правил, пороги стиков, SOCD, переназначения, автоогонь, многокнопочный автоогонь, комбо, автоогонь стика, заморозка направления, stick trim, гироскоп, тачпад, многоисточниковые строки, скрипты, инверсия осей."
+
+msgid "MEV_ScriptTrustWarning"
+msgstr "Включайте только скрипты от авторов, которым доверяете."
+
+msgid "UiSkin"
+msgstr "Оформление"
+
+msgid "UiControlMapping"
+msgstr "Назначение управления"
+
+msgid "UiSticks"
+msgstr "Стики"
+
+msgid "UiFixesDriftAndWornSticksAndChangesHowMovement"
+msgstr "Настройте отклик стика. Точка показывает текущее положение."
+
+msgid "UiPresets"
+msgstr "Предустановки"
+
+msgid "UiDefault"
+msgstr "По умолчанию"
+
+msgid "UiFactoryBehaviourASmallDeadzoneAndLinearResponseStart"
+msgstr "Небольшая мёртвая зона и линейный отклик."
+
+msgid "UiPrecision"
+msgstr "Точность"
+
+msgid "UiSmallerDeadzoneAndAGentlerCentreForSlowAccurate"
+msgstr "Плавный отклик возле центра для точного прицеливания."
+
+msgid "UiAggressive"
+msgstr "Быстрый отклик"
+
+msgid "UiReactsSoonerAndReachesFullTravelFasterForDriving"
+msgstr "Реагирует раньше и достигает максимума при меньшем отклонении."
+
+msgid "UiWornPad"
+msgstr "Изношенный контроллер"
+
+msgid "UiLargerDeadzoneToAbsorbDriftAndFullTravelReached"
+msgstr "Убирает дрейф и компенсирует уменьшенный ход стика."
+
+msgid "UiDeadzone"
+msgstr "Мёртвая зона"
+
+msgid "UiHowFarTheStickMustMoveBeforeTheGame"
+msgstr "Игнорирует небольшие движения у центра. Увеличьте при дрейфе."
+
+msgid "UiAntiDeadzone"
+msgstr "Компенсация мёртвой зоны"
+
+msgid "UiCompensatesForADeadzoneTheGAMEAppliesOnTop"
+msgstr "Компенсирует мёртвую зону игры, если она игнорирует малые движения."
+
+msgid "UiHowFarYouHaveToPushForTheGame"
+msgstr "Уменьшите, если стик не достигает максимального значения."
+
+msgid "UiCurve"
+msgstr "Кривая отклика"
+
+msgid "UiHowStickMovementMapsToInGameMovementLinear"
+msgstr "Выберите, как отклонение стика влияет на выходной сигнал."
+
+msgid "UiAdvanced"
+msgstr "Дополнительно"
+
+msgid "UiMultipliesTheWholeOutputAbove100TheStick"
+msgstr "Масштабирует весь сигнал стика. Значения выше 1 повышают чувствительность."
+
+msgid "UiTriggers"
+msgstr "Курки"
+
+msgid "UiSetsWhereATriggerPullStartsToRegisterAnd"
+msgstr "Выберите начало отклика курка и точку максимального значения."
+
+msgid "UiLeftTrigger"
+msgstr "Левый курок"
+
+msgid "UiRightTrigger"
+msgstr "Правый курок"
+
+msgid "UiRumble"
+msgstr "Вибрация"
+
+msgid "UiControlsVibrationStrengthForThisPadTurnItDown"
+msgstr "Настройте силу вибрации этого контроллера."
+
+msgid "UiRumbleEnabled"
+msgstr "Включить вибрацию"
+
+msgid "UiMotorGain"
+msgstr "Сила моторов"
+
+msgid "UiOverall"
+msgstr "Общая"
+
+msgid "UiMasterVolumeForVibrationOnThisPad000"
+msgstr "Общая сила вибрации. Ноль отключает вибрацию."
+
+msgid "UiLowMotor"
+msgstr "Низкочастотный мотор"
+
+msgid "UiTheHeavyLowFrequencyMotorTheDeepRumbleOf"
+msgstr "Глубокая вибрация, например взрывы и двигатели."
+
+msgid "UiHighMotor"
+msgstr "Высокочастотный мотор"
+
+msgid "UiTheLightHighFrequencyMotorTheFineBuzzOf"
+msgstr "Мелкая вибрация, например поверхности и удары."
+
+msgid "UiAbove100xAmplifiesAWeakPadThisGain"
+msgstr "Значения выше 1 усиливают вибрацию и связанные эффекты курков."
+
+msgid "UiSwapLeftRightMotors"
+msgstr "Поменять моторы местами"
+
+msgid "UiLighting"
+msgstr "Подсветка"
+
+msgid "UiLightbarMode"
+msgstr "Режим световой панели"
+
+msgid "UiColour"
+msgstr "Цвет"
+
+msgid "UiBrightness"
+msgstr "Яркость"
+
+msgid "UiPlayerLEDs"
+msgstr "Индикаторы игрока"
+
+msgid "UiAdaptive"
+msgstr "Адаптивные курки"
+
+msgid "UiLeftAdaptiveTrigger"
+msgstr "Левый адаптивный курок"
+
+msgid "UiEffect"
+msgstr "Эффект"
+
+msgid "UiBeginsAtPull"
+msgstr "Начальная позиция"
+
+msgid "UiHowFarTheTriggerIsPulledBeforeTheEffect"
+msgstr "Положение курка, в котором начинается эффект."
+
+msgid "UiEndsAtPull"
+msgstr "Конечная позиция"
+
+msgid "UiWhereTheEffectStopsMustBePastTheStart"
+msgstr "Положение окончания эффекта. Должно быть дальше начальной позиции."
+
+msgid "UiHowHard"
+msgstr "Сила"
+
+msgid "UiHowMuchTheTriggerPushesBackOrHowStrongly"
+msgstr "Сила сопротивления или вибрации курка."
+
+msgid "UiBuzzSpeed"
+msgstr "Скорость вибрации"
+
+msgid "UiOnlyUsedByTheBuzzingEffectsHigherIsA"
+msgstr "Частота вибрационного эффекта курка."
+
+msgid "UiReactToRumble"
+msgstr "Реагировать на вибрацию"
+
+msgid "UiAmount"
+msgstr "Уровень"
+
+msgid "UiRightAdaptiveTrigger"
+msgstr "Правый адаптивный курок"
+
+msgid "UiControllerSettings"
+msgstr "Настройка контроллера"
+
+msgid "UiClose"
+msgstr "Закрыть"
+
+msgid "UiMouseMovement"
+msgstr "Движение мыши"
+
+msgid "UiInvertVertical"
+msgstr "Инвертировать вертикаль"
+
+msgid "UiHowFarTheStickMovesForAGivenMouse"
+msgstr "Высокая чувствительность сильнее отклоняет стик при том же движении мыши."
+
+msgid "UiTheSmallestStickPushAMovingMouseProducesRaise"
+msgstr "Минимальное отклонение стика при движении мыши. Увеличьте, если игра игнорирует медленное прицеливание."
+
+msgid "UiNotBound"
+msgstr "Не назначено"
+
+msgid "UiRemoveThisBinding"
+msgstr "Удалить это назначение"
+
+msgid "UiClear"
+msgstr "Очистить"
+
+msgid "UiChangesSaveImmediatelyAndApplyToEveryKeyboardAnd"
+msgstr "Изменения сохраняются сразу для всех назначенных клавиатур и мышей. Одному элементу можно назначить несколько клавиш."
+
+msgid "UiKeyboardMouseControls"
+msgstr "Управление клавиатурой и мышью"
+
+msgid "UiDone"
+msgstr "Готово"
+
+msgid "UiWhatEachKeyAndMouseInputDoesOnThe"
+msgstr "Выберите «Назначить», затем нажмите клавишу, щёлкните или прокрутите в выделенной области."
+
+msgid "UiEnableDisableThisRule"
+msgstr "Включить или выключить правило"
+
+msgid "UiMoveUp"
+msgstr "Переместить вверх"
+
+msgid "UiMoveDown"
+msgstr "Переместить вниз"
+
+#. invariant: control syntax or product name
+msgid "UiSouthLeftStickRightTriggerAnalog"
+msgstr "South / LeftStick / RightTrigger.Analog"
+
+msgid "UiLMB"
+msgstr "Левая кнопка мыши"
+
+msgid "UiMMB"
+msgstr "Средняя кнопка мыши"
+
+msgid "UiRMB"
+msgstr "Правая кнопка мыши"
+
+msgid "UiNoCodeWhilePhoneSharingIsOff"
+msgstr "Включите доступ для телефонов, чтобы показать код."
+
+msgid "UiNAME"
+msgstr "Имя"
+
+msgid "UiPhonesReachGameFlowOverYourNetworkSharingIsOff"
+msgstr "Телефоны подключаются по вашей сети. Открывайте доступ только в доверенной сети."
+
+msgid "UiLINK"
+msgstr "Ссылка"
+
+msgid "UiCopy"
+msgstr "Копировать"
+
+msgid "UiThisLinkIsThisPhoneSAloneOpeningIt"
+msgstr "Ссылка принадлежит этому телефону. Открытие на другом устройстве переносит подключение. Не публикуйте её."
+
+msgid "UiAllowThroughFirewall"
+msgstr "Разрешить в брандмауэре"
+
+msgid "UiAddsAnInboundRuleForGameFlowOnThisPort"
+msgstr "Разрешает GameFlow на этом порту в брандмауэре Windows. Нужны права администратора."
+
+msgid "UiONTHEPHONE"
+msgstr "На телефоне"
+
+msgid "UiHoldItSidewaysAndTapToStartItGoes"
+msgstr "Поверните телефон горизонтально и коснитесь экрана. Шестерёнка меняет раскладку. Двойное касание стика нажимает L3 или R3."
+
+msgid "UiUpTo16PhonesAtOnceEachItsOwn"
+msgstr "Подключите до 16 телефонов. Вибрация зависит от браузера."
+
+msgid "UiMissingRequirements"
+msgstr "Отсутствующие компоненты"
+
+msgid "UiSomeOptionalComponentsArenTInstalled"
+msgstr "Некоторые дополнительные компоненты отсутствуют."
+
+msgid "UiGameFlowCanRunWithoutThemButPartsOfThe"
+msgstr "GameFlow запустится, но некоторые функции будут недоступны."
+
+msgid "UiOpenInstallPage"
+msgstr "Открыть страницу установки"
+
+msgid "UiDonTCheckAtStartupAgain"
+msgstr "Не проверять при запуске"
+
+msgid "UiLocalizationAppearance"
+msgstr "Язык и оформление"
+
+msgid "UiLanguageAndThemeChangesSaveImmediatelyCancelDoesNot"
+msgstr "Изменения языка и темы сохраняются сразу."
+
+msgid "UiSetup"
+msgstr "Начальная настройка"
+
+msgid "UiWalksThroughConnectingAControllerAndCreatingAVirtual"
+msgstr "Подключите устройство ввода и создайте виртуальный контроллер с помощью мастера."
+
+msgid "UiRunSetupWalkthrough"
+msgstr "Запустить мастер"
+
+msgid "UiAutomatic"
+msgstr "Автоматически"
+
+msgid "UiUseProfileRate"
+msgstr "Использовать частоту профиля"
+
+msgid "UiPerAppProfiles"
+msgstr "Профили приложений"
+
+msgid "UiApplicationSwitchingRulesSaveImmediatelyCancelDoesNotUndo"
+msgstr "Правила переключения приложений сохраняются сразу."
+
+msgid "UiSwitchProfileAutomaticallyWhenAnAppComesToThe"
+msgstr "Менять профиль по активному приложению"
+
+msgid "UiExecutableName"
+msgstr "Имя исполняемого файла"
+
+msgid "UiUseCurrent"
+msgstr "Использовать текущее"
+
+msgid "UiAdd"
+msgstr "Добавить"
+
+msgid "UiRulesAreCheckedTopToBottomAndTheFirst"
+msgstr "Применяется первое подходящее правило. Остальные приложения сохраняют текущий профиль."
+
+msgid "UiPhoneControllers"
+msgstr "Телефоны-контроллеры"
+
+msgid "UiResetPrivateLink"
+msgstr "Сбросить личную ссылку"
+
+msgid "UiDisconnectsEveryPhoneAndInvalidatesTheirLinksReconnectEach"
+msgstr "Отключает все телефоны и аннулирует их ссылки. Подключите их заново в разделе устройств."
+
+msgid "UiSharingIsSavedImmediatelyKeepPhoneLinksPrivateUse"
+msgstr "Настройки доступа сохраняются сразу. Не публикуйте ссылки и используйте доверенную сеть."
+
+msgid "UiAddPhonesFromDevicesPhysicalDevicesAddPhoneEach"
+msgstr "Добавьте телефон в разделе Устройства > Физические устройства. Каждый получит свою ссылку и QR-код."
+
+msgid "UiTheBrowserReconnectsAutomaticallyAndKeepsTheSamePad"
+msgstr "Браузер автоматически подключается к тому же контроллеру. Вибрация зависит от браузера."
+
+msgid "UiMotionServer"
+msgstr "Сервер движения"
+
+msgid "UiTheseControlsSaveImmediatelyCancelDoesNotUndoThem"
+msgstr "Изменения сохраняются сразу. Для эмуляторов на этом компьютере используйте 127.0.0.1."
+
+msgid "UiAllowEmulatorsOnOtherDevicesTrustedNetworkOnly"
+msgstr "Разрешить другие устройства в доверенной сети"
+
+msgid "UiEnableDSUCemuhookMotionServer"
+msgstr "Включить сервер движения DSU"
+
+msgid "UiStreamsGyroscopeAndAccelerometerOverUDPSoCemuDolphin"
+msgstr "Передаёт данные гироскопа и акселерометра по UDP в совместимые эмуляторы."
+
+msgid "UiUDPPort"
+msgstr "Порт UDP"
+
+msgid "UiPortMustBeBetween1024And65535"
+msgstr "Выберите порт от 1024 до 65535."
+
+msgid "UiSetUpYourFirstController"
+msgstr "Настройте первый контроллер"
+
+msgid "UiBack"
+msgstr "Назад"
+
+msgid "UiWelcomeToGameFlow"
+msgstr "Добро пожаловать в GameFlow"
+
+msgid "UiGameFlowSitsBetweenYourControllerAndYourGameIt"
+msgstr "GameFlow преобразует ввод в виртуальный контроллер для игр."
+
+msgid "UiYourController"
+msgstr "Ваш контроллер"
+
+msgid "UiThePhysicalPadKeyboardOrMouseYouHold"
+msgstr "Ваш контроллер, клавиатура или мышь"
+
+msgid "UiRemappingAutofireStickShapingMacros"
+msgstr "Переназначение, автоогонь, отклик стиков и макросы"
+
+msgid "UiAVirtualController"
+msgstr "Виртуальный контроллер"
+
+msgid "UiWhatTheGameSeesItLooksLikeRealHardware"
+msgstr "Контроллер, который видит игра"
+
+msgid "UiThisTakesAboutAMinuteAndLeavesYouWith"
+msgstr "Мастер можно запустить снова в параметрах."
+
+msgid "UiConnectYourController"
+msgstr "Подключите контроллер"
+
+msgid "UiPlugItInOverUSBOrPairItOver"
+msgstr "Подключитесь по USB или Bluetooth. Список обновляется автоматически."
+
+msgid "UiWaitingForAController"
+msgstr "Ожидание контроллера"
+
+msgid "UiREADY"
+msgstr "Готово"
+
+msgid "UiIHaveNoControllerSetThisUpForKeyboard"
+msgstr "Использовать клавиатуру и мышь"
+
+msgid "UiCheckTheButtonsLineUp"
+msgstr "Проверьте кнопки"
+
+msgid "UiPressEachButtonOnYourControllerAndWatchIt"
+msgstr "Нажмите каждую кнопку и проверьте предпросмотр. Откалибруйте элементы с неверным откликом."
+
+msgid "UiButtonsAreWrongCalibrateThem"
+msgstr "Калибровать кнопки"
+
+msgid "UiSticksOrTriggersAreWrongCalibrateThem"
+msgstr "Калибровать стики и курки"
+
+msgid "UiSkipThisOne"
+msgstr "Пропустить контроллер"
+
+msgid "UiSilence"
+msgstr "Отключить звук"
+
+msgid "UiYourKeyboardAndMouseAsAController"
+msgstr "Используйте клавиатуру и мышь"
+
+msgid "UiEveryControllerButtonStickAndTriggerAndTheKeys"
+msgstr "Настройте назначения сейчас или позже в боковой панели."
+
+msgid "UiWhatShouldGamesSee"
+msgstr "Выберите виртуальный контроллер"
+
+msgid "UiGameFlowWillCreateThisControllerForYouItIs"
+msgstr "Выберите контроллер для игр независимо от устройства ввода."
+
+msgid "UiNotPermanentYouCanChangeItLaterOrAdd"
+msgstr "Можно изменить выбор или добавить контроллеры в разделе устройств."
+
+msgid "UiGiveItAName"
+msgstr "Задайте имя"
+
+msgid "UiThisIsWhatYouWillSeeInTheSidebar"
+msgstr "Имя появится в боковой панели и на главном экране."
+
+msgid "UiLeaveEmptyToLetGameFlowNameIt"
+msgstr "Оставьте пустым для автоматического имени"
+
+msgid "UiYouCanRenameItWheneverYouLikeOnThe"
+msgstr "Имя можно изменить позже в разделе устройств."
+
+msgid "UiYouAreSetUp"
+msgstr "Всё готово"
+
+msgid "UiYourControllerOnTheLeftWhatGamesSeeOn"
+msgstr "Слева ввод, справа выход для игры. Проверьте отклик с обеих сторон."
+
+msgid "UiWhatGamesSee"
+msgstr "Что видят игры"
+
+msgid "UiWhereToGoNext"
+msgstr "Следующие шаги"
+
+msgid "UiDashboardYourPadAndTheVirtualOneSideBy"
+msgstr "Главный экран: сравнивайте ввод и выход в реальном времени."
+
+msgid "UiProfilesRemappingAutofireStickShapingAndMacros"
+msgstr "Профили: переназначение, автоогонь, отклик стиков и макросы."
+
+msgid "UiDevicesAssignMoreControllersAndTuneSticksTriggersRumble"
+msgstr "Устройства: назначайте ввод и настраивайте контроллеры."
+
+msgid "UiNone"
+msgstr "Нет"
+
+msgid "UiUseAPhoneOnYourNetworkAsAController"
+msgstr "Добавьте телефон как контроллер с помощью QR-кода."
+
+msgid "UiDeleteThisVirtualController"
+msgstr "Удалить виртуальный контроллер"
+
+msgid "UiChooseWhichKeysAndMouseInputsProduceEachController"
+msgstr "Выберите клавиши и ввод мыши для элементов контроллера."
+
+msgid "UiWalksYouThroughConnectingAControllerAndCreatingA"
+msgstr "Подключите устройство ввода и создайте виртуальный контроллер."
+
+msgid "UiCopyOBSLink"
+msgstr "Копировать ссылку OBS"
+
+msgid "UiCopiesTheOBSBrowserSourceURLForThisPhysical"
+msgstr "Копировать ссылку предпросмотра ввода для браузерного источника OBS."
+
+msgid "UiOpenThisControllerSTuningSticksTriggersRumbleLighting"
+msgstr "Настроить стики, курки, вибрацию и поддерживаемые эффекты."
+
+msgid "UiCopiesTheOBSBrowserSourceURLForThisVirtual"
+msgstr "Копировать ссылку предпросмотра выхода для браузерного источника OBS."
+
+msgid "UiNOOUTPUT"
+msgstr "Нет выхода"
+
+msgid "UiTurnAPhoneOnYourNetworkIntoAController"
+msgstr "Использовать телефон как контроллер"
+
+msgid "UiVIDPID"
+msgstr "VID : PID"
+
+msgid "UiDEVICEID"
+msgstr "ID устройства"
+
+msgid "UiHARDWAREID"
+msgstr "ID оборудования"
+
+msgid "UiPHONE"
+msgstr "Телефон"
+
+msgid "UiThisPhoneHasItsOwnLinkAndQRCode"
+msgstr "У этого телефона своя личная ссылка и QR-код."
+
+msgid "UiShowQRCodeLink"
+msgstr "Показать QR-код и ссылку"
+
+msgid "UiRemovePhone"
+msgstr "Удалить телефон"
+
+msgid "UiTREATAS"
+msgstr "Определять как"
+
+msgid "UiIfWindowsIdentifiesThisDeviceIncorrectlyEGA"
+msgstr "Исправьте неверный тип устройства. Изменения сохраняются сразу."
+
+msgid "UiBUTTONMAPPING"
+msgstr "Назначения кнопок"
+
+msgid "UiIfThisControllerSButtonsAreRecognizedInThe"
+msgstr "Откалибруйте неверно работающие кнопки. Стики и курки калибруются отдельно."
+
+msgid "UiCalibrateButtons"
+msgstr "Калибровать кнопки"
+
+msgid "UiCalibrateSticksTriggers"
+msgstr "Калибровать стики и курки"
+
+msgid "UiClearMapping"
+msgstr "Очистить назначения"
+
+msgid "UiMapped"
+msgstr "Назначено"
+
+msgid "UiSkip"
+msgstr "Пропустить"
+
+msgid "UiKEYBOARDASGAMEPAD"
+msgstr "Клавиатура как контроллер"
+
+msgid "UiKeysBoundToAControllerControlShowItOn"
+msgstr "Назначенные клавиши показывают активируемый элемент контроллера."
+
+msgid "UiEditKeyboardMouseControls"
+msgstr "Изменить управление клавиатурой и мышью"
+
+msgid "UiMOUSEASGAMEPAD"
+msgstr "Мышь как контроллер"
+
+msgid "UiEachButtonShowsTheControllerControlItIsBound"
+msgstr "Кнопки мыши показывают активируемый элемент контроллера."
+
+msgid "UiLIVESTATE"
+msgstr "Текущее состояние"
+
+msgid "UiGamesSee"
+msgstr "Игры видят"
+
+msgid "UiTurnThisControllerOffWithoutDeletingIt"
+msgstr "Выключить контроллер без удаления."
+
+msgid "UiWhatDrivesIt"
+msgstr "Устройства ввода"
+
+msgid "UiNoDeviceYetAddOneBelow"
+msgstr "Ввода пока нет. Добавьте устройство ниже."
+
+msgid "UiADDADEVICE"
+msgstr "Добавить устройство"
+
+msgid "UiClickAnyButtonStickOrTriggerToChangeWhat"
+msgstr "Нажмите кнопку, стик или курок, чтобы изменить назначение."
+
+msgid "UiAllMappingRules"
+msgstr "Все правила назначений"
+
+msgid "UiProfilesHoldMappingRulesWithNoneTheControllerPasses"
+msgstr "Без профилей ввод передаётся без изменений. При пересечении правил побеждает нижний профиль."
+
+msgid "UiChooseAProfileToAdd"
+msgstr "Выберите профиль для добавления"
+
+msgid "UiDeviceShape"
+msgstr "Компоновка устройства"
+
+msgid "UiThumbsticks"
+msgstr "Стики"
+
+msgid "UiButtons"
+msgstr "Кнопки"
+
+msgid "UiPOVs"
+msgstr "Переключатели направлений"
+
+msgid "UiProductName"
+msgstr "Название устройства"
+
+#. invariant: control syntax or product name
+msgid "UiGameFlowGameController"
+msgstr "GameFlow Game Controller"
+
+msgid "UiVendorIDHex"
+msgstr "ID производителя (hex)"
+
+msgid "UiProductIDHex"
+msgstr "ID устройства (hex)"
+
+msgid "UiTuning"
+msgstr "Настройка"
+
+msgid "UiSelectAVirtualControllerToTune"
+msgstr "Выберите виртуальный контроллер для настройки."
+
+msgid "UiCrossPlatformControllerRemappingAutofireSpeedrunTooling"
+msgstr "Назначения контроллера и предпросмотр ввода"
+
+msgid "UiBootstrappingHostRuntimePipelineProfileStoreAndTranslations"
+msgstr "Запуск GameFlow…"
+
+msgid "UiUpdateAvailable"
+msgstr "Доступно обновление"
+
+msgid "UiANewVersionOfGameFlowIsAvailable"
+msgstr "Доступна новая версия GameFlow."
+
+msgid "UiDownloadsAVerifiedArchiveYouWillExtractItAnd"
+msgstr "Загрузите проверенный архив, распакуйте и замените текущую установку."
+
+msgid "UiReadTheReleaseNotes"
+msgstr "Прочитать примечания к выпуску"
+
+msgid "UiOpenInBrowser"
+msgstr "Открыть в браузере"
+
+msgid "UiSkipThisUpdate"
+msgstr "Пропустить обновление"
+
+msgid "UiDonTAskAgain"
+msgstr "Больше не спрашивать"
+
+msgid "UiCancelDownload"
+msgstr "Отменить загрузку"
+
+msgid "UiDownloadUpdate"
+msgstr "Загрузить обновление"
+
+msgid "SidebarKeyboardMouse"
+msgstr "Клавиатура и мышь"
+
+msgid "DevicesAddPhone"
+msgstr "Добавить телефон"
+
+msgid "SidebarAddPhone"
+msgstr "Добавить телефон"
+
+msgid "PhoneConnectTitle"
+msgstr "Подключить {0}"
+
+msgid "PhoneConnected"
+msgstr "{0} подключён. Назначьте его виртуальному контроллеру."
+
+msgid "PhoneWaiting"
+msgstr "Отсканируйте код или откройте ссылку на телефоне."
+
+msgid "BindingListening"
+msgstr "Ожидание ввода…"
+
+msgid "BindingAdd"
+msgstr "+ Назначить"
+
+msgid "TuningScopeSlot"
+msgstr "Настройка виртуального контроллера по умолчанию. Отдельные устройства могут её переопределить."
+
+msgid "TuningScopeDevice"
+msgstr "Настройка этого устройства ввода для этого виртуального контроллера."
+
+msgid "TuningSaveNote"
+msgstr "Изменения сохраняются сразу. Вибрация, подсветка и эффекты требуют подключённого совместимого физического контроллера."
+
+msgid "TuningUnknown"
+msgstr "Подключите контроллер для определения функций. До этого видны все настройки."
+
+msgid "TuningDetected"
+msgstr "Показаны только настройки, поддерживаемые подключёнными контроллерами."
+
+msgid "StyleLabelJoystick"
+msgstr "Универсальный джойстик"
+
+msgid "StyleLabelWheel"
+msgstr "Универсальный руль"
+
+#. invariant: control syntax or product name
+msgid "StyleLabelSteamControllerV2"
+msgstr "Steam Controller v2"
+
+msgid "StickCurve.Linear"
+msgstr "Линейная"
+
+msgid "StickCurve.Precision"
+msgstr "Точность"
+
+msgid "StickCurve.Aggressive"
+msgstr "Быстрый отклик"
+
+msgid "LightbarMode.Off"
+msgstr "Выключено"
+
+msgid "LightbarMode.Solid"
+msgstr "Постоянный цвет"
+
+msgid "LightbarMode.PlayerNumber"
+msgstr "Цвет игрока"
+
+msgid "LightbarMode.Breathing"
+msgstr "Медленная пульсация"
+
+msgid "LightbarMode.BatteryLevel"
+msgstr "Уровень заряда"
+
+msgid "LightbarMode.Strobe"
+msgstr "Мигание"
+
+msgid "LightbarMode.Rainbow"
+msgstr "Радуга"
+
+msgid "LightbarMode.RumbleReactive"
+msgstr "По вибрации"
+
+msgid "LightbarMode.TriggerReactive"
+msgstr "По куркам"
+
+msgid "LightbarMode.GameControlled"
+msgstr "Управляет игра"
+
+msgid "LightbarMode.External"
+msgstr "Внешнее приложение"
+
+msgid "AdaptiveTriggerMode.Off"
+msgstr "Выключено, свободный ход"
+
+msgid "AdaptiveTriggerMode.Feedback"
+msgstr "Постоянное сопротивление"
+
+msgid "AdaptiveTriggerMode.Weapon"
+msgstr "Сопротивление с точкой срыва"
+
+msgid "AdaptiveTriggerMode.Vibration"
+msgstr "Вибрация"
+
+msgid "AdaptiveTriggerMode.SlopeFeedback"
+msgstr "Нарастающее сопротивление"
+
+msgid "AdaptiveTriggerMode.MultiplePositionFeedback"
+msgstr "Ступенчатое сопротивление"
+
+msgid "AdaptiveTriggerMode.MultiplePositionVibration"
+msgstr "Ступенчатая вибрация"
+
+msgid "TriggerFeedbackLink.None"
+msgstr "Использовать заданный эффект"
+
+msgid "TriggerFeedbackLink.Resistance"
+msgstr "Сопротивление по вибрации игры"
+
+msgid "TriggerFeedbackLink.Vibration"
+msgstr "Вибрация вместе с игрой"
+
+msgid "UiFullyCharged"
+msgstr "Полностью заряжено"
+
+msgid "UiGamepad"
+msgstr "Геймпад"
+
+msgid "UiGenericHid"
+msgstr "Универсальное / HID"
+
+msgid "UiKeyboard"
+msgstr "Клавиатура"
+
+msgid "UiMouse"
+msgstr "Мышь"
+
+msgid "UiConnected"
+msgstr "Подключено"
+
+msgid "UiOffline"
+msgstr "Отключено"
+
+msgid "UiLive"
+msgstr "АКТИВЕН"
+
+msgid "UiIdle"
+msgstr "НЕАКТИВЕН"
+
+msgid "UiNoController"
+msgstr "Контроллер не обнаружен"
+
+msgid "UiGetStarted"
+msgstr "Начать"
+
+msgid "UiControlsLookRight"
+msgstr "Управление верное"
+
+msgid "UiButtonsLookRight"
+msgstr "Кнопки верные"
+
+msgid "UiCreateIt"
+msgstr "Создать"
+
+msgid "UiFinish"
+msgstr "Завершить"
+
+msgid "UiNext"
+msgstr "Далее"
+
+msgid "UiDelete"
+msgstr "Удалить"
+
+msgid "UiRemove"
+msgstr "Убрать"
+
+msgid "UiDeleteName"
+msgstr "Удалить {0}?"
+
+msgid "UiDeleteVirtual"
+msgstr "Виртуальный контроллер и его настройки будут удалены. Профили сохранятся."
+
+msgid "UiRemovePhoneTitle"
+msgstr "Удалить этот телефон?"
+
+msgid "UiRemovePhoneMessage"
+msgstr "Удаляет телефон из всех виртуальных контроллеров и отзывает ссылку. Его можно добавить снова."
+
+msgid "UiEnableSharing"
+msgstr "Включить доступ для телефонов"
+
+msgid "UiStopSharing"
+msgstr "Выключить доступ для телефонов"
+
+msgid "UiSharingOff"
+msgstr "Доступ выключен. Локальный предпросмотр OBS работает."
+
+msgid "UiSharingOn"
+msgstr "Доступ включён. Используйте доверенную Wi-Fi и храните ссылки в тайне. HTTP их не шифрует."
+
+msgid "UiDownloadManually"
+msgstr "Загрузить вручную"
+
+msgid "UiRetryDownload"
+msgstr "Повторить загрузку"
+
+msgid "UiDownloading"
+msgstr "Загрузка…"
+
+msgid "UiStartingDownload"
+msgstr "Начало загрузки…"
+
+msgid "UiDownloaded"
+msgstr "Проверено и загружено. Закройте GameFlow, распакуйте архив и замените файлы приложения. Профили останутся в папке данных."
+
+msgid "UiDownloadCancelled"
+msgstr "Загрузка отменена. Обновление не применено."
+
+msgid "UiDownloadFailed"
+msgstr "Загрузка или проверка не удалась. Повторите или откройте страницу выпуска. Подробности в журнале."
+
+msgid "PhoneConnecting"
+msgstr "Подключение…"
+
+msgid "PhoneConnectingGameFlow"
+msgstr "Подключение к GameFlow…"
+
+msgid "PhoneRetry"
+msgstr "Повторить"
+
+msgid "PhoneLayout"
+msgstr "Раскладка"
+
+msgid "PhoneMotion"
+msgstr "Движение"
+
+msgid "PhoneHaptics"
+msgstr "Вибрация"
+
+msgid "PhoneFullscreen"
+msgstr "Полный экран"
+
+msgid "PhoneOff"
+msgstr "ВЫКЛ."
+
+msgid "PhoneOn"
+msgstr "ВКЛ."
+
+msgid "PhoneUnavailable"
+msgstr "Недоступно"
+
+msgid "PhoneHelp"
+msgstr "Положите палец на любую точку стороны для управления стиком. Двойное касание нажимает L3 или R3. Коснитесь курка для полного нажатия, затем двигайте палец."
+
+msgid "PhoneRotate"
+msgstr "Поверните телефон горизонтально"
+
+msgid "PhoneRotateHint"
+msgstr "Держите его горизонтально двумя руками. При необходимости отключите блокировку поворота."
+
+msgid "PhoneSideways"
+msgstr "Всё равно использовать горизонтально"
+
+msgid "PhoneStart"
+msgstr "Коснитесь для начала"
+
+msgid "PhoneStartHint"
+msgstr "Включает полный экран и предотвращает сон экрана, если поддерживается."
+
+msgid "PhoneDoubleTap"
+msgstr "двойное касание"
+
+msgid "PhoneTouchpad"
+msgstr "Сенсорная панель"
+
+msgid "PhoneMotionUnavailable"
+msgstr "Данные движения недоступны. Браузеру может требоваться HTTPS или разрешение на датчики."
+
+msgid "PhoneMotionDenied"
+msgstr "Разрешите датчики движения для страницы и обновите её."
+
+msgid "PhoneFull"
+msgstr "Все 16 мест для телефонов заняты."
+
+msgid "PhoneFullHint"
+msgstr "Удалите другой телефон в GameFlow и повторите."
+
+msgid "PhoneRevoked"
+msgstr "Телефон удалён в GameFlow. Используйте новую ссылку."
+
+msgid "PhoneReconnecting"
+msgstr "Связь потеряна. Повторное подключение…"
+
+msgid "PhoneUnreachable"
+msgstr "Проверьте, что GameFlow запущен, а телефон в той же сети Wi-Fi."
+
+msgid "PhoneConnectedAs"
+msgstr "Подключён как"
+
+msgid "PhonePad"
+msgstr "Контроллер"
+
+msgid "PhoneMenu"
+msgstr "Меню контроллера"
+
+msgid "PhoneSettings"
+msgstr "Настройки контроллера"
+
+msgid "InputMapDevice"
+msgstr "Устройство ввода"
+
+msgid "InputMapDefaults"
+msgstr "Общие настройки"
+
+msgid "InputMapLeftStick"
+msgstr "Левый стик (движение)"
+
+msgid "InputMapRightStick"
+msgstr "Правый стик (прицел)"
+
+msgid "InputMapNothing"
+msgstr "Ничего"
+
+msgid "SetupChooseInputs"
+msgstr "Выберите устройства ввода"
+
+msgid "SetupChooseInputsHint"
+msgstr "Выберите одно или несколько устройств. Для каждой клавиатуры и мыши можно задать свои назначения."
+
+msgid "SetupAssignedInputs"
+msgstr "{0} теперь управляет {1}. Игры видят виртуальный контроллер."
+
+msgid "InputMapChooseControl"
+msgstr "Выберите элемент контроллера для {0}, затем «Назначить»."
+
+msgid "OverlayLinkOptions"
+msgstr "Параметры ссылки OBS"
+
+msgid "OverlayActiveInputs"
+msgstr "Показывать активные нажатия"
+
+msgid "OverlayHoldTimes"
+msgstr "Показывать время удержания"
+
+msgid "OverlayNoLayout"
+msgstr "Нет доступной раскладки. Откройте эту панель в GameFlow и выберите оформление."
+
+msgid "OverlayReconnecting"
+msgstr "Повторное подключение…"
+
+msgid "OverlayError"
+msgstr "Ошибка наложения"
+
+msgid "ButtonId.None"
+msgstr "Нет"
+
+msgid "ButtonId.South"
+msgstr "Нижняя (A / ×)"
+
+msgid "ButtonId.East"
+msgstr "Правая (B / ○)"
+
+msgid "ButtonId.West"
+msgstr "Левая (X / □)"
+
+msgid "ButtonId.North"
+msgstr "Верхняя (Y / △)"
+
+msgid "ButtonId.LeftShoulder"
+msgstr "L1 / LB"
+
+msgid "ButtonId.RightShoulder"
+msgstr "R1 / RB"
+
+msgid "ButtonId.LeftTriggerButton"
+msgstr "Кнопка L2 / LT"
+
+msgid "ButtonId.RightTriggerButton"
+msgstr "Кнопка R2 / RT"
+
+msgid "ButtonId.Back"
+msgstr "Назад / Share / View"
+
+msgid "ButtonId.Start"
+msgstr "Старт / Параметры / Меню"
+
+msgid "ButtonId.Guide"
+msgstr "Главная / PS"
+
+msgid "ButtonId.LeftStick"
+msgstr "L3 / Нажатие левого стика"
+
+msgid "ButtonId.RightStick"
+msgstr "R3 / Нажатие правого стика"
+
+msgid "ButtonId.DpadUp"
+msgstr "Крестовина вверх"
+
+msgid "ButtonId.DpadDown"
+msgstr "Крестовина вниз"
+
+msgid "ButtonId.DpadLeft"
+msgstr "Крестовина влево"
+
+msgid "ButtonId.DpadRight"
+msgstr "Крестовина вправо"
+
+msgid "ButtonId.Paddle1"
+msgstr "Лепесток 1"
+
+msgid "ButtonId.Paddle2"
+msgstr "Лепесток 2"
+
+msgid "ButtonId.Paddle3"
+msgstr "Лепесток 3"
+
+msgid "ButtonId.Paddle4"
+msgstr "Лепесток 4"
+
+msgid "ButtonId.Touchpad"
+msgstr "Нажатие сенсорной панели"
+
+msgid "ButtonId.Misc1"
+msgstr "Дополнительная кнопка 1"
+
+msgid "StickId.Left"
+msgstr "Левый стик (LX / LY)"
+
+msgid "StickId.Right"
+msgstr "Правый стик (RX / RY)"
+
+msgid "RuleMode.Modify"
+msgstr "Изменять"
+
+msgid "RuleMode.Passthrough"
+msgstr "Без изменений"
+
+msgid "RuleMode.DoNothing"
+msgstr "Игнорировать / блокировать"
+
+msgid "StickBlendMode.Replace"
+msgstr "Заменить: перезаписать цель"
+
+msgid "StickBlendMode.Additive"
+msgstr "Добавить: прибавить к цели"
+
+msgid "MouseInput.None"
+msgstr "Движение мыши"
+
+msgid "MouseInput.Left"
+msgstr "Левая кнопка"
+
+msgid "MouseInput.Right"
+msgstr "Правая кнопка"
+
+msgid "MouseInput.Middle"
+msgstr "Средняя кнопка"
+
+msgid "MouseInput.Back"
+msgstr "Кнопка мыши 4 (назад)"
+
+msgid "MouseInput.Forward"
+msgstr "Кнопка мыши 5 (вперёд)"
+
+msgid "MouseInput.WheelUp"
+msgstr "Колесо вверх"
+
+msgid "MouseInput.WheelDown"
+msgstr "Колесо вниз"
+
+msgid "InputMapCapturePrompt"
+msgstr "Нажмите клавишу, щёлкните или прокрутите в этом поле для {0}. Esc отменяет."
+
+msgid "GamepadAction.LeftTriggerFull"
+msgstr "Левый курок (полностью)"
+
+msgid "GamepadAction.RightTriggerFull"
+msgstr "Правый курок (полностью)"
+
+msgid "GamepadAction.LeftStickUp"
+msgstr "Левый стик вверх"
+
+msgid "GamepadAction.LeftStickDown"
+msgstr "Левый стик вниз"
+
+msgid "GamepadAction.LeftStickLeft"
+msgstr "Левый стик влево"
+
+msgid "GamepadAction.LeftStickRight"
+msgstr "Левый стик вправо"
+
+msgid "GamepadAction.RightStickUp"
+msgstr "Правый стик вверх"
+
+msgid "GamepadAction.RightStickDown"
+msgstr "Правый стик вниз"
+
+msgid "GamepadAction.RightStickLeft"
+msgstr "Правый стик влево"
+
+msgid "GamepadAction.RightStickRight"
+msgstr "Правый стик вправо"
+
+msgid "GamepadAction.LeftStickWalk"
+msgstr "Ходьба (половина хода левого стика)"
+
+msgid "MotionCaption.LeftStick"
+msgstr "Движение → левый стик"
+
+msgid "MotionCaption.RightStick"
+msgstr "Движение → правый стик (прицел)"
+
+msgid "MotionCaption.None"
+msgstr "Движение не используется"
+
+msgid "ControlShort.Back"
+msgstr "Назад"
+
+msgid "ControlShort.Start"
+msgstr "Старт"
+
+msgid "ControlShort.Guide"
+msgstr "Главная"
+
+msgid "ControlShort.LeftStickWalk"
+msgstr "Ходьба"
+
+msgid "ControlShort.Touchpad"
+msgstr "Панель"
+
+msgid "ControlShort.Misc"
+msgstr "Звук"
+
+msgid "GamepadAction.None"
+msgstr "Нет"
+
+msgid "GamepadAction.South"
+msgstr "Нижняя (A / ×)"
+
+msgid "GamepadAction.East"
+msgstr "Правая (B / ○)"
+
+msgid "GamepadAction.West"
+msgstr "Левая (X / □)"
+
+msgid "GamepadAction.North"
+msgstr "Верхняя (Y / △)"
+
+msgid "GamepadAction.LeftShoulder"
+msgstr "L1 / LB"
+
+msgid "GamepadAction.RightShoulder"
+msgstr "R1 / RB"
+
+msgid "GamepadAction.Back"
+msgstr "Назад / Share / View"
+
+msgid "GamepadAction.Start"
+msgstr "Старт / Параметры / Меню"
+
+msgid "GamepadAction.Guide"
+msgstr "Главная / PS"
+
+msgid "GamepadAction.DpadUp"
+msgstr "Крестовина вверх"
+
+msgid "GamepadAction.DpadDown"
+msgstr "Крестовина вниз"
+
+msgid "GamepadAction.DpadLeft"
+msgstr "Крестовина влево"
+
+msgid "GamepadAction.DpadRight"
+msgstr "Крестовина вправо"
+
+msgid "GamepadAction.LeftStickClick"
+msgstr "L3 / Нажатие левого стика"
+
+msgid "GamepadAction.RightStickClick"
+msgstr "R3 / Нажатие правого стика"
+
+msgid "GamepadAction.Touchpad"
+msgstr "Нажатие сенсорной панели"
+
+msgid "GamepadAction.Misc"
+msgstr "Дополнительная кнопка 1"
+
+msgid "PhoneModel"
+msgstr "Модель контроллера"
+
+msgid "OverlayLeftTrigger"
+msgstr "Левый курок"
+
+msgid "OverlayRightTrigger"
+msgstr "Правый курок"
+
+msgid "UiBatteryCharging"
+msgstr "Зарядка · {0}%"
+
+msgid "UiBatteryRemaining"
+msgstr "Батарея · {0}%"
+
+msgid "UiVirtualKind"
+msgstr "{0} · ВИРТУАЛЬНЫЙ"
+
+msgid "UiLeftTriggerAnalog"
+msgstr "Левый курок (аналоговый)"
+
+msgid "UiRightTriggerAnalog"
+msgstr "Правый курок (аналоговый)"
+
+msgid "UiStickHint"
+msgstr "Настройте мёртвую зону, порог, автоогонь, фиксацию направления, инверсию осей или скрипт."
+
+msgid "UiTouchHint"
+msgstr "Настройте нажатия сенсорной панели, касания или скрипт."
+
+msgid "UiNoTouch"
+msgstr "Нет касаний"
+
+msgid "UiTouchCount"
+msgstr "Касаний: {0}"
+
+msgid "UiVirtualTarget"
+msgstr "ЦЕЛЬ ВИРТУАЛЬНОГО ВЫХОДА"
+
+msgid "UiPhysicalInput"
+msgstr "ФИЗИЧЕСКИЙ ВХОД"
+
+msgid "UiChooseSource"
+msgstr "Выберите физический источник для {0}. Цель выхода уже выбрана."
+
+msgid "UiSlotNumber"
+msgstr "СЛОТ {0}"
+
+msgid "UiDemoInput"
+msgstr "Анимированный демонстрационный ввод"
+
+msgid "UiNoAssignedInput"
+msgstr "Физическое устройство не назначено"
+
+msgid "UiAssignedInputOffline"
+msgstr "Назначенное устройство отключено"
+
+msgid "UiPassThroughMapping"
+msgstr "Прямая передача ввода"
+
+msgid "UiProfileLayerCount"
+msgstr "Слоёв профиля: {0}"
+
+msgid "UiNeedsInput"
+msgstr "Требуется вход"
+
+msgid "UiUnpinDevice"
+msgstr "Убрать это устройство с панели."
+
+msgid "UiPinDevice"
+msgstr "Показать это устройство на панели."
+
+msgid "UiUnnamed"
+msgstr "(без имени)"
+
+msgid "UiHidMaestroMissing"
+msgstr "HIDMaestro отсутствует. Виртуальный выход недоступен."
+
+msgid "UiOutputNeedsAdmin"
+msgstr "Для виртуального выхода нужны права администратора."
+
+msgid "UiOutputFailed"
+msgstr "Не удалось запустить виртуальный выход."
+
+msgid "UiOutputUnavailable"
+msgstr "Виртуальный выход недоступен."
+
+msgid "UiAddNewRule"
+msgstr "Добавить правило"
+
+msgid "UiEditRule"
+msgstr "Изменить: {0}"
+
+msgid "UiNewRule"
+msgstr "Новое правило"
+
+msgid "UiNoScript"
+msgstr "Скрипт ещё не сохранён."
+
+msgid "UiMissingTheme"
+msgstr "Установите тему контроллера в {0}, затем перезапустите GameFlow."
+
+msgid "UiPhoneLimit"
+msgstr "Все 16 мест заняты. Удалите телефон, чтобы добавить другой."
+
+msgid "UiPhoneOffline"
+msgstr "Телефон · не подключён"
+
+msgid "UiStepNumber"
+msgstr "Шаг {0} из {1}"
+
+msgid "UiSelectFolder"
+msgstr "Выбрать папку"
+
+msgid "UiInputPerformance"
+msgstr "Ввод и производительность"
+
+msgid "UiNetworkPhones"
+msgstr "Сеть и телефоны"
+
+msgid "UiNoForegroundApp"
+msgstr "Активное приложение не обнаружено."
+
+msgid "UiForegroundWindowsOnly"
+msgstr "Переключение приложений требует Windows."
+
+msgid "UiForegroundStatus"
+msgstr "Текущее приложение: {0}. Активный профиль: {1}."
+
+msgid "UiDownloadVersion"
+msgstr "Текущая версия: {0}. Последняя версия: {1}."
+
+msgid "UiDownloadProgress"
+msgstr "Загрузка… {0}%"
+
+msgid "UiNoPlatformArchive"
+msgstr "Нет архива для этой платформы. Откройте страницу выпуска."
+
+msgid "UiNoDownloadDigest"
+msgstr "У выпуска нет контрольной суммы. Загрузите его со страницы выпуска."
+
+msgid "UiProfileImported"
+msgstr "Профиль импортирован."
+
+msgid "UiImportedScripts"
+msgstr "Профиль импортирован. Проверьте отключённые скрипты Lua перед включением: {0}."
+
+msgid "UiProfileChanged"
+msgstr "Профиль изменился. Ожидающее изменение не применено."
+
+msgid "UiNoControlRules"
+msgstr "Для этого элемента ещё нет правил."
+
+msgid "UiSelectControl"
+msgstr "Нажмите элемент на любом из контроллеров."
+
+msgid "UiInspectorHint"
+msgstr "Инспектор показывает состояние выбранного элемента."
+
+msgid "UiInspectorRules"
+msgstr "Здесь отображаются правила выбранного элемента."
+
+msgid "UiInspectorScope"
+msgstr "Физические элементы настраивают ввод. Виртуальные настраивают назначения выхода."
+
+msgid "UiCurrentPressed"
+msgstr "Текущее состояние: нажат"
+
+msgid "UiCurrentReleased"
+msgstr "Текущее состояние: отпущен"
+
+msgid "UiCurrentValue"
+msgstr "Текущее значение: {0:P0}"
+
+msgid "UiCurrentVector"
+msgstr "Текущий вектор: {0:0.00}, {1:0.00}"
+
+msgid "UiCurrentTouches"
+msgstr "Текущих касаний: {0}"
+
+msgid "UiCurrentUnavailable"
+msgstr "Текущее состояние недоступно."
+
+msgid "UiVirtualOutputHint"
+msgstr "Виртуальный выход · нажмите элемент для назначения"
+
+msgid "UiPhoneNumber"
+msgstr "Телефон {0}"
+
+msgid "UiAxisNumber"
+msgstr "Ось {0}"
+
+msgid "UiHatNumber"
+msgstr "Переключатель направлений {0}"
+
+msgid "UiApplyFailed"
+msgstr "Ошибка применения: {0}"
+
+msgid "UiSaveFailed"
+msgstr "Ошибка сохранения: {0}"
+
+msgid "UiResetFailed"
+msgstr "Ошибка сброса: {0}"
+
+msgid "UiCreateProfileFailed"
+msgstr "Ошибка создания профиля: {0}"
+
+msgid "UiDuplicateProfileFailed"
+msgstr "Ошибка копирования профиля: {0}"
+
+msgid "UiImportFailed"
+msgstr "Ошибка импорта: {0}"
+
+msgid "UiExportFailed"
+msgstr "Ошибка экспорта: {0}"
+
+msgid "UiRenameFailed"
+msgstr "Ошибка переименования: {0}"
+
+msgid "UiDeleteFailed"
+msgstr "Ошибка удаления: {0}"
+
+msgid "UiProfileSwitchFailed"
+msgstr "Ошибка переключения профиля: {0}"
+
+msgid "UiRuleSaveFailed"
+msgstr "Ошибка сохранения правила: {0}"
+
+msgid "UiSettingsSaveFailed"
+msgstr "Изменения не сохранены: {0}"
+
+msgid "UiProfileNumber"
+msgstr "Профиль {0}"
+
+msgid "UiProfileCopy"
+msgstr "{0} Копия"
+
+msgid "UiPreservedRule"
+msgstr "{0}: измените это правило в JSON профиля."
+
+msgid "UiRemapControl"
+msgstr "Переназначить {0}"
+
+msgid "UiAutofireControl"
+msgstr "Автоогонь {0}"
+
+msgid "UiFreezeControl"
+msgstr "Зафиксировать {0}"
+
+msgid "UiToggleControl"
+msgstr "Переключить через {0}"
+
+msgid "UiScriptControl"
+msgstr "Скрипт {0}"
+
+msgid "UiThresholdControl"
+msgstr "Порог {0}"
+
+msgid "UiAutoDetected"
+msgstr "Автоматически (обнаружено)"
+
+msgid "UiNoMovement"
+msgstr "(нет движения)"
+
+msgid "UiMouseState"
+msgstr "Движение {0}, {1} · колесо {2} · кнопки {3}"
+
+msgid "UiCalibrationPress"
+msgstr "Нажмите {0} ({1} / {2})"
+
+msgid "UiCalibrationButtonHint"
+msgstr "Нажмите эту кнопку. Выберите Пропустить, чтобы не назначать её."
+
+msgid "UiCalibrationRelease"
+msgstr "Отпустите стики и курки, чтобы начать этот шаг."
+
+msgid "UiCalibrationHold"
+msgstr "Удерживайте до следующего шага. Пропустить сохраняет назначение. Отключить обнуляет выход."
+
+msgid "UiCalibrateLeftRight"
+msgstr "Отклоните левый стик до упора вправо"
+
+msgid "UiCalibrateLeftUp"
+msgstr "Отклоните левый стик до упора вверх"
+
+msgid "UiCalibrateRightRight"
+msgstr "Отклоните правый стик до упора вправо"
+
+msgid "UiCalibrateRightUp"
+msgstr "Отклоните правый стик до упора вверх"
+
+msgid "UiCalibrateLeftTrigger"
+msgstr "Нажмите L2 / LT до упора"
+
+msgid "UiCalibrateRightTrigger"
+msgstr "Нажмите R2 / RT до упора"
+
+msgid "UiSetupReady"
+msgstr "Найдено. Продолжите, когда будете готовы."
+
+msgid "UiSetupConnect"
+msgstr "Подключите контроллер через USB или Bluetooth."
+
+msgid "UiSetupOutputFailed"
+msgstr "Не удалось запустить виртуальный контроллер. Проверьте состояние на странице устройств."
+
+msgid "UiSetupXbox360"
+msgstr "Контроллер Xbox 360"
+
+msgid "UiSetupXboxOne"
+msgstr "Контроллер Xbox Series / One"
+
+msgid "UiSetupXbox360Hint"
+msgstr "Выберите для широкой поддержки игр на ПК."
+
+msgid "UiSetupXboxOneHint"
+msgstr "Добавляет импульсные курки в поддерживаемых играх."
+
+msgid "UiSetupDs4Hint"
+msgstr "Выберите для игр PlayStation, сенсорной панели и световой полосы."
+
+msgid "UiSetupDualSenseHint"
+msgstr "Добавляет адаптивные курки и тактильный отклик в поддерживаемых играх."
+
+msgid "UiLinksReset"
+msgstr "Личные ссылки сброшены. Для подключения снова покажите код каждого телефона."
+
+msgid "UiLinkResetFailed"
+msgstr "Не удалось сбросить личную ссылку: {0}"
+
+msgid "UiSharingFailed"
+msgstr "Не удалось изменить общий доступ: {0}"
+
+msgid "UiSharingDisabledHint"
+msgstr "Общий доступ выключен. Включите его для подключения устройства. Локальный OBS остаётся доступен."
+
+msgid "UiServerStopped"
+msgstr "Веб-сервер не запущен."
+
+msgid "UiRestartNetwork"
+msgstr "Перезапустите GameFlow для включения сетевого доступа."
+
+msgid "UiLocalOnlyHint"
+msgstr "Windows ограничила доступ этим ПК. Разрешите доступ или запустите GameFlow от администратора."
+
+msgid "UiFirewallAllowed"
+msgstr "Брандмауэр Windows разрешает локальные подключения на этом порту."
+
+msgid "UiFirewallStale"
+msgstr "Правило брандмауэра устарело. Разрешите доступ для его замены."
+
+msgid "UiFirewallMissing"
+msgstr "Для GameFlow нет правила брандмауэра. Разрешите доступ для подключения телефонов."
+
+msgid "UiFirewallCheckHint"
+msgstr "Если телефон не подключается, проверьте брандмауэр Windows."
+
+msgid "UiInvalidMotionPort"
+msgstr "Порт недействителен. Предыдущий сохранённый порт остаётся активным."
+
+msgid "UiMotionListening"
+msgstr "Ожидание на UDP {0} · подключённых эмуляторов: {1}"
+
+msgid "UiDisabled"
+msgstr "Отключён"
+
+msgid "UiDemo"
+msgstr "Демонстрация"
+
+msgid "UiGeneral"
+msgstr "Общие"
+
+msgid "UiController"
+msgstr "Контроллер"
+
+msgid "UiMadeBy"
+msgstr "Автор: {0} · {1} · © {2}"
+
+msgid "UiSetupOpenFailed"
+msgstr "Не удалось открыть руководство по настройке."
+
+msgid "UiAnalog"
+msgstr "Аналоговый"
+
+msgid "UiClick"
+msgstr "Нажатие"
+
+msgid "UiUp"
+msgstr "Вверх"
+
+msgid "UiDown"
+msgstr "Вниз"
+
+msgid "UiLeft"
+msgstr "Влево"
+
+msgid "UiRight"
+msgstr "Вправо"

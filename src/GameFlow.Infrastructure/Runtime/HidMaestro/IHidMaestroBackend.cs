@@ -44,6 +44,13 @@ public interface IHidMaestroPad : IDisposable
     /// <summary>Raised when a game sends rumble. The arguments are the large and small motor strength.</summary>
     event Action<double, double>? RumbleReceived;
 
+    /// <summary>
+    /// Raised when a game sets the virtual pad's lights — a DualSense or
+    /// DualShock 4 lightbar colour, flash, player LEDs or mic LED. Only the
+    /// sections the report's validity flags authorise are set.
+    /// </summary>
+    event Action<Effects.GameLighting>? LightingReceived;
+
     /// <summary>Writes one frame. Throws when the SDK rejects the frame.</summary>
     void Submit(ControllerSnapshot snapshot);
 }
