@@ -59,8 +59,11 @@ internal static class HidMaestroSubmission
     /// <summary>Standard gravity in m/s² — the snapshot carries SDL's m/s², the SDK wants g.</summary>
     private const float StandardGravity = 9.80665f;
 
-    /// <summary>Full charge, as a percentage.</summary>
-    internal const byte FullCharge = 100;
+    /// <summary>Full capacity on the SDK's zero-to-ten scale.</summary>
+    internal const byte FullCharge = 10;
+
+    /// <summary>The largest valid source battery percentage.</summary>
+    private const int MaximumBatteryPercent = 100;
 
     /// <summary>
     /// Maps a stick axis from the snapshot's [-1, 1] onto the SDK's [0, 1].
@@ -93,42 +96,16 @@ internal static class HidMaestroSubmission
     }
 
     /// <summary>
-    /// Charge to report on the emitted pad, on the SDK's 0..10 scale.
+    /// Converts a percentage to the SDK's zero-to-ten capacity scale.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// These fields were never written at all to begin with, and an
-    /// unwritten one is not an absent one: a DualSense or DualShock 4
-    /// report always carries a battery, so it went out as zero and every
-    /// virtual pad announced itself as nearly flat, forever, whatever was
-    /// driving it — a wired pad, a keyboard, or nothing.
-    /// </para>
-    /// <para>
-    /// Writing a percentage was the second half of the same mistake. The
-    /// SDK documents the field as "Battery capacity, 0..10 (Sony firmware
-    /// convention)", and this was read as meaning the SDK's own property
-    /// carries that scale. It does not — it takes a percentage, and
-    /// down-scales into the Sony field itself. Rescaling here divided the
-    /// charge by ten a second time.
-    /// </para>
-    /// <para>
-    /// Settled by measurement rather than by the wording. With the
-    /// division in place a source pad at 25% was submitted as 3 and read
-    /// back as 3%, and a source at 65% as 7 and read back as roughly 7% —
-    /// consumers take the value as a percentage, exactly and without
-    /// rescaling. Two independent readings, both matching the raw number
-    /// rather than a tenth of it, which is not a coincidence available to
-    /// the 0..10 reading.
-    /// </para>
-    /// <para>
-    /// A source with no battery maps to full, which is what a wired
-    /// controller says about itself — the honest answer as well as the
-    /// quiet one, since there is no battery here to be low.
-    /// </para>
+    /// The SDK writes this capacity directly into the Sony report nibble.
+    /// Integer division preserves the ten-percent buckets returned by SDL.
+    /// A source with no battery reports full capacity.
     /// </remarks>
     public static byte BatteryLevelFor(ControllerSnapshot s) =>
         s.BatteryPercent is { } percent
-            ? (byte)Math.Clamp(percent, 0, FullCharge)
+            ? (byte)(Math.Clamp(percent, 0, MaximumBatteryPercent) / FullCharge)
             : FullCharge;
 
     /// <summary>The unit conversion alone, split out so it is testable without a deployed SDK.</summary>

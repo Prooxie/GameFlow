@@ -722,7 +722,7 @@ public sealed class HidMaestroOutputSink : IOutputSink,
 
         logger.LogInformation(
             "HIDMaestro: battery submitted ({Which}) — source={Source}, " +
-            "written={Written}% (0-{Full}), charging={Charging}, treatedAsFull={Full2}.",
+            "capacity={Written} (0-{Full}), charging={Charging}, treatedAsFull={Full2}.",
             known ? "first with a real charge — this is the steady state"
                   : "first submission of all — the source may not have been read yet",
             s.BatteryPercent is { } p ? p + "%" : "<none reported by the source pad>",

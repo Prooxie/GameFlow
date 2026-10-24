@@ -124,7 +124,7 @@ public sealed class HidMaestroStateWriterTests
 
         var state = Fill(snapshot);
 
-        Assert.Equal(40, state.BatteryLevel);
+        Assert.Equal(4, state.BatteryLevel);
         Assert.True(state.BatteryCharging);
         Assert.False(state.BatteryFull);
         Assert.True(Fill(ControllerSnapshot.Empty("pad")).BatteryFull);

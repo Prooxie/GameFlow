@@ -80,6 +80,14 @@ public static class VirtualDeviceIdentity
     /// </remarks>
     private const string SoftwareHidPrefix = @"HID\HIDCLASS\";
 
+    /// <summary>The Windows HID service path for a physical Bluetooth controller.</summary>
+    private const string BluetoothHidPrefix = @"HID\{00001124-0000-1000-8000-00805F9B34FB}_VID&";
+
+    /// <summary>Identifies a Bluetooth bus path that software-created HID endpoints do not use.</summary>
+    internal static bool IsPhysicalBluetooth(string? devicePath) =>
+        !IsVirtual(devicePath, null)
+        && NormalizePath(devicePath).StartsWith(BluetoothHidPrefix, StringComparison.OrdinalIgnoreCase);
+
     /// <summary>
     /// Reduces the several spellings Windows uses for one device to a
     /// single comparable form.
@@ -111,8 +119,8 @@ public static class VirtualDeviceIdentity
 
         // Drop a trailing interface-class GUID, which the instance id form
         // never carries.
-        var guid = text.IndexOf(@"\{", StringComparison.Ordinal);
-        if (guid >= 0)
+        var guid = text.LastIndexOf(@"\{", StringComparison.Ordinal);
+        if (guid >= 0 && Guid.TryParse(text.AsSpan(guid + 1), out _))
         {
             text = text[..guid];
         }

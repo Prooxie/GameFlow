@@ -44,13 +44,20 @@ $report = Join-Path $application 'docs/hidmaestro/LATEST.md'
 if (!(Test-Path -LiteralPath $report)) { throw 'The report was not created.' }
 if ((Get-Content -LiteralPath $report -Raw) -notmatch 'Stop') { throw 'The report omitted the changed API.' }
 
-$blocked = $false
-try {
-    & $helper -HidMaestroPath $upstream -SkipUpdate -SkipReport -SdkDll $sdk `
-        -Destination (Join-Path $application '.cache/blocked') -Confirm:$false
+foreach ($cachePath in @('.cache', '.cache/blocked', '.cache/nested/../blocked')) {
+    $blocked = $false
+    try {
+        & $helper -HidMaestroPath $upstream -SkipUpdate -SkipReport -SdkDll $sdk `
+            -Destination (Join-Path $application $cachePath) -Confirm:$false
+    }
+    catch { $blocked = $_.Exception.Message -match 'inside GameFlow.*cache' }
+    if (!$blocked) { throw "The helper did not protect its build cache: $cachePath" }
 }
-catch { $blocked = $_.Exception.Message -match 'inside GameFlow.*cache' }
-if (!$blocked) { throw 'The helper did not protect its build cache.' }
+
+$cacheSibling = Join-Path $application '.cache-sibling'
+& $helper -HidMaestroPath $upstream -SkipUpdate -SkipReport -SdkDll $sdk `
+    -Destination $cacheSibling -Confirm:$false
+if (!(Test-Path -LiteralPath (Join-Path $cacheSibling 'HIDMaestro.Core.dll'))) { throw 'The helper rejected a cache sibling.' }
 
 [IO.File]::WriteAllText($sourcePath, "namespace HIDMaestro;`ninternal class InternalContext { }`n")
 & git -C $upstream add .

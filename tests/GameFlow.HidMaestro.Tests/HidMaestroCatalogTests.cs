@@ -66,14 +66,44 @@ public sealed class HidMaestroCatalogTests
         return HidMaestroSession.CanArmExtendedInput(profile);
     }
 
+    /// <summary>USB Sony profiles must send their complete input report without a Bluetooth handshake.</summary>
+    [WindowsTheory]
+    [InlineData("dualsense")]
+    [InlineData("dualsense-edge")]
+    [InlineData("dualshock-4-v1-full")]
+    public void GetProfileUsbSonyEnablesCompleteInputReport(string id)
+    {
+        var profile = Session.Value.GetProfile(id);
+
+        Assert.NotNull(profile);
+        Assert.True(profile.ExtendedReport!.AlwaysArmed);
+        Assert.True(HidMaestroSession.CanArmExtendedInput(profile));
+        Assert.Equal("usb", profile.Connection);
+    }
+
+    /// <summary>Preparing output must preserve the SDK catalog and Bluetooth handshake.</summary>
     [WindowsFact]
-    public void CanArmExtendedInput_UsbDualSense_IsFalse() => Assert.False(CanArm("dualsense"));
+    public void GetProfilePreservesCatalogAndBluetoothHandshake()
+    {
+        var original = new HIDMaestro.HMContext();
+        _ = original.LoadDefaultProfiles();
+        var prepared = Session.Value.GetProfile("dualsense");
+        var bluetooth = Session.Value.GetProfile("dualsense-bt");
+
+        Assert.False(original.GetProfile("dualsense")!.ExtendedReport!.AlwaysArmed);
+        Assert.Same(prepared, Session.Value.GetProfile("dualsense"));
+        Assert.False(bluetooth!.ExtendedReport!.AlwaysArmed);
+        Assert.NotEmpty(bluetooth.ExtendedReport.ArmOn!);
+    }
+
+    [WindowsFact]
+    public void CanArmExtendedInputUsbDualSenseIsTrue() => Assert.True(CanArm("dualsense"));
 
     [WindowsFact]
     public void CanArmExtendedInput_BluetoothDualSense_IsTrue() => Assert.True(CanArm("dualsense-bt"));
 
     [WindowsFact]
-    public void CanArmExtendedInput_UsbDualShock4_IsFalse() => Assert.False(CanArm("dualshock-4-v1-full"));
+    public void CanArmExtendedInputUsbDualShock4IsTrue() => Assert.True(CanArm("dualshock-4-v1-full"));
 
     [WindowsFact]
     public void CanArmExtendedInput_Xbox360_IsFalse() => Assert.False(CanArm("xbox-360-wired"));

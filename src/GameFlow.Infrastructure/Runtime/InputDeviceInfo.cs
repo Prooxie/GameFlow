@@ -33,6 +33,9 @@ public sealed record InputDeviceInfo(
     DeviceBatteryState BatteryState = DeviceBatteryState.Unknown,
     bool IsVirtual = false)
 {
+    /// <summary>The native device path. An empty value means that the provider supplied no path.</summary>
+    public string HardwarePath { get; init; } = string.Empty;
+
     /// <summary>
     /// True when this is one of GameFlow's own virtual pads rather than
     /// real hardware.

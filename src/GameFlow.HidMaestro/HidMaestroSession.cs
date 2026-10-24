@@ -24,6 +24,8 @@ internal sealed class HidMaestroSession
     private readonly ILogger logger;
     // Not disposed: the SDK's exit handler cleans up, and the old bridge never disposed it either.
     private readonly HMContext context;
+    /// <summary>Prepared input profiles. The SDK catalog stays unchanged.</summary>
+    private readonly IReadOnlyDictionary<string, HMProfile> inputProfiles;
     private readonly HidMaestroDriverInitialization driver;
     private bool driverInstallLogged;
 
@@ -51,6 +53,7 @@ internal sealed class HidMaestroSession
         // so it runs only when the first pad is created.
         driver = new HidMaestroDriverInitialization(context.InstallDriver);
         SdkVersion = typeof(HMContext).Assembly.GetName().Version ?? new Version(0, 0);
+        inputProfiles = context.AllProfiles.ToDictionary(profile => profile.Id, PrepareInputProfile, StringComparer.OrdinalIgnoreCase);
         Catalog = ProjectCatalog(context.AllProfiles, logger);
     }
 
@@ -147,7 +150,21 @@ internal sealed class HidMaestroSession
     }
 
     /// <summary>The loaded profile with this id, or null when the catalog has none.</summary>
-    internal HMProfile? GetProfile(string id) => context.GetProfile(id);
+    internal HMProfile? GetProfile(string id) => inputProfiles.GetValueOrDefault(id);
+
+    /// <summary>Enables complete USB Sony input reports without changing Bluetooth handshake behavior or catalog data.</summary>
+    private static HMProfile PrepareInputProfile(HMProfile profile)
+    {
+        if (profile.Id is not ("dualsense" or "dualsense-edge" or "dualshock-4-v1" or "dualshock-4-v1-full" or "dualshock-4-v2")
+            || profile.ExtendedReport is not { AlwaysArmed: false, Size: 64, ReportIdByte: 1 })
+        {
+            return profile;
+        }
+
+        var prepared = new HMProfileBuilder().FromProfile(profile).Build();
+        prepared.ExtendedReport!.AlwaysArmed = true;
+        return prepared;
+    }
 
     /// <summary>Maps one SDK profile onto the catalog record the UI uses.</summary>
     /// <remarks>
@@ -174,8 +191,7 @@ internal sealed class HidMaestroSession
 
     /// <summary>
     /// Tells whether the profile can arm its extended input report. Battery,
-    /// motion and touch reach the wire only through an armed report. A USB
-    /// DualSense or DualShock 4 declares one but never arms it.
+    /// motion and touch reach the wire through an armed report.
     /// </summary>
     internal static bool CanArmExtendedInput(HMProfile profile)
     {
