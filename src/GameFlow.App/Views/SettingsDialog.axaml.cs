@@ -1,14 +1,10 @@
-using System.Diagnostics;
 using Avalonia.Controls;
-using Avalonia.Input.Platform;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using GameFlow.App.ViewModels;
 using Serilog;
-
-// SetTextAsync is an extension in Avalonia 12 — IClipboard itself only
-// speaks IAsyncDataTransfer now.
 
 namespace GameFlow.App.Views;
 
@@ -16,11 +12,12 @@ namespace GameFlow.App.Views;
 /// Code-behind for the Options / Settings dialog.
 ///
 /// <para>
-/// Owns three small responsibilities:
+/// Owns a few small responsibilities:
 /// <list type="bullet">
 ///   <item><description>Wiring the folder pickers (Profiles dir, Logs dir).</description></item>
-///   <item><description>Copying phone-controller and OBS URLs through the
-///     window-owned clipboard.</description></item>
+///   <item><description>Opening the setup walkthrough over the dialog.</description></item>
+///   <item><description>Ctrl+Tab / Ctrl+PageDown switching between the
+///     dialog's tabs.</description></item>
 ///   <item><description>Routing the Apply button through the
 ///     <see cref="SettingsDialogViewModel.ApplyAsync"/> command and
 ///     closing on success.</description></item>
@@ -28,6 +25,13 @@ namespace GameFlow.App.Views;
 ///     edits via <see cref="SettingsDialogViewModel.Reload"/> and
 ///     close.</description></item>
 /// </list>
+/// </para>
+///
+/// <para>
+/// There is no URL handling here any more. The OBS overlay link moved onto
+/// each controller panel on the dashboard, and phones are added one at a
+/// time from Devices, each with its own link — so the Copy / Open buttons
+/// and the clipboard and browser helpers behind them went with them.
 /// </para>
 /// </summary>
 public partial class SettingsDialog : Window
@@ -44,6 +48,11 @@ public partial class SettingsDialog : Window
         Opened += (_, _) => WindowSizing.Fit(this);
         Opened += OnOpened;
         Closed += OnClosed;
+
+        // Tunnel, not the ordinary bubble: Tab is consumed by the window's
+        // keyboard-navigation handler on the way back UP, Ctrl held or not,
+        // so a bubbling handler would never see Ctrl+Tab at all.
+        AddHandler(KeyDownEvent, OnTabSwitchKeyDown, RoutingStrategies.Tunnel);
     }
 
     /// <summary>
@@ -83,41 +92,42 @@ public partial class SettingsDialog : Window
     }
 
     /// <summary>
-    /// Puts the overlay URL on the clipboard.
-    ///
-    /// <para>
-    /// In the code-behind rather than behind a command because the
-    /// clipboard hangs off the <see cref="TopLevel"/>, which a view-model
-    /// has no handle on. The alternative — a clipboard service injected
-    /// into the VM — would be the right shape if anything else needed
-    /// one; nothing does, and one button does not justify the seam.
-    /// </para>
+    /// Ctrl+Tab / Ctrl+Shift+Tab and Ctrl+PageDown / Ctrl+PageUp move to
+    /// the next / previous tab, wrapping at either end.
     /// </summary>
-    private async void OnCopyOverlayUrl(object? sender, RoutedEventArgs e)
+    /// <remarks>
+    /// The standard keys for a Windows tabbed dialog. Without them a
+    /// keyboard user has to Shift+Tab back through every control on the
+    /// page to reach the tab list. Focus moves onto the newly selected tab
+    /// header, because the control that had it was on the page that just
+    /// left the visual tree, and focus left there goes nowhere.
+    /// </remarks>
+    private void OnTabSwitchKeyDown(object? sender, KeyEventArgs e)
     {
-        if (DataContext is not SettingsDialogViewModel vm)
+        if ((e.KeyModifiers & KeyModifiers.Control) == 0)
         {
             return;
         }
 
-        await CopyUrlAsync(
-            vm.Overlay.Url,
-            "Overlay URL copied — paste it into an OBS Browser source.",
-            "overlay");
-    }
+        var step = e.Key switch
+        {
+            Key.Tab => (e.KeyModifiers & KeyModifiers.Shift) == 0 ? 1 : -1,
+            Key.PageDown => 1,
+            Key.PageUp => -1,
+            _ => 0,
+        };
 
-    /// <summary>Puts the phone-controller address on the clipboard.</summary>
-    private async void OnCopyPhoneControllerUrl(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is not SettingsDialogViewModel vm)
+        var tabs = this.FindControl<TabControl>("SettingsTabs");
+        if (step == 0 || tabs is null || tabs.ItemCount == 0)
         {
             return;
         }
 
-        await CopyUrlAsync(
-            vm.Overlay.PhoneControllerUrl,
-            "Phone controller address copied — open it in a phone browser.",
-            "phone controller");
+        var count = tabs.ItemCount;
+        var next = ((Math.Max(tabs.SelectedIndex, 0) + step) % count + count) % count;
+        tabs.SelectedIndex = next;
+        (tabs.ContainerFromIndex(next) as Control)?.Focus(NavigationMethod.Directional);
+        e.Handled = true;
     }
 
     /// <summary>
@@ -146,101 +156,7 @@ public partial class SettingsDialog : Window
         catch (Exception exception)
         {
             Log.Warning(exception, "Settings: could not open the setup walkthrough.");
-            vm.StatusMessage = "The setup walkthrough could not be opened.";
-        }
-    }
-
-    /// <summary>
-    /// Opens the phone-controller page in this PC's default browser.
-    /// </summary>
-    /// <remarks>
-    /// Copying the address was the only thing this section could do, and
-    /// a copied URL cannot tell you whether the server is actually
-    /// reachable — the usual first symptom is a phone that just times
-    /// out. Opening it here answers the "is it serving at all?" half of
-    /// that question without involving a second device.
-    /// </remarks>
-    private void OnOpenPhoneControllerUrl(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is SettingsDialogViewModel vm && vm.Overlay.CanCopyPhoneControllerUrl)
-        {
-            LaunchInBrowser(vm.Overlay.PhoneControllerUrl, "phone controller");
-        }
-    }
-
-    /// <summary>
-    /// Opens the built overlay URL in a browser so the streamer can see
-    /// what OBS will render before creating the source.
-    /// </summary>
-    private void OnOpenOverlayUrl(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is SettingsDialogViewModel vm && vm.Overlay.CanCopy)
-        {
-            LaunchInBrowser(vm.Overlay.Url, "overlay");
-        }
-    }
-
-    /// <summary>
-    /// Hands a URL to the shell's default handler.
-    /// </summary>
-    /// <remarks>
-    /// <see cref="ProcessStartInfo.UseShellExecute"/> must be true: without
-    /// it .NET tries to execute the URL as a program and throws. Only
-    /// http/https are passed through — the URLs here are built from the
-    /// server's own listen address, but routing arbitrary strings to the
-    /// shell is the kind of thing that quietly turns into a launch
-    /// primitive, so the scheme is checked at the one place that launches.
-    /// </remarks>
-    private void LaunchInBrowser(string url, string logLabel)
-    {
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
-            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
-        {
-            Log.Warning("Settings: refusing to open the {Label} URL {Url} — not an http(s) address.", logLabel, url);
-            return;
-        }
-
-        try
-        {
-            Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
-            if (DataContext is SettingsDialogViewModel vm)
-            {
-                vm.StatusMessage = $"Opened {uri.AbsoluteUri} in your browser.";
-            }
-        }
-        catch (Exception exception)
-        {
-            Log.Warning(exception, "Settings: opening the {Label} URL in a browser failed.", logLabel);
-            if (DataContext is SettingsDialogViewModel vm)
-            {
-                vm.StatusMessage = "Could not open a browser. Use Copy and paste the address instead.";
-            }
-        }
-    }
-
-    private async Task CopyUrlAsync(string url, string successMessage, string logLabel)
-    {
-        var clipboard = GetTopLevel(this)?.Clipboard;
-        if (clipboard is null)
-        {
-            Log.Warning("Settings: no clipboard available; the {Label} URL was not copied.", logLabel);
-            return;
-        }
-
-        try
-        {
-            await clipboard.SetTextAsync(url);
-            if (DataContext is SettingsDialogViewModel vm)
-            {
-                vm.StatusMessage = successMessage;
-            }
-        }
-        catch (Exception exception)
-        {
-            // A clipboard owned by another process, which Windows does
-            // transiently. The URL is in a read-only text box right next
-            // to the button, so the user can still select it by hand.
-            Log.Warning(exception, "Settings: copying the {Label} URL failed.", logLabel);
+            vm.StatusMessage = UiTextResources.Get("UiSetupOpenFailed");
         }
     }
 
@@ -264,7 +180,7 @@ public partial class SettingsDialog : Window
             folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
                 AllowMultiple = false,
-                Title = button.Content?.ToString() ?? "Select folder",
+                Title = button.Content?.ToString() ?? UiTextResources.Get("UiSelectFolder"),
             });
         }
         catch (Exception exception)

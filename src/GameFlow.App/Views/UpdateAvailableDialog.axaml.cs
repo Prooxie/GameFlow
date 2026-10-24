@@ -80,16 +80,16 @@ public partial class UpdateAvailableDialog : Window
         if (update.DownloadAssetUrl is null || update.ExpectedSha256 is null)
         {
             this.FindControl<Button>("InstallButton")!.IsEnabled = false;
-            this.FindControl<Button>("InstallButton")!.Content = "Download manually";
+            this.FindControl<Button>("InstallButton")!.Content = UiTextResources.Get("UiDownloadManually");
             this.FindControl<TextBlock>("DownloadHint")!.Text = update.DownloadAssetUrl is null
-                ? "No archive matches this platform. Open the release page to see available downloads."
-                : "This release has no verification digest. Open the release page to download it manually.";
+                ? UiTextResources.Get("UiNoPlatformArchive")
+                : UiTextResources.Get("UiNoDownloadDigest");
         }
 
         var versionLine = this.FindControl<TextBlock>("VersionLine");
         if (versionLine is not null)
         {
-            versionLine.Text = $"You're running v{currentVersion}. The latest release is {update.TagName}.";
+            versionLine.Text = UiTextResources.Format("UiDownloadVersion", currentVersion, update.TagName);
         }
 
         var releaseName = this.FindControl<TextBlock>("ReleaseName");
@@ -125,7 +125,7 @@ public partial class UpdateAvailableDialog : Window
             }
             if (line is not null)
             {
-                line.Text = $"Downloading… {(int)Math.Round(fraction * 100)}%";
+                line.Text = UiTextResources.Format("UiDownloadProgress", (int)Math.Round(fraction * 100));
             }
         });
     }
@@ -176,12 +176,12 @@ public partial class UpdateAvailableDialog : Window
         downloading = true;
         var installButton = this.FindControl<Button>("InstallButton")!;
         installButton.IsEnabled = false;
-        installButton.Content = "Downloading…";
+        installButton.Content = UiTextResources.Get("UiDownloading");
         this.FindControl<Button>("SkipButton")!.IsEnabled = false;
         this.FindControl<Button>("DontAskButton")!.IsEnabled = false;
         this.FindControl<Button>("CancelDownloadButton")!.IsVisible = true;
         this.FindControl<StackPanel>("ProgressArea")!.IsVisible = true;
-        this.FindControl<TextBlock>("ProgressLine")!.Text = "Starting download…";
+        this.FindControl<TextBlock>("ProgressLine")!.Text = UiTextResources.Get("UiStartingDownload");
         bool success = false;
         try
         {
@@ -204,15 +204,15 @@ public partial class UpdateAvailableDialog : Window
             installButton.IsEnabled = true;
             this.FindControl<Button>("SkipButton")!.IsVisible = false;
             this.FindControl<Button>("DontAskButton")!.IsVisible = false;
-            this.FindControl<TextBlock>("ProgressLine")!.Text = "Verified and downloaded. Extract the archive, quit GameFlow, then replace your application files. Your profiles stay in the data directory.";
+            this.FindControl<TextBlock>("ProgressLine")!.Text = UiTextResources.Get("UiDownloaded");
         }
         else
         {
             installButton.IsEnabled = true;
-            installButton.Content = "Retry download";
+            installButton.Content = UiTextResources.Get("UiRetryDownload");
             this.FindControl<TextBlock>("ProgressLine")!.Text = cancellation.IsCancellationRequested
-                ? "Download cancelled. No update was applied."
-                : "Download or verification failed. Retry, or open the release page to download manually. See the log for details.";
+                ? UiTextResources.Get("UiDownloadCancelled")
+                : UiTextResources.Get("UiDownloadFailed");
         }
     }
 

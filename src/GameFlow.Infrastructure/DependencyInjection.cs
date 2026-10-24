@@ -38,6 +38,8 @@ public static class DependencyInjection
         _ = services.AddSingleton<InputDeviceCatalog>();
         _ = services.AddSingleton<Runtime.Templates.DeviceTemplateStore>();
         _ = services.AddSingleton<Runtime.Input.ButtonMapStore>();
+        _ = services.AddSingleton<Runtime.Input.KeyboardMouseMapStore>();
+        _ = services.AddSingleton<Runtime.PanelAppearanceStore>();
         if (OperatingSystem.IsWindows())
         {
             _ = services.AddSingleton<Runtime.Input.WindowsRawInputReader>();
@@ -125,6 +127,7 @@ public static class DependencyInjection
         _ = services.AddSingleton(_ => Theming.ThemeRegistry.Shared);
 
         _ = services.AddSingleton<Runtime.Web.WebControllerHub>();
+        _ = services.AddSingleton<Runtime.Web.PhoneRegistry>();
 
         // The dashboard writes the skin each panel shows, and the overlay
         // feed reads it, so both must reach the same instance.
@@ -146,6 +149,15 @@ public static class DependencyInjection
         // would contend with SDL's device lock across a blocking Bluetooth
         // transfer — the freeze that got effects deleted the first time.
         _ = services.AddSingleton<Runtime.Effects.RumbleFeedbackStore>();
+
+        // What games and other programs ask the lights to do. The game's
+        // store is reached through RumbleFeedbackStore by the slot runtime,
+        // so both must be the one instance registered here. The external
+        // store is in memory only; nothing in it survives a restart.
+        _ = services.AddSingleton<Runtime.Effects.GameLightingStore>();
+        _ = services.AddSingleton<Runtime.Effects.ExternalLightingStore>();
+        _ = services.AddSingleton<Runtime.Effects.ControllerFeatureResolver>();
+        _ = services.AddSingleton<Runtime.Web.LightingApi>();
         _ = services.AddSingleton<Runtime.Effects.ControllerEffectMailbox>();
         _ = services.AddSingleton<Runtime.Effects.IControllerEffectWriter,
                                   Runtime.Effects.MailboxControllerEffectWriter>();

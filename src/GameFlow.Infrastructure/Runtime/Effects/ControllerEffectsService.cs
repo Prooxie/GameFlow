@@ -39,6 +39,14 @@ public sealed class ControllerEffectsService : BackgroundService
     /// </summary>
     private static readonly TimeSpan WriteInterval = TimeSpan.FromMilliseconds(16);
 
+    /// <summary>
+    /// Spacing for writes that change only the lights — about 30 Hz. The
+    /// animated lighting modes change colour every producer pass, so
+    /// without this a pad sitting on Rainbow costs a Bluetooth report every
+    /// 16 ms for a difference the eye cannot see.
+    /// </summary>
+    private static readonly TimeSpan LightingWriteInterval = TimeSpan.FromMilliseconds(33);
+
     private readonly IControllerEffectWriter writer;
     private readonly ILogger<ControllerEffectsService> logger;
     private readonly Dictionary<string, ControllerEffectState> deliveredStates =
@@ -50,7 +58,7 @@ public sealed class ControllerEffectsService : BackgroundService
     {
         this.writer = writer;
         this.logger = logger;
-        Queue = new EffectDispatchQueue(WriteInterval);
+        Queue = new EffectDispatchQueue(WriteInterval, LightingWriteInterval);
     }
 
     /// <summary>

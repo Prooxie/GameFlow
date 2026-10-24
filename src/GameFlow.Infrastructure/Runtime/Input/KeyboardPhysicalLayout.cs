@@ -11,6 +11,7 @@ public static class KeyboardVirtualKeys
     /// the physical distinction without colliding with a real Win32 VK.
     /// </summary>
     public const int NumpadEnter = 0x10D;
+    public static bool IsSupported(int key) => key is > 0 and < 256 || key == NumpadEnter;
 }
 
 /// <summary>One key in the fixed ANSI 104-key preview.</summary>

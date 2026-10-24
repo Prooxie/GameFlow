@@ -28,6 +28,29 @@ public sealed class InputDeviceCatalogVirtualFilterTests
             VendorId: vid, ProductId: pid, IsGamepad: true, Category: DeviceCategory.Gamepad);
 
     [Fact]
+    public void LingeringVirtualEndpointStaysHiddenAfterGraceUntilItDisappears()
+    {
+        var clock = new ManualClock();
+        var catalog = new InputDeviceCatalog(new StubLocalization(),
+            new DeviceCategoryOverrideStore(NullLogger<DeviceCategoryOverrideStore>.Instance), clock);
+        var claim = catalog.ClaimHardwareSignature(Xbox360Vid, Xbox360Pid, clock.Now);
+        catalog.ReplaceDevices("sdl", [Pad("lingering")]);
+        claim.Dispose();
+        clock.Now += TimeSpan.FromMinutes(1);
+        catalog.ReplaceDevices("sdl", [Pad("lingering")]);
+        Assert.Empty(catalog.Devices);
+        catalog.ReplaceDevices("sdl", []);
+        catalog.ReplaceDevices("sdl", [Pad("lingering")]);
+        Assert.Single(catalog.Devices);
+    }
+
+    private sealed class ManualClock : TimeProvider
+    {
+        public DateTimeOffset Now = DateTimeOffset.UtcNow;
+        public override DateTimeOffset GetUtcNow() => Now;
+    }
+
+    [Fact]
     public void APadThatAppearsAfterItsSinkActivatedIsHidden()
     {
         var catalog = NewCatalog();
@@ -100,6 +123,71 @@ public sealed class InputDeviceCatalogVirtualFilterTests
             [(Xbox360Vid, Xbox360Pid, DateTimeOffset.UtcNow.AddSeconds(-1))]);
 
         catalog.ReplaceDevices("sdl", [Pad("sdl-gamepad-dualsense", 0x054C, 0x0CE6)]);
+
+        Assert.Single(catalog.Devices);
+    }
+
+    [Fact]
+    public void ADeviceWhosePathMarksItVirtualIsNeverListed()
+    {
+        // The path verdict is known on the very first enumeration, before
+        // any sink has said what it owns; nothing else should be needed.
+        var catalog = NewCatalog();
+
+        catalog.ReplaceDevices("sdl", [Pad("sdl-gamepad-virtual") with { IsVirtual = true }]);
+
+        Assert.Empty(catalog.Devices);
+    }
+
+    [Fact]
+    public void AClaimHidesAPadThatEnumeratesWhileItIsBeingCreated()
+    {
+        var catalog = NewCatalog();
+        using var claim = catalog.ClaimHardwareSignature(Xbox360Vid, Xbox360Pid, DateTimeOffset.UtcNow);
+
+        // The SDL worker lists the new pad before the coordinator publishes
+        // anything; the claim alone must keep it out.
+        catalog.ReplaceDevices("sdl", [Pad("sdl-gamepad-new")]);
+
+        Assert.Empty(catalog.Devices);
+    }
+
+    [Fact]
+    public void AClaimTakesEffectOnAPadAlreadyListed()
+    {
+        var catalog = NewCatalog();
+        var updates = 0;
+        catalog.Updated += (_, _) => updates++;
+        catalog.ReplaceDevices("sdl", [Pad("sdl-gamepad-new")]);
+        updates = 0;
+
+        // Claimed a moment BEFORE the pad was first seen, as the sink does.
+        using var claim = catalog.ClaimHardwareSignature(Xbox360Vid, Xbox360Pid, DateTimeOffset.UtcNow.AddSeconds(-1));
+
+        Assert.Empty(catalog.Devices);
+        Assert.Equal(1, updates);
+    }
+
+    [Fact]
+    public void AReleasedClaimKeepsHidingDuringTheGrace()
+    {
+        var catalog = NewCatalog();
+        var claim = catalog.ClaimHardwareSignature(Xbox360Vid, Xbox360Pid, DateTimeOffset.UtcNow);
+        claim.Dispose();
+
+        // A torn-down pad can still enumerate for a moment.
+        catalog.ReplaceDevices("sdl", [Pad("sdl-gamepad-leaving")]);
+
+        Assert.Empty(catalog.Devices);
+    }
+
+    [Fact]
+    public void AClaimDoesNotHideARealPadOfTheSameModelThatWasAlreadyConnected()
+    {
+        var catalog = NewCatalog();
+        catalog.ReplaceDevices("sdl", [Pad("sdl-gamepad-real")]);
+
+        using var claim = catalog.ClaimHardwareSignature(Xbox360Vid, Xbox360Pid, DateTimeOffset.UtcNow.AddSeconds(10));
 
         Assert.Single(catalog.Devices);
     }

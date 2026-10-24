@@ -11,12 +11,17 @@ namespace GameFlow.App.ViewModels;
 /// fields, so simple <see langword="get"/>-only properties work — no
 /// INPC needed.
 /// </summary>
-public sealed class MenuColumnItemViewModel
+public sealed class MenuColumnItemViewModel : ViewModelBase
 {
+    private readonly string name;
+
     public string Id { get; }
-    public string Name { get; }
+    public string Name => string.IsNullOrWhiteSpace(name) ? UiTextResources.Get("UiUnnamed") : name;
     public string IconText { get; }
     public bool IsConnected { get; }
+
+    /// <summary>Dims an offline device or a disabled controller, so the list reads at a glance.</summary>
+    public double RowOpacity => IsConnected ? 1.0 : 0.55;
     public ICommand SelectCommand { get; }
     public string SecondaryText { get; }
     public bool HasSecondaryText => !string.IsNullOrWhiteSpace(SecondaryText);
@@ -37,9 +42,9 @@ public sealed class MenuColumnItemViewModel
         : BatteryPercentage is <= 20 ? "#F87171" : "#4ADE80";
     public string BatteryTooltip => BatteryState switch
     {
-        DeviceBatteryState.Charging => $"Charging · {BatteryPercentage}%",
-        DeviceBatteryState.Charged => "Fully charged",
-        DeviceBatteryState.OnBattery => $"Battery · {BatteryPercentage}%",
+        DeviceBatteryState.Charging => UiTextResources.Format("UiBatteryCharging", BatteryPercentage!),
+        DeviceBatteryState.Charged => UiTextResources.Get("UiFullyCharged"),
+        DeviceBatteryState.OnBattery => UiTextResources.Format("UiBatteryRemaining", BatteryPercentage!),
         _ => BatteryText,
     };
 
@@ -56,7 +61,16 @@ public sealed class MenuColumnItemViewModel
     /// </para>
     /// </summary>
     public string Signature =>
-        $"{Id}|{Name}|{IconText}|{IsConnected}|{SecondaryText}|{BatteryPercentage}|{BatteryState}|{CanPin}|{PinIcon}";
+        $"{Id}|{Name}|{IconText}|{IsConnected}|{SecondaryText}|{BatteryPercentage}|{BatteryState}|{CanPin}|{PinIcon}|{CanDelete}";
+
+    /// <summary>True when this row offers a delete action (virtual controllers only).</summary>
+    public bool CanDelete => DeleteCommand is not null;
+
+    /// <summary>Deletes the row's underlying item. Reached through a confirmation flyout, never directly.</summary>
+    public ICommand? DeleteCommand { get; init; }
+
+    /// <summary>Explanation shown when confirming the delete.</summary>
+    public string DeleteConfirmText => UiTextResources.Get("UiDeleteVirtual");
 
     /// <summary>True when this row offers a dashboard pin toggle (physical devices only).</summary>
     public bool CanPin { get; }
@@ -65,7 +79,7 @@ public sealed class MenuColumnItemViewModel
     public string PinIcon { get; }
 
     /// <summary>Tooltip for the pin toggle.</summary>
-    public string PinTooltip { get; }
+    public string PinTooltip => UiTextResources.Get(PinIcon == "◉" ? "UiUnpinDevice" : "UiPinDevice");
 
     public ICommand? PinCommand { get; }
 
@@ -89,7 +103,7 @@ public sealed class MenuColumnItemViewModel
         DeviceBatteryState batteryState = DeviceBatteryState.Unknown)
     {
         Id = id;
-        Name = string.IsNullOrWhiteSpace(name) ? "(unnamed)" : name;
+        this.name = name;
         IconText = iconText;
         IsConnected = isConnected;
         SecondaryText = secondaryText ?? string.Empty;
@@ -98,9 +112,6 @@ public sealed class MenuColumnItemViewModel
         SelectCommand = new RelayCommand(onSelect);
         CanPin = onTogglePin is not null;
         PinIcon = isPinned ? "◉" : "◎";
-        PinTooltip = isPinned
-            ? "Remove this device's layout panel from the dashboard"
-            : "Show this device's layout on the dashboard (no virtual controller needed)";
         PinCommand = onTogglePin is null ? null : new RelayCommand(onTogglePin);
     }
 }

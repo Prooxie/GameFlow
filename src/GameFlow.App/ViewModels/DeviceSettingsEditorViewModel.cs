@@ -34,12 +34,29 @@ public sealed class DeviceSettingsEditorViewModel : ViewModelBase
 
     private readonly GameFlow.Infrastructure.Runtime.Slots.SlotSnapshotStore snapshots;
 
+    /// <summary>
+    /// Answers what the pad behind the current target can do. Optional so
+    /// a host that builds the editor by hand still works; without it the
+    /// editor falls back to the live snapshot's VID/PID, and with neither
+    /// it shows every section, as it always did.
+    /// </summary>
+    private readonly GameFlow.Infrastructure.Runtime.Effects.ControllerFeatureResolver? featureResolver;
+
+    /// <summary>
+    /// The settings as last loaded. Persist starts from this record so a
+    /// field the editor does not show (or that a newer version added) is
+    /// carried through a save instead of being reset to its default.
+    /// </summary>
+    private DeviceSettings loaded = DeviceSettings.Default;
+
     public DeviceSettingsEditorViewModel(
         DeviceSettingsStore store,
-        GameFlow.Infrastructure.Runtime.Slots.SlotSnapshotStore snapshots)
+        GameFlow.Infrastructure.Runtime.Slots.SlotSnapshotStore snapshots,
+        GameFlow.Infrastructure.Runtime.Effects.ControllerFeatureResolver? featureResolver = null)
     {
         this.store = store;
         this.snapshots = snapshots;
+        this.featureResolver = featureResolver;
         CurveOptions = new ObservableCollection<StickCurve>(Enum.GetValues<StickCurve>());
         LightbarModeOptions = new ObservableCollection<LightbarMode>(Enum.GetValues<LightbarMode>());
         AdaptiveModeOptions = new ObservableCollection<AdaptiveTriggerMode>(Enum.GetValues<AdaptiveTriggerMode>());
@@ -156,9 +173,124 @@ public sealed class DeviceSettingsEditorViewModel : ViewModelBase
         new CommunityToolkit.Mvvm.Input.RelayCommand(() => ApplyStickPreset("worn", leftStick: false));
 
     public ObservableCollection<StickCurve> CurveOptions { get; }
-    public ObservableCollection<LightbarMode> LightbarModeOptions { get; }
+
+    /// <summary>
+    /// The lightbar modes this pad can show. Replaced (not edited in place)
+    /// when the target changes: clearing a bound ComboBox's items would
+    /// push a null selection back into <see cref="LightbarMode"/>.
+    /// </summary>
+    public ObservableCollection<LightbarMode> LightbarModeOptions { get; private set; }
+
     public ObservableCollection<AdaptiveTriggerMode> AdaptiveModeOptions { get; }
     public ObservableCollection<TriggerFeedbackLink> FeedbackLinkOptions { get; }
+    public IReadOnlyList<PlayerLedMode> PlayerLedModeOptions { get; } = Enum.GetValues<PlayerLedMode>();
+    public IReadOnlyList<MicLedMode> MicLedModeOptions { get; } = Enum.GetValues<MicLedMode>();
+    public IReadOnlyList<TriggerRumbleSource> TriggerRumbleSourceOptions { get; } = Enum.GetValues<TriggerRumbleSource>();
+
+    /// <summary>
+    /// Modes that make sense on a light with brightness but no colour. The
+    /// colour-coded modes (player colour, battery colour, rainbow) all land
+    /// on nearly the same brightness there, so offering them would look
+    /// like they do nothing.
+    /// </summary>
+    private static readonly LightbarMode[] MonoLightModes =
+    [
+        LightbarMode.Off, LightbarMode.Solid, LightbarMode.Breathing, LightbarMode.Strobe,
+        LightbarMode.RumbleReactive, LightbarMode.GameControlled, LightbarMode.External,
+    ];
+
+    // ── Capabilities ──
+    //
+    // Every Show* flag is "the pad has it, or nothing is known about the
+    // pad". Unknown shows everything: hiding a DualSense's lightbar because
+    // it has not been plugged in yet would read as the feature missing.
+
+    /// <summary>What the pad (or the slot's pads, for slot defaults) can do. None = unknown.</summary>
+    public ControllerFeatures Features { get; private set; }
+
+    private IReadOnlyList<string> familyNames = [];
+
+    public bool ShowRumbleTab => Features.Allows(ControllerFeatures.Rumble | ControllerFeatures.TriggerRumble);
+    public bool ShowMotorRumble => Features.Allows(ControllerFeatures.Rumble);
+    public bool ShowTriggerRumble => Features.Allows(ControllerFeatures.TriggerRumble);
+    public bool ShowAdaptiveTab => Features.Allows(ControllerFeatures.AdaptiveTriggers);
+    public bool ShowLightingTab => Features.Allows(ControllerFeatureSet.AnyLighting);
+    public bool ShowLightbar => Features.Allows(ControllerFeatureSet.AnyMainLight);
+    public bool ShowLightbarColour => Features.Allows(ControllerFeatures.RgbLight);
+    public bool ShowPlayerLeds => Features.Allows(ControllerFeatures.PlayerLeds);
+    public bool ShowMicLed => Features.Allows(ControllerFeatures.MicLed);
+    public bool ShowGameFlashNote => Features.HasAny(ControllerFeatures.LightbarFlash);
+
+    /// <summary>The DualSense has three brightness steps for its player LEDs; other pads only on/off.</summary>
+    public bool HasIndicatorBrightnessSteps => Features.Allows(ControllerFeatures.MicLed);
+
+    /// <summary>
+    /// One plain sentence saying what this pad has, so the user can see
+    /// what is particular to it and why some tabs are missing.
+    /// </summary>
+    public string FeatureSummary
+    {
+        get
+        {
+            if (!HasDevice)
+            {
+                return string.Empty;
+            }
+
+            return UiTextResources.Get(Features == ControllerFeatures.None ? "TuningUnknown" : "TuningDetected");
+        }
+    }
+
+    /// <summary>
+    /// Works out what the target can do. The resolver knows SDL's detected
+    /// capabilities and offline pads; the live snapshot's VID/PID is the
+    /// fallback when the editor was built without one.
+    /// </summary>
+    private void ResolveFeatures(string slotIdentifier, string deviceIdentifier)
+    {
+        var summary = featureResolver?.Resolve(slotIdentifier, deviceIdentifier)
+            ?? GameFlow.Infrastructure.Runtime.Effects.ControllerFeatureSummary.Unknown;
+
+        if (summary.Features == ControllerFeatures.None && !string.IsNullOrEmpty(deviceIdentifier))
+        {
+            var physical = snapshots.Get(slotIdentifier).Physical;
+            var fromSnapshot = ControllerHardwareCatalog.DefaultFeatures(physical.VendorId, physical.ProductId);
+            if (fromSnapshot != ControllerFeatures.None)
+            {
+                summary = new GameFlow.Infrastructure.Runtime.Effects.ControllerFeatureSummary(
+                    fromSnapshot,
+                    ControllerHardwareCatalog.FamilyName(physical.VendorId, physical.ProductId) is { } family
+                        ? [family]
+                        : []);
+            }
+        }
+
+        Features = summary.Features;
+        familyNames = summary.FamilyNames;
+    }
+
+    /// <summary>
+    /// Rebuilds the mode list for the current capabilities, keeping the
+    /// saved mode in it even when the pad cannot show it, so the dropdown
+    /// never appears blank over a setting that is actually stored.
+    /// </summary>
+    private void RebuildLightbarModeOptions()
+    {
+        var modes = Features.HasAny(ControllerFeatures.RgbLight) || !Features.HasAny(ControllerFeatures.MonoLight)
+            ? Enum.GetValues<LightbarMode>().ToList()
+            : MonoLightModes.ToList();
+
+        if (!modes.Contains(lightbarMode))
+        {
+            modes.Add(lightbarMode);
+        }
+
+        if (!modes.SequenceEqual(LightbarModeOptions))
+        {
+            LightbarModeOptions = new ObservableCollection<LightbarMode>(modes);
+            OnPropertyChanged(nameof(LightbarModeOptions));
+        }
+    }
 
     /// <summary>
     /// Ready-made lightbar colours.
@@ -201,14 +333,9 @@ public sealed class DeviceSettingsEditorViewModel : ViewModelBase
     /// <summary>True when this editor is changing the slot-wide fallback rather than one physical-device override.</summary>
     public bool IsSlotDefaults => DeviceSettingsStore.IsSlotDefaultsDevice(deviceId);
 
-    public string TuningScopeDescription => IsSlotDefaults
-        ? "These defaults apply to this virtual controller when an input has no device-specific override."
-        : "Tuning applies to this device on this slot only.";
+    public string TuningScopeDescription => UiTextResources.Get(IsSlotDefaults ? "TuningScopeSlot" : "TuningScopeDevice");
 
-    public string EffectsStatusNote =>
-        "Changes save immediately. Stick and trigger tuning shapes this slot's input; rumble, "
-        + "lighting and adaptive triggers are sent on the effects thread to an assigned, supported "
-        + "physical controller when it is connected.";
+    public string EffectsStatusNote => UiTextResources.Get("TuningSaveNote");
 
     /// <summary>Points the editor at one slot/device pair and loads its saved values.</summary>
     public void Load(string slotIdentifier, string deviceIdentifier, string displayName)
@@ -492,24 +619,7 @@ public sealed class DeviceSettingsEditorViewModel : ViewModelBase
     /// PULL, not times, which is the reading most people try first.
     /// </para>
     /// </summary>
-    private static string Describe(AdaptiveTriggerMode mode) => mode switch
-    {
-        AdaptiveTriggerMode.Off =>
-            "No resistance — the trigger moves freely.",
-        AdaptiveTriggerMode.Feedback =>
-            "Even resistance from the start position onward, like a stiffer spring.",
-        AdaptiveTriggerMode.Weapon =>
-            "Resists through the band, then gives way — the trigger-pull of a gun.",
-        AdaptiveTriggerMode.Vibration =>
-            "Buzzes while held, at the frequency below.",
-        AdaptiveTriggerMode.SlopeFeedback =>
-            "Gets progressively heavier across the band.",
-        AdaptiveTriggerMode.MultiplePositionFeedback =>
-            "Steps of resistance across the band, so the pull feels notched.",
-        AdaptiveTriggerMode.MultiplePositionVibration =>
-            "Buzzes in steps across the band rather than continuously.",
-        _ => string.Empty,
-    };
+    private static string Describe(AdaptiveTriggerMode mode) => UiTextResources.EnumValue(mode);
 
     public string LeftFeedbackLinkDescription => Describe(leftFeedbackLink);
     public string RightFeedbackLinkDescription => Describe(rightFeedbackLink);
@@ -520,15 +630,7 @@ public sealed class DeviceSettingsEditorViewModel : ViewModelBase
     /// stiffens during rumble from one that buzzes with it, and both
     /// sound like things the Mode dropdown above already offers.
     /// </summary>
-    private static string Describe(TriggerFeedbackLink link) => link switch
-    {
-        TriggerFeedbackLink.Resistance =>
-            "The trigger stiffens as the game rumbles — free at rest, reaching the strength above at full rumble.",
-        TriggerFeedbackLink.Vibration =>
-            "The trigger buzzes along with the game's rumble. Between events the effect above applies unchanged.",
-        _ =>
-            "The effect above is sent exactly as tuned, whatever the game is doing.",
-    };
+    private static string Describe(TriggerFeedbackLink link) => UiTextResources.EnumValue(link);
 
     private void RaiseAll()
     {

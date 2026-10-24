@@ -35,6 +35,8 @@ namespace GameFlow.Infrastructure.Runtime.Web.Overlay;
 /// </summary>
 public static class OverlayProtocol
 {
+    private static readonly IReadOnlyDictionary<int, string> KeyLabels = Enumerable.Range(1, 255)
+        .Append(Input.KeyboardVirtualKeys.NumpadEnter).ToDictionary(key => key, Input.VirtualKeyNames.GetName);
     /// <summary>
     /// Most touch contacts in one frame. The app has five finger colours and
     /// draws a fingertip for at most five contacts.
@@ -52,7 +54,8 @@ public static class OverlayProtocol
     /// paths are replaced by their asset-route URLs — the page never sees
     /// a filesystem path, and an index is all it can ask for.
     /// </summary>
-    public static string BuildProgram(OverlayProgram program)
+    public static string BuildProgram(OverlayProgram program, IReadOnlyDictionary<int, string>? controlLabels = null,
+        IReadOnlyList<string>? axisLabels = null)
     {
         ArgumentNullException.ThrowIfNull(program);
 
@@ -74,7 +77,17 @@ public static class OverlayProtocol
                 .Select(i => $"/overlay/asset?theme={Uri.EscapeDataString(program.ThemeId)}&i={i}")
                 .ToArray(),
             nodes = program.Nodes,
-            touchRegion = program.TouchRegion
+            inputSurface = program.InputSurface,
+            controlLabels,
+            axisLabels,
+            keyLabels = program.InputSurface is null ? null : KeyLabels,
+            touchRegion = program.TouchRegion,
+            // Flat [x0, y0, x1, y1, ...] in theme units: the page turns it
+            // straight into a clip path, and a hundredth of a theme pixel
+            // is far below anything a canvas can show.
+            touchOutline = program.TouchOutline?
+                .SelectMany(point => new[] { Math.Round(point.X, 2), Math.Round(point.Y, 2) })
+                .ToArray()
         };
 
         return JsonSerializer.Serialize(payload, ProgramJson);
@@ -128,6 +141,7 @@ public static class OverlayProtocol
 
         AppendTrailPads(builder, program, symbols);
         AppendTouchContacts(builder, program, snapshot);
+        AppendInputs(builder, program, snapshot);
 
         var css = OverlayProgramBuilder.ToCssColor(lightColor);
         if (css is not null)
@@ -137,6 +151,53 @@ public static class OverlayProtocol
 
         _ = builder.Append('}');
         return builder.ToString();
+    }
+
+    private static void AppendInputs(StringBuilder builder, OverlayProgram program, ControllerSnapshot snapshot)
+    {
+        // Keep identifiers numeric on the wire; labels are sent once with the layout.
+        builder.Append(",\"buttons\":[");
+        var first = true;
+        foreach (var button in snapshot.Buttons)
+        {
+            if (!first) { builder.Append(','); }
+            first = false;
+            builder.Append(((int)button).ToString(CultureInfo.InvariantCulture));
+        }
+        builder.Append(']');
+        builder.Append(",\"activeAxes\":[");
+        first = true;
+        AddAxis(0, Active(snapshot.LeftStick.X) || Active(snapshot.LeftStick.Y));
+        AddAxis(1, Active(snapshot.RightStick.X) || Active(snapshot.RightStick.Y));
+        AddAxis(2, Active(snapshot.LeftTrigger));
+        AddAxis(3, Active(snapshot.RightTrigger));
+        AddAxis(4, program.InputSurface is not null && (Active(snapshot.MouseMotion.X) || Active(snapshot.MouseMotion.Y)));
+        builder.Append(']');
+        if (program.InputSurface is null) { return; }
+        builder.Append(",\"keys\":[");
+        first = true;
+        foreach (var key in snapshot.PressedKeys)
+        {
+            if (!Input.KeyboardVirtualKeys.IsSupported(key)) { continue; }
+            if (!first) { builder.Append(','); }
+            first = false;
+            builder.Append(key.ToString(CultureInfo.InvariantCulture));
+        }
+        builder.Append("],\"mouse\":").Append(((int)snapshot.MouseButtons).ToString(CultureInfo.InvariantCulture));
+        builder.Append(",\"motion\":[");
+        AppendNumber(builder, float.IsFinite(snapshot.MouseMotion.X) ? Math.Clamp(snapshot.MouseMotion.X, -1, 1) : 0);
+        builder.Append(',');
+        AppendNumber(builder, float.IsFinite(snapshot.MouseMotion.Y) ? Math.Clamp(snapshot.MouseMotion.Y, -1, 1) : 0);
+        builder.Append(']');
+
+        static bool Active(float value) => float.IsFinite(value) && Math.Abs(value) > .05f;
+        void AddAxis(int id, bool active)
+        {
+            if (!active) { return; }
+            if (!first) { builder.Append(','); }
+            first = false;
+            builder.Append(id.ToString(CultureInfo.InvariantCulture));
+        }
     }
 
     /// <summary>

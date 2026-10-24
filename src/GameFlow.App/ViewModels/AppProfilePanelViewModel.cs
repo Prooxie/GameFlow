@@ -116,14 +116,11 @@ public sealed class AppProfilePanelViewModel : ViewModelBase
             if (string.IsNullOrEmpty(CurrentApp))
             {
                 return OperatingSystem.IsWindows()
-                    ? "No foreground application detected."
-                    : "Reading the foreground application is Windows-only for now, so rules will not fire on this system.";
+                    ? UiTextResources.Get("UiNoForegroundApp")
+                    : UiTextResources.Get("UiForegroundWindowsOnly");
             }
 
-            var switched = autoSwitch.LastSwitchedApp;
-            return string.IsNullOrEmpty(switched)
-                ? $"In front now: {CurrentApp}. Active profile: {session.CurrentProfile.Name}."
-                : $"In front now: {CurrentApp}. Last switch was for {switched}; active profile: {session.CurrentProfile.Name}.";
+            return UiTextResources.Format("UiForegroundStatus", CurrentApp, session.CurrentProfile.Name);
         }
     }
 

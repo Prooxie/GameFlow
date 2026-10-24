@@ -57,6 +57,20 @@ public sealed record ThemeDocument
     /// Falls back to the parent of <see cref="BaseDirectory"/>.
     /// </summary>
     public string? ThemesRootDirectory { get; init; }
+
+    /// <summary>
+    /// GameFlow extension, read from an optional root <c>touchpadInset</c>
+    /// field: how far the touch surface sits inside the visible touchpad
+    /// art, in theme units. Zero for every shipped theme.
+    /// </summary>
+    /// <remarks>
+    /// The touch surface is found from the touchpad art's own alpha channel
+    /// (see <see cref="ThemeTouchpadLocator"/>), which is right whenever the
+    /// art is the pad. A pack whose pad art also draws a bezel or a rim the
+    /// finger cannot reach says so here, once, in the theme — rather than
+    /// the app carrying a table of per-theme corrections keyed by id.
+    /// </remarks>
+    public ThemeInset TouchpadInset { get; init; }
 }
 
 /// <summary>

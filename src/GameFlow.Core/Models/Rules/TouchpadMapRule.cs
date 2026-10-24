@@ -22,6 +22,17 @@ namespace GameFlow.Core.Models.Rules;
 /// <see cref="Pipeline.ControllerFrameResult.MouseDeltaY"/> — this rule
 /// only computes the delta, it doesn't move anything itself.
 /// </para>
+///
+/// <para>
+/// The stick and D-pad modes act only while a finger is down. With no
+/// touch the rule writes nothing, so the physical stick and D-pad pass
+/// through untouched; while touching, the stick mode takes over its
+/// target stick and the D-pad mode ADDS its wedge on top of whatever the
+/// physical D-pad is doing. The rule used to centre its target stick and
+/// release all four D-pad buttons on every tick without a touch, which —
+/// with the stick mode on by default — left the physical right stick
+/// dead for anyone who had only opened the touchpad editor.
+/// </para>
 /// </summary>
 public sealed record TouchpadMapRule : MappingRule
 {

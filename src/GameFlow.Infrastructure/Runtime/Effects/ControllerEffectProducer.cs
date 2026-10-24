@@ -31,7 +31,8 @@ public sealed class ControllerEffectProducer(
     InputDeviceCatalog deviceCatalog,
     RumbleFeedbackStore rumbleFeedback,
     ControllerEffectsService effects,
-    ILogger<ControllerEffectProducer> logger) : BackgroundService
+    ILogger<ControllerEffectProducer> logger,
+    ExternalLightingStore? externalLighting = null) : BackgroundService
 {
     private static readonly TimeSpan ProduceInterval = TimeSpan.FromMilliseconds(16);
 
@@ -46,6 +47,11 @@ public sealed class ControllerEffectProducer(
 
     private readonly Dictionary<string, bool> lowBatteryByDevice = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> publishedDevices = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> seenDevices = new(StringComparer.OrdinalIgnoreCase);
+    private readonly List<string> staleDevices = [];
+
+    /// <summary>Which layer last drove each pad's lightbar. Producer thread only.</summary>
+    private readonly Dictionary<string, LightingSource> lightingSourceByDevice = new(StringComparer.OrdinalIgnoreCase);
     private DateTimeOffset startedAtUtc = DateTimeOffset.UtcNow;
 
     /// <summary>
@@ -91,10 +97,11 @@ public sealed class ControllerEffectProducer(
         }
     }
 
-    private void ProduceOnce()
+    /// <summary>Produces one effects frame. Call this method from one producer thread only.</summary>
+    internal void ProduceOnce()
     {
         var elapsed = (DateTimeOffset.UtcNow - startedAtUtc).TotalSeconds;
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        seenDevices.Clear();
 
         foreach (var slot in slotRegistry.GetSlots())
         {
@@ -107,7 +114,7 @@ public sealed class ControllerEffectProducer(
 
             foreach (var deviceId in slot.InputDeviceIds)
             {
-                if (string.IsNullOrEmpty(deviceId) || !seen.Add(deviceId))
+                if (string.IsNullOrEmpty(deviceId) || !seenDevices.Add(deviceId))
                 {
                     continue;
                 }
@@ -126,34 +133,38 @@ public sealed class ControllerEffectProducer(
                     requestedRumble.LowFrequency,
                     requestedRumble.HighFrequency);
 
+                // A low battery used to override every mode unconditionally.
+                // It is still the default — a pad that dies mid-session is a
+                // worse outcome than a lightbar briefly ignoring its setting
+                // — but the resolver now honours LowBatteryAlert, so a pad
+                // that lives on its cable can opt out.
                 var context = new EffectSceneContext(
                     ElapsedSeconds: elapsed,
                     PlayerIndex: slot.Index,
                     BatteryPercent: info?.BatteryPercentage,
                     IsCharging: info?.BatteryState == DeviceBatteryState.Charging,
                     RumbleLevel: Math.Max(low, high),
-                    TriggerLevel: Math.Max(physical.LeftTrigger, physical.RightTrigger));
+                    TriggerLevel: Math.Max(physical.LeftTrigger, physical.RightTrigger),
+                    LowBattery: IsLow(deviceId),
+                    Game: rumbleFeedback.Lighting.Get(slot.Id),
+                    External: externalLighting?.Resolve(slot.Id, deviceId));
 
                 var lighting = settings.Lighting;
+                var resolved = EffectSceneResolver.ResolveLighting(lighting, context);
+                var features = info?.EffectiveFeatures ?? ControllerFeatures.None;
+                var (leftTriggerRumble, rightTriggerRumble) = ResolveTriggerRumble(settings.Rumble, features, low, high);
 
-                // A low battery overrides whatever mode is configured. It
-                // is the one thing worth interrupting the user's choice
-                // for: a pad that dies mid-session is a worse outcome than
-                // a lightbar that briefly stops matching its setting.
-                var color = IsLow(deviceId)
-                    ? LowBatteryPulse(elapsed)
-                    : EffectSceneResolver.ResolveLight(lighting, context);
+                effects.Queue.Publish(deviceId, BuildState(
+                    features,
+                    low,
+                    high,
+                    leftTriggerRumble,
+                    rightTriggerRumble,
+                    resolved,
+                    ToCommand(EffectSceneResolver.ResolveAdaptiveTrigger(settings.LeftAdaptiveTrigger, context)),
+                    ToCommand(EffectSceneResolver.ResolveAdaptiveTrigger(settings.RightAdaptiveTrigger, context))));
 
-                effects.Queue.Publish(deviceId, new ControllerEffectState
-                {
-                    LowFrequencyRumble = low,
-                    HighFrequencyRumble = high,
-                    LedColor = color is { } c ? new EffectColor(c.R, c.G, c.B) : null,
-                    LeftTrigger = ToCommand(
-                        EffectSceneResolver.ResolveAdaptiveTrigger(settings.LeftAdaptiveTrigger, context)),
-                    RightTrigger = ToCommand(
-                        EffectSceneResolver.ResolveAdaptiveTrigger(settings.RightAdaptiveTrigger, context)),
-                });
+                LogLightingSourceChange(deviceId, info?.DisplayName, resolved.Source);
 
                 if (publishedDevices.Add(deviceId))
                 {
@@ -175,7 +186,16 @@ public sealed class ControllerEffectProducer(
 
         // A pad that left a slot must be told to stop. Without this it
         // keeps whatever rumble and colour it had when it was unassigned.
-        foreach (var stale in publishedDevices.Where(id => !seen.Contains(id)).ToList())
+        staleDevices.Clear();
+        foreach (var deviceId in publishedDevices)
+        {
+            if (!seenDevices.Contains(deviceId))
+            {
+                staleDevices.Add(deviceId);
+            }
+        }
+
+        foreach (var stale in staleDevices)
         {
             effects.Queue.Retire(stale);
             _ = publishedDevices.Remove(stale);
@@ -184,7 +204,104 @@ public sealed class ControllerEffectProducer(
             {
                 _ = lowBatteryByDevice.Remove(stale);
             }
+
+            _ = lightingSourceByDevice.Remove(stale);
         }
+    }
+
+    /// <summary>
+    /// Assembles the state for one pad, sending each light only to hardware
+    /// that has it.
+    ///
+    /// <para>
+    /// Gated on capability rather than sent to everything because the
+    /// queue's dedupe compares whole states: an animated colour published
+    /// to an Xbox pad changes the state every frame, and each "change"
+    /// re-sends motor values to a pad that has no light to show it. When
+    /// nothing is known about a pad (<see cref="ControllerFeatures.None"/>)
+    /// the colour still goes out, as it always did; the DualSense-only
+    /// lights do not, because they cannot reach anything else anyway.
+    /// </para>
+    /// </summary>
+    internal static ControllerEffectState BuildState(
+        ControllerFeatures features,
+        double lowFrequencyRumble,
+        double highFrequencyRumble,
+        double leftTriggerRumble,
+        double rightTriggerRumble,
+        in ResolvedLighting lighting,
+        AdaptiveTriggerCommand leftTrigger,
+        AdaptiveTriggerCommand rightTrigger)
+    {
+        var bar = lighting.Lightbar;
+        var hasPlayerLeds = features.HasAny(ControllerFeatures.PlayerLeds);
+
+        return new ControllerEffectState
+        {
+            LowFrequencyRumble = lowFrequencyRumble,
+            HighFrequencyRumble = highFrequencyRumble,
+            LeftTriggerRumble = leftTriggerRumble,
+            RightTriggerRumble = rightTriggerRumble,
+            LedColor = features.Allows(ControllerFeatureSet.AnyMainLight)
+                ? new EffectColor(bar.R, bar.G, bar.B)
+                : null,
+            PlayerLeds = hasPlayerLeds ? lighting.PlayerLeds : null,
+            PlayerLedBrightness = hasPlayerLeds && features.HasAny(ControllerFeatures.MicLed)
+                ? lighting.PlayerLedBrightness
+                : null,
+            MicLed = features.HasAny(ControllerFeatures.MicLed) ? lighting.MicLed : null,
+            LeftTrigger = leftTrigger,
+            RightTrigger = rightTrigger,
+        };
+    }
+
+    /// <summary>
+    /// Impulse-trigger levels for this pad, 0–1 each. Mirrors the already
+    /// resolved body rumble (so disabling rumble or turning the gain down
+    /// quietens the triggers too), heavy motor to the left trigger and
+    /// light motor to the right, then applies the trigger gain.
+    /// </summary>
+    internal static (double Left, double Right) ResolveTriggerRumble(
+        RumbleSettings settings, ControllerFeatures features, double low, double high)
+    {
+        if (settings.TriggerRumbleSource != TriggerRumbleSource.Motors
+            || !features.HasAny(ControllerFeatures.TriggerRumble))
+        {
+            return (0d, 0d);
+        }
+
+        var gain = Math.Clamp(settings.TriggerRumbleGain, 0f, 2f);
+        return (Math.Clamp(low * gain, 0d, 1d), Math.Clamp(high * gain, 0d, 1d));
+    }
+
+    /// <summary>
+    /// Logs when a pad's lightbar changes hands — the game takes over, an
+    /// external program does, the battery alert starts. "The light did
+    /// something I did not set" is otherwise unexplainable from outside.
+    /// </summary>
+    private void LogLightingSourceChange(string deviceId, string? displayName, LightingSource source)
+    {
+        if (lightingSourceByDevice.TryGetValue(deviceId, out var previous) && previous == source)
+        {
+            return;
+        }
+
+        lightingSourceByDevice[deviceId] = source;
+        if (previous == default && source == LightingSource.Configured)
+        {
+            return;
+        }
+
+        logger.LogInformation(
+            "Lighting for {Device} now comes from {Source}.",
+            displayName ?? deviceId,
+            source switch
+            {
+                LightingSource.Game => "the game",
+                LightingSource.External => "the external lighting API",
+                LightingSource.LowBattery => "the low-battery alert",
+                _ => "its configured mode",
+            });
     }
 
     /// <summary>
@@ -219,7 +336,7 @@ public sealed class ControllerEffectProducer(
             {
                 lowBatteryByDevice[deviceId] = true;
                 logger.LogWarning(
-                    "{Device} battery is low: {Percent}%. The lightbar will pulse red until it is charged.",
+                    "{Device} battery is low: {Percent}%. With the low-battery alert on, the light pulses red until it is charged.",
                     info.DisplayName, percent);
             }
             else if (wasLow && percent >= LowBatteryClearPercent)
@@ -289,17 +406,5 @@ public sealed class ControllerEffectProducer(
         {
             return lowBatteryByDevice.TryGetValue(deviceId, out var low) && low;
         }
-    }
-
-    /// <summary>
-    /// Urgent red pulse. Faster than the breathing mode and never fully
-    /// dark, so it reads as an alert rather than as an animation someone
-    /// chose.
-    /// </summary>
-    private static LightColor LowBatteryPulse(double elapsedSeconds)
-    {
-        var phase = (elapsedSeconds % 1.0) / 1.0;
-        var level = 0.35 + (0.65 * ((1 - Math.Cos(phase * 2 * Math.PI)) / 2));
-        return new LightColor(0xFF, 0x18, 0x18).Scaled(level);
     }
 }

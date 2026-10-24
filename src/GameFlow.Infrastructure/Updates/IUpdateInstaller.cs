@@ -7,7 +7,7 @@ namespace GameFlow.Infrastructure.Updates;
 ///
 /// <para>
 /// Autofire ships as a self-contained zip per the README ("Unzip
-/// anywhere and run GameFlow.App.exe"), so a fully-automated installer
+/// anywhere and run GameFlow.exe"), so a fully-automated installer
 /// would be both unnecessary and risky (corrupted in-place updates are
 /// a classic auto-updater failure mode). Instead, the installer
 /// downloads the asset to a temp folder and reveals the file in the

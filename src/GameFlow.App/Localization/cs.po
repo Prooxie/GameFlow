@@ -238,7 +238,7 @@ msgid "MappingEditorSuppressRawStick"
 msgstr "Potlačit surový vstup páčky po úpravě"
 
 msgid "MappingEditorDeadzoneLabel"
-msgstr "Mrtvá zóna"
+msgstr "Mrtvá zóna a práh"
 
 msgid "MappingEditorDeadzoneHint"
 msgstr "Hodnoty v mrtvé zóně jsou vynuceny na nulu."
@@ -267,6 +267,7 @@ msgstr "Aktivace plného výstupu od"
 msgid "MappingEditorTargetControlKeyLabel"
 msgstr "Klíč cílového ovládacího prvku"
 
+#. invariant: control syntax or product name
 msgid "MappingEditorControlKeyWatermark"
 msgstr "LeftStick / South / Touchpad …"
 
@@ -335,7 +336,6 @@ msgstr "Nelze smazat: toto je jediný profil."
 
 msgid "ProfileDeletedStatus"
 msgstr "Profil {0} smazán."
-
 
 msgid "ThemeLabel"
 msgstr "Vzhled"
@@ -421,7 +421,6 @@ msgstr "Výchozí obnoveny — klikněte na Uložit pro použití."
 msgid "SettingsDialogApplyFailedStatus"
 msgstr "Nastavení nelze uložit: {0}"
 
-
 msgid "ThemeNameCyberBlue"
 msgstr "Kybernetická modrá"
 
@@ -473,6 +472,7 @@ msgstr "ViGEm DualShock 4"
 msgid "OutputProviderViGEmDs4Description"
 msgstr "Virtuální ovladač DualShock 4 přes ViGEm Bus. Vyžaduje ovladač ViGEm Bus."
 
+#. invariant: control syntax or product name
 msgid "OutputProviderViGEmDs5Label"
 msgstr "ViGEm DualSense (DS5)"
 
@@ -499,7 +499,6 @@ msgstr "PlayStation 5"
 
 msgid "ControllerStyleMinimal"
 msgstr "Minimální"
-
 
 msgid "StyleLabelXbox"
 msgstr "Rozložení Xbox"
@@ -568,31 +567,31 @@ msgid "RuleKindButtonAutofireLabel"
 msgstr "Autofire / Turbo tlačítka"
 
 msgid "RuleKindButtonAutofireDescription"
-msgstr "Opakovaně stiská tlačítko nastavitelnou rychlostí."
+msgstr "Opakuje tlačítko, dokud ho držíte."
 
 msgid "RuleKindStickThresholdLabel"
 msgstr "Práh páčky"
 
 msgid "RuleKindStickThresholdDescription"
-msgstr "Mrtvá zóna a tvarování prahu pro páčku."
+msgstr "Nastaví mrtvou zónu a plný rozsah páčky."
 
 msgid "RuleKindStickAutofireLabel"
 msgstr "Autofire páčky"
 
 msgid "RuleKindStickAutofireDescription"
-msgstr "Pulzuje výstup jedné páčky podle jiné páčky."
+msgstr "Pulzuje jednou páčkou podle druhé."
 
 msgid "RuleKindFreezeLastDirectionLabel"
 msgstr "Zmrazit poslední směr"
 
 msgid "RuleKindFreezeLastDirectionDescription"
-msgstr "Drží poslední zaznamenaný směr páčky, dokud je tlačítko drženo."
+msgstr "Drží směr páčky, dokud držíte tlačítko."
 
 msgid "RuleKindScriptLabel"
 msgstr "Skript ovládání"
 
 msgid "RuleKindScriptDescription"
-msgstr "Uloží text skriptu pro konkrétní ovládání."
+msgstr "Spustí skript Lua pro jeden ovládací prvek."
 
 msgid "MappingEditorAddRule"
 msgstr "+ Přidat pravidlo"
@@ -618,11 +617,8 @@ msgstr "Potlačit zdrojové tlačítko"
 msgid "MappingEditorEnabled"
 msgstr "Povoleno"
 
-msgid "MappingEditorDeadzoneLabel"
-msgstr "Mrtvá zóna a práh"
-
 msgid "MappingEditorStoreScript"
-msgstr "Uloží skript pro vybrané ovládání. Spouštění za běhu je plánovaný krok."
+msgstr "Skript běží při každé aktualizaci, dokud je pravidlo zapnuté."
 
 msgid "MappingEditorSelectRuleToEdit"
 msgstr "Vyberte pravidlo k úpravě"
@@ -633,12 +629,8 @@ msgstr "Nebo použijte „Přidat pravidlo“ k vytvoření nového mapování."
 msgid "MappingEditorSaveButton"
 msgstr "Uložit"
 
-msgid "MappingEditorCancelButton"
-msgstr "Zrušit"
-
 msgid "MappingEditorRulesHeader"
 msgstr "PRAVIDLA MAPOVÁNÍ"
-
 
 msgid "InputProviderOpenXInputLabel"
 msgstr "OpenXInput"
@@ -674,7 +666,7 @@ msgid "OutputProviderHidMaestroLabel"
 msgstr "HidMaestro virtuální HID"
 
 msgid "OutputProviderHidMaestroDescription"
-msgstr "Platforma pro virtuální ovladače v uživatelském režimu — bez jádrového ovladače či restartu. Prezentuje se jako skutečný hardware pro XInput, DirectInput, SDL3 a WGI. Pouze Windows. Aktivuje se automaticky, pokud je HIDMaestro.Core.dll umístěn vedle spustitelného souboru. Nepřechází na ViGEm jako zálohu — pokud se nepodaří aktivovat, tento slot nemá žádný výstup."
+msgstr "Backend virtuálních ovladačů pro Windows. Kompatibilní běhové prostředí HIDMaestro nainstalujte zvlášť. Bez něj slot nemá výstup."
 
 msgid "OutputProviderWindowsMidiOutLabel"
 msgstr "Výstup Windows MIDI"
@@ -683,16 +675,16 @@ msgid "OutputProviderWindowsMidiOutDescription"
 msgstr "Vysílá MIDI události z aktivity gamepadu. Stub — vyžaduje Windows MIDI Services a mapování v profilu."
 
 msgid "RuleKindMultiButtonAutofireLabel"
-msgstr "Vícetlačítkový autofire"
+msgstr "Automatická střelba více tlačítek"
 
 msgid "RuleKindMultiButtonAutofireDescription"
-msgstr "Během držení opakuje sekvenci stisků s časováním pro každý krok."
+msgstr "Opakuje sled stisků, dokud držíte tlačítko."
 
 msgid "RuleKindRuleToggleLabel"
 msgstr "Přepínač pravidel"
 
 msgid "RuleKindRuleToggleDescription"
-msgstr "Stiskem tlačítka zapne nebo vypne jiná pravidla."
+msgstr "Zapíná a vypíná jiná pravidla tlačítkem."
 
 msgid "DevicesTab"
 msgstr "Zařízení"
@@ -725,9 +717,7 @@ msgid "DevicesNoSelection"
 msgstr "Vyberte zařízení pro zobrazení podrobností."
 
 msgid "DevicesEmptyList"
-msgstr "Nebyla nalezena žádná vstupní zařízení. Připojte ovladač a klikněte na Obnovit."
-
-# ── UI/UX localization pass (auto-added) ──
+msgstr "Nenalezena vstupní zařízení. Připojte zařízení a obnovte seznam."
 
 msgid "DashboardBackgroundLabel"
 msgstr "Pozadí"
@@ -784,10 +774,10 @@ msgid "StyleLabelPlayStation3"
 msgstr "DualShock 3 layout"
 
 msgid "StyleLabelSimpleGamepad"
-msgstr "Simple gamepad layout"
+msgstr "Obecný gamepad"
 
 msgid "StyleLabelSteamController"
-msgstr "Steam Controller layout"
+msgstr "Steam Controller"
 
 msgid "StyleLabelSteamDeck"
 msgstr "Steam Deck layout"
@@ -816,13 +806,11 @@ msgstr "SDL3 aktivní — nenalezeny žádné gamepady"
 msgid "ProviderStatus_NoControllerSelected"
 msgstr "Není vybrán žádný ovladač. Automatický výběr použije první nalezené zařízení."
 
-# ── Mapping editor localization pass ──
-
 msgid "MEV_SectionTriggerButton"
 msgstr "SPOUŠTĚCÍ TLAČÍTKO"
 
 msgid "MEV_SectionTriggerButtonHold"
-msgstr "SPOUŠTĚCÍ TLAČÍTKO (držením opakuje)"
+msgstr "Držením opakovat"
 
 msgid "MEV_SectionOutputButton"
 msgstr "VÝSTUPNÍ TLAČÍTKO"
@@ -843,22 +831,22 @@ msgid "MEV_SectionDeadzone"
 msgstr "MRTVÁ ZÓNA"
 
 msgid "MEV_SectionFullAt"
-msgstr "PLNÝ VÝKON PŘI (saturace)"
+msgstr "Plný výstup při"
 
 msgid "MEV_SectionActivationDeadzone"
-msgstr "AKTIVAČNÍ MRTVÁ ZÓNA"
+msgstr "Mrtvá zóna aktivace"
 
 msgid "MEV_SectionActivationFullAt"
 msgstr "AKTIVAČNÍ PLNÝ VÝKON"
 
 msgid "MEV_SectionActivationButton"
-msgstr "AKTIVAČNÍ TLAČÍTKO (držením zmrazí)"
+msgstr "Držením zmrazit"
 
 msgid "MEV_SectionBlendMode"
 msgstr "REŽIM PROLNUTÍ"
 
 msgid "MEV_SectionSequenceSteps"
-msgstr "KROKY SEKVENCE (opakuje se při držení)"
+msgstr "Kroky opakované při držení"
 
 msgid "MEV_SectionStepTarget"
 msgstr "CÍL"
@@ -870,22 +858,22 @@ msgid "MEV_SectionTargetControlKey"
 msgstr "KLÍČ CÍLOVÉHO OVLÁDÁNÍ"
 
 msgid "MEV_SuppressRawAfterShaping"
-msgstr "Po tvarování potlačit surový vstup páčky"
+msgstr "Použít páčku jen jako zdroj pro jiná pravidla"
 
 msgid "MEV_SuppressSourceStickOutput"
-msgstr "Potlačit výstup zdrojové páčky"
+msgstr "Potlačit vstupní páčku"
 
 msgid "MEV_SuppressSourceInputStored"
-msgstr "Potlačit zdrojový vstup (uloženo pro budoucí běh)"
+msgstr "Potlačit zdrojové tlačítko"
 
 msgid "MEV_SuppressActivationWhileFreezing"
-msgstr "Během zmrazení potlačit aktivační tlačítko"
+msgstr "Potlačit aktivační tlačítko při zmrazení"
 
 msgid "MEV_SuppressCapturedWhileFrozen"
-msgstr "Během zmrazení potlačit výstup snímané páčky"
+msgstr "Potlačit zachycenou páčku při zmrazení"
 
 msgid "MEV_PulseWhileFrozen"
-msgstr "Pulzovat během zmrazení (autofire při držení)"
+msgstr "Automatická střelba při zmrazení"
 
 msgid "MEV_EditButton"
 msgstr "Upravit"
@@ -897,19 +885,19 @@ msgid "MEV_AddStep"
 msgstr "+ Přidat krok"
 
 msgid "MEV_NoStepsYet"
-msgstr "Zatím žádné kroky — přidejte alespoň jeden, aby smyčka něco dělala."
+msgstr "Přidejte alespoň jeden krok."
 
 msgid "MEV_HintDeadzone"
-msgstr "Ignorovat pohyb páčky pod tímto prahem."
+msgstr "Pohyb pod touto hodnotou se ignoruje."
 
 msgid "MEV_HintFullAt"
-msgstr "Dosáhnout 100 % výstupu při této surové výchylce páčky."
+msgstr "Zde výstup dosáhne 100 %."
 
 msgid "SidebarPhysicalHeader"
 msgstr "FYZICKÁ ZAŘÍZENÍ"
 
 msgid "SidebarVirtualHeader"
-msgstr "VIRTUÁLNÍ OVLADAČE"
+msgstr "Virtuální ovladače"
 
 msgid "DevicesPhysicalTabHeader"
 msgstr "Fyzická zařízení"
@@ -933,7 +921,7 @@ msgid "MappedControlAutofireTitle"
 msgstr "Autofire"
 
 msgid "MappedControlStickThresholdTitle"
-msgstr "Mrtvá zóna / práh"
+msgstr "Mrtvá zóna a práh"
 
 msgid "MappedControlStickAutofireTitle"
 msgstr "Autofire páčky"
@@ -987,13 +975,13 @@ msgid "StickRightLabel"
 msgstr "Pravá páčka"
 
 msgid "MappedControlHintStickClick"
-msgstr "Kliknutí páčky: průchod, ignorovat, přemapovat, autofire, skript."
+msgstr "Stisk páčky: předání, ignorování, přemapování, automatická střelba nebo skript."
 
 msgid "MappedControlHintAnalogTrigger"
-msgstr "Analogová spoušť: průchod, ignorovat, skript, budoucí analogové přemapování."
+msgstr "Analogová spoušť: předání, ignorování nebo skript."
 
 msgid "MappedControlHintButton"
-msgstr "Tlačítko: průchod, ignorovat, přemapovat, autofire, skript."
+msgstr "Tlačítko: předání, ignorování, přemapování, automatická střelba nebo skript."
 
 msgid "MEV_HoldMs"
 msgstr "DRŽET ms"
@@ -1005,16 +993,16 @@ msgid "MEV_DelayMs"
 msgstr "PRODLEVA ms"
 
 msgid "MEV_SectionTriggerButtonToggle"
-msgstr "SPOUŠTĚCÍ TLAČÍTKO (stiskem přepíná)"
+msgstr "Stisknutím přepnout"
 
 msgid "MEV_SectionRulesToToggle"
 msgstr "PŘEPÍNANÁ PRAVIDLA"
 
 msgid "MEV_ToggleHint"
-msgstr "Každý stisk spouště přepne stav zapnutí zaškrtnutých pravidel."
+msgstr "Každý stisk zapne nebo vypne zaškrtnutá pravidla."
 
 msgid "MEV_NoOtherRules"
-msgstr "Zatím neexistují žádná jiná pravidla k cílení."
+msgstr "Zatím nejsou žádná další pravidla."
 
 msgid "MEV_SectionTiming"
 msgstr "ČASOVÁNÍ"
@@ -1026,10 +1014,10 @@ msgid "MEV_TimingRelease"
 msgstr "UVOLNĚNÍ"
 
 msgid "MEV_HintHold"
-msgstr "Jak dlouho je virtuální tlačítko drženo (fáze stisku)."
+msgstr "Jak dlouho trvá každý stisk."
 
 msgid "MEV_HintRelease"
-msgstr "Jak dlouho je virtuální tlačítko uvolněno mezi pulzy."
+msgstr "Pauza mezi stisky."
 
 msgid "TemplateOutputProviderLabel"
 msgstr "Výstupní poskytovatel"
@@ -1066,8 +1054,6 @@ msgstr "Žádný ovladač není přiřazen"
 
 msgid "SidebarAddController"
 msgstr "Přidat ovladač"
-
-# ── Touchpad tab: joystick / D-pad / mouse mapping + gestures ──
 
 msgid "DevicesTouchpadTab"
 msgstr "Touchpad"
@@ -1277,10 +1263,1726 @@ msgid "RuleKindButtonRemapLabel"
 msgstr "Přemapování tlačítka"
 
 msgid "RuleKindButtonRemapDescription"
-msgstr "Nasměruje jedno fyzické tlačítko na vybraný virtuální výstup."
+msgstr "Pošle jedno tlačítko jako jiné."
 
 msgid "SidebarWalkthrough"
 msgstr "Průvodce nastavením"
 
 msgid "SidebarPhoneController"
 msgstr "Použít telefon"
+
+msgid "RuleKindAxisInvertLabel"
+msgstr "Inverze os"
+
+msgid "RuleKindAxisInvertDescription"
+msgstr "Převrátí osy páček nebo spouště."
+
+msgid "MEV_SectionInvertLeftStick"
+msgstr "LEVÁ PÁČKA"
+
+msgid "MEV_SectionInvertRightStick"
+msgstr "PRAVÁ PÁČKA"
+
+msgid "MEV_SectionInvertTriggers"
+msgstr "SPOUŠTĚ"
+
+msgid "MEV_InvertX"
+msgstr "Převrátit X"
+
+msgid "MEV_InvertY"
+msgstr "Převrátit Y"
+
+msgid "MEV_InvertL2"
+msgstr "Převrátit L2"
+
+msgid "MEV_InvertR2"
+msgstr "Převrátit R2"
+
+msgid "MEV_InvertShowInLayout"
+msgstr "Zobrazit inverzi na ovladači na obrazovce"
+
+msgid "MEV_InvertHint"
+msgstr "Použije se nakonec, takže ostatní pravidla vidí páčku tak, jak ji tlačíte."
+
+msgid "MEV_TipInvertLeftX"
+msgstr "Prohodí vlevo a vpravo jen pro tento profil.\n\nOstatní pravidla vidí páčku tak, jak ji tlačíte. Převrácení dostane jen hra."
+
+msgid "MEV_TipInvertLeftY"
+msgstr "Prohodí nahoru a dolů jen pro tento profil.\n\nPoužijte, když hra čte páčku obráceně: tlačíte nahoru a postava jde dolů."
+
+msgid "MEV_TipInvertRightX"
+msgstr "Prohodí vlevo a vpravo jen pro tento profil."
+
+msgid "MEV_TipInvertRightY"
+msgstr "Prohodí nahoru a dolů jen pro tento profil.\n\nBěžný případ: obrácená kamera ve hře bez vlastního nastavení."
+
+msgid "MEV_TipInvertTrigger"
+msgstr "Převrátí spoušť v jejím rozsahu, takže puštěná se čte jako plně stisknutá.\n\nUrčeno pro hardware s obrácenou osou spouště, ne pro hry. Nechte vypnuté, pokud hra nemá číst nedotčenou spoušť jako drženou."
+
+msgid "MEV_TipInvertShowInLayout"
+msgstr "Ve výchozím stavu vypnuto, takže tlačení nahoru se ukazuje nahoru.\n\nZapněte, abyste viděli přesně to, co dostává hra."
+
+msgid "MEV_RuleOrderHint"
+msgstr "Přesunutí pravidla mění pořadí jen mezi pravidly stejného typu."
+
+msgid "MappedControlAxisInvertTitle"
+msgstr "Inverze os"
+
+msgid "MappedControlAxisInvertNothing"
+msgstr "nic nepřevráceno"
+
+msgid "MappedControlAxisInvertShown"
+msgstr "zobrazeno na ovladači"
+
+msgid "MEV_RuleOrderTip"
+msgstr "Pravidla běží v tomto pořadí: přepínače pravidel, prahy páček, SOCD, přemapování, autofire, vícetlačítkový autofire, komba, autofire páčky, zmrazení směru, stick trim, gyro, touchpad, vícezdrojové řádky, skripty, inverze os."
+
+msgid "MEV_ScriptTrustWarning"
+msgstr "Zapínejte jen skripty od autorů, kterým důvěřujete."
+
+msgid "UiSkin"
+msgstr "Vzhled"
+
+msgid "UiControlMapping"
+msgstr "Mapování ovládání"
+
+msgid "UiSticks"
+msgstr "Páčky"
+
+msgid "UiFixesDriftAndWornSticksAndChangesHowMovement"
+msgstr "Upravte odezvu páčky. Bod ukazuje aktuální vstup."
+
+msgid "UiPresets"
+msgstr "Předvolby"
+
+msgid "UiDefault"
+msgstr "Výchozí"
+
+msgid "UiFactoryBehaviourASmallDeadzoneAndLinearResponseStart"
+msgstr "Malá mrtvá zóna a lineární odezva."
+
+msgid "UiPrecision"
+msgstr "Přesnost"
+
+msgid "UiSmallerDeadzoneAndAGentlerCentreForSlowAccurate"
+msgstr "Jemná odezva u středu pro přesné míření."
+
+msgid "UiAggressive"
+msgstr "Rychlá odezva"
+
+msgid "UiReactsSoonerAndReachesFullTravelFasterForDriving"
+msgstr "Reaguje dříve a dosáhne plného výstupu menším pohybem."
+
+msgid "UiWornPad"
+msgstr "Opotřebený ovladač"
+
+msgid "UiLargerDeadzoneToAbsorbDriftAndFullTravelReached"
+msgstr "Potlačí drift a vyrovná zkrácený rozsah páčky."
+
+msgid "UiDeadzone"
+msgstr "Mrtvá zóna"
+
+msgid "UiHowFarTheStickMustMoveBeforeTheGame"
+msgstr "Ignoruje drobné pohyby u středu. Při driftu hodnotu zvyšte."
+
+msgid "UiAntiDeadzone"
+msgstr "Kompenzace mrtvé zóny"
+
+msgid "UiCompensatesForADeadzoneTheGAMEAppliesOnTop"
+msgstr "Přeskočí mrtvou zónu hry, pokud hra ignoruje malé pohyby."
+
+msgid "UiHowFarYouHaveToPushForTheGame"
+msgstr "Snižte hodnotu, pokud páčka nedosáhne plného výstupu."
+
+msgid "UiCurve"
+msgstr "Křivka odezvy"
+
+msgid "UiHowStickMovementMapsToInGameMovementLinear"
+msgstr "Určuje, jak pohyb páčky mění výstup."
+
+msgid "UiAdvanced"
+msgstr "Pokročilé"
+
+msgid "UiMultipliesTheWholeOutputAbove100TheStick"
+msgstr "Násobí celý výstup páčky. Hodnoty nad 1 zvyšují citlivost."
+
+msgid "UiTriggers"
+msgstr "Spouště"
+
+msgid "UiSetsWhereATriggerPullStartsToRegisterAnd"
+msgstr "Nastavte začátek odezvy spouště a dosažení plného výstupu."
+
+msgid "UiLeftTrigger"
+msgstr "Levá spoušť"
+
+msgid "UiRightTrigger"
+msgstr "Pravá spoušť"
+
+msgid "UiRumble"
+msgstr "Vibrace"
+
+msgid "UiControlsVibrationStrengthForThisPadTurnItDown"
+msgstr "Upravte sílu vibrací tohoto ovladače."
+
+msgid "UiRumbleEnabled"
+msgstr "Povolit vibrace"
+
+msgid "UiMotorGain"
+msgstr "Síla motorů"
+
+msgid "UiOverall"
+msgstr "Celková"
+
+msgid "UiMasterVolumeForVibrationOnThisPad000"
+msgstr "Celková síla vibrací. Nula vibrace vypne."
+
+msgid "UiLowMotor"
+msgstr "Nízkofrekvenční motor"
+
+msgid "UiTheHeavyLowFrequencyMotorTheDeepRumbleOf"
+msgstr "Hluboké vibrace, například výbuchy a motory."
+
+msgid "UiHighMotor"
+msgstr "Vysokofrekvenční motor"
+
+msgid "UiTheLightHighFrequencyMotorTheFineBuzzOf"
+msgstr "Jemné vibrace, například povrchy a nárazy."
+
+msgid "UiAbove100xAmplifiesAWeakPadThisGain"
+msgstr "Hodnoty nad 1 zesílí vibrace i navázané efekty spouští."
+
+msgid "UiSwapLeftRightMotors"
+msgstr "Prohodit motory"
+
+msgid "UiLighting"
+msgstr "Osvětlení"
+
+msgid "UiLightbarMode"
+msgstr "Režim světelné lišty"
+
+msgid "UiColour"
+msgstr "Barva"
+
+msgid "UiBrightness"
+msgstr "Jas"
+
+msgid "UiPlayerLEDs"
+msgstr "Indikátory hráče"
+
+msgid "UiAdaptive"
+msgstr "Adaptivní spouště"
+
+msgid "UiLeftAdaptiveTrigger"
+msgstr "Levá adaptivní spoušť"
+
+msgid "UiEffect"
+msgstr "Efekt"
+
+msgid "UiBeginsAtPull"
+msgstr "Počáteční poloha"
+
+msgid "UiHowFarTheTriggerIsPulledBeforeTheEffect"
+msgstr "Poloha spouště, ve které efekt začne."
+
+msgid "UiEndsAtPull"
+msgstr "Koncová poloha"
+
+msgid "UiWhereTheEffectStopsMustBePastTheStart"
+msgstr "Poloha spouště, ve které efekt skončí. Musí být za začátkem."
+
+msgid "UiHowHard"
+msgstr "Síla"
+
+msgid "UiHowMuchTheTriggerPushesBackOrHowStrongly"
+msgstr "Jak silně spoušť klade odpor nebo vibruje."
+
+msgid "UiBuzzSpeed"
+msgstr "Rychlost vibrací"
+
+msgid "UiOnlyUsedByTheBuzzingEffectsHigherIsA"
+msgstr "Frekvence vibračního efektu spouště."
+
+msgid "UiReactToRumble"
+msgstr "Reagovat na vibrace"
+
+msgid "UiAmount"
+msgstr "Intenzita"
+
+msgid "UiRightAdaptiveTrigger"
+msgstr "Pravá adaptivní spoušť"
+
+msgid "UiControllerSettings"
+msgstr "Nastavení ovladače"
+
+msgid "UiClose"
+msgstr "Zavřít"
+
+msgid "UiMouseMovement"
+msgstr "Pohyb myši"
+
+msgid "UiInvertVertical"
+msgstr "Obrátit svislou osu"
+
+msgid "UiHowFarTheStickMovesForAGivenMouse"
+msgstr "Vyšší citlivost vychýlí páčku více při stejném pohybu myši."
+
+msgid "UiTheSmallestStickPushAMovingMouseProducesRaise"
+msgstr "Minimální výchylka páčky při pohybu myši. Zvyšte ji, pokud hra ignoruje pomalé míření."
+
+msgid "UiNotBound"
+msgstr "Nepřiřazeno"
+
+msgid "UiRemoveThisBinding"
+msgstr "Odebrat toto přiřazení"
+
+msgid "UiClear"
+msgstr "Vymazat"
+
+msgid "UiChangesSaveImmediatelyAndApplyToEveryKeyboardAnd"
+msgstr "Změny se ukládají ihned a platí pro všechny přiřazené klávesnice a myši. Ovládací prvek může mít více přiřazení."
+
+msgid "UiKeyboardMouseControls"
+msgstr "Ovládání klávesnicí a myší"
+
+msgid "UiDone"
+msgstr "Hotovo"
+
+msgid "UiWhatEachKeyAndMouseInputDoesOnThe"
+msgstr "Zvolte Přiřadit a pak v označeném poli stiskněte klávesu, klikněte nebo posuňte kolečko."
+
+msgid "UiEnableDisableThisRule"
+msgstr "Zapnout nebo vypnout pravidlo"
+
+msgid "UiMoveUp"
+msgstr "Posunout nahoru"
+
+msgid "UiMoveDown"
+msgstr "Posunout dolů"
+
+#. invariant: control syntax or product name
+msgid "UiSouthLeftStickRightTriggerAnalog"
+msgstr "South / LeftStick / RightTrigger.Analog"
+
+msgid "UiLMB"
+msgstr "Levé tlačítko myši"
+
+msgid "UiMMB"
+msgstr "Prostřední tlačítko myši"
+
+msgid "UiRMB"
+msgstr "Pravé tlačítko myši"
+
+msgid "UiNoCodeWhilePhoneSharingIsOff"
+msgstr "Pro zobrazení kódu zapněte sdílení pro telefony."
+
+msgid "UiNAME"
+msgstr "Název"
+
+msgid "UiPhonesReachGameFlowOverYourNetworkSharingIsOff"
+msgstr "Telefony se připojují přes vaši síť. Sdílení zapínejte pouze v důvěryhodné síti."
+
+msgid "UiLINK"
+msgstr "Odkaz"
+
+msgid "UiCopy"
+msgstr "Kopírovat"
+
+msgid "UiThisLinkIsThisPhoneSAloneOpeningIt"
+msgstr "Odkaz patří tomuto telefonu. Otevřením jinde přesunete připojení. Nesdílejte ho veřejně."
+
+msgid "UiAllowThroughFirewall"
+msgstr "Povolit v bráně firewall"
+
+msgid "UiAddsAnInboundRuleForGameFlowOnThisPort"
+msgstr "Povolí GameFlow na tomto portu v bráně Windows Firewall. Vyžaduje oprávnění správce."
+
+msgid "UiONTHEPHONE"
+msgstr "Na telefonu"
+
+msgid "UiHoldItSidewaysAndTapToStartItGoes"
+msgstr "Otočte telefon na šířku a klepnutím začněte. Ozubené kolo mění rozložení. Dvojí klepnutí na páčku stiskne L3 nebo R3."
+
+msgid "UiUpTo16PhonesAtOnceEachItsOwn"
+msgstr "Připojte až 16 telefonů. Vibrace závisí na podpoře prohlížeče."
+
+msgid "UiMissingRequirements"
+msgstr "Chybějící součásti"
+
+msgid "UiSomeOptionalComponentsArenTInstalled"
+msgstr "Některé volitelné součásti chybí."
+
+msgid "UiGameFlowCanRunWithoutThemButPartsOfThe"
+msgstr "GameFlow může běžet, ale některé funkce nebudou dostupné."
+
+msgid "UiOpenInstallPage"
+msgstr "Otevřít stránku instalace"
+
+msgid "UiDonTCheckAtStartupAgain"
+msgstr "Nekontrolovat při spuštění"
+
+msgid "UiLocalizationAppearance"
+msgstr "Jazyk a vzhled"
+
+msgid "UiLanguageAndThemeChangesSaveImmediatelyCancelDoesNot"
+msgstr "Změny jazyka a motivu se ukládají ihned."
+
+msgid "UiSetup"
+msgstr "První nastavení"
+
+msgid "UiWalksThroughConnectingAControllerAndCreatingAVirtual"
+msgstr "Průvodce připojí vstupní zařízení a vytvoří virtuální ovladač."
+
+msgid "UiRunSetupWalkthrough"
+msgstr "Spustit průvodce"
+
+msgid "UiAutomatic"
+msgstr "Automaticky"
+
+msgid "UiUseProfileRate"
+msgstr "Použít frekvenci profilu"
+
+msgid "UiPerAppProfiles"
+msgstr "Profily aplikací"
+
+msgid "UiApplicationSwitchingRulesSaveImmediatelyCancelDoesNotUndo"
+msgstr "Pravidla přepínání aplikací se ukládají ihned."
+
+msgid "UiSwitchProfileAutomaticallyWhenAnAppComesToThe"
+msgstr "Přepnout profil podle aplikace v popředí"
+
+msgid "UiExecutableName"
+msgstr "Název spustitelného souboru"
+
+msgid "UiUseCurrent"
+msgstr "Použít aktuální"
+
+msgid "UiAdd"
+msgstr "Přidat"
+
+msgid "UiRulesAreCheckedTopToBottomAndTheFirst"
+msgstr "Použije se první odpovídající pravidlo. Ostatní aplikace ponechají aktuální profil."
+
+msgid "UiPhoneControllers"
+msgstr "Ovladače v telefonu"
+
+msgid "UiResetPrivateLink"
+msgstr "Obnovit soukromý odkaz"
+
+msgid "UiDisconnectsEveryPhoneAndInvalidatesTheirLinksReconnectEach"
+msgstr "Odpojí všechny telefony a zneplatní odkazy. Telefony znovu připojte v Zařízeních."
+
+msgid "UiSharingIsSavedImmediatelyKeepPhoneLinksPrivateUse"
+msgstr "Změny sdílení se ukládají ihned. Odkazy nesdílejte veřejně a používejte důvěryhodnou síť."
+
+msgid "UiAddPhonesFromDevicesPhysicalDevicesAddPhoneEach"
+msgstr "Telefon přidejte v Zařízení > Fyzická zařízení. Každý má vlastní odkaz a QR kód."
+
+msgid "UiTheBrowserReconnectsAutomaticallyAndKeepsTheSamePad"
+msgstr "Prohlížeč se automaticky připojí ke stejnému ovladači. Vibrace závisí na podpoře prohlížeče."
+
+msgid "UiMotionServer"
+msgstr "Pohybový server"
+
+msgid "UiTheseControlsSaveImmediatelyCancelDoesNotUndoThem"
+msgstr "Změny se ukládají ihned. Pro emulátory na tomto počítači použijte 127.0.0.1."
+
+msgid "UiAllowEmulatorsOnOtherDevicesTrustedNetworkOnly"
+msgstr "Povolit další zařízení v důvěryhodné síti"
+
+msgid "UiEnableDSUCemuhookMotionServer"
+msgstr "Zapnout pohybový server DSU"
+
+msgid "UiStreamsGyroscopeAndAccelerometerOverUDPSoCemuDolphin"
+msgstr "Odesílá data gyroskopu a akcelerometru přes UDP do kompatibilních emulátorů."
+
+msgid "UiUDPPort"
+msgstr "Port UDP"
+
+msgid "UiPortMustBeBetween1024And65535"
+msgstr "Zvolte port od 1024 do 65535."
+
+msgid "UiSetUpYourFirstController"
+msgstr "Nastavte první ovladač"
+
+msgid "UiBack"
+msgstr "Zpět"
+
+msgid "UiWelcomeToGameFlow"
+msgstr "Vítejte v GameFlow"
+
+msgid "UiGameFlowSitsBetweenYourControllerAndYourGameIt"
+msgstr "GameFlow převádí vstup na virtuální ovladač, který mohou hry používat."
+
+msgid "UiYourController"
+msgstr "Váš ovladač"
+
+msgid "UiThePhysicalPadKeyboardOrMouseYouHold"
+msgstr "Ovladač, klávesnice nebo myš, které používáte"
+
+msgid "UiRemappingAutofireStickShapingMacros"
+msgstr "Přemapování, automatická střelba, odezva páček a makra"
+
+msgid "UiAVirtualController"
+msgstr "Virtuální ovladač"
+
+msgid "UiWhatTheGameSeesItLooksLikeRealHardware"
+msgstr "Ovladač, který vidí hra"
+
+msgid "UiThisTakesAboutAMinuteAndLeavesYouWith"
+msgstr "Průvodce můžete znovu spustit v Možnostech."
+
+msgid "UiConnectYourController"
+msgstr "Připojte ovladač"
+
+msgid "UiPlugItInOverUSBOrPairItOver"
+msgstr "Připojte se přes USB nebo Bluetooth. Seznam se aktualizuje automaticky."
+
+msgid "UiWaitingForAController"
+msgstr "Čekání na ovladač"
+
+msgid "UiREADY"
+msgstr "Připraveno"
+
+msgid "UiIHaveNoControllerSetThisUpForKeyboard"
+msgstr "Použít klávesnici a myš"
+
+msgid "UiCheckTheButtonsLineUp"
+msgstr "Zkontrolujte tlačítka"
+
+msgid "UiPressEachButtonOnYourControllerAndWatchIt"
+msgstr "Stiskněte každé tlačítko a sledujte náhled. Nesprávně reagující prvky zkalibrujte."
+
+msgid "UiButtonsAreWrongCalibrateThem"
+msgstr "Kalibrovat tlačítka"
+
+msgid "UiSticksOrTriggersAreWrongCalibrateThem"
+msgstr "Kalibrovat páčky a spouště"
+
+msgid "UiSkipThisOne"
+msgstr "Přeskočit ovladač"
+
+msgid "UiSilence"
+msgstr "Ztišit"
+
+msgid "UiYourKeyboardAndMouseAsAController"
+msgstr "Použijte klávesnici a myš"
+
+msgid "UiEveryControllerButtonStickAndTriggerAndTheKeys"
+msgstr "Přiřazení upravte nyní nebo později v bočním panelu."
+
+msgid "UiWhatShouldGamesSee"
+msgstr "Vyberte virtuální ovladač"
+
+msgid "UiGameFlowWillCreateThisControllerForYouItIs"
+msgstr "Zvolte ovladač, který uvidí hry bez ohledu na vstupní zařízení."
+
+msgid "UiNotPermanentYouCanChangeItLaterOrAdd"
+msgstr "Volbu můžete změnit nebo přidat další ovladače v Zařízeních."
+
+msgid "UiGiveItAName"
+msgstr "Pojmenujte ho"
+
+msgid "UiThisIsWhatYouWillSeeInTheSidebar"
+msgstr "Název se zobrazí v bočním panelu a na přehledu."
+
+msgid "UiLeaveEmptyToLetGameFlowNameIt"
+msgstr "Pro automatický název nechte prázdné"
+
+msgid "UiYouCanRenameItWheneverYouLikeOnThe"
+msgstr "Název můžete později změnit v Zařízeních."
+
+msgid "UiYouAreSetUp"
+msgstr "Vše je připraveno"
+
+msgid "UiYourControllerOnTheLeftWhatGamesSeeOn"
+msgstr "Vlevo je vstup, vpravo výstup do hry. Ověřte, že oba reagují."
+
+msgid "UiWhatGamesSee"
+msgstr "Co vidí hry"
+
+msgid "UiWhereToGoNext"
+msgstr "Další kroky"
+
+msgid "UiDashboardYourPadAndTheVirtualOneSideBy"
+msgstr "Přehled: sledujte živý vstup a výstup."
+
+msgid "UiProfilesRemappingAutofireStickShapingAndMacros"
+msgstr "Profily: přemapování, automatická střelba, odezva páček a makra."
+
+msgid "UiDevicesAssignMoreControllersAndTuneSticksTriggersRumble"
+msgstr "Zařízení: přiřaďte vstupy a upravte nastavení ovladačů."
+
+msgid "UiNone"
+msgstr "Žádné"
+
+msgid "UiUseAPhoneOnYourNetworkAsAController"
+msgstr "Přidejte telefon jako ovladač pomocí QR kódu."
+
+msgid "UiDeleteThisVirtualController"
+msgstr "Smazat virtuální ovladač"
+
+msgid "UiChooseWhichKeysAndMouseInputsProduceEachController"
+msgstr "Zvolte klávesy a vstupy myši pro ovládací prvky ovladače."
+
+msgid "UiWalksYouThroughConnectingAControllerAndCreatingA"
+msgstr "Připojte vstupní zařízení a vytvořte virtuální ovladač."
+
+msgid "UiCopyOBSLink"
+msgstr "Kopírovat odkaz pro OBS"
+
+msgid "UiCopiesTheOBSBrowserSourceURLForThisPhysical"
+msgstr "Zkopírovat odkaz na náhled vstupu pro zdroj prohlížeče OBS."
+
+msgid "UiOpenThisControllerSTuningSticksTriggersRumbleLighting"
+msgstr "Upravit páčky, spouště, vibrace a podporované efekty."
+
+msgid "UiCopiesTheOBSBrowserSourceURLForThisVirtual"
+msgstr "Zkopírovat odkaz na náhled výstupu pro zdroj prohlížeče OBS."
+
+msgid "UiNOOUTPUT"
+msgstr "Bez výstupu"
+
+msgid "UiTurnAPhoneOnYourNetworkIntoAController"
+msgstr "Použít telefon jako ovladač"
+
+msgid "UiVIDPID"
+msgstr "VID : PID"
+
+msgid "UiDEVICEID"
+msgstr "ID zařízení"
+
+msgid "UiHARDWAREID"
+msgstr "ID hardwaru"
+
+msgid "UiPHONE"
+msgstr "Telefon"
+
+msgid "UiThisPhoneHasItsOwnLinkAndQRCode"
+msgstr "Telefon má vlastní soukromý odkaz a QR kód."
+
+msgid "UiShowQRCodeLink"
+msgstr "Zobrazit QR kód a odkaz"
+
+msgid "UiRemovePhone"
+msgstr "Odebrat telefon"
+
+msgid "UiTREATAS"
+msgstr "Rozpoznat jako"
+
+msgid "UiIfWindowsIdentifiesThisDeviceIncorrectlyEGA"
+msgstr "Změňte nesprávně rozpoznaný typ zařízení. Změny se ukládají ihned."
+
+msgid "UiBUTTONMAPPING"
+msgstr "Mapování tlačítek"
+
+msgid "UiIfThisControllerSButtonsAreRecognizedInThe"
+msgstr "Zkalibrujte nesprávně reagující tlačítka. Páčky a spouště se kalibrují zvlášť."
+
+msgid "UiCalibrateButtons"
+msgstr "Kalibrovat tlačítka"
+
+msgid "UiCalibrateSticksTriggers"
+msgstr "Kalibrovat páčky a spouště"
+
+msgid "UiClearMapping"
+msgstr "Vymazat mapování"
+
+msgid "UiMapped"
+msgstr "Namapováno"
+
+msgid "UiSkip"
+msgstr "Přeskočit"
+
+msgid "UiKEYBOARDASGAMEPAD"
+msgstr "Klávesnice jako ovladač"
+
+msgid "UiKeysBoundToAControllerControlShowItOn"
+msgstr "Přiřazené klávesy zobrazují ovládací prvek, který aktivují."
+
+msgid "UiEditKeyboardMouseControls"
+msgstr "Upravit ovládání klávesnicí a myší"
+
+msgid "UiMOUSEASGAMEPAD"
+msgstr "Myš jako ovladač"
+
+msgid "UiEachButtonShowsTheControllerControlItIsBound"
+msgstr "Tlačítka myši zobrazují ovládací prvek, který aktivují."
+
+msgid "UiLIVESTATE"
+msgstr "Živý stav"
+
+msgid "UiGamesSee"
+msgstr "Hry vidí"
+
+msgid "UiTurnThisControllerOffWithoutDeletingIt"
+msgstr "Vypnout ovladač bez jeho smazání."
+
+msgid "UiWhatDrivesIt"
+msgstr "Vstupní zařízení"
+
+msgid "UiNoDeviceYetAddOneBelow"
+msgstr "Zatím bez vstupu. Přidejte zařízení níže."
+
+msgid "UiADDADEVICE"
+msgstr "Přidat zařízení"
+
+msgid "UiClickAnyButtonStickOrTriggerToChangeWhat"
+msgstr "Kliknutím na tlačítko, páčku či spoušť změníte mapování."
+
+msgid "UiAllMappingRules"
+msgstr "Všechna pravidla mapování"
+
+msgid "UiProfilesHoldMappingRulesWithNoneTheControllerPasses"
+msgstr "Bez profilů se vstup předává beze změn. Při překryvu pravidel má přednost spodní profil."
+
+msgid "UiChooseAProfileToAdd"
+msgstr "Vyberte profil k přidání"
+
+msgid "UiDeviceShape"
+msgstr "Rozložení zařízení"
+
+msgid "UiThumbsticks"
+msgstr "Páčky"
+
+msgid "UiButtons"
+msgstr "Tlačítka"
+
+msgid "UiPOVs"
+msgstr "Směrové přepínače"
+
+msgid "UiProductName"
+msgstr "Název produktu"
+
+#. invariant: control syntax or product name
+msgid "UiGameFlowGameController"
+msgstr "GameFlow Game Controller"
+
+msgid "UiVendorIDHex"
+msgstr "ID výrobce (hex)"
+
+msgid "UiProductIDHex"
+msgstr "ID produktu (hex)"
+
+msgid "UiTuning"
+msgstr "Nastavení"
+
+msgid "UiSelectAVirtualControllerToTune"
+msgstr "Vyberte virtuální ovladač k nastavení."
+
+msgid "UiCrossPlatformControllerRemappingAutofireSpeedrunTooling"
+msgstr "Mapování ovladačů a živý náhled vstupu"
+
+msgid "UiBootstrappingHostRuntimePipelineProfileStoreAndTranslations"
+msgstr "Spouštění GameFlow…"
+
+msgid "UiUpdateAvailable"
+msgstr "Dostupná aktualizace"
+
+msgid "UiANewVersionOfGameFlowIsAvailable"
+msgstr "Je dostupná nová verze GameFlow."
+
+msgid "UiDownloadsAVerifiedArchiveYouWillExtractItAnd"
+msgstr "Stáhněte ověřený archiv, rozbalte jej a nahraďte současnou instalaci."
+
+msgid "UiReadTheReleaseNotes"
+msgstr "Přečíst poznámky k vydání"
+
+msgid "UiOpenInBrowser"
+msgstr "Otevřít v prohlížeči"
+
+msgid "UiSkipThisUpdate"
+msgstr "Přeskočit aktualizaci"
+
+msgid "UiDonTAskAgain"
+msgstr "Příště se neptat"
+
+msgid "UiCancelDownload"
+msgstr "Zrušit stahování"
+
+msgid "UiDownloadUpdate"
+msgstr "Stáhnout aktualizaci"
+
+msgid "SidebarKeyboardMouse"
+msgstr "Klávesnice a myš"
+
+msgid "DevicesAddPhone"
+msgstr "Přidat telefon"
+
+msgid "SidebarAddPhone"
+msgstr "Přidat telefon"
+
+msgid "PhoneConnectTitle"
+msgstr "Připojit {0}"
+
+msgid "PhoneConnected"
+msgstr "{0} je připojen. Přiřaďte ho virtuálnímu ovladači."
+
+msgid "PhoneWaiting"
+msgstr "Naskenujte kód nebo otevřete odkaz na telefonu."
+
+msgid "BindingListening"
+msgstr "Čekám na vstup…"
+
+msgid "BindingAdd"
+msgstr "+ Přiřadit"
+
+msgid "TuningScopeSlot"
+msgstr "Výchozí nastavení virtuálního ovladače. Jednotlivá vstupní zařízení ho mohou přepsat."
+
+msgid "TuningScopeDevice"
+msgstr "Nastavení vstupního zařízení pro tento virtuální ovladač."
+
+msgid "TuningSaveNote"
+msgstr "Změny se ukládají ihned. Vibrace, osvětlení a efekty spouští vyžadují připojený podporovaný fyzický ovladač."
+
+msgid "TuningUnknown"
+msgstr "Pro zjištění funkcí připojte ovladač. Do té doby se zobrazují všechna nastavení."
+
+msgid "TuningDetected"
+msgstr "Zobrazují se pouze nastavení podporovaná připojenými ovladači."
+
+msgid "StyleLabelJoystick"
+msgstr "Obecný joystick"
+
+msgid "StyleLabelWheel"
+msgstr "Obecný volant"
+
+#. invariant: control syntax or product name
+msgid "StyleLabelSteamControllerV2"
+msgstr "Steam Controller v2"
+
+msgid "StickCurve.Linear"
+msgstr "Lineární"
+
+msgid "StickCurve.Precision"
+msgstr "Přesné míření"
+
+msgid "StickCurve.Aggressive"
+msgstr "Rychlá odezva"
+
+msgid "LightbarMode.Off"
+msgstr "Vypnuto"
+
+msgid "LightbarMode.Solid"
+msgstr "Stálá barva"
+
+msgid "LightbarMode.PlayerNumber"
+msgstr "Barva hráče"
+
+msgid "LightbarMode.Breathing"
+msgstr "Pomalé pulzování"
+
+msgid "LightbarMode.BatteryLevel"
+msgstr "Stav baterie"
+
+msgid "LightbarMode.Strobe"
+msgstr "Blikání"
+
+msgid "LightbarMode.Rainbow"
+msgstr "Duha"
+
+msgid "LightbarMode.RumbleReactive"
+msgstr "Podle vibrací"
+
+msgid "LightbarMode.TriggerReactive"
+msgstr "Podle spouští"
+
+msgid "LightbarMode.GameControlled"
+msgstr "Řídí hra"
+
+msgid "LightbarMode.External"
+msgstr "Externí aplikace"
+
+msgid "AdaptiveTriggerMode.Off"
+msgstr "Vypnuto, volný pohyb"
+
+msgid "AdaptiveTriggerMode.Feedback"
+msgstr "Stálý odpor"
+
+msgid "AdaptiveTriggerMode.Weapon"
+msgstr "Odpor s bodem uvolnění"
+
+msgid "AdaptiveTriggerMode.Vibration"
+msgstr "Vibrace"
+
+msgid "AdaptiveTriggerMode.SlopeFeedback"
+msgstr "Rostoucí odpor"
+
+msgid "AdaptiveTriggerMode.MultiplePositionFeedback"
+msgstr "Stupňovitý odpor"
+
+msgid "AdaptiveTriggerMode.MultiplePositionVibration"
+msgstr "Stupňovité vibrace"
+
+msgid "TriggerFeedbackLink.None"
+msgstr "Použít nastavený efekt"
+
+msgid "TriggerFeedbackLink.Resistance"
+msgstr "Odpor podle vibrací hry"
+
+msgid "TriggerFeedbackLink.Vibration"
+msgstr "Vibrovat podle hry"
+
+msgid "UiFullyCharged"
+msgstr "Plně nabito"
+
+msgid "UiGamepad"
+msgstr "Gamepad"
+
+msgid "UiGenericHid"
+msgstr "Obecné / HID"
+
+msgid "UiKeyboard"
+msgstr "Klávesnice"
+
+msgid "UiMouse"
+msgstr "Myš"
+
+msgid "UiConnected"
+msgstr "Připojeno"
+
+msgid "UiOffline"
+msgstr "Odpojeno"
+
+msgid "UiLive"
+msgstr "ŽIVĚ"
+
+msgid "UiIdle"
+msgstr "NEAKTIVNÍ"
+
+msgid "UiNoController"
+msgstr "Ovladač nenalezen"
+
+msgid "UiGetStarted"
+msgstr "Začít"
+
+msgid "UiControlsLookRight"
+msgstr "Ovládání odpovídá"
+
+msgid "UiButtonsLookRight"
+msgstr "Tlačítka odpovídají"
+
+msgid "UiCreateIt"
+msgstr "Vytvořit"
+
+msgid "UiFinish"
+msgstr "Dokončit"
+
+msgid "UiNext"
+msgstr "Další"
+
+msgid "UiDelete"
+msgstr "Smazat"
+
+msgid "UiRemove"
+msgstr "Odebrat"
+
+msgid "UiDeleteName"
+msgstr "Smazat {0}?"
+
+msgid "UiDeleteVirtual"
+msgstr "Virtuální ovladač a jeho nastavení se smažou. Profily zůstanou zachovány."
+
+msgid "UiRemovePhoneTitle"
+msgstr "Odebrat tento telefon?"
+
+msgid "UiRemovePhoneMessage"
+msgstr "Odebere telefon ze všech virtuálních ovladačů a zneplatní odkaz. Později ho můžete znovu přidat."
+
+msgid "UiEnableSharing"
+msgstr "Zapnout sdílení pro telefony"
+
+msgid "UiStopSharing"
+msgstr "Vypnout sdílení pro telefony"
+
+msgid "UiSharingOff"
+msgstr "Sdílení je vypnuté. Místní náhledy OBS fungují dál."
+
+msgid "UiSharingOn"
+msgstr "Sdílení je zapnuté. Používejte důvěryhodnou Wi-Fi a chraňte odkazy. HTTP je nešifruje."
+
+msgid "UiDownloadManually"
+msgstr "Stáhnout ručně"
+
+msgid "UiRetryDownload"
+msgstr "Opakovat stahování"
+
+msgid "UiDownloading"
+msgstr "Stahování…"
+
+msgid "UiStartingDownload"
+msgstr "Zahajuji stahování…"
+
+msgid "UiDownloaded"
+msgstr "Ověřeno a staženo. Ukončete GameFlow, rozbalte archiv a nahraďte soubory aplikace. Profily zůstanou v datové složce."
+
+msgid "UiDownloadCancelled"
+msgstr "Stahování zrušeno. Aktualizace nebyla provedena."
+
+msgid "UiDownloadFailed"
+msgstr "Stažení nebo ověření selhalo. Opakujte akci nebo otevřete stránku vydání. Podrobnosti jsou v protokolu."
+
+msgid "PhoneConnecting"
+msgstr "Připojování…"
+
+msgid "PhoneConnectingGameFlow"
+msgstr "Připojování ke GameFlow…"
+
+msgid "PhoneRetry"
+msgstr "Zkusit znovu"
+
+msgid "PhoneLayout"
+msgstr "Rozložení"
+
+msgid "PhoneMotion"
+msgstr "Pohyb"
+
+msgid "PhoneHaptics"
+msgstr "Vibrace"
+
+msgid "PhoneFullscreen"
+msgstr "Celá obrazovka"
+
+msgid "PhoneOff"
+msgstr "VYPNUTO"
+
+msgid "PhoneOn"
+msgstr "ZAPNUTO"
+
+msgid "PhoneUnavailable"
+msgstr "Nedostupné"
+
+msgid "PhoneHelp"
+msgstr "Páčku ovládáte palcem kdekoli na dané straně. Dvojím klepnutím stisknete L3 nebo R3. Klepnutím stiskněte spoušť naplno a posunem ji upravte."
+
+msgid "PhoneRotate"
+msgstr "Otočte telefon na šířku"
+
+msgid "PhoneRotateHint"
+msgstr "Držte ho na šířku oběma rukama. Případně vypněte zámek otáčení."
+
+msgid "PhoneSideways"
+msgstr "Přesto použít na šířku"
+
+msgid "PhoneStart"
+msgstr "Klepnutím začněte"
+
+msgid "PhoneStartHint"
+msgstr "Otevře celou obrazovku a podle podpory zabrání uspání displeje."
+
+msgid "PhoneDoubleTap"
+msgstr "dvojí klepnutí"
+
+msgid "PhoneTouchpad"
+msgstr "Touchpad"
+
+msgid "PhoneMotionUnavailable"
+msgstr "Pohybová data nejsou dostupná. Prohlížeč může vyžadovat HTTPS nebo povolení senzorů."
+
+msgid "PhoneMotionDenied"
+msgstr "Povolte pohybové senzory pro tuto stránku a obnovte ji."
+
+msgid "PhoneFull"
+msgstr "Všech 16 míst pro telefony je obsazeno."
+
+msgid "PhoneFullHint"
+msgstr "Odeberte jiný telefon v GameFlow a zkuste to znovu."
+
+msgid "PhoneRevoked"
+msgstr "Telefon byl v GameFlow odebrán. Použijte nový odkaz."
+
+msgid "PhoneReconnecting"
+msgstr "Spojení přerušeno. Připojování…"
+
+msgid "PhoneUnreachable"
+msgstr "Ověřte, že GameFlow běží a telefon je ve stejné síti Wi-Fi."
+
+msgid "PhoneConnectedAs"
+msgstr "Připojeno jako"
+
+msgid "PhonePad"
+msgstr "Ovladač"
+
+msgid "PhoneMenu"
+msgstr "Nabídka ovladače"
+
+msgid "PhoneSettings"
+msgstr "Nastavení ovladače"
+
+msgid "InputMapDevice"
+msgstr "Vstupní zařízení"
+
+msgid "InputMapDefaults"
+msgstr "Společné výchozí nastavení"
+
+msgid "InputMapLeftStick"
+msgstr "Levá páčka (pohyb)"
+
+msgid "InputMapRightStick"
+msgstr "Pravá páčka (míření)"
+
+msgid "InputMapNothing"
+msgstr "Nic"
+
+msgid "SetupChooseInputs"
+msgstr "Vyberte vstupní zařízení"
+
+msgid "SetupChooseInputsHint"
+msgstr "Vyberte jedno nebo více zařízení. Každá klávesnice a myš může mít vlastní mapování."
+
+msgid "SetupAssignedInputs"
+msgstr "{0} nyní ovládá {1}. Hry vidí virtuální ovladač."
+
+msgid "InputMapChooseControl"
+msgstr "Vyberte ovládací prvek pro {0} a zvolte Přiřadit."
+
+msgid "OverlayLinkOptions"
+msgstr "Možnosti odkazu pro OBS"
+
+msgid "OverlayActiveInputs"
+msgstr "Zobrazit aktivní vstupy"
+
+msgid "OverlayHoldTimes"
+msgstr "Zobrazit dobu držení"
+
+msgid "OverlayNoLayout"
+msgstr "Rozložení není dostupné. Otevřete tento panel v GameFlow a vyberte vzhled."
+
+msgid "OverlayReconnecting"
+msgstr "Obnovuji připojení…"
+
+msgid "OverlayError"
+msgstr "Chyba překryvu"
+
+msgid "ButtonId.None"
+msgstr "Žádné"
+
+msgid "ButtonId.South"
+msgstr "Dolní (A / ×)"
+
+msgid "ButtonId.East"
+msgstr "Pravé (B / ○)"
+
+msgid "ButtonId.West"
+msgstr "Levé (X / □)"
+
+msgid "ButtonId.North"
+msgstr "Horní (Y / △)"
+
+msgid "ButtonId.LeftShoulder"
+msgstr "L1 / LB"
+
+msgid "ButtonId.RightShoulder"
+msgstr "R1 / RB"
+
+msgid "ButtonId.LeftTriggerButton"
+msgstr "Tlačítko L2 / LT"
+
+msgid "ButtonId.RightTriggerButton"
+msgstr "Tlačítko R2 / RT"
+
+msgid "ButtonId.Back"
+msgstr "Zpět / Share / View"
+
+msgid "ButtonId.Start"
+msgstr "Start / Možnosti / Menu"
+
+msgid "ButtonId.Guide"
+msgstr "Domů / PS"
+
+msgid "ButtonId.LeftStick"
+msgstr "L3 / Stisk levé páčky"
+
+msgid "ButtonId.RightStick"
+msgstr "R3 / Stisk pravé páčky"
+
+msgid "ButtonId.DpadUp"
+msgstr "Směrový kříž nahoru"
+
+msgid "ButtonId.DpadDown"
+msgstr "Směrový kříž dolů"
+
+msgid "ButtonId.DpadLeft"
+msgstr "Směrový kříž vlevo"
+
+msgid "ButtonId.DpadRight"
+msgstr "Směrový kříž vpravo"
+
+msgid "ButtonId.Paddle1"
+msgstr "Zadní páčka 1"
+
+msgid "ButtonId.Paddle2"
+msgstr "Zadní páčka 2"
+
+msgid "ButtonId.Paddle3"
+msgstr "Zadní páčka 3"
+
+msgid "ButtonId.Paddle4"
+msgstr "Zadní páčka 4"
+
+msgid "ButtonId.Touchpad"
+msgstr "Stisk touchpadu"
+
+msgid "ButtonId.Misc1"
+msgstr "Další tlačítko 1"
+
+msgid "StickId.Left"
+msgstr "Levá páčka (LX / LY)"
+
+msgid "StickId.Right"
+msgstr "Pravá páčka (RX / RY)"
+
+msgid "RuleMode.Modify"
+msgstr "Upravit"
+
+msgid "RuleMode.Passthrough"
+msgstr "Beze změny"
+
+msgid "RuleMode.DoNothing"
+msgstr "Ignorovat / blokovat"
+
+msgid "StickBlendMode.Replace"
+msgstr "Nahradit: přepsat cíl"
+
+msgid "StickBlendMode.Additive"
+msgstr "Přičíst: přidat k cíli"
+
+msgid "MouseInput.None"
+msgstr "Pohyb myši"
+
+msgid "MouseInput.Left"
+msgstr "Levé tlačítko"
+
+msgid "MouseInput.Right"
+msgstr "Pravé tlačítko"
+
+msgid "MouseInput.Middle"
+msgstr "Prostřední tlačítko"
+
+msgid "MouseInput.Back"
+msgstr "Myš 4 (zpět)"
+
+msgid "MouseInput.Forward"
+msgstr "Myš 5 (vpřed)"
+
+msgid "MouseInput.WheelUp"
+msgstr "Kolečko nahoru"
+
+msgid "MouseInput.WheelDown"
+msgstr "Kolečko dolů"
+
+msgid "InputMapCapturePrompt"
+msgstr "Pro {0} stiskněte klávesu nebo v tomto poli klikněte či otočte kolečkem. Esc zruší zadávání."
+
+msgid "GamepadAction.LeftTriggerFull"
+msgstr "Levá spoušť (naplno)"
+
+msgid "GamepadAction.RightTriggerFull"
+msgstr "Pravá spoušť (naplno)"
+
+msgid "GamepadAction.LeftStickUp"
+msgstr "Levá páčka nahoru"
+
+msgid "GamepadAction.LeftStickDown"
+msgstr "Levá páčka dolů"
+
+msgid "GamepadAction.LeftStickLeft"
+msgstr "Levá páčka vlevo"
+
+msgid "GamepadAction.LeftStickRight"
+msgstr "Levá páčka vpravo"
+
+msgid "GamepadAction.RightStickUp"
+msgstr "Pravá páčka nahoru"
+
+msgid "GamepadAction.RightStickDown"
+msgstr "Pravá páčka dolů"
+
+msgid "GamepadAction.RightStickLeft"
+msgstr "Pravá páčka vlevo"
+
+msgid "GamepadAction.RightStickRight"
+msgstr "Pravá páčka vpravo"
+
+msgid "GamepadAction.LeftStickWalk"
+msgstr "Chůze (poloviční levá páčka)"
+
+msgid "MotionCaption.LeftStick"
+msgstr "Pohyb → levá páčka"
+
+msgid "MotionCaption.RightStick"
+msgstr "Pohyb → pravá páčka (míření)"
+
+msgid "MotionCaption.None"
+msgstr "Pohyb se nepoužívá"
+
+msgid "ControlShort.Back"
+msgstr "Zpět"
+
+msgid "ControlShort.Start"
+msgstr "Start"
+
+msgid "ControlShort.Guide"
+msgstr "Domů"
+
+msgid "ControlShort.LeftStickWalk"
+msgstr "Chůze"
+
+msgid "ControlShort.Touchpad"
+msgstr "Pad"
+
+msgid "ControlShort.Misc"
+msgstr "Ztlumit"
+
+msgid "GamepadAction.None"
+msgstr "Žádné"
+
+msgid "GamepadAction.South"
+msgstr "Dolní (A / ×)"
+
+msgid "GamepadAction.East"
+msgstr "Pravé (B / ○)"
+
+msgid "GamepadAction.West"
+msgstr "Levé (X / □)"
+
+msgid "GamepadAction.North"
+msgstr "Horní (Y / △)"
+
+msgid "GamepadAction.LeftShoulder"
+msgstr "L1 / LB"
+
+msgid "GamepadAction.RightShoulder"
+msgstr "R1 / RB"
+
+msgid "GamepadAction.Back"
+msgstr "Zpět / Share / View"
+
+msgid "GamepadAction.Start"
+msgstr "Start / Možnosti / Menu"
+
+msgid "GamepadAction.Guide"
+msgstr "Domů / PS"
+
+msgid "GamepadAction.DpadUp"
+msgstr "Směrový kříž nahoru"
+
+msgid "GamepadAction.DpadDown"
+msgstr "Směrový kříž dolů"
+
+msgid "GamepadAction.DpadLeft"
+msgstr "Směrový kříž vlevo"
+
+msgid "GamepadAction.DpadRight"
+msgstr "Směrový kříž vpravo"
+
+msgid "GamepadAction.LeftStickClick"
+msgstr "L3 / Stisk levé páčky"
+
+msgid "GamepadAction.RightStickClick"
+msgstr "R3 / Stisk pravé páčky"
+
+msgid "GamepadAction.Touchpad"
+msgstr "Stisk touchpadu"
+
+msgid "GamepadAction.Misc"
+msgstr "Další tlačítko 1"
+
+msgid "PhoneModel"
+msgstr "Model ovladače"
+
+msgid "OverlayLeftTrigger"
+msgstr "Levá spoušť"
+
+msgid "OverlayRightTrigger"
+msgstr "Pravá spoušť"
+
+msgid "UiBatteryCharging"
+msgstr "Nabíjení · {0}%"
+
+msgid "UiBatteryRemaining"
+msgstr "Baterie · {0}%"
+
+msgid "UiVirtualKind"
+msgstr "{0} · VIRTUÁLNÍ"
+
+msgid "UiLeftTriggerAnalog"
+msgstr "Levá spoušť (analogová)"
+
+msgid "UiRightTriggerAnalog"
+msgstr "Pravá spoušť (analogová)"
+
+msgid "UiStickHint"
+msgstr "Nastavte mrtvou zónu, práh, automatickou střelbu, zmrazení směru, inverzi os nebo skript."
+
+msgid "UiTouchHint"
+msgstr "Nastavte kliknutí touchpadu, dotykový vstup nebo skript."
+
+msgid "UiNoTouch"
+msgstr "Bez dotyku"
+
+msgid "UiTouchCount"
+msgstr "{0} dotyků"
+
+msgid "UiVirtualTarget"
+msgstr "CÍL VIRTUÁLNÍHO VÝSTUPU"
+
+msgid "UiPhysicalInput"
+msgstr "FYZICKÝ VSTUP"
+
+msgid "UiChooseSource"
+msgstr "Vyberte fyzický zdroj pro {0}. Cíl výstupu je již vybrán."
+
+msgid "UiSlotNumber"
+msgstr "SLOT {0}"
+
+msgid "UiDemoInput"
+msgstr "Animovaný ukázkový vstup"
+
+msgid "UiNoAssignedInput"
+msgstr "Není přiřazeno fyzické zařízení"
+
+msgid "UiAssignedInputOffline"
+msgstr "Přiřazené zařízení je odpojeno"
+
+msgid "UiPassThroughMapping"
+msgstr "Přímé předání vstupu"
+
+msgid "UiProfileLayerCount"
+msgstr "Vrstvy profilů: {0}"
+
+msgid "UiNeedsInput"
+msgstr "Vyžaduje vstup"
+
+msgid "UiUnpinDevice"
+msgstr "Odebrat toto zařízení z přehledu."
+
+msgid "UiPinDevice"
+msgstr "Zobrazit toto zařízení v přehledu."
+
+msgid "UiUnnamed"
+msgstr "(bez názvu)"
+
+msgid "UiHidMaestroMissing"
+msgstr "HIDMaestro chybí. Virtuální výstup není dostupný."
+
+msgid "UiOutputNeedsAdmin"
+msgstr "Virtuální výstup vyžaduje oprávnění správce."
+
+msgid "UiOutputFailed"
+msgstr "Virtuální výstup se nepodařilo spustit."
+
+msgid "UiOutputUnavailable"
+msgstr "Virtuální výstup není dostupný."
+
+msgid "UiAddNewRule"
+msgstr "Přidat nové pravidlo"
+
+msgid "UiEditRule"
+msgstr "Upravit: {0}"
+
+msgid "UiNewRule"
+msgstr "Nové pravidlo"
+
+msgid "UiNoScript"
+msgstr "Zatím není uložen žádný skript."
+
+msgid "UiMissingTheme"
+msgstr "Nainstalujte motiv ovladače do {0} a restartujte GameFlow."
+
+msgid "UiPhoneLimit"
+msgstr "Všech 16 míst pro telefony je obsazeno. Odeberte telefon pro přidání dalšího."
+
+msgid "UiPhoneOffline"
+msgstr "Telefon · nepřipojeno"
+
+msgid "UiStepNumber"
+msgstr "Krok {0} z {1}"
+
+msgid "UiSelectFolder"
+msgstr "Vyberte složku"
+
+msgid "UiInputPerformance"
+msgstr "Vstup a výkon"
+
+msgid "UiNetworkPhones"
+msgstr "Síť a telefony"
+
+msgid "UiNoForegroundApp"
+msgstr "Nebyla zjištěna aplikace v popředí."
+
+msgid "UiForegroundWindowsOnly"
+msgstr "Přepínání aplikací vyžaduje Windows."
+
+msgid "UiForegroundStatus"
+msgstr "Aktuální aplikace: {0}. Aktivní profil: {1}."
+
+msgid "UiDownloadVersion"
+msgstr "Aktuální verze: {0}. Nejnovější vydání: {1}."
+
+msgid "UiDownloadProgress"
+msgstr "Stahování… {0}%"
+
+msgid "UiNoPlatformArchive"
+msgstr "Pro tuto platformu není archiv. Otevřete stránku vydání."
+
+msgid "UiNoDownloadDigest"
+msgstr "Toto vydání nemá ověřovací součet. Stáhněte je ze stránky vydání."
+
+msgid "UiProfileImported"
+msgstr "Profil byl importován."
+
+msgid "UiImportedScripts"
+msgstr "Profil byl importován. Před povolením zkontrolujte zakázané skripty Lua: {0}."
+
+msgid "UiProfileChanged"
+msgstr "Profil se změnil. Čekající úprava nebyla použita."
+
+msgid "UiNoControlRules"
+msgstr "Tento ovládací prvek zatím nepoužívá žádné pravidlo."
+
+msgid "UiSelectControl"
+msgstr "Klikněte na prvek na některém z ovladačů."
+
+msgid "UiInspectorHint"
+msgstr "Inspektor zobrazuje aktuální stav vybraného prvku."
+
+msgid "UiInspectorRules"
+msgstr "Zde se zobrazí pravidla vybraného prvku."
+
+msgid "UiInspectorScope"
+msgstr "Fyzické prvky nastavují vstup. Virtuální prvky nastavují mapování výstupu."
+
+msgid "UiCurrentPressed"
+msgstr "Aktuální stav: stisknuto"
+
+msgid "UiCurrentReleased"
+msgstr "Aktuální stav: uvolněno"
+
+msgid "UiCurrentValue"
+msgstr "Aktuální hodnota: {0:P0}"
+
+msgid "UiCurrentVector"
+msgstr "Aktuální vektor: {0:0.00}, {1:0.00}"
+
+msgid "UiCurrentTouches"
+msgstr "Aktuální počet dotyků: {0}"
+
+msgid "UiCurrentUnavailable"
+msgstr "Aktuální stav není dostupný."
+
+msgid "UiVirtualOutputHint"
+msgstr "Virtuální výstup · kliknutím na prvek nastavíte mapování"
+
+msgid "UiPhoneNumber"
+msgstr "Telefon {0}"
+
+msgid "UiAxisNumber"
+msgstr "Osa {0}"
+
+msgid "UiHatNumber"
+msgstr "Klobouček {0}"
+
+msgid "UiApplyFailed"
+msgstr "Použití selhalo: {0}"
+
+msgid "UiSaveFailed"
+msgstr "Uložení selhalo: {0}"
+
+msgid "UiResetFailed"
+msgstr "Obnovení selhalo: {0}"
+
+msgid "UiCreateProfileFailed"
+msgstr "Vytvoření profilu selhalo: {0}"
+
+msgid "UiDuplicateProfileFailed"
+msgstr "Duplikování profilu selhalo: {0}"
+
+msgid "UiImportFailed"
+msgstr "Import selhal: {0}"
+
+msgid "UiExportFailed"
+msgstr "Export selhal: {0}"
+
+msgid "UiRenameFailed"
+msgstr "Přejmenování selhalo: {0}"
+
+msgid "UiDeleteFailed"
+msgstr "Odstranění selhalo: {0}"
+
+msgid "UiProfileSwitchFailed"
+msgstr "Přepnutí profilu selhalo: {0}"
+
+msgid "UiRuleSaveFailed"
+msgstr "Uložení pravidla selhalo: {0}"
+
+msgid "UiSettingsSaveFailed"
+msgstr "Změny nebyly uloženy: {0}"
+
+msgid "UiProfileNumber"
+msgstr "Profil {0}"
+
+msgid "UiProfileCopy"
+msgstr "{0} Kopie"
+
+msgid "UiPreservedRule"
+msgstr "{0}: upravte toto pravidlo v JSON profilu."
+
+msgid "UiRemapControl"
+msgstr "Přemapovat {0}"
+
+msgid "UiAutofireControl"
+msgstr "Automatická střelba {0}"
+
+msgid "UiFreezeControl"
+msgstr "Zmrazit {0}"
+
+msgid "UiToggleControl"
+msgstr "Přepnout pomocí {0}"
+
+msgid "UiScriptControl"
+msgstr "Skript {0}"
+
+msgid "UiThresholdControl"
+msgstr "Práh {0}"
+
+msgid "UiAutoDetected"
+msgstr "Automaticky (zjištěno)"
+
+msgid "UiNoMovement"
+msgstr "(bez pohybu)"
+
+msgid "UiMouseState"
+msgstr "Pohyb {0}, {1} · kolečko {2} · tlačítka {3}"
+
+msgid "UiCalibrationPress"
+msgstr "Stiskněte {0} ({1} / {2})"
+
+msgid "UiCalibrationButtonHint"
+msgstr "Stiskněte toto tlačítko ovladače. Volbou Přeskočit je ponecháte bez přiřazení."
+
+msgid "UiCalibrationRelease"
+msgstr "Uvolněte páčky a spouště pro zahájení tohoto kroku."
+
+msgid "UiCalibrationHold"
+msgstr "Držte do další výzvy. Přeskočit zachová mapování. Umlčet nastaví výstup na nulu."
+
+msgid "UiCalibrateLeftRight"
+msgstr "Posuňte levou páčku zcela doprava"
+
+msgid "UiCalibrateLeftUp"
+msgstr "Posuňte levou páčku zcela nahoru"
+
+msgid "UiCalibrateRightRight"
+msgstr "Posuňte pravou páčku zcela doprava"
+
+msgid "UiCalibrateRightUp"
+msgstr "Posuňte pravou páčku zcela nahoru"
+
+msgid "UiCalibrateLeftTrigger"
+msgstr "Stiskněte L2 / LT naplno"
+
+msgid "UiCalibrateRightTrigger"
+msgstr "Stiskněte R2 / RT naplno"
+
+msgid "UiSetupReady"
+msgstr "Nalezeno. Pokračujte, až budete připraveni."
+
+msgid "UiSetupConnect"
+msgstr "Připojte ovladač přes USB nebo Bluetooth."
+
+msgid "UiSetupOutputFailed"
+msgstr "Virtuální ovladač nelze spustit. Zkontrolujte jeho stav na stránce Zařízení."
+
+msgid "UiSetupXbox360"
+msgstr "Ovladač Xbox 360"
+
+msgid "UiSetupXboxOne"
+msgstr "Ovladač Xbox Series / One"
+
+msgid "UiSetupXbox360Hint"
+msgstr "Zvolte pro širokou podporu počítačových her."
+
+msgid "UiSetupXboxOneHint"
+msgstr "Přidává impulzní spouště v podporovaných hrách."
+
+msgid "UiSetupDs4Hint"
+msgstr "Zvolte pro hry PlayStation, touchpad a světelnou lištu."
+
+msgid "UiSetupDualSenseHint"
+msgstr "Přidává adaptivní spouště a haptiku v podporovaných hrách."
+
+msgid "UiLinksReset"
+msgstr "Soukromé odkazy byly obnoveny. Pro připojení znovu zobrazte kód každého telefonu."
+
+msgid "UiLinkResetFailed"
+msgstr "Soukromý odkaz nelze obnovit: {0}"
+
+msgid "UiSharingFailed"
+msgstr "Sdílení nelze změnit: {0}"
+
+msgid "UiSharingDisabledHint"
+msgstr "Sdílení pro telefony je vypnuto. Povolte je pro připojení dalšího zařízení. Místní OBS zůstává dostupné."
+
+msgid "UiServerStopped"
+msgstr "Webový server není spuštěn."
+
+msgid "UiRestartNetwork"
+msgstr "Restartujte GameFlow pro povolení přístupu ze sítě."
+
+msgid "UiLocalOnlyHint"
+msgstr "Windows omezil přístup na tento počítač. Povolte přístup nebo spusťte GameFlow jako správce."
+
+msgid "UiFirewallAllowed"
+msgstr "Brána Windows Firewall povoluje místní síťová připojení na tomto portu."
+
+msgid "UiFirewallStale"
+msgstr "Pravidlo brány firewall je zastaralé. Nahraďte je povolením přístupu."
+
+msgid "UiFirewallMissing"
+msgstr "GameFlow nemá pravidlo brány firewall. Povolte přístup pro připojení telefonů."
+
+msgid "UiFirewallCheckHint"
+msgstr "Pokud se telefon nepřipojí, zkontrolujte bránu Windows Firewall."
+
+msgid "UiInvalidMotionPort"
+msgstr "Port je neplatný. Zůstává aktivní předchozí uložený port."
+
+msgid "UiMotionListening"
+msgstr "Naslouchá na UDP {0} · připojené emulátory: {1}"
+
+msgid "UiDisabled"
+msgstr "Zakázáno"
+
+msgid "UiDemo"
+msgstr "Ukázka"
+
+msgid "UiGeneral"
+msgstr "Obecné"
+
+msgid "UiController"
+msgstr "Ovladač"
+
+msgid "UiMadeBy"
+msgstr "Autor: {0} · {1} · © {2}"
+
+msgid "UiSetupOpenFailed"
+msgstr "Průvodce nastavením nelze otevřít."
+
+msgid "UiAnalog"
+msgstr "Analogový"
+
+msgid "UiClick"
+msgstr "Kliknutí"
+
+msgid "UiUp"
+msgstr "Nahoru"
+
+msgid "UiDown"
+msgstr "Dolů"
+
+msgid "UiLeft"
+msgstr "Vlevo"
+
+msgid "UiRight"
+msgstr "Vpravo"

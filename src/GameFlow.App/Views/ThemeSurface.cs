@@ -1609,9 +1609,13 @@ public sealed class ThemeSurface : Control
             return;
         }
 
+        using var touchClip = touchRegionClip is not null
+            ? ctx.PushGeometryClip(touchRegionClip) : ctx.PushClip(bounds);
+
         Point ToSurface(double x, double y) => new(
-            bounds.X + (bounds.Width * Math.Clamp(x, 0d, 1d)),
-            bounds.Y + (bounds.Height * Math.Clamp(y, 0d, 1d)));
+            bounds.X + (bounds.Width * Unit(x)),
+            bounds.Y + (bounds.Height * Unit(y)));
+        static double Unit(double value) => double.IsFinite(value) ? Math.Clamp(value, 0d, 1d) : 0;
 
         // The trail first: a ribbon of puffs where the finger was, each one
         // growing and rising as it ages. Every finger's whole trail is drawn
@@ -1623,7 +1627,7 @@ public sealed class ThemeSurface : Control
             {
                 var sample = samples[i];
                 var age = TouchTrail.NormalizedAge(sample, now);
-                var radius = (5 + (13 * age)) * (0.7 + (0.3 * Math.Clamp(sample.Pressure, 0d, 1d)));
+                var radius = (5 + (13 * age)) * (0.7 + (0.3 * Unit(sample.Pressure)));
                 var point = ToSurface(sample.X, sample.Y) - new Point(0, SmokeTrailRise * age);
                 ctx.DrawEllipse(SmokeBrush(finger, age), null, point, radius, radius);
             }
@@ -1646,8 +1650,9 @@ public sealed class ThemeSurface : Control
         for (var i = 0; i < contacts.Count && i < ContactColors.Length; i++)
         {
             var contact = contacts[i];
+            if (!float.IsFinite(contact.X) || !float.IsFinite(contact.Y) || !float.IsFinite(contact.Pressure)) { continue; }
             var point = ToSurface(contact.X, contact.Y);
-            var glowRadius = 12 + (8 * Math.Clamp(contact.Pressure, 0f, 1f));
+            var glowRadius = 12 + (8 * Unit(contact.Pressure));
 
             ctx.DrawEllipse(FingertipGlowBrushes[FingerColorIndex(contact.FingerIndex)], null, point, glowRadius, glowRadius);
             ctx.DrawEllipse(FingertipCoreBrush, null, point, 7, 7);
@@ -1753,15 +1758,29 @@ public sealed class ThemeSurface : Control
         }
 
         touchRegionTheme = theme.Id;
-        touchRegionBounds = ThemeTouchpadLocator.Find(theme.Document) is { } region
+        var pad = ThemeTouchpadLocator.Locate(theme.Document);
+        touchRegionBounds = pad?.Surface is { } region
             ? new Rect(region.X, region.Y, region.Width, region.Height)
             : null;
+        touchRegionClip = null;
+        if (pad is { Outline.Count: > 2 })
+        {
+            var geometry = new StreamGeometry();
+            using (var drawing = geometry.Open())
+            {
+                drawing.BeginFigure(new Point(pad.Outline[0].X, pad.Outline[0].Y), true);
+                foreach (var point in pad.Outline.Skip(1)) { drawing.LineTo(new Point(point.X, point.Y)); }
+                drawing.EndFigure(true);
+            }
+            touchRegionClip = geometry;
+        }
 
         return touchRegionBounds;
     }
 
     private string? touchRegionTheme;
     private Rect? touchRegionBounds;
+    private StreamGeometry? touchRegionClip;
 
     private void DrawAdditionalContacts(DrawingContext ctx, TrailPadNode trailPad, Matrix transform)
     {
@@ -2093,7 +2112,7 @@ public sealed class ThemeSurface : Control
     {
         try
         {
-            var uri = new Uri($"avares://GameFlow.App/Assets/Themes/{relative.Replace('\\', '/')}");
+            var uri = new Uri($"avares://GameFlow/Assets/Themes/{relative.Replace('\\', '/')}");
             using var stream = AssetLoader.Open(uri);
             return new Bitmap(stream);
         }

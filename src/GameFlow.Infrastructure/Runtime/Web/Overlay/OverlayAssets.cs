@@ -21,7 +21,9 @@ namespace GameFlow.Infrastructure.Runtime.Web.Overlay;
 /// <c>ThemeSurface.DrawContactsOverTouchRegion</c> does: a smoke trail, loose
 /// smoke puffs that rise, and a soft fingertip glow. The constants are the
 /// ones in <c>ThemeSurface</c>, <c>TouchTrail</c> and <c>TouchParticles</c>.
-/// Change both sides together.
+/// Change both sides together. All of it is clipped to
+/// <see cref="OverlayProgram.TouchOutline"/>, the pad's silhouette, so the
+/// smoke takes the pad's shape and never spills onto the controller body.
 /// </para>
 ///
 /// <para>
@@ -41,6 +43,19 @@ namespace GameFlow.Infrastructure.Runtime.Web.Overlay;
 /// </summary>
 internal static class OverlayAssets
 {
+    public static string RenderOverlayPage(Localization.ILocalizationService? localization)
+    {
+        if (localization is null) { return OverlayPage; }
+        var text = new Dictionary<string, string>
+        {
+            ["connecting"] = localization["PhoneConnecting"],
+            ["reconnecting"] = localization["OverlayReconnecting"],
+            ["error"] = localization["OverlayError"]
+        };
+        return OverlayPage.Replace("/*OVERLAY_TRANSLATIONS*/{}", System.Text.Json.JsonSerializer.Serialize(text), StringComparison.Ordinal)
+            .Replace("<html lang=\"en\">", "<html lang=\"" + localization.CurrentCulture + "\">", StringComparison.Ordinal);
+    }
+
     internal const string OverlayPage = """
 <!DOCTYPE html>
 <html lang="en">
@@ -57,11 +72,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:transparent}
   color:#e6edf3;background:rgba(11,15,22,.82);border:1px solid #263041;
   border-radius:8px;padding:10px 16px;text-align:center;max-width:80vw}
 #msg.hide{display:none}
+#inputs{position:fixed;bottom:8px;left:8px;right:8px;text-align:center;
+  font:14px/1.6 system-ui,sans-serif;color:#edf2f7;text-shadow:0 1px 3px #000;pointer-events:none}
+#inputs span{display:inline-block;background:#161d26df;border-radius:4px;padding:1px 7px;margin:2px}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="msg">Connecting…</div>
+<div id="inputs" hidden></div>
 <script>
 (function(){
 "use strict";
@@ -70,6 +89,8 @@ var q = new URLSearchParams(location.search);
 var canvas = document.getElementById("c");
 var ctx = canvas.getContext("2d");
 var msg = document.getElementById("msg");
+var translations = /*OVERLAY_TRANSLATIONS*/{};
+msg.textContent = translations.connecting || "Connecting…";
 
 // Transparency is the default because that is what OBS needs. A colour
 // here is for looking at the page in a normal browser, where a
@@ -90,6 +111,12 @@ var values = [];         // this frame's evaluated expressions
 var pads = [];           // this frame's touch contacts, per trailpad
 var light = null;        // this frame's lightbar colour
 var images = [];         // Image objects, index-aligned with program.images
+var keys = new Set(), mouse = 0, motion = [0, 0];
+var activeInputs = new Map();
+var showInputs = q.get("text") === "1" || q.get("holds") === "1";
+var showHolds = q.get("holds") === "1";
+var inputText = document.getElementById("inputs");
+inputText.hidden = !showInputs;
 var dirty = false;       // a frame arrived since the last paint
 
 // ── Touch ────────────────────────────────────────────────────────────
@@ -103,7 +130,8 @@ var SMOKE_PEAK = 0.32, SMOKE_TRAIL_RISE = 12;
 var TRAIL_LIFE = 0.55, TRAIL_GAP = 0.012, TRAIL_MAX = 48, TRAIL_STEP = 0.004;
 var PUFF_LIFE = 0.9, PUFF_GAP = 0.04, PUFF_MAX = 120, PUFF_RISE = 0.1;
 
-var touchRegion = null;  // touchpad rectangle in theme units; null when the theme draws its own
+var touchRegion = null;  // touchpad surface in theme units; null when the theme draws its own
+var touchOutline = null; // the pad's silhouette, [x0, y0, x1, y1, ...] in theme units
 var touches = [];        // this frame's contacts: [x, y, finger, pressure], each 0..1
 var trails = {};         // finger slot -> [{x, y, p, t}], oldest first
 var puffs = [];          // {f, x, y, vx, vy, t, life, scale}
@@ -164,7 +192,9 @@ function pruneTouches(now) {
     while (drop < list.length && now - list[drop].t > TRAIL_LIFE) { drop++; }
     if (drop > 0) { list.splice(0, drop); }
     if (list.length > 0) { alive = true; }
+    else { delete trails[f]; }
   }
+  for (var finger in lastEmit) { if (now - lastEmit[finger] > PUFF_LIFE) { delete lastEmit[finger]; } }
   puffs = puffs.filter(function (s) { return now - s.t < s.life; });
   return alive || puffs.length > 0;
 }
@@ -189,12 +219,32 @@ function smoke(x, y, radius, finger, age) {
   soft(x, y, radius, tint, SMOKE_PEAK * Math.pow(1 - age, 1.5));
 }
 
+// Clips to the pad: its surface rectangle, then its silhouette — the same
+// two clips ThemeSurface.DrawContactsOverTouchRegion pushes. Without them a
+// finger on the physical edge drew its glow and smoke on the controller body.
+function clipToPad() {
+  var r = touchRegion, o = touchOutline;
+  ctx.beginPath();
+  ctx.rect(r.x, r.y, r.width, r.height);
+  ctx.clip();
+  if (o && o.length >= 6) {
+    ctx.beginPath();
+    ctx.moveTo(o[0], o[1]);
+    for (var i = 2; i + 1 < o.length; i += 2) { ctx.lineTo(o[i], o[i + 1]); }
+    ctx.closePath();
+    ctx.clip();
+  }
+}
+
 // The trail first, then the loose puffs, then the fingertips, so the
 // fingertip is always on top.
 function drawTouches(now) {
   var r = touchRegion;
   function px(x) { return r.x + r.width * Math.min(1, Math.max(0, x)); }
   function py(y) { return r.y + r.height * Math.min(1, Math.max(0, y)); }
+
+  ctx.save();
+  clipToPad();
 
   for (var f in trails) {
     var list = trails[f];
@@ -204,7 +254,8 @@ function drawTouches(now) {
     }
   }
 
-  // Not clamped to the pad: smoke that stopped at its top edge would pile up there.
+  // Not clamped to the pad: smoke that stopped at its top edge would pile up
+  // there. It drifts on and is cut off by the clip instead.
   for (var j = 0; j < puffs.length; j++) {
     var pf = puffs[j], a = Math.min(1, (now - pf.t) / pf.life), dt = now - pf.t;
     smoke(r.x + r.width * (pf.x + pf.vx * dt), r.y + r.height * (pf.y + pf.vy * dt), pf.scale * (4 + 12 * a), pf.f, a);
@@ -215,6 +266,8 @@ function drawTouches(now) {
     soft(x, y, 12 + 8 * t[3], FINGER_COLORS[colorIndex(t[2])], 0.6);
     soft(x, y, 7, CORE, 0.45);
   }
+
+  ctx.restore();
 }
 
 // ── Canvas sizing ────────────────────────────────────────────────────
@@ -395,8 +448,107 @@ function drawBar(node) {
   if (node.fg && ratio > 0) { ctx.fillStyle = node.fg; ctx.fillRect(fx, fy, fw, fh); }
 }
 
+// The rectangles and key identifiers also build the native Avalonia controls.
+function roundBox(item, fill, stroke) {
+  ctx.beginPath();
+  ctx.roundRect(item.x, item.y, item.width, item.height, item.radius);
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
+}
+
+function drawInputSurface(layout) {
+  function textFit(text, x, y, width) {
+    var fitted = text;
+    if (ctx.measureText(fitted).width > width) {
+      while (fitted.length > 0 && ctx.measureText(fitted + "…").width > width) { fitted = fitted.slice(0, -1); }
+      fitted += "…";
+    }
+    ctx.fillText(fitted, x, y);
+  }
+  for (var item of layout.elements) {
+    var active = item.key ? keys.has(item.key) : item.flag && (mouse & item.flag) !== 0;
+    if (item.kind === "motion") {
+      var x = item.x + 30, y = item.y + 30;
+      ctx.strokeStyle = "#4b5c70"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(x, y, 25, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = "#8cc8ff"; ctx.lineWidth = 3; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + motion[0] * 25, y - motion[1] * 25); ctx.stroke();
+      ctx.lineCap = "butt";
+      continue;
+    }
+    if (item.kind !== "label") {
+      roundBox(item, active ? "#65d384" : item.kind === "panel" ? "#161d26" : item.kind === "body" ? "#202a36" : "#2b3644",
+        item.bound ? "#8cc8ff" : "#4b5c70");
+    }
+    if (!item.label) { continue; }
+    var small = item.kind === "key" && item.width <= 30 && item.label.length >= 5;
+    var size = small ? 8.25 : 10.5;
+    var hint = item.hint || "";
+    var center = item.x + item.width / 2;
+    var lines = item.label.split("\n"), lineHeight = size * 1.2;
+    var top = item.y + (item.height - (lineHeight * lines.length + (hint ? 8 : 0))) / 2;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = active ? "#102418" : "#edf2f7";
+    ctx.font = "600 " + size + "px Consolas, monospace";
+    lines.forEach(function (line, index) { textFit(line, center, top + (index + .5) * lineHeight, item.width - 4); });
+    if (hint) {
+      ctx.fillStyle = active ? "#102418" : item.bound ? "#8cc8ff" : "#adb6c3";
+      ctx.font = "7.5px Consolas, monospace";
+      textFit(hint, center, top + lineHeight * lines.length + 4, item.width - 4);
+    }
+  }
+}
+
+function updateInputText(data) {
+  if (!showInputs || !program) { return; }
+  var current = new Map();
+  var labels = program.controlLabels || {};
+  if (!program.inputSurface) {
+    for (var id of data.buttons || []) { current.set("b" + id, labels[id] || String(id)); }
+  }
+  for (var axis of data.activeAxes || []) {
+    if (program.inputSurface ? axis !== 4 : axis === 4) { continue; }
+    current.set("a" + axis, (program.axisLabels || [])[axis] || String(axis));
+  }
+  if (program.inputSurface) {
+    for (var item of program.inputSurface.elements) {
+      if (item.key && keys.has(item.key)) { current.set("k" + item.key, item.label); }
+      if (item.flag && (mouse & item.flag)) { current.set("m" + item.flag, item.label); }
+    }
+    for (var key of keys) {
+      if (!current.has("k" + key)) { current.set("k" + key, (program.keyLabels || {})[key] || "VK" + key.toString(16)); }
+    }
+  }
+  var now = performance.now();
+  for (var id of activeInputs.keys()) { if (!current.has(id)) { activeInputs.delete(id); } }
+  for (var entry of current) {
+    if (!activeInputs.has(entry[0])) { activeInputs.set(entry[0], { label: entry[1], since: now }); }
+    else { activeInputs.get(entry[0]).label = entry[1]; }
+  }
+}
+
+var previousInputText = "";
+function paintInputText() {
+  if (!showInputs) { return; }
+  var now = performance.now();
+  var text = Array.from(activeInputs.values(), function(item) {
+    return item.label + (showHolds ? " " + ((now - item.since) / 1000).toFixed(1) + " s" : "");
+  });
+  var signature = JSON.stringify(text);
+  if (signature === previousInputText) { return; }
+  previousInputText = signature;
+  inputText.replaceChildren();
+  for (var label of text) {
+    var span = document.createElement("span");
+    span.textContent = label;
+    inputText.appendChild(span);
+  }
+}
+
 function paint() {
   requestAnimationFrame(paint);
+
+  paintInputText();
 
   // The trail and the smoke move with no new frame, so keep painting while they
   // live, plus one more paint to clear the last faded marks.
@@ -411,13 +563,15 @@ function paint() {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  var scale = Math.min(canvas.width / program.width, canvas.height / program.height);
+  var availableHeight = Math.max(1, canvas.height - (showInputs ? 45 : 0));
+  var scale = Math.min(canvas.width / program.width, availableHeight / program.height);
   ctx.setTransform(
     scale, 0, 0, scale,
     (canvas.width - program.width * scale) / 2,
-    (canvas.height - program.height * scale) / 2);
+    (availableHeight - program.height * scale) / 2);
 
   for (var i = 0; i < program.nodes.length; i++) { drawNode(program.nodes[i]); }
+  if (program.inputSurface) { drawInputSurface(program.inputSurface); }
   if (touchRegion) { drawTouches(now); }
 }
 requestAnimationFrame(paint);
@@ -447,7 +601,9 @@ function connect() {
       values = [];
       pads = [];
       touchRegion = data.touchRegion || null;
+      touchOutline = data.touchOutline || null;
       resetTouch();
+      keys = new Set(); mouse = 0; motion = [0, 0]; activeInputs.clear();
       tintCache = {};
       images = data.images.map(function (src) {
         var img = new Image();
@@ -470,6 +626,8 @@ function connect() {
       pads = data.pads || [];
       light = data.light || null;
       touches = data.touch || [];
+      keys = new Set(data.keys || []); mouse = data.mouse || 0; motion = data.motion || [0, 0];
+      updateInputText(data);
       if (touchRegion) { recordTouches(nowSeconds()); }
       dirty = true;
       return;
@@ -477,7 +635,7 @@ function connect() {
 
     if (data.type === "error") {
       program = null;
-      say(data.message || "Overlay error");
+      say(data.message || translations.error || "Overlay error");
     }
   };
 
@@ -486,7 +644,8 @@ function connect() {
     // on scene changes and GameFlow restarts during a stream; blanking
     // the controller for a second each time is worse than showing a
     // still one.
-    say("Reconnecting…");
+    activeInputs.clear();
+    say(translations.reconnecting || "Reconnecting…");
     schedule();
   };
 

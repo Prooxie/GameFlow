@@ -184,6 +184,15 @@ public sealed record AppSettings
     public string WebAccessToken { get; init; } = string.Empty;
 
     /// <summary>
+    /// Lets other programs (Home Assistant, scripts, a Wallpaper Engine
+    /// helper) set controller lighting through <c>/api/v1/lighting</c> on
+    /// the web server, authenticated with <see cref="WebAccessToken"/> as a
+    /// bearer token. Off by default: it is an endpoint that changes
+    /// hardware state, so it exists only once someone asks for it.
+    /// </summary>
+    public bool ExternalLightingApiEnabled { get; init; }
+
+    /// <summary>
     /// UDP port the DSU / Cemuhook server binds. 26760 is the port every
     /// consumer (Cemu, Dolphin, Yuzu, Ryujinx) probes by default, so changing
     /// it means reconfiguring the emulator to match.

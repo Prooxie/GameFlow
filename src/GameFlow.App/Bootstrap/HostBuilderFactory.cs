@@ -126,11 +126,15 @@ public static class HostBuilderFactory
                 // view of the same thing.
                 _ = services.AddSingleton<MotionServerPanelViewModel>();
 
-                // Stream-overlay panel. Transient: it holds no state worth
-                // keeping between dialogs — the pickers are rebuilt from
-                // the live theme and slot lists each time it is shown —
-                // and a singleton would just be a stale copy of both.
+                // Network sharing and firewall state for Options and the
+                // phone sheets. Transient: it re-reads the server each time
+                // it is shown, so a fresh one per window is always current.
                 _ = services.AddTransient<OverlayPanelViewModel>();
+
+                // Keyboard & mouse controller map editor. Transient and
+                // IDisposable: it subscribes to the map store and runs a
+                // key-capture timer, both released when its window closes.
+                _ = services.AddTransient<KeyboardMouseMapEditorViewModel>();
 
                 // Per-app profile rules. Transient for the same reason:
                 // it reloads from settings on construction, so a fresh

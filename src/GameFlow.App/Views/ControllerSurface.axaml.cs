@@ -66,6 +66,7 @@ public partial class ControllerSurface : UserControl
     /// </summary>
     private void OnPanelPointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
     {
+        if (GameFlow.App.Services.ControllerPanelInput.IsControlInteraction(e.Source)) { return; }
         if (DataContext is ControllerVisualStateViewModel viewModel && viewModel.IsEditable)
         {
             viewModel.RequestEdit();
@@ -185,6 +186,15 @@ public partial class ControllerSurface : UserControl
         // that won't render is pure waste and 30x/sec adds up when
         // several surfaces are alive at once.
         if (!IsEffectivelyVisible) { return; }
+
+        if (!vm.IsThemedStyle)
+        {
+            // Keyboard and mouse pictures bind to the view model directly;
+            // the theme surface is hidden, so feeding it is wasted work and
+            // its "no theme installed" note does not apply.
+            if (noThemeMessage is not null) { noThemeMessage.IsVisible = false; }
+            return;
+        }
 
         // The VM has already resolved its visual style and theme via
         // RefreshActiveTheme(); we just need to push the result.

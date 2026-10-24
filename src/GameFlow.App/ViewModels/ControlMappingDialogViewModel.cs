@@ -13,12 +13,7 @@ public sealed class ControlMappingDialogViewModel : ViewModelBase, IDisposable
         ILoggerFactory loggerFactory)
     {
         SelectionKey = ControlRuleMatcher.EnsurePhysicalSelectionKey(selectionKey);
-        SelectionTitle = ControlRuleMatcher.GetTitle(SelectionKey);
         IsVirtualTarget = SelectionKey.StartsWith("virtual:", StringComparison.OrdinalIgnoreCase);
-        SelectionScopeLabel = IsVirtualTarget ? "VIRTUAL OUTPUT TARGET" : "PHYSICAL INPUT";
-        SelectionHint = IsVirtualTarget
-            ? $"Choose the physical source that should produce {SelectionTitle}. The target is already selected."
-            : ControlRuleMatcher.GetHint(SelectionKey);
 
         backgroundRules = [.. profile.Rules.Where(rule => !ControlRuleMatcher.Matches(SelectionKey, rule))];
 
@@ -43,13 +38,15 @@ public sealed class ControlMappingDialogViewModel : ViewModelBase, IDisposable
 
     public string SelectionKey { get; }
 
-    public string SelectionTitle { get; }
+    public string SelectionTitle => ControlRuleMatcher.GetTitle(SelectionKey);
 
-    public string SelectionHint { get; }
+    public string SelectionHint => IsVirtualTarget
+        ? UiTextResources.Format("UiChooseSource", SelectionTitle)
+        : ControlRuleMatcher.GetHint(SelectionKey);
 
     public bool IsVirtualTarget { get; }
 
-    public string SelectionScopeLabel { get; }
+    public string SelectionScopeLabel => UiTextResources.Get(IsVirtualTarget ? "UiVirtualTarget" : "UiPhysicalInput");
 
     public MappingEditorViewModel Editor { get; }
 

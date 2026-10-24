@@ -8,8 +8,8 @@ namespace GameFlow.Core.Models;
 /// which mean "this PAD is wired the other way".
 ///
 /// <para>
-/// The distinction is why this lives on <see cref="ProfileDocument"/>
-/// rather than in <c>DeviceSettings</c>. Device tuning is keyed by slot
+/// The distinction is why this is carried by a profile rule
+/// (<see cref="Rules.AxisInvertRule"/>) rather than by <c>DeviceSettings</c>. Device tuning is keyed by slot
 /// and device and persisted outside any profile, so it deliberately
 /// survives a profile switch; a game-specific inversion must not. Both
 /// compose, and composing is meaningful: a backwards-wired pad corrected
@@ -19,10 +19,11 @@ namespace GameFlow.Core.Models;
 ///
 /// <para>
 /// Every axis is <see cref="bool"/>?, not <see cref="bool"/>, because
-/// profiles LAYER (see <c>SlotProfileComposer</c>) and a plain bool
-/// cannot express "this layer has no opinion". Without the null a base
-/// layer's inversion could never be turned back off by a layer stacked
-/// on top of it — the two would only ever OR together.
+/// inversion rules LAYER — across profiles stacked on a slot (see
+/// <c>SlotProfileComposer</c>) and across shift layers — and a plain bool
+/// cannot express "this rule has no opinion". Without the null an earlier
+/// rule's inversion could never be turned back off by one folded on top
+/// of it — the two would only ever OR together.
 /// </para>
 /// </summary>
 public sealed record AxisInvert
@@ -89,7 +90,8 @@ public sealed record AxisInvert
     /// Folds <paramref name="over"/> on top of this one: any axis
     /// <paramref name="over"/> has an opinion about wins, the rest fall
     /// through unchanged. Matches how rule layering already works — a
-    /// later profile in a slot's stack overrides an earlier one.
+    /// later rule (and so a later profile in a slot's stack) overrides an
+    /// earlier one.
     /// </summary>
     public AxisInvert Overlay(AxisInvert? over)
     {

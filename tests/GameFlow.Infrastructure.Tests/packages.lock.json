@@ -593,16 +593,16 @@
         "resolved": "2.6.0",
         "contentHash": "XE8a+11nZg0LRaf+RGABEWaHIf8yGd5w8v/Ra1iWxMBmAVzwuKbW7G21mS0U7w7sh1lYcgckInWGgnz4qyET8A=="
       },
-      "gameflow.app": {
+      "GameFlow": {
         "type": "Project",
         "dependencies": {
           "Avalonia": "[12.1.4, )",
           "Avalonia.Desktop": "[12.1.4, )",
           "Avalonia.Themes.Fluent": "[12.1.4, )",
           "CommunityToolkit.Mvvm": "[8.4.2, )",
-          "GameFlow.Core": "[1.0.7, )",
-          "GameFlow.HidMaestro": "[1.0.7, )",
-          "GameFlow.Infrastructure": "[1.0.7, )",
+          "GameFlow.Core": "[1.0.8, )",
+          "GameFlow.HidMaestro": "[1.0.8, )",
+          "GameFlow.Infrastructure": "[1.0.8, )",
           "Microsoft.Extensions.Hosting": "[10.0.13, )",
           "SDL3-CS.Native": "[3.4.2, )",
           "Serilog": "[4.4.0, )",
@@ -622,14 +622,14 @@
       "gameflow.hidmaestro": {
         "type": "Project",
         "dependencies": {
-          "GameFlow.Infrastructure": "[1.0.7, )",
+          "GameFlow.Infrastructure": "[1.0.8, )",
           "Microsoft.Extensions.Logging.Abstractions": "[10.0.13, )"
         }
       },
       "gameflow.infrastructure": {
         "type": "Project",
         "dependencies": {
-          "GameFlow.Core": "[1.0.7, )",
+          "GameFlow.Core": "[1.0.8, )",
           "Microsoft.Extensions.Caching.Memory": "[10.0.13, )",
           "Microsoft.Extensions.Hosting": "[10.0.13, )",
           "Microsoft.Extensions.Localization": "[10.0.13, )",

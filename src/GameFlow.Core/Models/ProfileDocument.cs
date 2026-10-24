@@ -1,10 +1,12 @@
+using System.Text.Json.Serialization;
+
 namespace GameFlow.Core.Models;
 
 public sealed record ProfileDocument
 {
     public string Id { get; init; } = "speedrunner-default";
     public string Name { get; init; } = "Speedrunner Default";
-    public int Version { get; init; } = 6;
+    public int Version { get; init; } = 7;
     /// <summary>
     /// Mapping ticks per second, 30–1000. Defaults to the maximum: the
     /// pipeline tick is cheap next to the input read it wraps, and the
@@ -34,9 +36,19 @@ public sealed record ProfileDocument
     public IReadOnlyList<ShiftLayer> ShiftLayers { get; init; } = [];
 
     /// <summary>
-    /// Per-game axis inversion — see <see cref="AxisInvert"/>. Every
-    /// axis defaults to "no opinion", so a profile written before v6
-    /// loads with nothing inverted and nothing overridden.
+    /// LEGACY (v6) per-game axis inversion. Read only by the profile
+    /// migrator, which turns a non-empty value into a
+    /// <see cref="Rules.AxisInvertRule"/> and clears this back to null;
+    /// nothing at runtime reads it — the mapping pipeline and the slot
+    /// composer only see inversion rules.
+    ///
+    /// <para>
+    /// Kept as a property rather than deleted so a v6 file still
+    /// deserializes into something the migrator can convert, and
+    /// nullable with null omitted on write so a migrated profile stops
+    /// carrying an empty <c>"invert"</c> object forever.
+    /// </para>
     /// </summary>
-    public AxisInvert Invert { get; init; } = new();
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AxisInvert? Invert { get; init; }
 }

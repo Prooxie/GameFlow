@@ -1,0 +1,10 @@
+<Project>
+  <UsingTask TaskName="GameFlowLocalizationCheck" TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup><RepositoryRoot ParameterType="System.String" Required="true" /></ParameterGroup>
+    <Task><Code Type="Class" Source="$(MSBuildThisFileDirectory)LocalizationCheck.cs" /></Task>
+  </UsingTask>
+  <Target Name="ValidateLocalization" BeforeTargets="CoreCompile">
+    <GameFlowLocalizationCheck RepositoryRoot="$(MSBuildThisFileDirectory).." />
+  </Target>
+</Project>

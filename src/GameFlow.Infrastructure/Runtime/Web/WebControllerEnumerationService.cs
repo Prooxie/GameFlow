@@ -18,19 +18,50 @@ namespace GameFlow.Infrastructure.Runtime.Web;
 public sealed class WebControllerEnumerationService(
     WebControllerHub hub,
     InputDeviceCatalog catalog,
-    ILogger<WebControllerEnumerationService> logger) : BackgroundService
+    ILogger<WebControllerEnumerationService> logger,
+    PhoneRegistry? registry = null) : BackgroundService
 {
     private readonly WebControllerHub hub = hub;
+    private readonly PhoneRegistry? registry = registry;
     private readonly InputDeviceCatalog catalog = catalog;
     private readonly ILogger<WebControllerEnumerationService> logger = logger;
 
+    private readonly SemaphoreSlim registryChanged = new(0, 1);
+
+    private void OnRegistryChanged(object? sender, EventArgs e)
+    {
+        try
+        {
+            registryChanged.Release();
+        }
+        catch (SemaphoreFullException)
+        {
+            // A refresh is already pending.
+        }
+    }
+
+    public override void Dispose()
+    {
+        if (registry is not null)
+        {
+            registry.Changed -= OnRegistryChanged;
+        }
+        registryChanged.Dispose();
+        base.Dispose();
+    }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        if (registry is not null)
+        {
+            registry.Changed += OnRegistryChanged;
+        }
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                catalog.ReplaceDevices(WebControllerDeviceScanner.SourceKey, WebControllerDeviceScanner.Scan(hub));
+                catalog.ReplaceDevices(WebControllerDeviceScanner.SourceKey, WebControllerDeviceScanner.Scan(hub, registry));
             }
             catch (Exception exception)
             {
@@ -39,7 +70,9 @@ public sealed class WebControllerEnumerationService(
 
             try
             {
-                await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+                // A phone added or renamed in the app should list at once,
+                // not on the next poll — the add flow selects it straight away.
+                _ = await registryChanged.WaitAsync(TimeSpan.FromSeconds(1), stoppingToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {

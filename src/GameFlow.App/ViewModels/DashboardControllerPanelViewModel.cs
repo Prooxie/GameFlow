@@ -1,7 +1,22 @@
 using System.ComponentModel;
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using GameFlow.Infrastructure.Runtime.Web.Overlay;
+using GameFlow.App.Services;
+using GameFlow.Core.Enums;
+using GameFlow.Infrastructure.Runtime.Input;
 
 namespace GameFlow.App.ViewModels;
+
+/// <summary>
+/// One choice in a dashboard surface's background picker.
+/// </summary>
+/// <param name="Label">What the picker shows.</param>
+/// <param name="Brush">
+/// The colour; empty for the app theme's own panel colour; null to follow
+/// the dashboard-wide default.
+/// </param>
+public sealed record PanelSurfaceBackground(string Label, string? Brush);
 
 /// <summary>
 /// One live controller panel on the dashboard, backed by a slot. Wraps a
@@ -47,8 +62,9 @@ public sealed class DashboardControllerPanelViewModel : ViewModelBase, IDisposab
         {
             physicalVisual.PropertyChanged += OnVisualPropertyChanged;
             virtualVisual.PropertyChanged += OnVisualPropertyChanged;
-            overlayThemes.Set(slotId, physical: true, physicalVisual.ActiveTheme);
-            overlayThemes.Set(slotId, physical: false, virtualVisual.ActiveTheme);
+            KeyboardMouseLegend.Changed += OnInputMapChanged;
+            PublishLayout(physicalVisual);
+            PublishLayout(virtualVisual);
         }
     }
 
@@ -62,6 +78,7 @@ public sealed class DashboardControllerPanelViewModel : ViewModelBase, IDisposab
 
         PhysicalVisual.PropertyChanged -= OnVisualPropertyChanged;
         VirtualVisual.PropertyChanged -= OnVisualPropertyChanged;
+        KeyboardMouseLegend.Changed -= OnInputMapChanged;
         overlayThemes.Remove(SlotId);
     }
 
@@ -71,16 +88,115 @@ public sealed class DashboardControllerPanelViewModel : ViewModelBase, IDisposab
     /// </summary>
     private void OnVisualPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName != nameof(ControllerVisualStateViewModel.ActiveTheme)
-            || sender is not ControllerVisualStateViewModel visual)
+        if (sender is not ControllerVisualStateViewModel visual ||
+            !(string.IsNullOrEmpty(e.PropertyName) || e.PropertyName is
+                nameof(ControllerVisualStateViewModel.ActiveTheme) or
+                nameof(ControllerVisualStateViewModel.ShowKeyboardSurface) or
+                nameof(ControllerVisualStateViewModel.ShowMouseSurface) or
+                nameof(ControllerVisualStateViewModel.KeyboardDeviceId) or
+                nameof(ControllerVisualStateViewModel.MouseDeviceId)))
         {
             return;
         }
 
-        overlayThemes?.Set(SlotId, ReferenceEquals(visual, PhysicalVisual), visual.ActiveTheme);
+        PublishLayout(visual);
+    }
+
+    private void OnInputMapChanged(object? sender, EventArgs e)
+    {
+        PublishLayout(PhysicalVisual);
+        PublishLayout(VirtualVisual);
+    }
+
+    private void PublishLayout(ControllerVisualStateViewModel visual)
+    {
+        if (overlayThemes is null) { return; }
+        var physical = ReferenceEquals(visual, PhysicalVisual);
+        overlayThemes.Set(SlotId, physical, visual.ActiveTheme);
+        OverlayProgram? program = null;
+        if (visual.ShowKeyboardSurface || visual.ShowMouseSurface)
+        {
+            var style = visual.ShowKeyboardSurface
+                ? visual.ShowMouseSurface ? ControllerVisualStyle.KeyboardMouse : ControllerVisualStyle.Keyboard
+                : ControllerVisualStyle.Mouse;
+            var layout = InputSurfacePresentation.Create(style, visual.KeyboardDeviceId, visual.MouseDeviceId);
+            program = new OverlayProgram
+            {
+                ThemeId = "native-" + style, ThemeName = style.ToString(), Width = layout.Width, Height = layout.Height,
+                Nodes = [], ImagePaths = [], ValueSlots = [], TrailPads = [], MissingImages = [], InputSurface = layout
+            };
+        }
+        overlayThemes.SetInput(SlotId, physical, program);
     }
 
     public string SlotId { get; }
+
+    // ─── Per-surface background and OBS link ─────────────────────────
+
+    /// <summary>Choices for either surface's background picker. Set by the shell.</summary>
+    public IReadOnlyList<PanelSurfaceBackground> BackgroundOptions { get; init; } = [];
+
+    private PanelSurfaceBackground? physicalBackground;
+    private PanelSurfaceBackground? virtualBackground;
+
+    /// <summary>The physical surface's background. Picking one raises <see cref="BackgroundPicked"/>.</summary>
+    public PanelSurfaceBackground? PhysicalBackground
+    {
+        get => physicalBackground;
+        set
+        {
+            if (value is not null && SetProperty(ref physicalBackground, value) && !suppressBackgroundEvents)
+            {
+                BackgroundPicked?.Invoke(this, true);
+            }
+        }
+    }
+
+    /// <summary>The virtual surface's background. Picking one raises <see cref="BackgroundPicked"/>.</summary>
+    public PanelSurfaceBackground? VirtualBackground
+    {
+        get => virtualBackground;
+        set
+        {
+            if (value is not null && SetProperty(ref virtualBackground, value) && !suppressBackgroundEvents)
+            {
+                BackgroundPicked?.Invoke(this, false);
+            }
+        }
+    }
+
+    private bool suppressBackgroundEvents;
+
+    /// <summary>Shows a stored choice without treating it as a new pick.</summary>
+    public void ShowBackgrounds(PanelSurfaceBackground? physical, PanelSurfaceBackground? virtualSide)
+    {
+        suppressBackgroundEvents = true;
+        try
+        {
+            PhysicalBackground = physical;
+            VirtualBackground = virtualSide;
+        }
+        finally
+        {
+            suppressBackgroundEvents = false;
+        }
+    }
+
+    /// <summary>The user picked a background; the argument is true for the physical surface.</summary>
+    public event EventHandler<bool>? BackgroundPicked;
+
+    /// <summary>The user asked for a surface's OBS link; the argument is true for the physical surface.</summary>
+    public event EventHandler<bool>? OverlayLinkRequested;
+
+    public ICommand CopyPhysicalOverlayCommand => copyPhysicalOverlay ??= new RelayCommand(() => OverlayLinkRequested?.Invoke(this, true));
+    public ICommand CopyVirtualOverlayCommand => copyVirtualOverlay ??= new RelayCommand(() => OverlayLinkRequested?.Invoke(this, false));
+    private ICommand? copyPhysicalOverlay;
+    private ICommand? copyVirtualOverlay;
+
+    private bool overlayInputText;
+    public bool OverlayInputText { get => overlayInputText; set => SetProperty(ref overlayInputText, value); }
+    private bool overlayHoldTimes;
+    public bool OverlayHoldTimes { get => overlayHoldTimes; set => SetProperty(ref overlayHoldTimes, value); }
 
     private string title;
     public string Title { get => title; set => SetProperty(ref title, value); }
@@ -214,20 +330,20 @@ public sealed class DashboardControllerPanelViewModel : ViewModelBase, IDisposab
             if (outputStatus.Contains("not found", StringComparison.OrdinalIgnoreCase)
                 && outputStatus.Contains("HIDMaestro", StringComparison.OrdinalIgnoreCase))
             {
-                return "HIDMaestro isn't installed, so virtual output is unavailable.";
+                return UiTextResources.Get("UiHidMaestroMissing");
             }
 
             if (outputStatus.Contains("administrator", StringComparison.OrdinalIgnoreCase))
             {
-                return "Administrator access is required for virtual output.";
+                return UiTextResources.Get("UiOutputNeedsAdmin");
             }
 
             if (outputStatus.Contains("failed", StringComparison.OrdinalIgnoreCase))
             {
-                return "Virtual output failed to start.";
+                return UiTextResources.Get("UiOutputFailed");
             }
 
-            return "Virtual output is unavailable.";
+            return UiTextResources.Get("UiOutputUnavailable");
         }
     }
 

@@ -19,6 +19,7 @@ namespace GameFlow.Core.Models;
 [JsonDerivedType(typeof(MultiSourceMapRule), "multi-source-map")]
 [JsonDerivedType(typeof(TouchpadMapRule), "touchpad-map")]
 [JsonDerivedType(typeof(GyroMapRule), "gyro-map")]
+[JsonDerivedType(typeof(AxisInvertRule), "axis-invert")]
 public abstract record MappingRule
 {
     public string Id { get; init; } = Guid.NewGuid().ToString("N");
@@ -27,10 +28,11 @@ public abstract record MappingRule
     public RuleMode Mode { get; init; } = RuleMode.Modify;
 
     /// <summary>
-    /// Empty (default) = Base — always active. A non-empty value ties
-    /// this rule to a <see cref="ShiftLayer.Id"/>: it applies only while
+    /// Empty (default) = Base — active unless the active layer rebinds
+    /// its input. A non-empty value ties this rule to a
+    /// <see cref="ShiftLayer.Id"/>: it applies only while
     /// <see cref="Pipeline.ShiftLayerResolver.ActiveLayerId"/> equals it.
-    /// See <see cref="ShiftLayer"/> for the override-ordering rule.
+    /// See <see cref="ShiftLayer"/> for how a layer overrides Base.
     /// </summary>
     public string LayerId { get; init; } = string.Empty;
 }

@@ -78,12 +78,27 @@ public sealed record OverlayProgram
     public required IReadOnlyList<string> MissingImages { get; init; }
 
     /// <summary>
-    /// The touchpad rectangle where the page draws each finger, or null.
-    /// Set only for a theme with no <c>trailpad</c> node and with a touchpad,
-    /// the same case where the dashboard draws its own finger markers.
-    /// When set, each frame carries the touch contacts.
+    /// The touchpad surface where the page draws each finger, or null:
+    /// a normalized contact maps from its top-left (0, 0) to its
+    /// bottom-right (1, 1). Set only for a theme with no <c>trailpad</c> node
+    /// and with a touchpad, the same case where the dashboard draws its own
+    /// finger markers. When set, each frame carries the touch contacts.
     /// </summary>
+    /// <remarks>
+    /// <see cref="ThemeTouchpad.Surface"/> — the visible part of the pad
+    /// art, not the art's rectangle. See <see cref="ThemeTouchpadLocator"/>.
+    /// </remarks>
     public ThemeRegion? TouchRegion { get; init; }
+
+    /// <summary>
+    /// The touchpad's silhouette, a closed polygon in theme units, that the
+    /// page clips every finger, trail and puff to — as the dashboard does.
+    /// Set together with <see cref="TouchRegion"/>.
+    /// </summary>
+    public IReadOnlyList<ThemePoint>? TouchOutline { get; init; }
+
+    /// <summary>Native keyboard/mouse geometry, shared with the dashboard controls.</summary>
+    public Input.InputSurfaceLayout? InputSurface { get; init; }
 }
 
 /// <summary>

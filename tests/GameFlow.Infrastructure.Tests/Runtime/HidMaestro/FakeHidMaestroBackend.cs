@@ -87,6 +87,14 @@ internal sealed class FakeHidMaestroPad : IHidMaestroPad
 
     public void RaiseRumble(double low, double high) => RumbleReceived?.Invoke(low, high);
 
+    public event Action<GameFlow.Infrastructure.Runtime.Effects.GameLighting>? LightingReceived;
+
+    public void RaiseLighting(GameFlow.Infrastructure.Runtime.Effects.GameLighting lighting) =>
+        LightingReceived?.Invoke(lighting);
+
+    /// <summary>True while anything is subscribed to <see cref="LightingReceived"/>.</summary>
+    public bool HasLightingSubscribers => LightingReceived is not null;
+
     public void Submit(ControllerSnapshot snapshot)
     {
         Submits++;

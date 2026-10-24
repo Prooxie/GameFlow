@@ -82,6 +82,7 @@ public sealed class MacRawInputReader : IKeyboardStateSource, IMouseStateSource,
     private sealed class MouseAccumulator
     {
         // Drained to zero on every read — see MouseFrame's own doc comment.
+        public int PreviewX, PreviewY, PreviewWheel;
         public int Dx;
         public int Dy;
         public int WheelDelta;
@@ -441,12 +442,12 @@ public sealed class MacRawInputReader : IKeyboardStateSource, IMouseStateSource,
             var mouse = MouseFor(resolved.Id);
             switch (usage)
             {
-                case MacHidInterop.UsageX: mouse.Dx += (int)reading; break;
-                case MacHidInterop.UsageY: mouse.Dy += (int)reading; break;
+                case MacHidInterop.UsageX: mouse.Dx += (int)reading; mouse.PreviewX += (int)reading; break;
+                case MacHidInterop.UsageY: mouse.Dy += (int)reading; mouse.PreviewY += (int)reading; break;
 
                 // *120 to match MouseFrame's documented "Windows wheel
                 // units (multiples of 120)" convention, as evdev does.
-                case MacHidInterop.UsageWheel: mouse.WheelDelta += (int)reading * 120; break;
+                case MacHidInterop.UsageWheel: mouse.WheelDelta += (int)reading * 120; mouse.PreviewWheel += (int)reading * 120; break;
             }
         }
     }
@@ -547,6 +548,31 @@ public sealed class MacRawInputReader : IKeyboardStateSource, IMouseStateSource,
         lock (gate)
         {
             return mouseByDevice.TryGetValue(deviceId, out var mouse) ? Drain(mouse) : default;
+        }
+    }
+
+    public MouseFrame ReadMousePreviewFrame(string deviceId)
+    {
+        lock (gate)
+        {
+            if (string.Equals(deviceId, MacInputDeviceScanner.AggregateMouseId, StringComparison.Ordinal))
+            {
+                int dx = 0, dy = 0, wheel = 0;
+                bool left = false, right = false, middle = false, back = false, forward = false;
+                foreach (var mouse in mouseByDevice.Values)
+                {
+                    dx += mouse.PreviewX; dy += mouse.PreviewY; wheel += mouse.PreviewWheel;
+                    left |= mouse.Left; right |= mouse.Right; middle |= mouse.Middle;
+                    back |= mouse.Button4; forward |= mouse.Button5;
+                    mouse.PreviewX = mouse.PreviewY = mouse.PreviewWheel = 0;
+                }
+                return new MouseFrame(dx, dy, left, right, middle, back, forward, wheel);
+            }
+            if (!mouseByDevice.TryGetValue(deviceId, out var state)) { return default; }
+            var frame = new MouseFrame(state.PreviewX, state.PreviewY, state.Left, state.Right,
+                state.Middle, state.Button4, state.Button5, state.PreviewWheel);
+            state.PreviewX = state.PreviewY = state.PreviewWheel = 0;
+            return frame;
         }
     }
 

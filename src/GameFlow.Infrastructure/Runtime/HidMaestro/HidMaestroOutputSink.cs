@@ -43,7 +43,8 @@ namespace GameFlow.Infrastructure.Runtime.HidMaestro;
 public sealed class HidMaestroOutputSink : IOutputSink,
     GameFlow.Infrastructure.Runtime.Slots.IConfigurableOutputSink,
     GameFlow.Infrastructure.Runtime.Slots.IPostRebuildFinalizer,
-    IRumbleFeedbackSource
+    IRumbleFeedbackSource,
+    Effects.ILightingFeedbackSource
 {
     /// <summary>
     /// How many frames in a row a pad may reject before the sink gives up
@@ -85,20 +86,55 @@ public sealed class HidMaestroOutputSink : IOutputSink,
     /// Creates the sink. <paramref name="backend"/> is its only way to
     /// HIDMaestro, so a test can stand in for the SDK.
     /// </summary>
-    public HidMaestroOutputSink(ILogger<HidMaestroOutputSink> logger, IHidMaestroBackend backend)
-        : this(logger, backend, TimeProvider.System)
+    /// <param name="logger">Logger.</param>
+    /// <param name="backend">The SDK seam.</param>
+    /// <param name="catalog">
+    /// Where the pad's identity is claimed so it never lists as a physical
+    /// device; see <see cref="InputDeviceCatalog.ClaimHardwareSignature"/>.
+    /// Optional so a test can run the sink alone.
+    /// </param>
+    public HidMaestroOutputSink(ILogger<HidMaestroOutputSink> logger, IHidMaestroBackend backend, InputDeviceCatalog? catalog = null)
+        : this(logger, backend, TimeProvider.System, catalog)
     {
     }
 
     internal HidMaestroOutputSink(
-        ILogger<HidMaestroOutputSink> logger, IHidMaestroBackend backend, TimeProvider timeProvider)
+        ILogger<HidMaestroOutputSink> logger, IHidMaestroBackend backend, TimeProvider timeProvider,
+        InputDeviceCatalog? catalog = null)
     {
         this.logger = logger;
         this.backend = backend;
         this.timeProvider = timeProvider;
+        this.catalog = catalog;
+    }
+
+    private readonly InputDeviceCatalog? catalog;
+
+    /// <summary>
+    /// This sink's claim on its pad's identity in the device catalog, from
+    /// just before the pad is created until it is torn down. Guarded by
+    /// <see cref="gate"/>.
+    /// </summary>
+    private IDisposable? catalogClaim;
+
+    /// <summary>Replaces the catalog claim. Callers must hold <see cref="gate"/>.</summary>
+    private void ClaimLocked((ushort Vid, ushort Pid)? signature)
+    {
+        catalogClaim?.Dispose();
+        catalogClaim = signature is { } claimed && catalog is not null
+            ? catalog.ClaimHardwareSignature(claimed.Vid, claimed.Pid, activatedAtUtc)
+            : null;
     }
 
     public event Action<double, double>? RumbleReceived;
+
+    /// <summary>
+    /// Lighting the game sent to this sink's virtual pad, re-raised from
+    /// whichever pad is current — the same pass-through as
+    /// <see cref="RumbleReceived"/>, so the slot runtime can subscribe once
+    /// and survive the pad being recreated underneath it.
+    /// </summary>
+    public event Action<Effects.GameLighting>? LightingReceived;
 
     /// <summary>
     /// Reflects the real state so the slots list and dashboard show the
@@ -223,6 +259,7 @@ public sealed class HidMaestroOutputSink : IOutputSink,
             old = activePad;
             activePad = null;
             reservedSignature = null;
+            ClaimLocked(null);
             activeState = "unresolved";
             unavailableReason = null;
         }
@@ -393,6 +430,7 @@ public sealed class HidMaestroOutputSink : IOutputSink,
         // the note on reservedSignature.
         activatedAtUtc = timeProvider.GetUtcNow();
         reservedSignature = signature;
+        ClaimLocked(signature);
 
         IHidMaestroPad? pad;
         string? creationFailure;
@@ -418,6 +456,7 @@ public sealed class HidMaestroOutputSink : IOutputSink,
         if (pad is null)
         {
             reservedSignature = null;
+            ClaimLocked(null);
             activatedAtUtc = default;
             unavailableReason = creationFailure;
             DelayRetry(UnavailableRetryInterval);
@@ -430,9 +469,16 @@ public sealed class HidMaestroOutputSink : IOutputSink,
             return;
         }
 
-        // From here on the pad's own identity is published instead.
+        // From here on the pad's own identity is published instead. It
+        // normally equals the reservation; when it does not, claim what
+        // actually enumerates.
         reservedSignature = null;
+        if (signature != pad.HardwareSignature)
+        {
+            ClaimLocked(pad.HardwareSignature);
+        }
         pad.RumbleReceived += OnRumbleReceived;
+        pad.LightingReceived += OnLightingReceived;
         activePad = pad;
         activeState = "active";
         consecutiveSubmitFailures = 0;
@@ -589,6 +635,9 @@ public sealed class HidMaestroOutputSink : IOutputSink,
     private void OnRumbleReceived(double lowFrequency, double highFrequency) =>
         RumbleReceived?.Invoke(lowFrequency, highFrequency);
 
+    private void OnLightingReceived(Effects.GameLighting lighting) =>
+        LightingReceived?.Invoke(lighting);
+
     /// <summary>
     /// Sends the rumble stop, then removes the pad. A pad that fails to
     /// dispose is logged and dropped: <see cref="Configure"/> and
@@ -600,6 +649,7 @@ public sealed class HidMaestroOutputSink : IOutputSink,
             () =>
             {
                 pad.RumbleReceived -= OnRumbleReceived;
+                pad.LightingReceived -= OnLightingReceived;
                 try
                 {
                     pad.Dispose();
@@ -700,6 +750,7 @@ public sealed class HidMaestroOutputSink : IOutputSink,
             pad = activePad;
             activePad = null;
             reservedSignature = null;
+            ClaimLocked(null);
         }
 
         if (pad is not null)

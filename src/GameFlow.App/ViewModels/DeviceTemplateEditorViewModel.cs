@@ -108,8 +108,10 @@ public sealed class DeviceTemplateEditorViewModel : ViewModelBase, IDisposable
         try
         {
             var profiles = await profileCatalog.GetProfilesAsync();
+            if (disposed) { return; }
             Dispatcher.UIThread.Post(() =>
             {
+                if (disposed) { return; }
                 loadedCatalog = profiles;
                 RebuildProfileOptions();
             });
@@ -122,6 +124,7 @@ public sealed class DeviceTemplateEditorViewModel : ViewModelBase, IDisposable
 
     private void RebuildProfileOptions()
     {
+        if (disposed) { return; }
         OutputProfileOptions.Clear();
         OutputProfileOptions.Add(new SlotOutputProfileOption(string.Empty, DefaultProfileOptionLabel));
         foreach (var profile in loadedCatalog)

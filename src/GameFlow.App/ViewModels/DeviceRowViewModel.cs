@@ -20,13 +20,14 @@ public sealed class DeviceRowViewModel(InputDeviceInfo info) : ViewModelBase
     public bool IsSelected => info.IsSelected;
     public bool IsGamepad => info.IsGamepad;
     public DeviceCategory Category => info.Category;
+
     public bool HasBattery => info.HasBattery;
     public string BatteryText => info.HasBattery ? $"{info.BatteryPercentage}%" : string.Empty;
     public string BatteryStatusText => info.BatteryState switch
     {
-        DeviceBatteryState.Charging => $"Charging · {info.BatteryPercentage}%",
-        DeviceBatteryState.Charged => "Fully charged",
-        DeviceBatteryState.OnBattery => $"Battery · {info.BatteryPercentage}%",
+        DeviceBatteryState.Charging => UiTextResources.Format("UiBatteryCharging", info.BatteryPercentage!),
+        DeviceBatteryState.Charged => UiTextResources.Get("UiFullyCharged"),
+        DeviceBatteryState.OnBattery => UiTextResources.Format("UiBatteryRemaining", info.BatteryPercentage!),
         _ => string.Empty,
     };
     public string BatteryIcon => info.BatteryState == DeviceBatteryState.Charging ? "⚡" : "▰";
@@ -54,14 +55,14 @@ public sealed class DeviceRowViewModel(InputDeviceInfo info) : ViewModelBase
         {
             var kind = info.Category switch
             {
-                DeviceCategory.Gamepad => "Gamepad",
-                DeviceCategory.Joystick => "Generic / HID",
-                DeviceCategory.Keyboard => "Keyboard",
-                DeviceCategory.Mouse => "Mouse",
-                _ => info.IsGamepad ? "Gamepad" : "Generic / HID",
+                DeviceCategory.Gamepad => UiTextResources.Get("UiGamepad"),
+                DeviceCategory.Joystick => UiTextResources.Get("UiGenericHid"),
+                DeviceCategory.Keyboard => UiTextResources.Get("UiKeyboard"),
+                DeviceCategory.Mouse => UiTextResources.Get("UiMouse"),
+                _ => info.IsGamepad ? UiTextResources.Get("UiGamepad") : UiTextResources.Get("UiGenericHid"),
             };
 
-            return info.IsVirtual ? $"{kind} · VIRTUAL" : kind;
+            return info.IsVirtual ? UiTextResources.Format("UiVirtualKind", kind) : kind;
         }
     }
 
@@ -124,8 +125,8 @@ public sealed class DeviceRowViewModel(InputDeviceInfo info) : ViewModelBase
 
     public string HardwareId => info.HardwareId;
 
-    /// <summary>"Connected" / "Offline" — surfaced as a small status text.</summary>
-    public string ConnectionText => info.IsConnected ? "Connected" : "Offline";
+    /// <summary>UiTextResources.Get("UiConnected") / UiTextResources.Get("UiOffline") — surfaced as a small status text.</summary>
+    public string ConnectionText => info.IsConnected ? UiTextResources.Get("UiConnected") : UiTextResources.Get("UiOffline");
 
     /// <summary>
     /// Hex colour for the status dot — green when connected, slate when

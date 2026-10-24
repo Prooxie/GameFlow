@@ -238,7 +238,7 @@ msgid "MappingEditorSuppressRawStick"
 msgstr "Sopprimi stick grezzo dopo la regolazione"
 
 msgid "MappingEditorDeadzoneLabel"
-msgstr "Deadzone"
+msgstr "Zona morta e soglia"
 
 msgid "MappingEditorDeadzoneHint"
 msgstr "I valori all’interno della deadzone vengono forzati a zero."
@@ -267,6 +267,7 @@ msgstr "Attivazione al massimo a"
 msgid "MappingEditorTargetControlKeyLabel"
 msgstr "Chiave controllo destinazione"
 
+#. invariant: control syntax or product name
 msgid "MappingEditorControlKeyWatermark"
 msgstr "LeftStick / South / Touchpad …"
 
@@ -335,7 +336,6 @@ msgstr "Impossibile eliminare: è l'unico profilo."
 
 msgid "ProfileDeletedStatus"
 msgstr "Profilo {0} eliminato."
-
 
 msgid "ThemeLabel"
 msgstr "Tema"
@@ -421,7 +421,6 @@ msgstr "Valori predefiniti ripristinati — clicca Salva per applicare."
 msgid "SettingsDialogApplyFailedStatus"
 msgstr "Impossibile salvare le impostazioni: {0}"
 
-
 msgid "ThemeNameCyberBlue"
 msgstr "Blu cibernetico"
 
@@ -473,6 +472,7 @@ msgstr "ViGEm DualShock 4"
 msgid "OutputProviderViGEmDs4Description"
 msgstr "Controller DualShock 4 virtuale tramite ViGEm Bus. Richiede il driver ViGEm Bus."
 
+#. invariant: control syntax or product name
 msgid "OutputProviderViGEmDs5Label"
 msgstr "ViGEm DualSense (DS5)"
 
@@ -499,7 +499,6 @@ msgstr "PlayStation 5"
 
 msgid "ControllerStyleMinimal"
 msgstr "Minimale"
-
 
 msgid "StyleLabelXbox"
 msgstr "Layout Xbox"
@@ -568,37 +567,37 @@ msgid "RuleKindButtonRemapLabel"
 msgstr "Rimappatura tasto"
 
 msgid "RuleKindButtonRemapDescription"
-msgstr "Reindirizzare un tasto a un altro."
+msgstr "Invia un tasto come un altro."
 
 msgid "RuleKindButtonAutofireLabel"
 msgstr "Autofire / Turbo tasto"
 
 msgid "RuleKindButtonAutofireDescription"
-msgstr "Fuoco rapido di un tasto a una velocità configurabile."
+msgstr "Ripete un tasto finché lo tieni premuto."
 
 msgid "RuleKindStickThresholdLabel"
 msgstr "Soglia stick"
 
 msgid "RuleKindStickThresholdDescription"
-msgstr "Modellazione della zona morta e della soglia per uno stick."
+msgstr "Imposta la zona morta e l’intervallo completo di uno stick."
 
 msgid "RuleKindStickAutofireLabel"
 msgstr "Autofire stick"
 
 msgid "RuleKindStickAutofireDescription"
-msgstr "Pulsare l'output di uno stick da un altro stick."
+msgstr "Fa pulsare uno stick in base a un altro."
 
 msgid "RuleKindFreezeLastDirectionLabel"
 msgstr "Congela ultima direzione"
 
 msgid "RuleKindFreezeLastDirectionDescription"
-msgstr "Mantiene l'ultima direzione dello stick osservata mentre un tasto è premuto."
+msgstr "Mantiene una direzione dello stick finché tieni premuto un tasto."
 
 msgid "RuleKindScriptLabel"
 msgstr "Script di controllo"
 
 msgid "RuleKindScriptDescription"
-msgstr "Memorizza il testo dello script per un controllo specifico."
+msgstr "Esegue uno script Lua per un comando."
 
 msgid "MappingEditorAddRule"
 msgstr "+ Aggiungi regola"
@@ -624,11 +623,8 @@ msgstr "Sopprimi tasto sorgente (blocca originale)"
 msgid "MappingEditorEnabled"
 msgstr "Abilitato"
 
-msgid "MappingEditorDeadzoneLabel"
-msgstr "Zona morta e soglia"
-
 msgid "MappingEditorStoreScript"
-msgstr "Memorizza uno script per il controllo selezionato. L'esecuzione runtime è pianificata."
+msgstr "Lo script viene eseguito a ogni aggiornamento finché la regola è attiva."
 
 msgid "MappingEditorSelectRuleToEdit"
 msgstr "Seleziona una regola da modificare"
@@ -639,12 +635,8 @@ msgstr "Oppure usa 'Aggiungi regola' per creare una nuova associazione."
 msgid "MappingEditorSaveButton"
 msgstr "Salva regola"
 
-msgid "MappingEditorCancelButton"
-msgstr "Annulla"
-
 msgid "MappingEditorRulesHeader"
 msgstr "REGOLE DI MAPPATURA"
-
 
 msgid "InputProviderOpenXInputLabel"
 msgstr "OpenXInput"
@@ -680,15 +672,13 @@ msgid "OutputProviderHidMaestroLabel"
 msgstr "HID virtuale HidMaestro"
 
 msgid "OutputProviderHidMaestroDescription"
-msgstr "User-mode virtual controller platform — no kernel driver or reboot. Presents as real hardware to XInput, DirectInput, SDL3 and WGI. Windows only. Activates automatically when HIDMaestro.Core.dll is present next to the executable. Does not fall back to ViGEm — if it can't activate, this slot has no output."
+msgstr "Controller virtuali per Windows. Installa separatamente il runtime HIDMaestro compatibile. Senza di esso lo slot non ha output."
 
 msgid "OutputProviderWindowsMidiOutLabel"
 msgstr "Uscita MIDI Windows"
 
 msgid "OutputProviderWindowsMidiOutDescription"
 msgstr "Emette eventi MIDI dall'attività del gamepad. Bozza — richiede Windows MIDI Services e una mappatura del profilo."
-
-# ── UI/UX localization pass (auto-added) ──
 
 msgid "CommonRefresh"
 msgstr "Refresh"
@@ -700,7 +690,7 @@ msgid "DevicesActiveDevice"
 msgstr "Active device"
 
 msgid "DevicesEmptyList"
-msgstr "No input devices detected. Connect a controller and click Refresh."
+msgstr "Nessun dispositivo trovato. Collega un dispositivo e aggiorna."
 
 msgid "DevicesHardwareId"
 msgstr "Hardware ID"
@@ -718,7 +708,7 @@ msgid "DevicesMouseHint"
 msgstr "Il movimento controlla lo stick destro (mira); tasto sinistro = grilletto destro (fuoco), tasto destro = grilletto sinistro (mira), centrale = R3, tasti laterali = LB/RB. Assegna questo mouse a uno slot per usarlo."
 
 msgid "DevicesNoSelection"
-msgstr "Select a device to see its details."
+msgstr "Seleziona un dispositivo per vedere i dettagli."
 
 msgid "DevicesOnlineTotal"
 msgstr " online of "
@@ -769,13 +759,13 @@ msgid "ProviderStatus_SdlActive"
 msgstr "Input SDL3 attivo — {0} dispositivo/i rilevati"
 
 msgid "RuleKindMultiButtonAutofireDescription"
-msgstr "Loop a sequence of button presses with per-step timing while held."
+msgstr "Ripete una sequenza di pressioni finché tieni premuto un tasto."
 
 msgid "RuleKindMultiButtonAutofireLabel"
-msgstr "Multi-Button Autofire"
+msgstr "Fuoco automatico multiplo"
 
 msgid "RuleKindRuleToggleDescription"
-msgstr "Press a button to enable or disable one or more other rules."
+msgstr "Attiva o disattiva altre regole con un tasto."
 
 msgid "RuleKindRuleToggleLabel"
 msgstr "Rule Toggle"
@@ -790,10 +780,10 @@ msgid "StyleLabelPlayStation3"
 msgstr "DualShock 3 layout"
 
 msgid "StyleLabelSimpleGamepad"
-msgstr "Simple gamepad layout"
+msgstr "Gamepad generico"
 
 msgid "StyleLabelSteamController"
-msgstr "Steam Controller layout"
+msgstr "Steam Controller"
 
 msgid "StyleLabelSteamDeck"
 msgstr "Steam Deck layout"
@@ -822,13 +812,11 @@ msgstr "SDL3 attivo — nessun gamepad rilevato"
 msgid "ProviderStatus_NoControllerSelected"
 msgstr "Nessun controller selezionato. La selezione automatica userà il primo dispositivo rilevato."
 
-# ── Mapping editor localization pass ──
-
 msgid "MEV_SectionTriggerButton"
 msgstr "TRIGGER BUTTON"
 
 msgid "MEV_SectionTriggerButtonHold"
-msgstr "TRIGGER BUTTON (hold to loop)"
+msgstr "Tieni premuto per ripetere"
 
 msgid "MEV_SectionOutputButton"
 msgstr "OUTPUT BUTTON"
@@ -849,22 +837,22 @@ msgid "MEV_SectionDeadzone"
 msgstr "DEADZONE"
 
 msgid "MEV_SectionFullAt"
-msgstr "FULL AT (saturation)"
+msgstr "Uscita massima a"
 
 msgid "MEV_SectionActivationDeadzone"
-msgstr "ACTIVATION DEADZONE"
+msgstr "Zona morta di attivazione"
 
 msgid "MEV_SectionActivationFullAt"
 msgstr "ACTIVATION FULL AT"
 
 msgid "MEV_SectionActivationButton"
-msgstr "ACTIVATION BUTTON (hold to freeze)"
+msgstr "Tieni premuto per bloccare"
 
 msgid "MEV_SectionBlendMode"
 msgstr "BLEND MODE"
 
 msgid "MEV_SectionSequenceSteps"
-msgstr "SEQUENCE STEPS (loop while held)"
+msgstr "Passi ripetuti durante la pressione"
 
 msgid "MEV_SectionStepTarget"
 msgstr "TARGET"
@@ -876,22 +864,22 @@ msgid "MEV_SectionTargetControlKey"
 msgstr "TARGET CONTROL KEY"
 
 msgid "MEV_SuppressRawAfterShaping"
-msgstr "Suppress raw source stick after shaping"
+msgstr "Usa questo stick solo come sorgente per altre regole"
 
 msgid "MEV_SuppressSourceStickOutput"
-msgstr "Suppress source stick output"
+msgstr "Sopprimi stick sorgente"
 
 msgid "MEV_SuppressSourceInputStored"
-msgstr "Suppress source input (stored for future runtime)"
+msgstr "Sopprimi il tasto sorgente"
 
 msgid "MEV_SuppressActivationWhileFreezing"
-msgstr "Suppress activation button while freezing"
+msgstr "Sopprimi pulsante di attivazione durante il blocco"
 
 msgid "MEV_SuppressCapturedWhileFrozen"
-msgstr "Suppress captured stick output while frozen"
+msgstr "Sopprimi stick acquisito durante il blocco"
 
 msgid "MEV_PulseWhileFrozen"
-msgstr "Pulse while frozen (autofire while held)"
+msgstr "Fuoco automatico durante il blocco"
 
 msgid "MEV_EditButton"
 msgstr "Edit"
@@ -903,25 +891,25 @@ msgid "MEV_AddStep"
 msgstr "+ Add step"
 
 msgid "MEV_NoStepsYet"
-msgstr "No steps yet — add at least one for the loop to do anything."
+msgstr "Aggiungi almeno un passo."
 
 msgid "MEV_HintDeadzone"
-msgstr "Ignore stick movement below this threshold."
+msgstr "I movimenti sotto questo valore vengono ignorati."
 
 msgid "MEV_HintFullAt"
-msgstr "Reach 100% output at this raw stick magnitude."
+msgstr "Qui l’uscita arriva al 100%."
 
 msgid "SidebarPhysicalHeader"
 msgstr "PHYSICAL DEVICES"
 
 msgid "SidebarVirtualHeader"
-msgstr "VIRTUAL CONTROLLERS"
+msgstr "Controller virtuali"
 
 msgid "DevicesPhysicalTabHeader"
 msgstr "Physical devices"
 
 msgid "DevicesVirtualTabHeader"
-msgstr "Virtual controllers"
+msgstr "Controller virtuali"
 
 msgid "SlotsAddControllerLabel"
 msgstr "Add controller"
@@ -939,7 +927,7 @@ msgid "MappedControlAutofireTitle"
 msgstr "Autofire"
 
 msgid "MappedControlStickThresholdTitle"
-msgstr "Deadzone / Threshold"
+msgstr "Zona morta e soglia"
 
 msgid "MappedControlStickAutofireTitle"
 msgstr "Stick autofire"
@@ -993,13 +981,13 @@ msgid "StickRightLabel"
 msgstr "Right stick"
 
 msgid "MappedControlHintStickClick"
-msgstr "Stick click: passthrough, ignore, remap, autofire, script."
+msgstr "Pressione stick: passaggio, ignora, rimappa, fuoco automatico o script."
 
 msgid "MappedControlHintAnalogTrigger"
-msgstr "Analog trigger: passthrough, ignore, script, future analog remap."
+msgstr "Grilletto analogico: passaggio, ignora o script."
 
 msgid "MappedControlHintButton"
-msgstr "Button: passthrough, ignore, remap, autofire, script."
+msgstr "Pulsante: passaggio, ignora, rimappa, fuoco automatico o script."
 
 msgid "MEV_HoldMs"
 msgstr "HOLD ms"
@@ -1011,16 +999,16 @@ msgid "MEV_DelayMs"
 msgstr "DELAY ms"
 
 msgid "MEV_SectionTriggerButtonToggle"
-msgstr "TRIGGER BUTTON (press to toggle)"
+msgstr "Premi per attivare"
 
 msgid "MEV_SectionRulesToToggle"
 msgstr "RULES TO TOGGLE"
 
 msgid "MEV_ToggleHint"
-msgstr "Each press of the trigger flips the enabled state of the checked rules."
+msgstr "Ogni pressione attiva o disattiva le regole selezionate."
 
 msgid "MEV_NoOtherRules"
-msgstr "No other rules exist yet to target."
+msgstr "Non ci sono ancora altre regole."
 
 msgid "MEV_SectionTiming"
 msgstr "TIMING"
@@ -1032,10 +1020,10 @@ msgid "MEV_TimingRelease"
 msgstr "RELEASE"
 
 msgid "MEV_HintHold"
-msgstr "How long the virtual button is held (pressed phase)."
+msgstr "Quanto dura ogni pressione."
 
 msgid "MEV_HintRelease"
-msgstr "How long the virtual button is released between pulses."
+msgstr "La pausa tra due pressioni."
 
 msgid "TemplateOutputProviderLabel"
 msgstr "Provider di output"
@@ -1054,8 +1042,6 @@ msgstr "Salva"
 
 msgid "DashboardNoControllerConnected"
 msgstr "Nessun controller connesso"
-
-# ── Touchpad tab: joystick / D-pad / mouse mapping + gestures ──
 
 msgid "DevicesTouchpadTab"
 msgstr "Touchpad"
@@ -1284,3 +1270,1719 @@ msgstr "Anima questo controller virtuale con la sequenza demo integrata invece d
 
 msgid "TemplateOutputProfileTooltip"
 msgstr "Definisce esattamente quale controller questo slot presenta ai giochi. Predefinito usa il profilo standard del dispositivo di uscita qui sopra; l’elenco copre l’ampio catalogo di gamepad e controller arcade di HIDMaestro. I profili per volanti e simulazione di volo sono nascosti per ora."
+
+msgid "RuleKindAxisInvertLabel"
+msgstr "Inversione assi"
+
+msgid "RuleKindAxisInvertDescription"
+msgstr "Inverte gli assi degli stick o i grilletti."
+
+msgid "MEV_SectionInvertLeftStick"
+msgstr "STICK SINISTRO"
+
+msgid "MEV_SectionInvertRightStick"
+msgstr "STICK DESTRO"
+
+msgid "MEV_SectionInvertTriggers"
+msgstr "GRILLETTI"
+
+msgid "MEV_InvertX"
+msgstr "Inverti X"
+
+msgid "MEV_InvertY"
+msgstr "Inverti Y"
+
+msgid "MEV_InvertL2"
+msgstr "Inverti L2"
+
+msgid "MEV_InvertR2"
+msgstr "Inverti R2"
+
+msgid "MEV_InvertShowInLayout"
+msgstr "Mostra l’inversione sul controller a schermo"
+
+msgid "MEV_InvertHint"
+msgstr "Si applica per ultima, così le altre regole vedono lo stick come lo spingi."
+
+msgid "MEV_TipInvertLeftX"
+msgstr "Scambia sinistra e destra solo per questo profilo.\n\nLe altre regole vedono lo stick come lo spingi. Solo il gioco riceve l’inversione."
+
+msgid "MEV_TipInvertLeftY"
+msgstr "Scambia su e giù solo per questo profilo.\n\nPer i giochi che leggono lo stick al contrario: spingi in su e il personaggio cammina in giù."
+
+msgid "MEV_TipInvertRightX"
+msgstr "Scambia sinistra e destra solo per questo profilo."
+
+msgid "MEV_TipInvertRightY"
+msgstr "Scambia su e giù solo per questo profilo.\n\nIl caso comune: visuale invertita in un gioco senza un’impostazione propria."
+
+msgid "MEV_TipInvertTrigger"
+msgstr "Inverte il grilletto nel suo intervallo, quindi rilasciato si legge come premuto a fondo.\n\nPensato per hardware con l’asse del grilletto invertito, non per i giochi. Lascialo disattivato, a meno che il gioco non debba leggere un grilletto non toccato come premuto."
+
+msgid "MEV_TipInvertShowInLayout"
+msgstr "Disattivato per impostazione predefinita, quindi spingere in su si vede ancora in su.\n\nAttivalo per vedere esattamente ciò che riceve il gioco."
+
+msgid "MEV_RuleOrderHint"
+msgstr "Spostare una regola cambia l’ordine solo tra regole dello stesso tipo."
+
+msgid "MappedControlAxisInvertTitle"
+msgstr "Inversione assi"
+
+msgid "MappedControlAxisInvertNothing"
+msgstr "niente invertito"
+
+msgid "MappedControlAxisInvertShown"
+msgstr "mostrata sul layout"
+
+msgid "MEV_RuleOrderTip"
+msgstr "Le regole vengono eseguite in questo ordine: interruttori di regole, soglie stick, SOCD, rimappature, autofire, autofire multitasto, combo, autofire stick, congelamento, stick trim, giroscopio, touchpad, righe multisorgente, script, inversione assi."
+
+msgid "MEV_ScriptTrustWarning"
+msgstr "Attiva solo script di autori di cui ti fidi."
+
+msgid "UiSkin"
+msgstr "Aspetto"
+
+msgid "UiControlMapping"
+msgstr "Assegnazione dei comandi"
+
+msgid "UiSticks"
+msgstr "Levette"
+
+msgid "UiFixesDriftAndWornSticksAndChangesHowMovement"
+msgstr "Regola la risposta della levetta. Il punto mostra l'input in tempo reale."
+
+msgid "UiPresets"
+msgstr "Preimpostazioni"
+
+msgid "UiDefault"
+msgstr "Predefinito"
+
+msgid "UiFactoryBehaviourASmallDeadzoneAndLinearResponseStart"
+msgstr "Zona morta ridotta e risposta lineare."
+
+msgid "UiPrecision"
+msgstr "Precisione"
+
+msgid "UiSmallerDeadzoneAndAGentlerCentreForSlowAccurate"
+msgstr "Risposta delicata al centro per mirare con precisione."
+
+msgid "UiAggressive"
+msgstr "Risposta rapida"
+
+msgid "UiReactsSoonerAndReachesFullTravelFasterForDriving"
+msgstr "Reagisce prima e raggiunge l'uscita massima con meno movimento."
+
+msgid "UiWornPad"
+msgstr "Controller usurato"
+
+msgid "UiLargerDeadzoneToAbsorbDriftAndFullTravelReached"
+msgstr "Ignora la deriva e compensa la corsa ridotta della levetta."
+
+msgid "UiDeadzone"
+msgstr "Zona morta"
+
+msgid "UiHowFarTheStickMustMoveBeforeTheGame"
+msgstr "Ignora piccoli movimenti al centro. Aumenta il valore in caso di deriva."
+
+msgid "UiAntiDeadzone"
+msgstr "Compensazione zona morta"
+
+msgid "UiCompensatesForADeadzoneTheGAMEAppliesOnTop"
+msgstr "Compensa la zona morta del gioco se ignora i piccoli movimenti."
+
+msgid "UiHowFarYouHaveToPushForTheGame"
+msgstr "Riduci il valore se la levetta non raggiunge l'uscita massima."
+
+msgid "UiCurve"
+msgstr "Curva di risposta"
+
+msgid "UiHowStickMovementMapsToInGameMovementLinear"
+msgstr "Scegli come il movimento della levetta modifica l'uscita."
+
+msgid "UiAdvanced"
+msgstr "Avanzate"
+
+msgid "UiMultipliesTheWholeOutputAbove100TheStick"
+msgstr "Scala tutta l'uscita della levetta. Valori sopra 1 aumentano la sensibilità."
+
+msgid "UiTriggers"
+msgstr "Grilletti"
+
+msgid "UiSetsWhereATriggerPullStartsToRegisterAnd"
+msgstr "Scegli quando il grilletto inizia a rispondere e raggiunge il massimo."
+
+msgid "UiLeftTrigger"
+msgstr "Grilletto sinistro"
+
+msgid "UiRightTrigger"
+msgstr "Grilletto destro"
+
+msgid "UiRumble"
+msgstr "Vibrazione"
+
+msgid "UiControlsVibrationStrengthForThisPadTurnItDown"
+msgstr "Regola l'intensità della vibrazione di questo controller."
+
+msgid "UiRumbleEnabled"
+msgstr "Attiva vibrazione"
+
+msgid "UiMotorGain"
+msgstr "Intensità dei motori"
+
+msgid "UiOverall"
+msgstr "Generale"
+
+msgid "UiMasterVolumeForVibrationOnThisPad000"
+msgstr "Intensità generale. Zero disattiva la vibrazione."
+
+msgid "UiLowMotor"
+msgstr "Motore a bassa frequenza"
+
+msgid "UiTheHeavyLowFrequencyMotorTheDeepRumbleOf"
+msgstr "Vibrazioni profonde, come esplosioni e motori."
+
+msgid "UiHighMotor"
+msgstr "Motore ad alta frequenza"
+
+msgid "UiTheLightHighFrequencyMotorTheFineBuzzOf"
+msgstr "Vibrazioni sottili, come superfici e urti."
+
+msgid "UiAbove100xAmplifiesAWeakPadThisGain"
+msgstr "Valori sopra 1 amplificano la vibrazione e gli effetti collegati ai grilletti."
+
+msgid "UiSwapLeftRightMotors"
+msgstr "Scambia motori"
+
+msgid "UiLighting"
+msgstr "Illuminazione"
+
+msgid "UiLightbarMode"
+msgstr "Modalità barra luminosa"
+
+msgid "UiColour"
+msgstr "Colore"
+
+msgid "UiBrightness"
+msgstr "Luminosità"
+
+msgid "UiPlayerLEDs"
+msgstr "Indicatori giocatore"
+
+msgid "UiAdaptive"
+msgstr "Grilletti adattivi"
+
+msgid "UiLeftAdaptiveTrigger"
+msgstr "Grilletto adattivo sinistro"
+
+msgid "UiEffect"
+msgstr "Effetto"
+
+msgid "UiBeginsAtPull"
+msgstr "Posizione iniziale"
+
+msgid "UiHowFarTheTriggerIsPulledBeforeTheEffect"
+msgstr "Posizione del grilletto in cui inizia l'effetto."
+
+msgid "UiEndsAtPull"
+msgstr "Posizione finale"
+
+msgid "UiWhereTheEffectStopsMustBePastTheStart"
+msgstr "Posizione in cui termina l'effetto. Deve seguire l'inizio."
+
+msgid "UiHowHard"
+msgstr "Intensità"
+
+msgid "UiHowMuchTheTriggerPushesBackOrHowStrongly"
+msgstr "Intensità della resistenza o vibrazione del grilletto."
+
+msgid "UiBuzzSpeed"
+msgstr "Velocità di vibrazione"
+
+msgid "UiOnlyUsedByTheBuzzingEffectsHigherIsA"
+msgstr "Frequenza dell'effetto di vibrazione del grilletto."
+
+msgid "UiReactToRumble"
+msgstr "Reagisci alla vibrazione"
+
+msgid "UiAmount"
+msgstr "Livello"
+
+msgid "UiRightAdaptiveTrigger"
+msgstr "Grilletto adattivo destro"
+
+msgid "UiControllerSettings"
+msgstr "Regolazione del controller"
+
+msgid "UiClose"
+msgstr "Chiudi"
+
+msgid "UiMouseMovement"
+msgstr "Movimento del mouse"
+
+msgid "UiInvertVertical"
+msgstr "Inverti asse verticale"
+
+msgid "UiHowFarTheStickMovesForAGivenMouse"
+msgstr "Una sensibilità maggiore sposta di più lo stick con lo stesso movimento del mouse."
+
+msgid "UiTheSmallestStickPushAMovingMouseProducesRaise"
+msgstr "Uscita minima dello stick durante il movimento. Aumentala se il gioco ignora la mira lenta."
+
+msgid "UiNotBound"
+msgstr "Non assegnato"
+
+msgid "UiRemoveThisBinding"
+msgstr "Rimuovi questa assegnazione"
+
+msgid "UiClear"
+msgstr "Cancella"
+
+msgid "UiChangesSaveImmediatelyAndApplyToEveryKeyboardAnd"
+msgstr "Le modifiche si salvano subito e valgono per tutte le tastiere e i mouse assegnati. Un comando può avere più assegnazioni."
+
+msgid "UiKeyboardMouseControls"
+msgstr "Comandi di tastiera e mouse"
+
+msgid "UiDone"
+msgstr "Fine"
+
+msgid "UiWhatEachKeyAndMouseInputDoesOnThe"
+msgstr "Scegli Assegna, poi premi un tasto, fai clic o scorri nel riquadro evidenziato."
+
+msgid "UiEnableDisableThisRule"
+msgstr "Attiva o disattiva questa regola"
+
+msgid "UiMoveUp"
+msgstr "Sposta su"
+
+msgid "UiMoveDown"
+msgstr "Sposta giù"
+
+#. invariant: control syntax or product name
+msgid "UiSouthLeftStickRightTriggerAnalog"
+msgstr "South / LeftStick / RightTrigger.Analog"
+
+msgid "UiLMB"
+msgstr "Tasto sinistro"
+
+msgid "UiMMB"
+msgstr "Tasto centrale"
+
+msgid "UiRMB"
+msgstr "Tasto destro"
+
+msgid "UiNoCodeWhilePhoneSharingIsOff"
+msgstr "Attiva la condivisione con i telefoni per mostrare un codice."
+
+msgid "UiNAME"
+msgstr "Nome"
+
+msgid "UiPhonesReachGameFlowOverYourNetworkSharingIsOff"
+msgstr "I telefoni si collegano tramite la tua rete. Attiva la condivisione solo su reti fidate."
+
+msgid "UiLINK"
+msgstr "Collegamento"
+
+msgid "UiCopy"
+msgstr "Copia"
+
+msgid "UiThisLinkIsThisPhoneSAloneOpeningIt"
+msgstr "Questo collegamento appartiene a questo telefono. Aprirlo altrove sposta la connessione. Mantienilo privato."
+
+msgid "UiAllowThroughFirewall"
+msgstr "Consenti nel firewall"
+
+msgid "UiAddsAnInboundRuleForGameFlowOnThisPort"
+msgstr "Consente GameFlow su questa porta nel firewall di Windows. Richiede i permessi di amministratore."
+
+msgid "UiONTHEPHONE"
+msgstr "Sul telefono"
+
+msgid "UiHoldItSidewaysAndTapToStartItGoes"
+msgstr "Tieni il telefono in orizzontale e tocca per iniziare. L’ingranaggio cambia il layout. Tocca due volte uno stick per L3 o R3."
+
+msgid "UiUpTo16PhonesAtOnceEachItsOwn"
+msgstr "Collega fino a 16 telefoni. La vibrazione dipende dal browser."
+
+msgid "UiMissingRequirements"
+msgstr "Componenti mancanti"
+
+msgid "UiSomeOptionalComponentsArenTInstalled"
+msgstr "Mancano alcuni componenti facoltativi."
+
+msgid "UiGameFlowCanRunWithoutThemButPartsOfThe"
+msgstr "GameFlow può funzionare, ma alcune funzioni non saranno disponibili."
+
+msgid "UiOpenInstallPage"
+msgstr "Apri pagina di installazione"
+
+msgid "UiDonTCheckAtStartupAgain"
+msgstr "Non controllare all’avvio"
+
+msgid "UiLocalizationAppearance"
+msgstr "Lingua e aspetto"
+
+msgid "UiLanguageAndThemeChangesSaveImmediatelyCancelDoesNot"
+msgstr "Lingua e tema vengono salvati subito."
+
+msgid "UiSetup"
+msgstr "Configurazione iniziale"
+
+msgid "UiWalksThroughConnectingAControllerAndCreatingAVirtual"
+msgstr "Collega un dispositivo e crea un controller virtuale con la procedura guidata."
+
+msgid "UiRunSetupWalkthrough"
+msgstr "Avvia configurazione"
+
+msgid "UiAutomatic"
+msgstr "Automatico"
+
+msgid "UiUseProfileRate"
+msgstr "Usa frequenza del profilo"
+
+msgid "UiPerAppProfiles"
+msgstr "Profili per applicazione"
+
+msgid "UiApplicationSwitchingRulesSaveImmediatelyCancelDoesNotUndo"
+msgstr "Le regole per applicazione vengono salvate subito."
+
+msgid "UiSwitchProfileAutomaticallyWhenAnAppComesToThe"
+msgstr "Cambia profilo in base all’app attiva"
+
+msgid "UiExecutableName"
+msgstr "Nome eseguibile"
+
+msgid "UiUseCurrent"
+msgstr "Usa attuale"
+
+msgid "UiAdd"
+msgstr "Aggiungi"
+
+msgid "UiRulesAreCheckedTopToBottomAndTheFirst"
+msgstr "Vince la prima regola corrispondente. Le altre app mantengono il profilo attuale."
+
+msgid "UiPhoneControllers"
+msgstr "Controller telefonici"
+
+msgid "UiResetPrivateLink"
+msgstr "Reimposta collegamento privato"
+
+msgid "UiDisconnectsEveryPhoneAndInvalidatesTheirLinksReconnectEach"
+msgstr "Scollega tutti i telefoni e invalida i collegamenti. Ricollegali da Dispositivi."
+
+msgid "UiSharingIsSavedImmediatelyKeepPhoneLinksPrivateUse"
+msgstr "La condivisione si salva subito. Mantieni privati i collegamenti e usa una rete fidata."
+
+msgid "UiAddPhonesFromDevicesPhysicalDevicesAddPhoneEach"
+msgstr "Aggiungi un telefono da Dispositivi > Dispositivi fisici. Ognuno ha un collegamento e un codice QR."
+
+msgid "UiTheBrowserReconnectsAutomaticallyAndKeepsTheSamePad"
+msgstr "Il browser si ricollega automaticamente allo stesso controller. La vibrazione dipende dal browser."
+
+msgid "UiMotionServer"
+msgstr "Server di movimento"
+
+msgid "UiTheseControlsSaveImmediatelyCancelDoesNotUndoThem"
+msgstr "Le modifiche si salvano subito. Usa 127.0.0.1 per gli emulatori su questo computer."
+
+msgid "UiAllowEmulatorsOnOtherDevicesTrustedNetworkOnly"
+msgstr "Consenti altri dispositivi nella rete fidata"
+
+msgid "UiEnableDSUCemuhookMotionServer"
+msgstr "Attiva server di movimento DSU"
+
+msgid "UiStreamsGyroscopeAndAccelerometerOverUDPSoCemuDolphin"
+msgstr "Invia dati di giroscopio e accelerometro via UDP agli emulatori compatibili."
+
+msgid "UiUDPPort"
+msgstr "Porta UDP"
+
+msgid "UiPortMustBeBetween1024And65535"
+msgstr "Scegli una porta tra 1024 e 65535."
+
+msgid "UiSetUpYourFirstController"
+msgstr "Configura il primo controller"
+
+msgid "UiBack"
+msgstr "Indietro"
+
+msgid "UiWelcomeToGameFlow"
+msgstr "Benvenuto in GameFlow"
+
+msgid "UiGameFlowSitsBetweenYourControllerAndYourGameIt"
+msgstr "GameFlow trasforma gli input in un controller virtuale per i giochi."
+
+msgid "UiYourController"
+msgstr "Il tuo controller"
+
+msgid "UiThePhysicalPadKeyboardOrMouseYouHold"
+msgstr "Il controller, la tastiera o il mouse che usi"
+
+msgid "UiRemappingAutofireStickShapingMacros"
+msgstr "Rimappatura, fuoco automatico, risposta stick e macro"
+
+msgid "UiAVirtualController"
+msgstr "Un controller virtuale"
+
+msgid "UiWhatTheGameSeesItLooksLikeRealHardware"
+msgstr "Il controller visto dal gioco"
+
+msgid "UiThisTakesAboutAMinuteAndLeavesYouWith"
+msgstr "Puoi ripetere la configurazione da Opzioni."
+
+msgid "UiConnectYourController"
+msgstr "Collega il controller"
+
+msgid "UiPlugItInOverUSBOrPairItOver"
+msgstr "Collega via USB o Bluetooth. L’elenco si aggiorna automaticamente."
+
+msgid "UiWaitingForAController"
+msgstr "In attesa di un controller"
+
+msgid "UiREADY"
+msgstr "Pronto"
+
+msgid "UiIHaveNoControllerSetThisUpForKeyboard"
+msgstr "Usa tastiera e mouse"
+
+msgid "UiCheckTheButtonsLineUp"
+msgstr "Controlla i pulsanti"
+
+msgid "UiPressEachButtonOnYourControllerAndWatchIt"
+msgstr "Premi ogni pulsante e controlla l’anteprima. Calibra i comandi che rispondono male."
+
+msgid "UiButtonsAreWrongCalibrateThem"
+msgstr "Calibra pulsanti"
+
+msgid "UiSticksOrTriggersAreWrongCalibrateThem"
+msgstr "Calibra stick e grilletti"
+
+msgid "UiSkipThisOne"
+msgstr "Salta questo controller"
+
+msgid "UiSilence"
+msgstr "Silenzia"
+
+msgid "UiYourKeyboardAndMouseAsAController"
+msgstr "Usa tastiera e mouse"
+
+msgid "UiEveryControllerButtonStickAndTriggerAndTheKeys"
+msgstr "Personalizza le assegnazioni ora o dopo dalla barra laterale."
+
+msgid "UiWhatShouldGamesSee"
+msgstr "Scegli un controller virtuale"
+
+msgid "UiGameFlowWillCreateThisControllerForYouItIs"
+msgstr "Scegli il controller visto dai giochi, indipendentemente dal dispositivo di input."
+
+msgid "UiNotPermanentYouCanChangeItLaterOrAdd"
+msgstr "Puoi cambiarlo o aggiungere controller in Dispositivi."
+
+msgid "UiGiveItAName"
+msgstr "Assegna un nome"
+
+msgid "UiThisIsWhatYouWillSeeInTheSidebar"
+msgstr "Questo nome appare nella barra laterale e nella panoramica."
+
+msgid "UiLeaveEmptyToLetGameFlowNameIt"
+msgstr "Lascia vuoto per un nome automatico"
+
+msgid "UiYouCanRenameItWheneverYouLikeOnThe"
+msgstr "Puoi rinominarlo dopo in Dispositivi."
+
+msgid "UiYouAreSetUp"
+msgstr "Tutto pronto"
+
+msgid "UiYourControllerOnTheLeftWhatGamesSeeOn"
+msgstr "L’input è a sinistra, l’output a destra. Verifica che entrambi rispondano."
+
+msgid "UiWhatGamesSee"
+msgstr "Cosa vedono i giochi"
+
+msgid "UiWhereToGoNext"
+msgstr "Passi successivi"
+
+msgid "UiDashboardYourPadAndTheVirtualOneSideBy"
+msgstr "Panoramica: confronta input e output in tempo reale."
+
+msgid "UiProfilesRemappingAutofireStickShapingAndMacros"
+msgstr "Profili: rimappatura, fuoco automatico, risposta stick e macro."
+
+msgid "UiDevicesAssignMoreControllersAndTuneSticksTriggersRumble"
+msgstr "Dispositivi: assegna input e regola i controller."
+
+msgid "UiNone"
+msgstr "Nessuno"
+
+msgid "UiUseAPhoneOnYourNetworkAsAController"
+msgstr "Aggiungi un telefono come controller con un codice QR."
+
+msgid "UiDeleteThisVirtualController"
+msgstr "Elimina questo controller virtuale"
+
+msgid "UiChooseWhichKeysAndMouseInputsProduceEachController"
+msgstr "Scegli tasti e input del mouse per ogni comando."
+
+msgid "UiWalksYouThroughConnectingAControllerAndCreatingA"
+msgstr "Collega un dispositivo e crea un controller virtuale."
+
+msgid "UiCopyOBSLink"
+msgstr "Copia collegamento OBS"
+
+msgid "UiCopiesTheOBSBrowserSourceURLForThisPhysical"
+msgstr "Copia il collegamento di questa anteprima per una sorgente browser OBS."
+
+msgid "UiOpenThisControllerSTuningSticksTriggersRumbleLighting"
+msgstr "Regola stick, grilletti, vibrazione ed effetti supportati."
+
+msgid "UiCopiesTheOBSBrowserSourceURLForThisVirtual"
+msgstr "Copia il collegamento di questa anteprima per una sorgente browser OBS."
+
+msgid "UiNOOUTPUT"
+msgstr "Nessun output"
+
+msgid "UiTurnAPhoneOnYourNetworkIntoAController"
+msgstr "Usa un telefono come controller"
+
+msgid "UiVIDPID"
+msgstr "VID : PID"
+
+msgid "UiDEVICEID"
+msgstr "ID dispositivo"
+
+msgid "UiHARDWAREID"
+msgstr "ID hardware"
+
+msgid "UiPHONE"
+msgstr "Telefono"
+
+msgid "UiThisPhoneHasItsOwnLinkAndQRCode"
+msgstr "Questo telefono ha un collegamento privato e un codice QR propri."
+
+msgid "UiShowQRCodeLink"
+msgstr "Mostra codice QR e collegamento"
+
+msgid "UiRemovePhone"
+msgstr "Rimuovi telefono"
+
+msgid "UiTREATAS"
+msgstr "Riconosci come"
+
+msgid "UiIfWindowsIdentifiesThisDeviceIncorrectlyEGA"
+msgstr "Correggi un tipo di dispositivo errato. Le modifiche si salvano subito."
+
+msgid "UiBUTTONMAPPING"
+msgstr "Mappatura pulsanti"
+
+msgid "UiIfThisControllerSButtonsAreRecognizedInThe"
+msgstr "Calibra i pulsanti errati. Stick e grilletti hanno una calibrazione separata."
+
+msgid "UiCalibrateButtons"
+msgstr "Calibra pulsanti"
+
+msgid "UiCalibrateSticksTriggers"
+msgstr "Calibra stick e grilletti"
+
+msgid "UiClearMapping"
+msgstr "Cancella mappatura"
+
+msgid "UiMapped"
+msgstr "Mappato"
+
+msgid "UiSkip"
+msgstr "Salta"
+
+msgid "UiKEYBOARDASGAMEPAD"
+msgstr "Tastiera come controller"
+
+msgid "UiKeysBoundToAControllerControlShowItOn"
+msgstr "I tasti assegnati mostrano il comando che attivano."
+
+msgid "UiEditKeyboardMouseControls"
+msgstr "Modifica comandi di tastiera e mouse"
+
+msgid "UiMOUSEASGAMEPAD"
+msgstr "Mouse come controller"
+
+msgid "UiEachButtonShowsTheControllerControlItIsBound"
+msgstr "I pulsanti del mouse mostrano il comando che attivano."
+
+msgid "UiLIVESTATE"
+msgstr "Stato in tempo reale"
+
+msgid "UiGamesSee"
+msgstr "I giochi vedono"
+
+msgid "UiTurnThisControllerOffWithoutDeletingIt"
+msgstr "Disattiva il controller senza eliminarlo."
+
+msgid "UiWhatDrivesIt"
+msgstr "Dispositivi di input"
+
+msgid "UiNoDeviceYetAddOneBelow"
+msgstr "Nessun input. Aggiungi un dispositivo sotto."
+
+msgid "UiADDADEVICE"
+msgstr "Aggiungi dispositivo"
+
+msgid "UiClickAnyButtonStickOrTriggerToChangeWhat"
+msgstr "Fai clic su pulsante, stick o grilletto per cambiarne la mappatura."
+
+msgid "UiAllMappingRules"
+msgstr "Tutte le regole di mappatura"
+
+msgid "UiProfilesHoldMappingRulesWithNoneTheControllerPasses"
+msgstr "Senza profili, l’input passa invariato. In caso di sovrapposizione prevale il profilo più in basso."
+
+msgid "UiChooseAProfileToAdd"
+msgstr "Scegli un profilo da aggiungere"
+
+msgid "UiDeviceShape"
+msgstr "Layout dispositivo"
+
+msgid "UiThumbsticks"
+msgstr "Stick"
+
+msgid "UiButtons"
+msgstr "Pulsanti"
+
+msgid "UiPOVs"
+msgstr "Selettori direzionali"
+
+msgid "UiProductName"
+msgstr "Nome prodotto"
+
+#. invariant: control syntax or product name
+msgid "UiGameFlowGameController"
+msgstr "GameFlow Game Controller"
+
+msgid "UiVendorIDHex"
+msgstr "ID produttore (hex)"
+
+msgid "UiProductIDHex"
+msgstr "ID prodotto (hex)"
+
+msgid "UiTuning"
+msgstr "Regolazione"
+
+msgid "UiSelectAVirtualControllerToTune"
+msgstr "Seleziona un controller virtuale da regolare."
+
+msgid "UiCrossPlatformControllerRemappingAutofireSpeedrunTooling"
+msgstr "Mappatura controller e anteprima input"
+
+msgid "UiBootstrappingHostRuntimePipelineProfileStoreAndTranslations"
+msgstr "Avvio di GameFlow…"
+
+msgid "UiUpdateAvailable"
+msgstr "Aggiornamento disponibile"
+
+msgid "UiANewVersionOfGameFlowIsAvailable"
+msgstr "È disponibile una nuova versione di GameFlow."
+
+msgid "UiDownloadsAVerifiedArchiveYouWillExtractItAnd"
+msgstr "Scarica l’archivio verificato, estrailo e sostituisci l’installazione attuale."
+
+msgid "UiReadTheReleaseNotes"
+msgstr "Leggi note di rilascio"
+
+msgid "UiOpenInBrowser"
+msgstr "Apri nel browser"
+
+msgid "UiSkipThisUpdate"
+msgstr "Salta questo aggiornamento"
+
+msgid "UiDonTAskAgain"
+msgstr "Non chiedere più"
+
+msgid "UiCancelDownload"
+msgstr "Annulla download"
+
+msgid "UiDownloadUpdate"
+msgstr "Scarica aggiornamento"
+
+msgid "SidebarKeyboardMouse"
+msgstr "Tastiera e mouse"
+
+msgid "DevicesAddPhone"
+msgstr "Aggiungi telefono"
+
+msgid "SidebarAddPhone"
+msgstr "Aggiungi telefono"
+
+msgid "PhoneConnectTitle"
+msgstr "Collega {0}"
+
+msgid "PhoneConnected"
+msgstr "{0} è collegato. Assegnalo a un controller virtuale."
+
+msgid "PhoneWaiting"
+msgstr "Scansiona il codice o apri il collegamento sul telefono."
+
+msgid "BindingListening"
+msgstr "In ascolto…"
+
+msgid "BindingAdd"
+msgstr "+ Assegna"
+
+msgid "TuningScopeSlot"
+msgstr "Regolazione predefinita del controller virtuale. I singoli dispositivi possono sostituirla."
+
+msgid "TuningScopeDevice"
+msgstr "Regolazione di questo input su questo controller virtuale."
+
+msgid "TuningSaveNote"
+msgstr "Le modifiche si salvano subito. Vibrazione, luci ed effetti richiedono un controller fisico compatibile collegato."
+
+msgid "TuningUnknown"
+msgstr "Collega un controller per rilevare le funzioni. Fino ad allora sono visibili tutte le impostazioni."
+
+msgid "TuningDetected"
+msgstr "Sono visibili solo le impostazioni supportate dai controller collegati."
+
+msgid "StyleLabelJoystick"
+msgstr "Joystick generico"
+
+msgid "StyleLabelWheel"
+msgstr "Volante generico"
+
+#. invariant: control syntax or product name
+msgid "StyleLabelSteamControllerV2"
+msgstr "Steam Controller v2"
+
+msgid "StickCurve.Linear"
+msgstr "Lineare"
+
+msgid "StickCurve.Precision"
+msgstr "Precisione"
+
+msgid "StickCurve.Aggressive"
+msgstr "Risposta rapida"
+
+msgid "LightbarMode.Off"
+msgstr "Spento"
+
+msgid "LightbarMode.Solid"
+msgstr "Colore fisso"
+
+msgid "LightbarMode.PlayerNumber"
+msgstr "Colore giocatore"
+
+msgid "LightbarMode.Breathing"
+msgstr "Pulsazione lenta"
+
+msgid "LightbarMode.BatteryLevel"
+msgstr "Livello batteria"
+
+msgid "LightbarMode.Strobe"
+msgstr "Lampeggio"
+
+msgid "LightbarMode.Rainbow"
+msgstr "Arcobaleno"
+
+msgid "LightbarMode.RumbleReactive"
+msgstr "Segui vibrazione"
+
+msgid "LightbarMode.TriggerReactive"
+msgstr "Segui grilletti"
+
+msgid "LightbarMode.GameControlled"
+msgstr "Decide il gioco"
+
+msgid "LightbarMode.External"
+msgstr "App esterna"
+
+msgid "AdaptiveTriggerMode.Off"
+msgstr "Spento, corsa libera"
+
+msgid "AdaptiveTriggerMode.Feedback"
+msgstr "Resistenza costante"
+
+msgid "AdaptiveTriggerMode.Weapon"
+msgstr "Resistenza con punto di rilascio"
+
+msgid "AdaptiveTriggerMode.Vibration"
+msgstr "Vibrazione"
+
+msgid "AdaptiveTriggerMode.SlopeFeedback"
+msgstr "Resistenza crescente"
+
+msgid "AdaptiveTriggerMode.MultiplePositionFeedback"
+msgstr "Resistenza a scatti"
+
+msgid "AdaptiveTriggerMode.MultiplePositionVibration"
+msgstr "Vibrazione a scatti"
+
+msgid "TriggerFeedbackLink.None"
+msgstr "Usa effetto configurato"
+
+msgid "TriggerFeedbackLink.Resistance"
+msgstr "Resistenza secondo la vibrazione del gioco"
+
+msgid "TriggerFeedbackLink.Vibration"
+msgstr "Vibra con il gioco"
+
+msgid "UiFullyCharged"
+msgstr "Carica completa"
+
+msgid "UiGamepad"
+msgstr "Gamepad"
+
+msgid "UiGenericHid"
+msgstr "Generico / HID"
+
+msgid "UiKeyboard"
+msgstr "Tastiera"
+
+msgid "UiMouse"
+msgstr "Mouse"
+
+msgid "UiConnected"
+msgstr "Collegato"
+
+msgid "UiOffline"
+msgstr "Scollegato"
+
+msgid "UiLive"
+msgstr "ATTIVO"
+
+msgid "UiIdle"
+msgstr "INATTIVO"
+
+msgid "UiNoController"
+msgstr "Nessun controller rilevato"
+
+msgid "UiGetStarted"
+msgstr "Inizia"
+
+msgid "UiControlsLookRight"
+msgstr "Comandi corretti"
+
+msgid "UiButtonsLookRight"
+msgstr "Pulsanti corretti"
+
+msgid "UiCreateIt"
+msgstr "Crea"
+
+msgid "UiFinish"
+msgstr "Termina"
+
+msgid "UiNext"
+msgstr "Avanti"
+
+msgid "UiDelete"
+msgstr "Elimina"
+
+msgid "UiRemove"
+msgstr "Rimuovi"
+
+msgid "UiDeleteName"
+msgstr "Eliminare {0}?"
+
+msgid "UiDeleteVirtual"
+msgstr "Il controller virtuale e i suoi parametri saranno eliminati. I profili restano."
+
+msgid "UiRemovePhoneTitle"
+msgstr "Rimuovere questo telefono?"
+
+msgid "UiRemovePhoneMessage"
+msgstr "Rimuove il telefono da tutti i controller virtuali e revoca il collegamento. Puoi aggiungerlo di nuovo."
+
+msgid "UiEnableSharing"
+msgstr "Attiva condivisione con telefoni"
+
+msgid "UiStopSharing"
+msgstr "Disattiva condivisione con telefoni"
+
+msgid "UiSharingOff"
+msgstr "Condivisione disattivata. Le anteprime OBS locali funzionano ancora."
+
+msgid "UiSharingOn"
+msgstr "Condivisione attiva. Usa una rete Wi-Fi fidata e proteggi i collegamenti. HTTP non li cifra."
+
+msgid "UiDownloadManually"
+msgstr "Scarica manualmente"
+
+msgid "UiRetryDownload"
+msgstr "Riprova download"
+
+msgid "UiDownloading"
+msgstr "Download…"
+
+msgid "UiStartingDownload"
+msgstr "Avvio download…"
+
+msgid "UiDownloaded"
+msgstr "Verificato e scaricato. Chiudi GameFlow, estrai l’archivio e sostituisci i file. I profili restano nella cartella dati."
+
+msgid "UiDownloadCancelled"
+msgstr "Download annullato. Nessun aggiornamento applicato."
+
+msgid "UiDownloadFailed"
+msgstr "Download o verifica non riusciti. Riprova o apri la pagina del rilascio. Dettagli nel registro."
+
+msgid "PhoneConnecting"
+msgstr "Connessione…"
+
+msgid "PhoneConnectingGameFlow"
+msgstr "Connessione a GameFlow…"
+
+msgid "PhoneRetry"
+msgstr "Riprova"
+
+msgid "PhoneLayout"
+msgstr "Layout"
+
+msgid "PhoneMotion"
+msgstr "Movimento"
+
+msgid "PhoneHaptics"
+msgstr "Vibrazione"
+
+msgid "PhoneFullscreen"
+msgstr "Schermo intero"
+
+msgid "PhoneOff"
+msgstr "NO"
+
+msgid "PhoneOn"
+msgstr "SÌ"
+
+msgid "PhoneUnavailable"
+msgstr "Non disponibile"
+
+msgid "PhoneHelp"
+msgstr "Posiziona un pollice su ciascun lato per gli stick. Tocca due volte per L3 o R3. Tocca un grilletto a fondo, poi scorri per regolarlo."
+
+msgid "PhoneRotate"
+msgstr "Ruota il telefono in orizzontale"
+
+msgid "PhoneRotateHint"
+msgstr "Tienilo in orizzontale con entrambe le mani. Disattiva il blocco rotazione se serve."
+
+msgid "PhoneSideways"
+msgstr "Usa comunque in orizzontale"
+
+msgid "PhoneStart"
+msgstr "Tocca per iniziare"
+
+msgid "PhoneStartHint"
+msgstr "Avvia a schermo intero e mantiene acceso lo schermo se supportato."
+
+msgid "PhoneDoubleTap"
+msgstr "doppio tocco"
+
+msgid "PhoneTouchpad"
+msgstr "Touchpad"
+
+msgid "PhoneMotionUnavailable"
+msgstr "Dati di movimento non disponibili. Il browser potrebbe richiedere HTTPS o il permesso per i sensori."
+
+msgid "PhoneMotionDenied"
+msgstr "Consenti i sensori di movimento per questa pagina e ricarica."
+
+msgid "PhoneFull"
+msgstr "Tutti i 16 posti per telefoni sono occupati."
+
+msgid "PhoneFullHint"
+msgstr "Rimuovi un altro telefono in GameFlow e riprova."
+
+msgid "PhoneRevoked"
+msgstr "Questo telefono è stato rimosso in GameFlow. Usa un nuovo collegamento."
+
+msgid "PhoneReconnecting"
+msgstr "Connessione persa. Riconnessione…"
+
+msgid "PhoneUnreachable"
+msgstr "Verifica che GameFlow sia in esecuzione e il telefono sia sulla stessa rete Wi-Fi."
+
+msgid "PhoneConnectedAs"
+msgstr "Collegato come"
+
+msgid "PhonePad"
+msgstr "Controller"
+
+msgid "PhoneMenu"
+msgstr "Menu controller"
+
+msgid "PhoneSettings"
+msgstr "Impostazioni controller"
+
+msgid "InputMapDevice"
+msgstr "Dispositivo di input"
+
+msgid "InputMapDefaults"
+msgstr "Impostazioni predefinite comuni"
+
+msgid "InputMapLeftStick"
+msgstr "Stick sinistro (movimento)"
+
+msgid "InputMapRightStick"
+msgstr "Stick destro (mira)"
+
+msgid "InputMapNothing"
+msgstr "Niente"
+
+msgid "SetupChooseInputs"
+msgstr "Scegli dispositivi di input"
+
+msgid "SetupChooseInputsHint"
+msgstr "Seleziona uno o più dispositivi. Ogni tastiera e mouse può avere la propria mappatura."
+
+msgid "SetupAssignedInputs"
+msgstr "{0} ora controlla {1}. I giochi vedono il controller virtuale."
+
+msgid "InputMapChooseControl"
+msgstr "Scegli un comando per {0}, poi Assegna."
+
+msgid "OverlayLinkOptions"
+msgstr "Opzioni del collegamento OBS"
+
+msgid "OverlayActiveInputs"
+msgstr "Mostra input attivi"
+
+msgid "OverlayHoldTimes"
+msgstr "Mostra durata della pressione"
+
+msgid "OverlayNoLayout"
+msgstr "Nessun layout disponibile. Apri questo pannello in GameFlow e scegli un aspetto."
+
+msgid "OverlayReconnecting"
+msgstr "Riconnessione…"
+
+msgid "OverlayError"
+msgstr "Errore della sovrapposizione"
+
+msgid "ButtonId.None"
+msgstr "Nessuno"
+
+msgid "ButtonId.South"
+msgstr "Inferiore (A / ×)"
+
+msgid "ButtonId.East"
+msgstr "Destra (B / ○)"
+
+msgid "ButtonId.West"
+msgstr "Sinistra (X / □)"
+
+msgid "ButtonId.North"
+msgstr "Superiore (Y / △)"
+
+msgid "ButtonId.LeftShoulder"
+msgstr "L1 / LB"
+
+msgid "ButtonId.RightShoulder"
+msgstr "R1 / RB"
+
+msgid "ButtonId.LeftTriggerButton"
+msgstr "Pulsante L2 / LT"
+
+msgid "ButtonId.RightTriggerButton"
+msgstr "Pulsante R2 / RT"
+
+msgid "ButtonId.Back"
+msgstr "Indietro / Share / View"
+
+msgid "ButtonId.Start"
+msgstr "Avvio / Opzioni / Menu"
+
+msgid "ButtonId.Guide"
+msgstr "Home / PS"
+
+msgid "ButtonId.LeftStick"
+msgstr "L3 / Clic della levetta sinistra"
+
+msgid "ButtonId.RightStick"
+msgstr "R3 / Clic della levetta destra"
+
+msgid "ButtonId.DpadUp"
+msgstr "Croce direzionale su"
+
+msgid "ButtonId.DpadDown"
+msgstr "Croce direzionale giù"
+
+msgid "ButtonId.DpadLeft"
+msgstr "Croce direzionale sinistra"
+
+msgid "ButtonId.DpadRight"
+msgstr "Croce direzionale destra"
+
+msgid "ButtonId.Paddle1"
+msgstr "Paletta 1"
+
+msgid "ButtonId.Paddle2"
+msgstr "Paletta 2"
+
+msgid "ButtonId.Paddle3"
+msgstr "Paletta 3"
+
+msgid "ButtonId.Paddle4"
+msgstr "Paletta 4"
+
+msgid "ButtonId.Touchpad"
+msgstr "Clic del touchpad"
+
+msgid "ButtonId.Misc1"
+msgstr "Pulsante aggiuntivo 1"
+
+msgid "StickId.Left"
+msgstr "Levetta sinistra (LX / LY)"
+
+msgid "StickId.Right"
+msgstr "Levetta destra (RX / RY)"
+
+msgid "RuleMode.Modify"
+msgstr "Modifica"
+
+msgid "RuleMode.Passthrough"
+msgstr "Invariato"
+
+msgid "RuleMode.DoNothing"
+msgstr "Ignora / blocca"
+
+msgid "StickBlendMode.Replace"
+msgstr "Sostituisci: sovrascrivi la destinazione"
+
+msgid "StickBlendMode.Additive"
+msgstr "Aggiungi: somma alla destinazione"
+
+msgid "MouseInput.None"
+msgstr "Movimento del mouse"
+
+msgid "MouseInput.Left"
+msgstr "Clic sinistro"
+
+msgid "MouseInput.Right"
+msgstr "Clic destro"
+
+msgid "MouseInput.Middle"
+msgstr "Clic centrale"
+
+msgid "MouseInput.Back"
+msgstr "Mouse 4 (indietro)"
+
+msgid "MouseInput.Forward"
+msgstr "Mouse 5 (avanti)"
+
+msgid "MouseInput.WheelUp"
+msgstr "Rotella su"
+
+msgid "MouseInput.WheelDown"
+msgstr "Rotella giù"
+
+msgid "InputMapCapturePrompt"
+msgstr "Premi un tasto, fai clic o scorri in questo riquadro per {0}. Esc annulla."
+
+msgid "GamepadAction.LeftTriggerFull"
+msgstr "Grilletto sinistro (completo)"
+
+msgid "GamepadAction.RightTriggerFull"
+msgstr "Grilletto destro (completo)"
+
+msgid "GamepadAction.LeftStickUp"
+msgstr "Levetta sinistra su"
+
+msgid "GamepadAction.LeftStickDown"
+msgstr "Levetta sinistra giù"
+
+msgid "GamepadAction.LeftStickLeft"
+msgstr "Levetta sinistra a sinistra"
+
+msgid "GamepadAction.LeftStickRight"
+msgstr "Levetta sinistra a destra"
+
+msgid "GamepadAction.RightStickUp"
+msgstr "Levetta destra su"
+
+msgid "GamepadAction.RightStickDown"
+msgstr "Levetta destra giù"
+
+msgid "GamepadAction.RightStickLeft"
+msgstr "Levetta destra a sinistra"
+
+msgid "GamepadAction.RightStickRight"
+msgstr "Levetta destra a destra"
+
+msgid "GamepadAction.LeftStickWalk"
+msgstr "Cammina (metà levetta sinistra)"
+
+msgid "MotionCaption.LeftStick"
+msgstr "Movimento → levetta sinistra"
+
+msgid "MotionCaption.RightStick"
+msgstr "Movimento → levetta destra (mira)"
+
+msgid "MotionCaption.None"
+msgstr "Movimento non utilizzato"
+
+msgid "ControlShort.Back"
+msgstr "Indietro"
+
+msgid "ControlShort.Start"
+msgstr "Avvio"
+
+msgid "ControlShort.Guide"
+msgstr "Home"
+
+msgid "ControlShort.LeftStickWalk"
+msgstr "Cammina"
+
+msgid "ControlShort.Touchpad"
+msgstr "Pad"
+
+msgid "ControlShort.Misc"
+msgstr "Muto"
+
+msgid "GamepadAction.None"
+msgstr "Nessuno"
+
+msgid "GamepadAction.South"
+msgstr "Inferiore (A / ×)"
+
+msgid "GamepadAction.East"
+msgstr "Destra (B / ○)"
+
+msgid "GamepadAction.West"
+msgstr "Sinistra (X / □)"
+
+msgid "GamepadAction.North"
+msgstr "Superiore (Y / △)"
+
+msgid "GamepadAction.LeftShoulder"
+msgstr "L1 / LB"
+
+msgid "GamepadAction.RightShoulder"
+msgstr "R1 / RB"
+
+msgid "GamepadAction.Back"
+msgstr "Indietro / Share / View"
+
+msgid "GamepadAction.Start"
+msgstr "Avvio / Opzioni / Menu"
+
+msgid "GamepadAction.Guide"
+msgstr "Home / PS"
+
+msgid "GamepadAction.DpadUp"
+msgstr "Croce direzionale su"
+
+msgid "GamepadAction.DpadDown"
+msgstr "Croce direzionale giù"
+
+msgid "GamepadAction.DpadLeft"
+msgstr "Croce direzionale sinistra"
+
+msgid "GamepadAction.DpadRight"
+msgstr "Croce direzionale destra"
+
+msgid "GamepadAction.LeftStickClick"
+msgstr "L3 / Clic della levetta sinistra"
+
+msgid "GamepadAction.RightStickClick"
+msgstr "R3 / Clic della levetta destra"
+
+msgid "GamepadAction.Touchpad"
+msgstr "Clic del touchpad"
+
+msgid "GamepadAction.Misc"
+msgstr "Pulsante aggiuntivo 1"
+
+msgid "PhoneModel"
+msgstr "Modello del controller"
+
+msgid "OverlayLeftTrigger"
+msgstr "Grilletto sinistro"
+
+msgid "OverlayRightTrigger"
+msgstr "Grilletto destro"
+
+msgid "UiBatteryCharging"
+msgstr "In carica · {0}%"
+
+msgid "UiBatteryRemaining"
+msgstr "Batteria · {0}%"
+
+msgid "UiVirtualKind"
+msgstr "{0} · VIRTUALE"
+
+msgid "UiLeftTriggerAnalog"
+msgstr "Grilletto sinistro (analogico)"
+
+msgid "UiRightTriggerAnalog"
+msgstr "Grilletto destro (analogico)"
+
+msgid "UiStickHint"
+msgstr "Configura zona morta, soglia, fuoco automatico, direzione fissa, inversione assi o script."
+
+msgid "UiTouchHint"
+msgstr "Configura clic del touchpad, input tattile o script."
+
+msgid "UiNoTouch"
+msgstr "Nessun tocco"
+
+msgid "UiTouchCount"
+msgstr "{0} contatti tattili"
+
+msgid "UiVirtualTarget"
+msgstr "DESTINAZIONE VIRTUALE"
+
+msgid "UiPhysicalInput"
+msgstr "INGRESSO FISICO"
+
+msgid "UiChooseSource"
+msgstr "Scegli la sorgente fisica per {0}. La destinazione è già selezionata."
+
+msgid "UiSlotNumber"
+msgstr "SLOT {0}"
+
+msgid "UiDemoInput"
+msgstr "Ingresso dimostrativo animato"
+
+msgid "UiNoAssignedInput"
+msgstr "Nessun dispositivo fisico assegnato"
+
+msgid "UiAssignedInputOffline"
+msgstr "Il dispositivo assegnato è offline"
+
+msgid "UiPassThroughMapping"
+msgstr "Mappatura diretta"
+
+msgid "UiProfileLayerCount"
+msgstr "Livelli profilo: {0}"
+
+msgid "UiNeedsInput"
+msgstr "Ingresso richiesto"
+
+msgid "UiUnpinDevice"
+msgstr "Rimuovi questo dispositivo dalla dashboard."
+
+msgid "UiPinDevice"
+msgstr "Mostra questo dispositivo nella dashboard."
+
+msgid "UiUnnamed"
+msgstr "(senza nome)"
+
+msgid "UiHidMaestroMissing"
+msgstr "HIDMaestro manca. L'uscita virtuale non è disponibile."
+
+msgid "UiOutputNeedsAdmin"
+msgstr "L'uscita virtuale richiede i privilegi di amministratore."
+
+msgid "UiOutputFailed"
+msgstr "Impossibile avviare l'uscita virtuale."
+
+msgid "UiOutputUnavailable"
+msgstr "L'uscita virtuale non è disponibile."
+
+msgid "UiAddNewRule"
+msgstr "Aggiungi regola"
+
+msgid "UiEditRule"
+msgstr "Modifica: {0}"
+
+msgid "UiNewRule"
+msgstr "Nuova regola"
+
+msgid "UiNoScript"
+msgstr "Nessuno script salvato."
+
+msgid "UiMissingTheme"
+msgstr "Installa un tema controller in {0}, poi riavvia GameFlow."
+
+msgid "UiPhoneLimit"
+msgstr "Tutti i 16 posti sono occupati. Rimuovi un telefono per aggiungerne un altro."
+
+msgid "UiPhoneOffline"
+msgstr "Telefono · non connesso"
+
+msgid "UiStepNumber"
+msgstr "Passo {0} di {1}"
+
+msgid "UiSelectFolder"
+msgstr "Seleziona cartella"
+
+msgid "UiInputPerformance"
+msgstr "Ingresso e prestazioni"
+
+msgid "UiNetworkPhones"
+msgstr "Rete e telefoni"
+
+msgid "UiNoForegroundApp"
+msgstr "Nessuna applicazione in primo piano rilevata."
+
+msgid "UiForegroundWindowsOnly"
+msgstr "Il cambio applicazione richiede Windows."
+
+msgid "UiForegroundStatus"
+msgstr "Applicazione corrente: {0}. Profilo attivo: {1}."
+
+msgid "UiDownloadVersion"
+msgstr "Versione corrente: {0}. Ultima versione: {1}."
+
+msgid "UiDownloadProgress"
+msgstr "Download… {0}%"
+
+msgid "UiNoPlatformArchive"
+msgstr "Nessun archivio per questa piattaforma. Apri la pagina delle versioni."
+
+msgid "UiNoDownloadDigest"
+msgstr "Questa versione non ha un codice di verifica. Scaricala dalla pagina delle versioni."
+
+msgid "UiProfileImported"
+msgstr "Profilo importato."
+
+msgid "UiImportedScripts"
+msgstr "Profilo importato. Controlla i {0} script Lua disattivati prima di attivarli."
+
+msgid "UiProfileChanged"
+msgstr "Il profilo è cambiato. La modifica in sospeso non è stata applicata."
+
+msgid "UiNoControlRules"
+msgstr "Nessuna regola usa ancora questo controllo."
+
+msgid "UiSelectControl"
+msgstr "Fai clic su un controllo di uno dei controller."
+
+msgid "UiInspectorHint"
+msgstr "L'ispettore mostra lo stato del controllo selezionato."
+
+msgid "UiInspectorRules"
+msgstr "Le regole del controllo selezionato appaiono qui."
+
+msgid "UiInspectorScope"
+msgstr "I controlli fisici configurano l'ingresso. Quelli virtuali configurano le mappature di uscita."
+
+msgid "UiCurrentPressed"
+msgstr "Stato corrente: premuto"
+
+msgid "UiCurrentReleased"
+msgstr "Stato corrente: rilasciato"
+
+msgid "UiCurrentValue"
+msgstr "Valore corrente: {0:P0}"
+
+msgid "UiCurrentVector"
+msgstr "Vettore corrente: {0:0.00}, {1:0.00}"
+
+msgid "UiCurrentTouches"
+msgstr "Contatti correnti: {0}"
+
+msgid "UiCurrentUnavailable"
+msgstr "Stato corrente non disponibile."
+
+msgid "UiVirtualOutputHint"
+msgstr "Uscita virtuale · fai clic su un controllo per mapparlo"
+
+msgid "UiPhoneNumber"
+msgstr "Telefono {0}"
+
+msgid "UiAxisNumber"
+msgstr "Asse {0}"
+
+msgid "UiHatNumber"
+msgstr "Selettore {0}"
+
+msgid "UiApplyFailed"
+msgstr "Applicazione non riuscita: {0}"
+
+msgid "UiSaveFailed"
+msgstr "Salvataggio non riuscito: {0}"
+
+msgid "UiResetFailed"
+msgstr "Ripristino non riuscito: {0}"
+
+msgid "UiCreateProfileFailed"
+msgstr "Creazione profilo non riuscita: {0}"
+
+msgid "UiDuplicateProfileFailed"
+msgstr "Duplicazione profilo non riuscita: {0}"
+
+msgid "UiImportFailed"
+msgstr "Importazione non riuscita: {0}"
+
+msgid "UiExportFailed"
+msgstr "Esportazione non riuscita: {0}"
+
+msgid "UiRenameFailed"
+msgstr "Rinomina non riuscita: {0}"
+
+msgid "UiDeleteFailed"
+msgstr "Eliminazione non riuscita: {0}"
+
+msgid "UiProfileSwitchFailed"
+msgstr "Cambio profilo non riuscito: {0}"
+
+msgid "UiRuleSaveFailed"
+msgstr "Salvataggio regola non riuscito: {0}"
+
+msgid "UiSettingsSaveFailed"
+msgstr "Le modifiche non sono state salvate: {0}"
+
+msgid "UiProfileNumber"
+msgstr "Profilo {0}"
+
+msgid "UiProfileCopy"
+msgstr "{0} Copia"
+
+msgid "UiPreservedRule"
+msgstr "{0}: modifica questa regola nel JSON del profilo."
+
+msgid "UiRemapControl"
+msgstr "Rimappa {0}"
+
+msgid "UiAutofireControl"
+msgstr "Fuoco automatico {0}"
+
+msgid "UiFreezeControl"
+msgstr "Blocca {0}"
+
+msgid "UiToggleControl"
+msgstr "Attiva tramite {0}"
+
+msgid "UiScriptControl"
+msgstr "Script {0}"
+
+msgid "UiThresholdControl"
+msgstr "Soglia {0}"
+
+msgid "UiAutoDetected"
+msgstr "Automatico (rilevato)"
+
+msgid "UiNoMovement"
+msgstr "(nessun movimento)"
+
+msgid "UiMouseState"
+msgstr "Movimento {0}, {1} · rotella {2} · pulsanti {3}"
+
+msgid "UiCalibrationPress"
+msgstr "Premi {0} ({1} / {2})"
+
+msgid "UiCalibrationButtonHint"
+msgstr "Premi questo pulsante. Scegli Salta per lasciarlo senza mappatura."
+
+msgid "UiCalibrationRelease"
+msgstr "Rilascia stick e grilletti per iniziare questo passo."
+
+msgid "UiCalibrationHold"
+msgstr "Mantieni fino al prossimo passo. Salta conserva la mappatura. Silenzia azzera l'uscita."
+
+msgid "UiCalibrateLeftRight"
+msgstr "Spingi lo stick sinistro tutto a destra"
+
+msgid "UiCalibrateLeftUp"
+msgstr "Spingi lo stick sinistro tutto in alto"
+
+msgid "UiCalibrateRightRight"
+msgstr "Spingi lo stick destro tutto a destra"
+
+msgid "UiCalibrateRightUp"
+msgstr "Spingi lo stick destro tutto in alto"
+
+msgid "UiCalibrateLeftTrigger"
+msgstr "Premi L2 / LT fino in fondo"
+
+msgid "UiCalibrateRightTrigger"
+msgstr "Premi R2 / RT fino in fondo"
+
+msgid "UiSetupReady"
+msgstr "Trovato. Continua quando sei pronto."
+
+msgid "UiSetupConnect"
+msgstr "Collega un controller tramite USB o Bluetooth."
+
+msgid "UiSetupOutputFailed"
+msgstr "Impossibile avviare il controller virtuale. Controlla lo stato in Dispositivi."
+
+msgid "UiSetupXbox360"
+msgstr "Controller Xbox 360"
+
+msgid "UiSetupXboxOne"
+msgstr "Controller Xbox Series / One"
+
+msgid "UiSetupXbox360Hint"
+msgstr "Scegli per un'ampia compatibilità con i giochi PC."
+
+msgid "UiSetupXboxOneHint"
+msgstr "Aggiunge grilletti a impulso nei giochi supportati."
+
+msgid "UiSetupDs4Hint"
+msgstr "Scegli per giochi PlayStation, touchpad e barra luminosa."
+
+msgid "UiSetupDualSenseHint"
+msgstr "Aggiunge grilletti adattivi e feedback aptico nei giochi supportati."
+
+msgid "UiLinksReset"
+msgstr "I collegamenti privati sono stati reimpostati. Mostra ogni codice per riconnettere."
+
+msgid "UiLinkResetFailed"
+msgstr "Impossibile reimpostare il collegamento privato: {0}"
+
+msgid "UiSharingFailed"
+msgstr "Impossibile modificare la condivisione: {0}"
+
+msgid "UiSharingDisabledHint"
+msgstr "La condivisione è disattivata. Attivala per collegare un altro dispositivo. OBS locale resta disponibile."
+
+msgid "UiServerStopped"
+msgstr "Il server web non è in esecuzione."
+
+msgid "UiRestartNetwork"
+msgstr "Riavvia GameFlow per attivare l'accesso di rete."
+
+msgid "UiLocalOnlyHint"
+msgstr "Windows limita l'accesso a questo PC. Consenti l'accesso o avvia GameFlow come amministratore."
+
+msgid "UiFirewallAllowed"
+msgstr "Windows Firewall consente connessioni locali su questa porta."
+
+msgid "UiFirewallStale"
+msgstr "La regola del firewall è obsoleta. Consenti l'accesso per sostituirla."
+
+msgid "UiFirewallMissing"
+msgstr "GameFlow non ha una regola firewall. Consenti l'accesso per collegare i telefoni."
+
+msgid "UiFirewallCheckHint"
+msgstr "Se un telefono non si connette, controlla Windows Firewall."
+
+msgid "UiInvalidMotionPort"
+msgstr "La porta non è valida. La porta salvata precedente resta attiva."
+
+msgid "UiMotionListening"
+msgstr "In ascolto su UDP {0} · emulatori connessi: {1}"
+
+msgid "UiDisabled"
+msgstr "Disattivato"
+
+msgid "UiDemo"
+msgstr "Dimostrazione"
+
+msgid "UiGeneral"
+msgstr "Generale"
+
+msgid "UiController"
+msgstr "Controller"
+
+msgid "UiMadeBy"
+msgstr "Creato da {0} · {1} · © {2}"
+
+msgid "UiSetupOpenFailed"
+msgstr "Impossibile aprire la guida di configurazione."
+
+msgid "UiAnalog"
+msgstr "Analogico"
+
+msgid "UiClick"
+msgstr "Clic"
+
+msgid "UiUp"
+msgstr "Su"
+
+msgid "UiDown"
+msgstr "Giù"
+
+msgid "UiLeft"
+msgstr "Sinistra"
+
+msgid "UiRight"
+msgstr "Destra"

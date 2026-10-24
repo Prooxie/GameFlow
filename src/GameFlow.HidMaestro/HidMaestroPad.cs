@@ -68,6 +68,13 @@ internal sealed class HidMaestroPad : IHidMaestroPad
         remove => router.RumbleReceived -= value;
     }
 
+    /// <inheritdoc />
+    public event Action<GameFlow.Infrastructure.Runtime.Effects.GameLighting>? LightingReceived
+    {
+        add => router.LightingReceived += value;
+        remove => router.LightingReceived -= value;
+    }
+
     /// <summary>
     /// Writes one frame. An SDK exception propagates, because the sink counts
     /// failed frames to decide when a pad is broken.

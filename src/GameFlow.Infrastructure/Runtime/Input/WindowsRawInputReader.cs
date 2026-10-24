@@ -101,6 +101,18 @@ public sealed class WindowsRawInputReader : IKeyboardStateSource, IMouseStateSou
             : default;
     }
 
+    public MouseFrame ReadMousePreviewFrame(string deviceId)
+    {
+        if (!mouseStateById.TryGetValue(deviceId, out var state)) { return default; }
+        lock (state.Lock)
+        {
+            var frame = new MouseFrame(state.PreviewX, state.PreviewY, state.Left, state.Right,
+                state.Middle, state.Button4, state.Button5, state.PreviewWheel);
+            state.PreviewX = state.PreviewY = state.PreviewWheel = 0;
+            return frame;
+        }
+    }
+
     public void AttachToHwnd(IntPtr hwnd)
     {
         if (disposed || !OperatingSystem.IsWindows() || hwnd == IntPtr.Zero)
@@ -223,7 +235,9 @@ public sealed class WindowsRawInputReader : IKeyboardStateSource, IMouseStateSou
         lock (state.Lock)
         {
             state.AccumX += m.lLastX;
+            state.PreviewX += m.lLastX;
             state.AccumY += m.lLastY;
+            state.PreviewY += m.lLastY;
             var bf = m.usButtonFlags;
             if ((bf & 0x0001) != 0) state.Left = true;    if ((bf & 0x0002) != 0) state.Left = false;
             if ((bf & 0x0004) != 0) state.Right = true;   if ((bf & 0x0008) != 0) state.Right = false;
@@ -235,6 +249,7 @@ public sealed class WindowsRawInputReader : IKeyboardStateSource, IMouseStateSou
                 // usButtonData is a signed 16-bit wheel delta (multiples of
                 // 120, positive = away from the user / scroll up).
                 state.AccumWheel += unchecked((short)m.usButtonData);
+                state.PreviewWheel += unchecked((short)m.usButtonData);
             }
         }
     }
@@ -300,6 +315,7 @@ public sealed class WindowsRawInputReader : IKeyboardStateSource, IMouseStateSou
     private sealed class MouseStateData
     {
         public readonly object Lock = new();
+        public int PreviewX, PreviewY, PreviewWheel;
         public int AccumX;
         public int AccumY;
         public int AccumWheel;

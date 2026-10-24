@@ -24,10 +24,11 @@ public sealed record ControllerFrameResult(
 
     /// <summary>
     /// What actually goes to the output sink. Identical to
-    /// <see cref="VirtualSnapshot"/> unless the profile inverts axes
-    /// without <see cref="Models.AxisInvert.ShowInLayout"/> — then the
-    /// game gets the flip and the on-screen controller keeps drawing the
-    /// direction the user pushed.
+    /// <see cref="VirtualSnapshot"/> unless an active
+    /// <see cref="Models.Rules.AxisInvertRule"/> inverts axes without
+    /// <see cref="Models.AxisInvert.ShowInLayout"/> — then the game gets
+    /// the flip and the on-screen controller keeps drawing the direction
+    /// the user pushed.
     ///
     /// <para>
     /// Defaulting to <see cref="VirtualSnapshot"/> rather than requiring

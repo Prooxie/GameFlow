@@ -48,7 +48,20 @@ public sealed class JsonProfileRepository(
             cancellationToken);
     }
 
+    /// <summary>
+    /// Reads and migrates. Migrating here, on the one read path every
+    /// consumer shares, is what lets a slot, the profile list and the session
+    /// all see the same shape of the same file; the file itself is rewritten
+    /// in that shape the next time the session saves it (start-up does so
+    /// straight away for the active profile — see <see cref="LoadStoredAsync"/>).
+    /// </summary>
     public async Task<ProfileDocument?> LoadAsync(string profileId, CancellationToken cancellationToken = default)
+    {
+        var stored = await LoadStoredAsync(profileId, cancellationToken);
+        return stored is null ? null : ProfileMigrator.Migrate(stored);
+    }
+
+    public async Task<ProfileDocument?> LoadStoredAsync(string profileId, CancellationToken cancellationToken = default)
     {
         string path;
         try
@@ -72,6 +85,7 @@ public sealed class JsonProfileRepository(
             var profile = await JsonSerializer.DeserializeAsync<ProfileDocument>(stream, ProfileJsonOptions.Default, cancellationToken);
             if (profile is not null) { ProfileValidator.Validate(profile); }
             // The repository filename owns identity; embedded IDs cannot redirect later writes.
+            // Applied before any migration, which names the converted inversion rule after it.
             return profile is null ? null : profile with { Id = profileId };
         }
         catch (JsonException exception)

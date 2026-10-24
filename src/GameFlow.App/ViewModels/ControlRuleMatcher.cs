@@ -16,7 +16,7 @@ public static class ControlRuleMatcher
 
     private static string L(string key, string fallback)
     {
-        var value = localizer?[key];
+        var value = localizer?[key] ?? UiTextResources.Get(key);
         return string.IsNullOrEmpty(value) || string.Equals(value, key, StringComparison.Ordinal)
             ? fallback
             : value!;
@@ -42,13 +42,13 @@ public static class ControlRuleMatcher
         return TryResolveButtonId(key, out var button)
             ? FormatButtonLabel(button)
             : IsLeftStickAnalog(key)
-            ? "Left stick (LX / LY)"
+            ? FormatStickLabel(StickId.Left)
             : IsRightStickAnalog(key)
-            ? "Right stick (RX / RY)"
+            ? FormatStickLabel(StickId.Right)
             : key switch
             {
-                "LeftTrigger.Analog" => "Left trigger (analog)",
-                "RightTrigger.Analog" => "Right trigger (analog)",
+                "LeftTrigger.Analog" => UiTextResources.Get("UiLeftTriggerAnalog"),
+                "RightTrigger.Analog" => UiTextResources.Get("UiRightTriggerAnalog"),
                 _ => key
             };
     }
@@ -61,11 +61,11 @@ public static class ControlRuleMatcher
             key.Equals("RightStick.Button", StringComparison.OrdinalIgnoreCase)
             ? L("MappedControlHintStickClick", "Stick click: passthrough, ignore, remap, autofire, script.")
             : IsLeftStickAnalog(key) || IsRightStickAnalog(key)
-            ? "Stick axes: deadzone, threshold, autofire, freeze-last-direction, script."
+            ? UiTextResources.Get("UiStickHint")
             : key switch
             {
                 "LeftTrigger.Analog" or "RightTrigger.Analog" => L("MappedControlHintAnalogTrigger", "Analog trigger: passthrough, ignore, script, future analog remap."),
-                "Touchpad" => "Touchpad: click / touch behaviour / script.",
+                "Touchpad" => UiTextResources.Get("UiTouchHint"),
                 _ => L("MappedControlHintButton", "Button: passthrough, ignore, remap, autofire, script.")
             };
     }
@@ -73,6 +73,11 @@ public static class ControlRuleMatcher
     public static bool Matches(string selectionKey, MappingRule rule)
     {
         var key = NormalizeSelectionKey(selectionKey);
+
+        if (rule is AxisInvertRule invertRule)
+        {
+            return InvertTouchesControl(invertRule.Axes, key);
+        }
 
         if (TryResolveButtonId(key, out var button))
         {
@@ -109,9 +114,66 @@ public static class ControlRuleMatcher
             StickAutofireRule r => ToControlKey(r.SourceStick),
             FreezeLastDirectionRule r => ToControlKey(r.ActivationButton),
             ControlScriptRule r => string.IsNullOrWhiteSpace(r.ControlKey) ? "South" : r.ControlKey,
+            AxisInvertRule r => PrimaryInvertControl(r.Axes),
             _ => "South"
         });
     }
+
+    /// <summary>Badge colour for axis-inversion rules, shared by the rule list and the control cards.</summary>
+    public const string AxisInvertBadgeColor = "#E879F9";
+
+    /// <summary>
+    /// What an inversion flips, as short codes ("LX, RY, R2"), or
+    /// <paramref name="whenNothing"/> when it flips nothing. Codes rather
+    /// than words: they read the same in every language and match what the
+    /// controller panels already print.
+    /// </summary>
+    public static string DescribeInvertedAxes(AxisInvert axes, string whenNothing)
+    {
+        var inverted = new List<string>(6);
+        if (axes.LeftX is true) { inverted.Add("LX"); }
+        if (axes.LeftY is true) { inverted.Add("LY"); }
+        if (axes.RightX is true) { inverted.Add("RX"); }
+        if (axes.RightY is true) { inverted.Add("RY"); }
+        if (axes.LeftTrigger is true) { inverted.Add("L2"); }
+        if (axes.RightTrigger is true) { inverted.Add("R2"); }
+        return inverted.Count == 0 ? whenNothing : string.Join(", ", inverted);
+    }
+
+    /// <summary>
+    /// Whether an inversion belongs on the card for <paramref name="key"/>:
+    /// it has an opinion (on or explicitly off) about that stick or trigger.
+    /// A rule with no opinion at all shows on every stick and trigger card,
+    /// so a freshly added one can still be found and edited.
+    /// </summary>
+    private static bool InvertTouchesControl(AxisInvert axes, string key)
+    {
+        var hasAnyOpinion = axes.LeftX is not null || axes.LeftY is not null
+            || axes.RightX is not null || axes.RightY is not null
+            || axes.LeftTrigger is not null || axes.RightTrigger is not null;
+
+        if (TryResolveStickId(key, out var stick))
+        {
+            return !hasAnyOpinion || (stick == StickId.Left
+                ? axes.LeftX is not null || axes.LeftY is not null
+                : axes.RightX is not null || axes.RightY is not null);
+        }
+
+        return key switch
+        {
+            "LeftTrigger.Analog" => !hasAnyOpinion || axes.LeftTrigger is not null,
+            "RightTrigger.Analog" => !hasAnyOpinion || axes.RightTrigger is not null,
+            _ => false
+        };
+    }
+
+    /// <summary>The card an inversion is grouped under: the first control it flips, the right stick when it flips none.</summary>
+    private static string PrimaryInvertControl(AxisInvert axes) =>
+        axes.LeftX is true || axes.LeftY is true ? ToControlKey(StickId.Left)
+        : axes.RightX is true || axes.RightY is true ? ToControlKey(StickId.Right)
+        : axes.LeftTrigger is true ? "LeftTrigger.Analog"
+        : axes.RightTrigger is true ? "RightTrigger.Analog"
+        : ToControlKey(StickId.Right);
 
     public static ControlConfigurationEntryViewModel CreateEntry(MappingRule rule)
     {
@@ -143,49 +205,33 @@ public static class ControlRuleMatcher
                     ? $"{L("MappedControlScriptPlaceholder", "Script placeholder")}{FormatSuffix(r.SuppressSourceInput, L("MappedControlSuppressSource", "suppress src"))}"
                     : $"{Shorten(r.ScriptCode)}{FormatSuffix(r.SuppressSourceInput, L("MappedControlSuppressSource", "suppress src"))}",
                 "#FACC15"),
+            AxisInvertRule r => new ControlConfigurationEntryViewModel(
+                L("MappedControlAxisInvertTitle", "Axis inversion"),
+                $"{DescribeInvertedAxes(r.Axes, L("MappedControlAxisInvertNothing", "nothing inverted"))} · {FormatMode(r.Mode)}{FormatSuffix(r.Axes.ShowInLayout is true, L("MappedControlAxisInvertShown", "shown on layout"))}",
+                AxisInvertBadgeColor),
             _ => new ControlConfigurationEntryViewModel(L("MappedControlGenericTitle", "Rule"), rule.Name, "#64748B")
         };
     }
 
-    public static string FormatButtonLabel(ButtonId button)
-    {
-        return button switch
-        {
-            ButtonId.South => "South (A / ×)",
-            ButtonId.East => "East (B / ○)",
-            ButtonId.West => "West (X / □)",
-            ButtonId.North => "North (Y / △)",
-            ButtonId.LeftShoulder => "L1 / LB",
-            ButtonId.RightShoulder => "R1 / RB",
-            ButtonId.LeftTriggerButton => "L2 / LT button",
-            ButtonId.RightTriggerButton => "R2 / RT button",
-            ButtonId.Back => "Back / Share / View",
-            ButtonId.Start => "Start / Options / Menu",
-            ButtonId.Guide => "Guide / PS",
-            ButtonId.LeftStick => "L3 / Left stick click",
-            ButtonId.RightStick => "R3 / Right stick click",
-            ButtonId.DpadUp => "D-pad up",
-            ButtonId.DpadDown => "D-pad down",
-            ButtonId.DpadLeft => "D-pad left",
-            ButtonId.DpadRight => "D-pad right",
-            ButtonId.Touchpad => "Touchpad click",
-            ButtonId.Paddle1 => "Paddle 1",
-            ButtonId.Paddle2 => "Paddle 2",
-            ButtonId.Paddle3 => "Paddle 3",
-            ButtonId.Paddle4 => "Paddle 4",
-            ButtonId.Misc1 => "Misc 1",
-            _ => button.ToString()
-        };
-    }
+    public static string FormatButtonLabel(ButtonId button) => UiTextResources.EnumValue(button);
 
-    public static string FormatStickLabel(StickId stick)
-    {
-        return stick == StickId.Left ? "Left stick (LX / LY)" : "Right stick (RX / RY)";
-    }
+    public static string FormatStickLabel(StickId stick) => UiTextResources.EnumValue(stick);
 
     public static bool TryResolveButtonId(string elementKey, out ButtonId button)
     {
         var key = NormalizeSelectionKey(elementKey);
+
+        // "LeftStick" is the analog stick's key; its click is
+        // "LeftStick.Button". Without this check the bare key fell through
+        // to Enum.TryParse below and came back as ButtonId.LeftStick (L3), so
+        // the stick card was treated as the L3 button: stick rules never
+        // matched it and a rule added from it was pre-filled as a button rule.
+        if (IsLeftStickAnalog(key) || IsRightStickAnalog(key))
+        {
+            button = ButtonId.None;
+            return false;
+        }
+
         switch (key.ToLowerInvariant())
         {
             case "lefttrigger.button":

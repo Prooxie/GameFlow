@@ -33,20 +33,45 @@ public static class WebControllerDeviceScanner
     public static string BuildDeviceId(int padIndex) => $"web-pad-{padIndex}";
 
     /// <summary>Returns one catalog entry per currently-connected phone. Empty when nobody is connected — pads shouldn't clutter the picker before anyone has opened the page.</summary>
-    public static IReadOnlyList<InputDeviceInfo> Scan(WebControllerHub hub)
+    public static IReadOnlyList<InputDeviceInfo> Scan(WebControllerHub hub) => Scan(hub, registry: null);
+
+    /// <summary>
+    /// Every registered phone — connected or not, so a phone can be assigned
+    /// to a virtual controller before it is picked up — plus any connected
+    /// pad not yet registered.
+    /// </summary>
+    public static IReadOnlyList<InputDeviceInfo> Scan(WebControllerHub hub, PhoneRegistry? registry)
     {
+        ArgumentNullException.ThrowIfNull(hub);
+
         var connected = hub.GetConnectedPads();
-        var results = new List<InputDeviceInfo>(connected.Count);
+        var registered = registry?.Phones ?? [];
+        var results = new List<InputDeviceInfo>(registered.Count + connected.Count);
+        foreach (var phone in registered)
+        {
+            results.Add(Describe(phone.Seat, phone.Name, connected.Contains(phone.Seat)));
+        }
+
         foreach (var padIndex in connected)
         {
-            results.Add(new InputDeviceInfo(
-                Id: BuildDeviceId(padIndex),
-                DisplayName: $"Web Controller #{padIndex + 1}",
-                IsGamepad: true,
-                Category: DeviceCategory.Gamepad));
+            if (registry?.IsRegistered(padIndex) != true)
+            {
+                results.Add(Describe(padIndex, $"Web Controller #{padIndex + 1}", isConnected: true));
+            }
         }
         return results;
     }
+
+    private static InputDeviceInfo Describe(int seat, string name, bool isConnected) => new(
+        Id: BuildDeviceId(seat),
+        DisplayName: name,
+        IsConnected: isConnected,
+        IsGamepad: true,
+        Category: DeviceCategory.Gamepad);
+
+    /// <summary>True for a phone's catalog id.</summary>
+    public static bool IsPhone(string? deviceId) =>
+        deviceId is not null && TryParsePadIndex(deviceId) >= 0;
 
     /// <summary>Parses a pad index back out of a catalog id, for the factory. Returns -1 when the id isn't a web pad.</summary>
     public static int TryParsePadIndex(string deviceId)

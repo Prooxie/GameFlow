@@ -46,6 +46,7 @@ public sealed class LinuxRawInputReader : IKeyboardStateSource, IMouseStateSourc
     private sealed class MouseAccumulator
     {
         // Drained to zero on every read — see MouseFrame's own doc comment.
+        public int PreviewX, PreviewY, PreviewWheel;
         public int Dx;
         public int Dy;
         public int WheelDelta;
@@ -249,10 +250,10 @@ public sealed class LinuxRawInputReader : IKeyboardStateSource, IMouseStateSourc
             }
             switch (code)
             {
-                case EvdevInterop.REL_X: acc.Dx += value; break;
-                case EvdevInterop.REL_Y: acc.Dy += value; break;
+                case EvdevInterop.REL_X: acc.Dx += value; acc.PreviewX += value; break;
+                case EvdevInterop.REL_Y: acc.Dy += value; acc.PreviewY += value; break;
                 // *120 to match MouseFrame's documented "Windows wheel units (multiples of 120)" convention.
-                case EvdevInterop.REL_WHEEL: acc.WheelDelta += value * 120; break;
+                case EvdevInterop.REL_WHEEL: acc.WheelDelta += value * 120; acc.PreviewWheel += value * 120; break;
             }
         }
     }
@@ -289,6 +290,18 @@ public sealed class LinuxRawInputReader : IKeyboardStateSource, IMouseStateSourc
         lock (gate)
         {
             return mouseByDevice.TryGetValue(deviceId, out var acc) ? Drain(acc) : default;
+        }
+    }
+
+    public MouseFrame ReadMousePreviewFrame(string deviceId)
+    {
+        lock (gate)
+        {
+            if (!mouseByDevice.TryGetValue(deviceId, out var state)) { return default; }
+            var frame = new MouseFrame(state.PreviewX, state.PreviewY, state.Left, state.Right,
+                state.Middle, state.Button4, state.Button5, state.PreviewWheel);
+            state.PreviewX = state.PreviewY = state.PreviewWheel = 0;
+            return frame;
         }
     }
 

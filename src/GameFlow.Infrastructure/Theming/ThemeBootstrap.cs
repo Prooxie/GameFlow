@@ -1,172 +1,102 @@
+using System.Security.Cryptography;
+using System.Text;
 using GameFlow.Infrastructure.Configuration;
 using Serilog;
 
 namespace GameFlow.Infrastructure.Theming;
 
-/// <summary>
-/// Copies the bundled "Xbox Series X — Default" theme (and any other
-/// themes shipped under <c>{AppDirectory}/themes/</c>) into the user's
-/// writable <see cref="AppPaths.ThemesDirectory"/> on first run.
-///
-/// <para>
-/// The user-side themes folder is empty by default. A first-run copy
-/// gives the dashboard something to render against straight after
-/// install, while leaving the user free to delete / replace anything
-/// later — we never overwrite an existing theme folder, so manual
-/// edits are durable.
-/// </para>
-///
-/// <para>
-/// The class is also intentionally re-entrant: calling
-/// <see cref="EnsureBundledThemesInstalled"/> on every startup is
-/// cheap when everything is already in place (a single
-/// <see cref="Directory.Exists(string)"/> per bundled theme). We trade
-/// one no-op call per launch for the guarantee that a deleted user
-/// theme always comes back the next time you start the app, mirroring
-/// the way VSCView's own theme folder is repopulated from the build
-/// output.
-/// </para>
-/// </summary>
+/// <summary>Installs bundled artwork through staging, retaining earlier copies as backups.</summary>
 public static class ThemeBootstrap
 {
-    /// <summary>
-    /// Name of the subdirectory under the app's install directory that
-    /// holds the bundled themes. Mirrors the user-side folder name so
-    /// the copy is essentially a directory clone.
-    /// </summary>
     public const string BundledThemesFolderName = "themes";
-
-    /// <summary>
-    /// Scans the install-side bundled-themes folder and copies any
-    /// theme directory that doesn't already exist under the user-side
-    /// <see cref="AppPaths.ThemesDirectory"/>. Returns the number of
-    /// themes that were freshly installed so the caller can log a
-    /// useful "X new themes available" message when desired.
-    /// </summary>
-    public static int EnsureBundledThemesInstalled()
+    private static readonly Lock Gate = new();
+    private static readonly EnumerationOptions Files = new()
     {
-        // Locate the bundled themes folder relative to the running
-        // assembly. AppContext.BaseDirectory points at the directory
-        // containing the entry assembly's DLL/EXE, which is where MSBuild
-        // copies the Content / AvaloniaResource tree at build time.
-        var bundleRoot = Path.Combine(AppContext.BaseDirectory, BundledThemesFolderName);
-        if (!Directory.Exists(bundleRoot))
+        RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint
+    };
+
+    public static int EnsureBundledThemesInstalled() => EnsureBundledThemesInstalled(
+        Path.Combine(AppContext.BaseDirectory, BundledThemesFolderName), AppPaths.ThemesDirectory);
+
+    internal static int EnsureBundledThemesInstalled(string bundleRoot, string userRoot)
+    {
+        lock (Gate)
         {
-            Log.Debug(
-                "No bundled-themes folder at {Bundle}; skipping first-run copy.",
-                bundleRoot);
-            return 0;
-        }
-
-        var userRoot = AppPaths.ThemesDirectory;
-        var installedCount = 0;
-        foreach (var src in Directory.EnumerateDirectories(bundleRoot))
-        {
-            var name = Path.GetFileName(src);
-            if (string.IsNullOrWhiteSpace(name)) { continue; }
-
-            var dst = Path.Combine(userRoot, name);
-            var bundleStamp = ComputeBundleStamp(src);
-            var stampPath = Path.Combine(dst, ".bundled.stamp");
-
-            if (Directory.Exists(dst))
+            if (!Directory.Exists(bundleRoot)) { return 0; }
+            Directory.CreateDirectory(userRoot);
+            var parent = Directory.GetParent(Path.GetFullPath(userRoot))!.FullName;
+            var backups = Path.Combine(parent, "theme-backups");
+            var staging = Path.Combine(parent, "theme-staging");
+            var installed = 0;
+            foreach (var source in Directory.EnumerateDirectories(bundleRoot))
             {
-                // A stamp marks the folder as a bundled copy that this
-                // bootstrap owns. Same stamp → up to date, leave alone.
-                // Different or MISSING stamp → the shipped content
-                // changed since it was copied (missing covers copies made
-                // by older bootstraps that never stamped) → refresh in
-                // place. Without this, fixed bundled themes never reached
-                // users who already had the earlier copies — they kept
-                // rendering the old broken layouts forever. Users who
-                // want to customise a default should copy it under a new
-                // folder name; same-named folders are treated as ours.
-                var existingStamp = File.Exists(stampPath) ? File.ReadAllText(stampPath).Trim() : null;
-                if (string.Equals(existingStamp, bundleStamp, StringComparison.Ordinal))
+                if ((File.GetAttributes(source) & FileAttributes.ReparsePoint) != 0) { continue; }
+                var name = Path.GetFileName(source);
+                var destination = Child(userRoot, name);
+                if (Directory.Exists(destination) && (File.GetAttributes(destination) & FileAttributes.ReparsePoint) != 0)
                 {
+                    Log.Warning("Bundled theme {Name} was not installed over a symbolic link.", name);
                     continue;
                 }
-
+                string? backup = null;
                 try
                 {
-                    Directory.Delete(dst, recursive: true);
+                    var stamp = ComputeBundleStamp(source);
+                    var stampPath = Path.Combine(destination, ".bundled.stamp");
+                    if (File.Exists(stampPath) && File.ReadAllText(stampPath).Trim() == stamp) { continue; }
+                    var stage = Child(staging, name + "-" + Guid.NewGuid().ToString("N"));
+                    Directory.CreateDirectory(stage);
+                    foreach (var file in Directory.EnumerateFiles(source, "*", Files))
+                    {
+                        var relative = Path.GetRelativePath(source, file);
+                        if (Path.GetFileName(file) is ".gitkeep" or ".bundled.stamp") { continue; }
+                        var target = Child(stage, relative);
+                        Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+                        File.Copy(file, target);
+                    }
+                    File.WriteAllText(Path.Combine(stage, ".bundled.stamp"), stamp);
+                    if (Directory.Exists(destination))
+                    {
+                        Directory.CreateDirectory(backups);
+                        backup = Child(backups, name + "-" + Guid.NewGuid().ToString("N"));
+                        Directory.Move(destination, backup);
+                    }
+                    try { Directory.Move(stage, destination); }
+                    catch
+                    {
+                        if (backup is not null && !Directory.Exists(destination)) { Directory.Move(backup, destination); }
+                        throw;
+                    }
+                    installed++;
                 }
-                catch (Exception ex)
+                catch (Exception exception)
                 {
-                    Log.Warning(ex,
-                        "Could not refresh bundled theme '{Name}' (delete failed); keeping the existing copy.",
-                        name);
-                    continue;
+                    Log.Warning(exception, "Could not install bundled theme {Name}. Earlier artwork was retained.", name);
                 }
-                Log.Information(
-                    "Bundled theme '{Name}' changed since it was installed — refreshing.",
-                    name);
             }
-
-            try
-            {
-                CopyDirectoryRecursive(src, dst);
-                File.WriteAllText(stampPath, bundleStamp);
-                installedCount++;
-                Log.Information(
-                    "Installed bundled theme '{Name}' into {Path}.",
-                    name, dst);
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex,
-                    "Could not install bundled theme '{Name}' into {Path}.",
-                    name, dst);
-            }
+            return installed;
         }
-
-        return installedCount;
     }
 
-    /// <summary>
-    /// Cheap content fingerprint of a bundled theme folder: relative
-    /// path and length of every file, hashed. Regenerated art virtually
-    /// always changes at least one file size, so a re-shipped theme
-    /// yields a new stamp, while identical bits yield a stable one.
-    /// </summary>
-    private static string ComputeBundleStamp(string themeDir)
+    private static string Child(string root, string relative)
     {
-        var builder = new System.Text.StringBuilder();
-        foreach (var file in Directory.EnumerateFiles(themeDir, "*", SearchOption.AllDirectories)
-                     .OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
-        {
-            var info = new FileInfo(file);
-            _ = builder.Append(Path.GetRelativePath(themeDir, file))
-                       .Append('|').Append(info.Length).Append('\n');
-        }
-        var bytes = System.Security.Cryptography.SHA256.HashData(
-            System.Text.Encoding.UTF8.GetBytes(builder.ToString()));
-        return Convert.ToHexString(bytes);
+        var prefix = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        var path = Path.GetFullPath(Path.Combine(prefix, relative));
+        if (!path.StartsWith(prefix, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+        { throw new IOException("Theme path leaves its destination directory."); }
+        return path;
     }
 
-    /// <summary>
-    /// Pure helper that copies every file under <paramref name="source"/>
-    /// to <paramref name="destination"/>, creating subdirectories as
-    /// needed. Doesn't follow symlinks (the bundled themes don't use
-    /// them) and skips zero-byte sentinel files like <c>.gitkeep</c> so
-    /// the destination doesn't get cluttered with build artefacts.
-    /// </summary>
-    private static void CopyDirectoryRecursive(string source, string destination)
+    private static string ComputeBundleStamp(string directory)
     {
-        _ = Directory.CreateDirectory(destination);
-
-        foreach (var file in Directory.EnumerateFiles(source))
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        foreach (var file in Directory.EnumerateFiles(directory, "*", Files).Order(StringComparer.Ordinal))
         {
-            var name = Path.GetFileName(file);
-            if (name.Equals(".gitkeep", StringComparison.Ordinal)) { continue; }
-
-            File.Copy(file, Path.Combine(destination, name), overwrite: false);
+            if (Path.GetFileName(file) is ".gitkeep" or ".bundled.stamp") { continue; }
+            hash.AppendData(Encoding.UTF8.GetBytes(Path.GetRelativePath(directory, file).Replace('\\', '/') + "\0"));
+            using var stream = File.OpenRead(file);
+            hash.AppendData(SHA256.HashData(stream));
         }
-
-        foreach (var subdir in Directory.EnumerateDirectories(source))
-        {
-            var name = Path.GetFileName(subdir);
-            CopyDirectoryRecursive(subdir, Path.Combine(destination, name));
-        }
+        return Convert.ToHexString(hash.GetHashAndReset());
     }
 }
