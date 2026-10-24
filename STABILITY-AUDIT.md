@@ -1,5 +1,7 @@
 # GameFlow stability and release audit
 
+Historical report. See the [1.0.9 quality report](docs/quality-report-1.0.9.md) for current evidence.
+
 ## Follow-up: HIDMaestro adapter and warnings, 22 October 2026
 
 Reviewed the typed HIDMaestro 2.0.1 adapter at `50966ff` and its output sink.

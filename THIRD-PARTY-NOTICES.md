@@ -12,7 +12,7 @@ every bundled native subcomponent has been independently audited.
 
 | Component | License / attribution | Source |
 | --- | --- | --- |
-| AL2009man's controller artwork | MIT, copyright Al. Lopez; full notice in `licenses/AL2009man-LICENSE.txt` | https://github.com/AL2009man/Gamepad-Asset-Pack |
+| AL2009man's controller, prompt, and connection artwork | MIT, copyright Al. Lopez; full notice in `licenses/AL2009man-LICENSE.txt` | https://github.com/AL2009man/Gamepad-Asset-Pack |
 | VSCView theme materials and format | MIT, copyright John Klein; full notice in `licenses/VSCView-LICENSE.txt` | https://github.com/Nielk1/VSCView |
 | MoonSharp 2.0 | BSD-style license, including its KopiLua notices; full text in `licenses/MoonSharp-LICENSE.txt` | https://github.com/moonsharp-devs/moonsharp |
 | SDL3 native binaries | zlib; notice copied from `SDL3-CS.Native` during packaging | https://github.com/libsdl-org/SDL |

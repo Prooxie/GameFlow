@@ -1,5 +1,7 @@
 # Remaining-risk and interface review
 
+Historical report. See the [1.0.9 quality report](docs/quality-report-1.0.9.md) for current evidence.
+
 Reviewed 21 October 2026 on `dev`, including the uncommitted v1.0.7 patch.
 HIDMaestro's separate repository was not edited or rebuilt. This review adds
 concrete fixes and a prioritized backlog; it does not certify that every

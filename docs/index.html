@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GameFlow — Any input in. Any controller out.</title>
+<meta name="description" content="Cross-platform, multi-language and multiple-controller remapping tooling. Any input device in, any virtual controller out. Gamepad, keyboard, mouse or a phone browser.">
+<meta name="theme-color" content="#050B12">
+<link rel="icon" href="brand/logo-mark-64.png" type="image/png">
+<link rel="apple-touch-icon" href="brand/logo-mark-256.png">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="GameFlow — Any input in. Any controller out.">
+<meta property="og:description" content="Cross-platform, multi-language and multiple-controller remapping tooling. Free and MIT licensed.">
+<meta property="og:image" content="brand/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<style>
+  :root{
+    --bg:#050B12; --bg-1:#07101D; --bg-2:#0A1626; --card:#0E1B2E;
+    --line:#16344F; --line-soft:#1B3552;
+    --accent:#00D4FF; --accent-hi:#67ECFF; --accent-dim:#2196BE;
+    --fg:#E2E8F0; --fg-dim:#7D8BA3;
+    --ok:#34D399; --warn:#FBBF24;
+    --wrap:1180px; --r:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent); text-decoration:none}
+  a:hover{color:var(--accent-hi)}
+  .wrap{max-width:var(--wrap); margin:0 auto; padding:0 24px}
+  h2{font-size:clamp(26px,3.4vw,38px); line-height:1.2; margin:0 0 12px; letter-spacing:-.5px}
+  h3{font-size:19px; margin:0 0 8px}
+  p{margin:0 0 14px}
+  .lede{color:var(--fg-dim); font-size:17px; max-width:62ch}
+  section{padding:78px 0; border-top:1px solid var(--line-soft)}
+  .eyebrow{
+    font-size:12px; font-weight:700; letter-spacing:2.4px; color:var(--accent);
+    text-transform:uppercase; margin:0 0 14px;
+  }
+
+  /* ── Nav ─────────────────────────────────────────────── */
+  nav{
+    position:sticky; top:0; z-index:20; backdrop-filter:blur(12px);
+    background:rgba(5,11,18,.82); border-bottom:1px solid var(--line-soft);
+  }
+  nav .wrap{display:flex; align-items:center; gap:26px; height:62px}
+  .brand{display:flex; align-items:center; gap:11px; font-weight:800; letter-spacing:.6px; color:var(--fg)}
+  .brand img{width:30px; height:30px; border-radius:8px}
+  .brand .wm span{color:var(--accent)}
+  nav .links{margin-left:auto; display:flex; gap:22px; font-size:14.5px}
+  nav .links a{color:var(--fg-dim)}
+  nav .links a:hover{color:var(--fg)}
+  @media(max-width:720px){ nav .links a:not(.keep){display:none} }
+
+  /* ── Hero ────────────────────────────────────────────── */
+  header{position:relative; overflow:hidden; padding:96px 0 84px; text-align:center; border:0}
+  header::before{
+    content:""; position:absolute; inset:-40% 0 auto; height:150%;
+    background:radial-gradient(60% 50% at 50% 28%, rgba(0,212,255,.13), transparent 70%);
+    pointer-events:none;
+  }
+  header .wrap{position:relative}
+  header img.mark{width:112px; height:112px; border-radius:26px; margin-bottom:26px}
+  header h1{
+    font-size:clamp(42px,7.2vw,82px); font-weight:900; letter-spacing:-1.5px;
+    margin:0 0 14px; line-height:1;
+  }
+  header h1 span{color:var(--accent)}
+  header .tag{font-size:clamp(18px,2.4vw,24px); color:var(--fg); margin:0 0 8px}
+  header .sub{color:var(--fg-dim); max-width:60ch; margin:0 auto 32px}
+  .cta{display:flex; gap:12px; justify-content:center; flex-wrap:wrap}
+  .btn{
+    display:inline-flex; align-items:center; gap:9px; padding:13px 24px; border-radius:11px;
+    font-weight:650; font-size:15.5px; border:1px solid var(--line); color:var(--fg);
+    background:var(--card); transition:.16s;
+  }
+  .btn:hover{border-color:var(--accent); color:var(--fg); transform:translateY(-1px)}
+  .btn.primary{background:var(--accent); color:#04121A; border-color:var(--accent)}
+  .btn.primary:hover{background:var(--accent-hi); color:#04121A}
+  .pills{margin-top:26px; display:flex; gap:9px; justify-content:center; flex-wrap:wrap}
+  .pill{
+    font-size:12.5px; color:var(--fg-dim); border:1px solid var(--line-soft);
+    padding:5px 13px; border-radius:999px; background:var(--bg-1);
+  }
+
+  /* ── Grids ───────────────────────────────────────────── */
+  .grid{display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(268px,1fr)); margin-top:34px}
+  .card{
+    background:var(--card); border:1px solid var(--line-soft); border-radius:var(--r);
+    padding:24px; transition:.16s;
+  }
+  .card:hover{border-color:var(--line); transform:translateY(-2px)}
+  .card p{color:var(--fg-dim); font-size:14.5px; margin:0}
+  .card .ico{
+    width:38px; height:38px; border-radius:10px; display:grid; place-items:center;
+    background:rgba(0,212,255,.10); border:1px solid rgba(0,212,255,.28);
+    margin-bottom:14px; font-size:19px;
+  }
+
+  /* ── Figures / tables ────────────────────────────────── */
+  figure{margin:34px 0 0}
+  figure img{width:100%; height:auto; border-radius:var(--r); border:1px solid var(--line-soft); display:block}
+  figcaption{color:var(--fg-dim); font-size:13.5px; margin-top:12px; text-align:center}
+  .scroll{overflow-x:auto; margin-top:30px; border:1px solid var(--line-soft); border-radius:var(--r)}
+  table{border-collapse:collapse; width:100%; min-width:820px; font-size:14.5px}
+  th,td{padding:13px 16px; text-align:left; border-bottom:1px solid var(--line-soft)}
+  thead th{background:var(--bg-2); color:var(--fg); font-size:13px; letter-spacing:.4px; white-space:nowrap}
+  thead th:nth-child(2){color:var(--accent)}
+  tbody tr:last-child td{border-bottom:0}
+  tbody td:first-child{color:var(--fg-dim)}
+  td.y{color:var(--ok); font-weight:650}
+  td.n{color:#4A5A70}
+  .note{
+    margin-top:20px; padding:16px 18px; border-radius:12px; font-size:14px; color:var(--fg-dim);
+    background:rgba(251,191,36,.05); border:1px solid rgba(251,191,36,.24);
+  }
+  .note b{color:var(--warn)}
+
+  /* ── Footer ──────────────────────────────────────────── */
+  footer{padding:52px 0; border-top:1px solid var(--line-soft); color:var(--fg-dim); font-size:14px}
+  footer .wrap{display:flex; gap:20px; flex-wrap:wrap; align-items:center; justify-content:space-between}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="brand/logo-mark-64.png" alt=""><span class="wm">GAME<span>FLOW</span></span></a>
+    <div class="links">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+	<a href="#showcase">Screenshots</a>
+      <a href="#platforms">Platforms</a>
+      <a class="keep" href="https://github.com/Prooxie/GameFlow">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<header id="top">
+  <div class="wrap">
+    <img class="mark" src="brand/logo-mark-256.png" alt="GameFlow">
+    <h1>GAME<span>FLOW</span></h1>
+    <p class="tag">Any input in. Any controller out.</p>
+    <p class="sub">
+      Cross-platform, multi-language and multi-controller remapping tool.
+    </p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/Prooxie/GameFlow/releases/latest">Download GameFlow</a>
+      <a class="btn" href="https://github.com/Prooxie/GameFlow">View on GitHub</a>
+      <a class="btn" href="https://github.com/Prooxie/GameFlow/blob/master/WIKI.md">Documentation</a>
+    </div>
+    <div class="pills">
+      <span class="pill">Free &amp; MIT licensed</span>
+      <span class="pill">No kernel driver</span>
+      <span class="pill">Windows · Linux · macOS</span>
+      <span class="pill">.NET 10 · Avalonia · SDL3</span>
+    </div>
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <p class="eyebrow">What it does</p>
+    <h2>One pipeline, from any input to any pad</h2>
+    <p class="lede">Every slot is an independent input to profile to output pipeline, running at up to 1000 Hz. Run several at once for local co-op, or split one device across several transformed outputs or even several controller as one!</p>
+
+    <div class="grid">
+      <div class="card"><div class="ico">🎮</div><h3>Any virtual controller</h3>
+        <p>Emit an Xbox 360, DualShock 4 or DualSense that games read as real hardware. User-mode through HIDMaestro. No kernel driver, no reboot.</p></div>
+      <div class="card"><div class="ico">📱</div><h3>A phone, with nothing installed</h3>
+        <p>Open a URL in any phone browser on your Wi-Fi. Anchored sticks, analog triggers, rumble, and the phone's own gyro. Up to 16 at once.</p></div>
+      <div class="card"><div class="ico">⌨️</div><h3>Keyboard &amp; mouse as a pad</h3>
+        <p>Full keyboard state synthesised into a gamepad snapshot, per physical device, on Windows, Linux and macOS alike.</p></div>
+      <div class="card"><div class="ico">🌀</div><h3>Gyro aiming</h3>
+        <p>Local, Player and World reference frames, dual-threshold smoothing that kills tremor while keeping flicks sharp, output to a stick or the mouse.</p></div>
+      <div class="card"><div class="ico">🧮</div><h3>Formulas, not just bindings</h3>
+        <p>Fold many inputs into one output with six combine modes or a real expression compiler. <code>if(s1 &gt; 0.5, s2, 0)</code>. Sandboxed Lua when that isn't enough.</p></div>
+      <div class="card"><div class="ico">⚡</div><h3>Autofire &amp; shift layers</h3>
+        <p>Hysteresis-shaped autofire that doesn't jitter at the threshold, and six shift-layer modes. Caps Lock for your controller.</p></div>
+      <div class="card"><div class="ico">🎚️</div><h3>Per-device calibration &amp; tuning</h3>
+        <p>Radial deadzones, curves and sensitivity per slot <em>and</em> per device. plus axis calibration that rescues third-party pads and PS2-era converters.</p></div>
+      <div class="card"><div class="ico">📺</div><h3>OBS overlay built in</h3>
+        <p>A transparent controller overlay served by the app itself. Paste a URL into a Browser source. No screen capture, no always-on-top window.</p></div>
+      <div class="card"><div class="ico">🛰️</div><h3>Motion server</h3>
+        <p>DSU / Cemuhook over UDP, so Cemu, Dolphin, Yuzu and Ryujinx read real gyro and accelerometer straight from a slot.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <p class="eyebrow">How it works</p>
+    <h2>Physical in, conditioned, transformed, emitted</h2>
+    <p class="lede">Calibration and per-device tuning run before any rule sees the input. Shift layers resolve first each tick and gate what runs. A slot's own virtual output can never be fed back in as a source.</p>
+    <figure>
+      <img src="brand/diagram-architecture.svg" alt="GameFlow architecture: physical inputs, per-device conditioning, the mapping pipeline and its fourteen rule types, and virtual outputs">
+      <figcaption>The full path from hardware to the controller a game sees.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="showcase">
+  <div class="wrap">
+    <p class="eyebrow">Version 1.0.9</p>
+    <h2>See the application</h2>
+    <p class="lede">Actual GameFlow controls with isolated demonstration data and Preview output.</p>
+    <figure><img src="images/dashboard.png" alt="Dashboard with physical DualSense input and Xbox 360 preview output" loading="lazy" width="1440" height="900"><figcaption>Inspect input and output together. Copy each panel into OBS.</figcaption></figure>
+    <figure><img src="images/mapping-editor.png" alt="Mapping editor with translated labels and imported button prompts" loading="lazy" width="1440" height="900"><figcaption>Edit profiles, autofire, button mappings, and stick thresholds.</figcaption></figure>
+    <figure><img src="images/devices.png" alt="Device list with controller icons, battery status, and calibration controls" loading="lazy" width="1440" height="900"><figcaption>Inspect physical devices and configure their input mappings.</figcaption></figure>
+  </div>
+</section>
+
+<section id="platforms">
+  <div class="wrap">
+    <p class="eyebrow">Platforms</p>
+    <h2>Choose your platform</h2>
+    <p class="lede">Windows supports virtual gamepads through the optional HIDMaestro SDK. Linux and macOS use Preview gamepad output. macOS hardware tests remain open.</p>
+    <div class="grid">
+      <div class="card"><h3>Windows</h3><p>Gamepad and keyboard/mouse input, mouse output, and optional HIDMaestro virtual gamepads. HIDMaestro requires a compatible SDK and Administrator access.</p></div>
+      <div class="card"><h3>Linux</h3><p>Gamepad input via SDL3, keyboard and mouse through direct <code>evdev</code> reads, mouse output through <code>uinput</code>. Virtual gamepad output is not built yet.</p></div>
+      <div class="card"><h3>macOS</h3><p>Gamepad input via SDL3, keyboard and mouse per device through <code>IOHIDManager</code>, mouse output through <code>CGEventPost</code>. Virtual gamepad output is not built yet.</p></div>
+    </div>
+    <figure>
+      <img src="brand/diagram-structure.svg" alt="GameFlow project structure: App, Core and Infrastructure, what each contains and what it depends on">
+      <figcaption>Four source projects separate the UI, mapping logic, platform services, and HIDMaestro adapter.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="get">
+  <div class="wrap" style="text-align:center">
+    <p class="eyebrow">Get it now!</p>
+    <h2>Free and open source</h2>
+    <p class="lede" style="margin:0 auto 30px">Grab the latest release, or build it yourself with the .NET 10 SDK.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/Prooxie/GameFlow/releases/latest">Download GameFlow</a>
+      <a class="btn" href="https://github.com/Prooxie/GameFlow#build-and-test">Build and test</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>Version 1.0.9 · MIT licensed · Made by <a href="https://www.youtube.com/@ProxyDarkness">Proxy Darkness</a></div>
+    <div>
+      <a href="https://github.com/Prooxie/GameFlow">GitHub</a> ·
+      <a href="https://github.com/Prooxie/GameFlow/blob/master/WIKI.md">Wiki</a> ·
+      <a href="https://github.com/Prooxie/GameFlow/issues">Issues</a> ·
+      <a href="https://buymeacoffee.com/ProxyDarkness">Buy me a coffee</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

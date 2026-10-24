@@ -3,7 +3,7 @@ name: ci
 on:
   push:
     branches: [ main, master, develop, dev ]
-    tags:     [ "v*" ]
+    tags:     [ "v*", "[0-9]*.[0-9]*.[0-9]*" ]
   pull_request:
     branches: [ main, master, develop, dev ]
   workflow_dispatch:
@@ -65,6 +65,14 @@ jobs:
       - name: Build
         run: dotnet build GameFlow.sln --configuration Release --no-restore -warnaserror
 
+      - name: Check localisation failures
+        shell: pwsh
+        run: ./scripts/Test-LocalizationChecks.ps1
+
+      - name: Check SDK maintenance fixtures
+        shell: pwsh
+        run: ./scripts/Test-HidMaestroMaintenance.ps1
+
       - name: Test
         run: dotnet test --solution GameFlow.sln --configuration Release --no-build --report-trx --results-directory TestResults
 
@@ -76,10 +84,36 @@ jobs:
           path: TestResults/**/*.trx
           if-no-files-found: ignore
 
+  browser-test:
+    name: Browser input (${{ matrix.browser }})
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [ chromium, firefox ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: tests/browser/package-lock.json
+      - name: Install test dependencies
+        working-directory: tests/browser
+        run: npm ci --ignore-scripts
+      - name: Install browser
+        working-directory: tests/browser
+        run: npx --no-install playwright install --with-deps ${{ matrix.browser }}
+      - name: Test phone and OBS input
+        working-directory: tests/browser
+        env:
+          GAMEFLOW_TEST_BROWSER: ${{ matrix.browser }}
+        run: npm test
+
   publish:
     name: Publish ${{ matrix.rid }}
-    needs: build-test
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [ build-test, browser-test ]
+    if: startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: read
     strategy:
@@ -135,7 +169,7 @@ jobs:
         shell: bash
         run: |
           cd publish/${{ matrix.rid }}
-          chmod +x GameFlow.App
+          chmod +x GameFlow
           tar -czf "../../GameFlow-${GITHUB_REF_NAME}-${{ matrix.rid }}.tar.gz" *
 
       - name: Hash archive
@@ -158,7 +192,7 @@ jobs:
   release:
     name: Create GitHub release
     needs: publish
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: write
     runs-on: ubuntu-latest

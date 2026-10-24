@@ -10,10 +10,12 @@ $assets = Get-Content -LiteralPath $AssetsFile -Raw | ConvertFrom-Json
 $licenseDirectory = Join-Path $destination 'licenses'
 New-Item -ItemType Directory -Force -Path $licenseDirectory | Out-Null
 
-foreach ($file in @('README.md', 'CHANGELOG.md', 'LICENSE', 'THIRD-PARTY-NOTICES.md')) {
+foreach ($file in @('README.md', 'WIKI.md', 'AGENTS.md', 'CONTEXT.md', 'CHANGELOG.md', 'LICENSE', 'THIRD-PARTY-NOTICES.md')) {
     Copy-Item -LiteralPath (Join-Path $repository $file) -Destination $destination
 }
 Copy-Item -LiteralPath (Join-Path $repository 'licenses') -Destination $destination -Recurse -Force
+Copy-Item -LiteralPath (Join-Path $repository 'docs') -Destination $destination -Recurse -Force
+Copy-Item -LiteralPath (Join-Path $repository 'brand') -Destination $destination -Recurse -Force
 
 $inventory = foreach ($library in $assets.libraries.PSObject.Properties | Sort-Object Name) {
     if ($library.Value.type -ne 'package') { continue }
