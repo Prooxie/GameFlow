@@ -38,7 +38,7 @@ It also removes extra dashboard polling delay while retaining the independent OB
 - Prepare Windows x64, Linux x64, macOS Intel, and macOS Apple Silicon archives.
 - Package both Mac targets as application bundles.
 - Add optional Developer ID signing, provisioning checks, notarization, and Gatekeeper checks to CI.
-- Add native header checks and a Linux virtual-device round-trip test to hosted CI.
+- Check public native type sizes, macOS runtime exports, and Linux virtual-device state in hosted CI.
 - Update the project page and setup documentation. Preserve screenshots, branding, and support links.
 
 ### Requirements and verification limits

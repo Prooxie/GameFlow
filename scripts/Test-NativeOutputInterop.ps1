@@ -12,13 +12,13 @@ if ($IsLinux) {
 }
 elseif ($IsMacOS) {
     & clang -std=c11 -Wall -Wextra -Werror (Join-Path $repository 'tests/native/macos-hid-abi.c') `
-        -framework IOKit -framework CoreFoundation -o $probe
+        -framework CoreFoundation -o $probe
 }
 else {
     Write-Output 'Native ABI checks require Linux or macOS headers.'
     exit 0
 }
-if ($LASTEXITCODE -ne 0) { throw 'Native output declarations do not match the platform headers.' }
+if ($LASTEXITCODE -ne 0) { throw 'Native output ABI checks did not compile against the public platform headers.' }
 & $probe
 if ($LASTEXITCODE -ne 0) { throw 'Native output API exports are unavailable.' }
-Write-Output 'Native output declarations match the platform headers.'
+Write-Output 'Native output ABI and API availability checks passed.'

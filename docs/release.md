@@ -102,8 +102,11 @@ The implementation uses Apple's [virtual HID entitlement](https://developer.appl
 Linux CI compiles ABI assertions against the installed kernel headers.
 It loads `uinput` and grants test-only access on the temporary runner.
 The platform test creates a gamepad, reads real axis and button state through evdev, and checks disconnect cleanup.
-macOS CI checks the IOKit declarations against the installed SDK.
-It also checks that an unsigned process reports the missing virtual HID entitlement.
+macOS CI checks native type sizes against public SDK headers and loads the required IOKit exports at runtime.
+The SDK does not include the virtual-device header. The check does not require private headers or private linker stubs.
+Apple publishes the virtual-device declarations in its [IOKitUser source](https://github.com/apple-oss-distributions/IOKitUser/blob/main/hid.subproj/IOHIDUserDevice.h).
+These exports remain an experimental dependency. Their presence does not prove device creation or game compatibility.
+macOS CI also checks that an unsigned process reports the missing virtual HID entitlement.
 These tests are platform-specific and are skipped on other hosts.
 Positive macOS output testing requires an approved signed build and remains a manual release check.
 

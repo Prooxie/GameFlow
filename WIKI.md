@@ -262,6 +262,8 @@ GameController-framework compatibility on macOS is not guaranteed.
 Linux creates one `uinput` device per enabled slot.
 The [Linux setup instructions](README.md#linux-virtual-gamepads) configure access without running the application as root.
 macOS publishes reports through `IOHIDUserDevice`.
+The public SDK omits its declarations. CI checks public native type sizes and resolves the required IOKit exports at runtime.
+This check does not establish a public SDK contract or prove signed device creation.
 Apple must grant `com.apple.developer.hid.virtual.device` in the Developer ID provisioning profile.
 See [macOS signing](docs/release.md#macos-signing).
 

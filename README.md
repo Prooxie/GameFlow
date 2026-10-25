@@ -113,6 +113,8 @@ Input Monitoring consent controls keyboard and mouse input.
 Virtual output separately requires Apple's [virtual HID entitlement](https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.developer.hid.virtual.device).
 An unsigned or ad-hoc signature does not grant that entitlement.
 The [release guide](docs/release.md#macos-signing) describes provisioning, signing, and notarization.
+The backend uses IOKit exports whose declarations are absent from the public macOS SDK.
+CI checks their runtime availability and the unsigned entitlement boundary.
 Native output remains experimental until a signed build passes a real Mac game test.
 
 ## Dashboard response
