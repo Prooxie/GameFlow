@@ -26,6 +26,9 @@ try {
         if ($LASTEXITCODE -ne 0) { throw "Publish failed for $identifier." }
         & (Join-Path $PSScriptRoot 'Prepare-Release.ps1') -PublishDirectory $publishDirectory `
             -AssetsFile (Join-Path $repository 'src/GameFlow.App/obj/project.assets.json')
+        if ($identifier.StartsWith('osx-')) {
+            & (Join-Path $PSScriptRoot 'Prepare-MacBundle.ps1') -PublishDirectory $publishDirectory -Version $version
+        }
 
         $archive = Join-Path $destination "GameFlow-$version-$identifier"
         if ($identifier -eq 'win-x64') {
@@ -41,7 +44,7 @@ try {
                 foreach ($file in Get-ChildItem -LiteralPath $publishDirectory -Recurse -File | Sort-Object FullName) {
                     $relative = [IO.Path]::GetRelativePath($publishDirectory, $file.FullName).Replace('\', '/')
                     $entry = [System.Formats.Tar.PaxTarEntry]::new([System.Formats.Tar.TarEntryType]::RegularFile, $relative)
-                    $entry.Mode = [IO.UnixFileMode][Convert]::ToInt32($(if ($relative -eq 'GameFlow') { '755' } else { '644' }), 8)
+                    $entry.Mode = [IO.UnixFileMode][Convert]::ToInt32($(if ($relative -eq 'GameFlow' -or $relative -eq 'GameFlow.app/Contents/MacOS/GameFlow') { '755' } else { '644' }), 8)
                     $entry.DataStream = [IO.File]::OpenRead($file.FullName)
                     try { $writer.WriteEntry($entry) }
                     finally { $entry.DataStream.Dispose() }

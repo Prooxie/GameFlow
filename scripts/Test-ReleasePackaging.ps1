@@ -15,7 +15,7 @@ $source = Join-Path $fixture 'source'
 $publish = Join-Path $fixture 'publish'
 New-Item -ItemType Directory -Force -Path (Join-Path $source 'scripts'), $publish | Out-Null
 Get-ChildItem -LiteralPath $repository -Filter '*.md' -File | Copy-Item -Destination $source
-foreach ($name in @('docs', 'brand', 'licenses')) {
+foreach ($name in @('docs', 'brand', 'licenses', 'platform')) {
     Copy-Item -LiteralPath (Join-Path $repository $name) -Destination $source -Recurse
 }
 Copy-Item -LiteralPath (Join-Path $repository 'LICENSE') -Destination $source
@@ -43,7 +43,7 @@ foreach ($file in Get-ChildItem -LiteralPath $publish -Recurse -File) {
         throw "The archive contains a non-public document: $relative"
     }
 }
-foreach ($required in @('README.md', 'docs/index.html', 'docs/images/dashboard.png', 'docs/release.md', 'dependencies.json')) {
+foreach ($required in @('README.md', 'docs/index.html', 'docs/images/dashboard.png', 'docs/release.md', 'dependencies.json', 'platform/linux/70-gameflow-uinput.rules')) {
     if (!(Test-Path -LiteralPath (Join-Path $publish $required))) { throw "The archive omits $required" }
 }
 Write-Output 'PASS: Public release documents and screenshots are complete. Local working documents are excluded.'

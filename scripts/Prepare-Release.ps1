@@ -23,6 +23,9 @@ foreach ($folder in @('images', 'brand')) {
     Copy-Item -LiteralPath (Join-Path $repository "docs/$folder") -Destination $publicDocs -Recurse -Force
 }
 Copy-Item -LiteralPath (Join-Path $repository 'brand') -Destination $destination -Recurse -Force
+$linuxSetup = Join-Path $destination 'platform/linux'
+New-Item -ItemType Directory -Path $linuxSetup -Force | Out-Null
+Copy-Item -LiteralPath (Join-Path $repository 'platform/linux/70-gameflow-uinput.rules') -Destination $linuxSetup
 
 $inventory = foreach ($library in $assets.libraries.PSObject.Properties | Sort-Object Name) {
     if ($library.Value.type -ne 'package') { continue }

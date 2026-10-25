@@ -77,6 +77,28 @@ jobs:
         shell: pwsh
         run: ./scripts/Test-ReleasePackaging.ps1
 
+      - name: Check native output ABI
+        shell: pwsh
+        run: ./scripts/Test-NativeOutputInterop.ps1
+
+      - name: Prepare Linux virtual gamepad test
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo modprobe uinput
+          test -c /dev/uinput
+          echo 'KERNEL=="uinput", MODE="0666"' | sudo tee /etc/udev/rules.d/99-gameflow-test.rules
+          echo 'SUBSYSTEM=="input", ATTRS{name}=="GameFlow Virtual Gamepad", MODE="0666"' | sudo tee -a /etc/udev/rules.d/99-gameflow-test.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --subsystem-match=misc --sysname-match=uinput
+          sudo udevadm settle
+          test -w /dev/uinput
+          echo 'GAMEFLOW_TEST_UINPUT=1' >> "$GITHUB_ENV"
+
+      - name: Check macOS bundle assembly
+        shell: pwsh
+        run: ./scripts/Test-MacBundle.ps1
+
       - name: Test
         run: dotnet test --solution GameFlow.sln --configuration Release --no-build --report-trx --results-directory TestResults
 
@@ -161,6 +183,24 @@ jobs:
         shell: pwsh
         run: ./scripts/Prepare-Release.ps1 -PublishDirectory publish/${{ matrix.rid }} -AssetsFile src/GameFlow.App/obj/project.assets.json
 
+      - name: Prepare macOS application bundle
+        if: startsWith(matrix.rid, 'osx-')
+        shell: pwsh
+        run: ./scripts/Prepare-MacBundle.ps1 -PublishDirectory publish/${{ matrix.rid }} -Version ($env:GITHUB_REF_NAME -replace '^v', '')
+
+      - name: Sign and notarize macOS application
+        if: startsWith(matrix.rid, 'osx-')
+        shell: pwsh
+        env:
+          MACOS_SIGNING_CERTIFICATE: ${{ secrets.MACOS_SIGNING_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          MACOS_PROVISIONING_PROFILE: ${{ secrets.MACOS_PROVISIONING_PROFILE }}
+          MACOS_NOTARY_APPLE_ID: ${{ secrets.MACOS_NOTARY_APPLE_ID }}
+          MACOS_NOTARY_TEAM_ID: ${{ secrets.MACOS_NOTARY_TEAM_ID }}
+          MACOS_NOTARY_PASSWORD: ${{ secrets.MACOS_NOTARY_PASSWORD }}
+        run: ./scripts/Sign-MacRelease.ps1 -BundleDirectory publish/${{ matrix.rid }}/GameFlow.app
+
       - name: Package zip
         if: matrix.ext == 'zip'
         shell: bash
@@ -173,7 +213,11 @@ jobs:
         shell: bash
         run: |
           cd publish/${{ matrix.rid }}
-          chmod +x GameFlow
+          if [[ -d GameFlow.app ]]; then
+            chmod +x GameFlow.app/Contents/MacOS/GameFlow
+          else
+            chmod +x GameFlow
+          fi
           tar -czf "../../GameFlow-${GITHUB_REF_NAME}-${{ matrix.rid }}.tar.gz" *
 
       - name: Hash archive
