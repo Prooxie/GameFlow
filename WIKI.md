@@ -246,13 +246,48 @@ It does not hide the physical pad from games; see [Known Limitations](README.md#
 | Gamepad/joystick input | SDL3 | SDL3 | SDL3 |
 | Keyboard/mouse as source | Raw Input | `evdev` direct reads | `IOHIDManager` |
 | Mouse cursor output | `SendInput` | `uinput` | `CGEventPost` |
-| Virtual gamepad output | HIDMaestro | — | — |
+| Virtual gamepad output | HIDMaestro | Native `uinput` standard gamepad | Experimental IOKit standard gamepad with Apple-approved signing |
+
+### Native gamepad output in 1.1.0
+
+Linux and macOS use the `native-gamepad` provider.
+Saved output-provider identifiers migrate to that platform backend.
+Windows retains HIDMaestro and its controller catalog.
+The native backend exposes two sticks, two triggers, one directional pad, and nineteen mapped buttons.
+It uses a fixed standard gamepad layout. Custom shapes and Sony-specific output reports are unavailable.
+Native host-to-controller rumble and lighting are unavailable.
+A game must support generic HID or evdev input, or use an appropriate Steam Input mapping.
+GameController-framework compatibility on macOS is not guaranteed.
+
+Linux creates one `uinput` device per enabled slot.
+The [Linux setup instructions](README.md#linux-virtual-gamepads) configure access without running the application as root.
+macOS publishes reports through `IOHIDUserDevice`.
+Apple must grant `com.apple.developer.hid.virtual.device` in the Developer ID provisioning profile.
+See [macOS signing](docs/release.md#macos-signing).
+
+The backend sends complete states and coalesces unchanged reports.
+Disconnect sends a neutral state and destroys the device.
+Failures destroy the device and show a localized warning. Retries occur at most once every five seconds.
+The dashboard and OBS continue to show mapped snapshots when native output is unavailable.
+Native product markers and custom identifiers exclude output devices from discovery and assignment.
+Identifiers alone do not exclude a physical controller.
+
+### Dashboard presentation
+
+The main window requests one refresh per display frame, subject to the dashboard refresh setting.
+A refresh samples the latest runtime state. It does not queue missed frames.
+View-model changes reach controller art immediately through a view notification.
+There is no second controller-art polling timer.
+Inventory and connection details refresh at 500 ms intervals.
+A delayed frame does not halve the configured rate.
+Automatic mode caches the detected display rate, with a 60 Hz fallback.
+OBS keeps its independent browser rendering path.
 
 ### Verification notes
 
 The Linux `evdev`/`uinput` interop (struct layouts, ioctl numbers) was verified by compiling small C programs against the actual kernel headers and cross-checking the output — not derived from memory. The macOS `IOHIDManager`/`CGEventPost` interop is written against Apple's documented, stable API surface, but **could not be verified against real headers or hardware** during development (no macOS toolchain was available) — treat it as a good-faith implementation that hasn't had a hardware pass yet.
 
-**macOS specifically:** reading used to go through `CGEventTap`, which has no per-device concept — one aggregate stream for every keyboard and mouse system-wide, so per-device selection in the UI could only fall back to that aggregate. It now goes through `IOHIDManager`, which reports which device each value came from, so macOS matches evdev's one-file-per-device and Raw Input's per-handle model. Output stays on `CGEventPost`: synthesis has no per-device dimension to lose.
+**macOS specifically:** reading used to go through `CGEventTap`, which has no per-device concept — one aggregate stream for every keyboard and mouse system-wide, so per-device selection in the UI could only fall back to that aggregate. It now goes through `IOHIDManager`, which reports which device each value came from, so macOS matches evdev's one-file-per-device and Raw Input's per-handle model. Mouse output stays on `CGEventPost`. Virtual gamepad output uses the separate IOKit backend.
 
 Three consequences of that move are worth knowing:
 
@@ -260,7 +295,7 @@ Three consequences of that move are worth knowing:
 * **Hot-plug works for reading.** The manager keeps matching devices after it opens, so a keyboard plugged in later reports without a restart — Linux, which opens its fds once at construction, still needs one.
 * **Two small gaps came with it.** Absolute-mode pointers are ignored rather than misread as deltas (their X is a position, not a movement), and the volume/mute keys are gone — they are Consumer-page usages, on a HID device the reader deliberately does not claim.
 
-**Linux permissions:** `/dev/input/eventN` needs the `input` group (see [README](README.md#linux)). Without it, GameFlow runs fine — that input source just reads as empty, logged once.
+**Linux permissions:** `/dev/input/eventN` needs the `input` group (see [README](README.md#requirements)). Without it, GameFlow runs fine — that input source just reads as empty, logged once.
 
 **macOS permissions:** keyboard/mouse capture needs Input Monitoring (System Settings → Privacy & Security). Same graceful-empty behavior without it.
 

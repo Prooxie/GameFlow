@@ -157,7 +157,7 @@
     </div>
     <div class="pills">
       <span class="pill">Free &amp; MIT licensed</span>
-      <span class="pill">No kernel driver</span>
+      <span class="pill">Native platform output</span>
       <span class="pill">Windows · Linux · macOS</span>
       <span class="pill">.NET 10 · Avalonia · SDL3</span>
     </div>
@@ -172,7 +172,7 @@
 
     <div class="grid">
       <div class="card"><div class="ico">🎮</div><h3>Any virtual controller</h3>
-        <p>Emit an Xbox 360, DualShock 4 or DualSense that games read as real hardware. User-mode through HIDMaestro. No kernel driver, no reboot.</p></div>
+        <p>Use HIDMaestro controller profiles on Windows. Create standard gamepads through Linux uinput. macOS includes an experimental IOKit backend that requires Apple-approved signing.</p></div>
       <div class="card"><div class="ico">📱</div><h3>A phone, with nothing installed</h3>
         <p>Open a URL in any phone browser on your Wi-Fi. Anchored sticks, analog triggers, rumble, and the phone's own gyro. Up to 16 at once.</p></div>
       <div class="card"><div class="ico">⌨️</div><h3>Keyboard &amp; mouse as a pad</h3>
@@ -207,7 +207,8 @@
 
 <section id="showcase">
   <div class="wrap">
-    <p class="eyebrow">Version 1.0.9</p>
+    <p class="eyebrow">Version 1.1.0</p>
+    <p class="lede">Controller art updates directly on display frames. Temporary UI stalls no longer reduce the refresh rate for several seconds.</p>
     <h2>See the application</h2>
     <p class="lede">Actual GameFlow controls with isolated demonstration data and Preview output.</p>
     <figure><img src="images/dashboard.png" alt="Dashboard with physical DualSense input and Xbox 360 preview output" loading="lazy" width="1440" height="900"><figcaption>Inspect input and output together. Copy each panel into OBS.</figcaption></figure>
@@ -220,11 +221,11 @@
   <div class="wrap">
     <p class="eyebrow">Platforms</p>
     <h2>Choose your platform</h2>
-    <p class="lede">Windows supports virtual gamepads through the optional HIDMaestro SDK. Linux and macOS use Preview gamepad output. macOS hardware tests remain open.</p>
+    <p class="lede">Version 1.1.0 adds native standard-gamepad backends and display-paced dashboard updates. Linux needs device access. macOS virtual output requires Apple-approved signing and remains experimental.</p>
     <div class="grid">
       <div class="card"><h3>Windows</h3><p>Gamepad and keyboard/mouse input, mouse output, and optional HIDMaestro virtual gamepads. HIDMaestro requires a compatible SDK and Administrator access.</p></div>
-      <div class="card"><h3>Linux</h3><p>Gamepad input via SDL3, keyboard and mouse through direct <code>evdev</code> reads, mouse output through <code>uinput</code>. Virtual gamepad output is not built yet.</p></div>
-      <div class="card"><h3>macOS</h3><p>Gamepad input via SDL3, keyboard and mouse per device through <code>IOHIDManager</code>, mouse output through <code>CGEventPost</code>. Virtual gamepad output is not built yet.</p></div>
+      <div class="card"><h3>Linux</h3><p>SDL3 gamepad input and per-device keyboard/mouse reads through <code>evdev</code>. Native virtual gamepad and mouse output use <code>uinput</code>. Device permissions are required.</p></div>
+      <div class="card"><h3>macOS</h3><p>SDL3 gamepad input, per-device <code>IOHIDManager</code> input, and <code>CGEventPost</code> mouse output. Intel and Apple Silicon app bundles include experimental standard HID output. Virtual output needs an Apple-approved entitlement and a signed build.</p></div>
     </div>
     <figure>
       <img src="brand/diagram-structure.svg" alt="GameFlow project structure: App, Core and Infrastructure, what each contains and what it depends on">
@@ -247,7 +248,7 @@
 
 <footer>
   <div class="wrap">
-    <div>Version 1.0.9 · MIT licensed · Made by <a href="https://www.youtube.com/@ProxyDarkness">Proxy Darkness</a></div>
+    <div>Version 1.1.0 · MIT licensed · Made by <a href="https://www.youtube.com/@ProxyDarkness">Proxy Darkness</a></div>
     <div>
       <a href="https://github.com/Prooxie/GameFlow">GitHub</a> ·
       <a href="https://github.com/Prooxie/GameFlow/blob/master/WIKI.md">Wiki</a> ·

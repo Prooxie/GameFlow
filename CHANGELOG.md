@@ -5,6 +5,54 @@ The heading must match the Git tag exactly.
 Older releases retain their `v` prefix.
 The release workflow uses the matching section as its release notes.
 
+## 1.1.0
+
+GameFlow 1.1.0 adds native standard-gamepad output backends for Linux and macOS.
+It also removes extra dashboard polling delay while retaining the independent OBS rendering path.
+
+### Native controller output
+
+- Add Linux virtual gamepads through the kernel uinput interface.
+- Add an experimental macOS IOKit virtual HID backend.
+- Emit two sticks, two triggers, a directional pad, and nineteen mapped buttons.
+- Migrate saved output providers to the current platform backend.
+- Show native output requirements in all eight interface languages.
+- Exclude native virtual outputs from physical input discovery and assignment.
+- Preserve physical devices that share custom vendor and product identifiers.
+- Coalesce unchanged reports and release controls when a device closes or fails.
+- Report missing permissions without stopping dashboard and OBS previews.
+- Include a group-based Linux udev rule in release archives.
+
+### Dashboard response
+
+- Refresh current snapshots on display frames, subject to the user refresh limit.
+- Deliver visual-state changes directly to controller art.
+- Remove the second controller-art polling timer.
+- Remove refresh-rate reductions caused by a single delayed UI tick.
+- Refresh device inventory twice per second instead of on every visual tick.
+- Cache automatic display-rate detection outside the frame path.
+- Add a rendering regression that fails with the previous polling path.
+
+### Packaging and deployment
+
+- Prepare Windows x64, Linux x64, macOS Intel, and macOS Apple Silicon archives.
+- Package both Mac targets as application bundles.
+- Add optional Developer ID signing, provisioning checks, notarization, and Gatekeeper checks to CI.
+- Add native header checks and a Linux virtual-device round-trip test to hosted CI.
+- Update the project page and setup documentation. Preserve screenshots, branding, and support links.
+
+### Requirements and verification limits
+
+Linux output requires write access to `/dev/uinput` and a suitable kernel module.
+macOS output requires an Apple-approved virtual HID entitlement and a matching Developer ID signature.
+Local Mac archives are unsigned. Without configured signing secrets, hosted Mac archives are also unsigned.
+Those unsigned builds retain input, mapping, OBS, and dashboard previews, but cannot create native gamepads.
+Native output uses a fixed generic layout. Virtual rumble, custom shapes, and Sony-specific reports remain Windows features.
+Games must accept generic HID or evdev controllers, or use an appropriate Steam Input mapping.
+Compatibility with macOS GameController-framework games is not guaranteed.
+The new platform round-trip checks run after the maintainer pushes this version.
+Positive macOS game testing and physical display-latency measurements remain open.
+
 ## 1.0.9
 
 GameFlow 1.0.9 expands device mapping, phone controls, and controller feedback.
