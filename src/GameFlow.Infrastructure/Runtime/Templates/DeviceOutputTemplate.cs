@@ -69,16 +69,7 @@ public sealed class DeviceOutputTemplate
     public bool DemoPreview { get; set; }
 
     /// <summary>
-    /// The output backend this slot uses — a <see cref="ProviderCatalog"/>
-    /// key. There is exactly one per platform now (<c>"hidmaestro"</c> on
-    /// Windows, <c>"preview"</c> elsewhere), and
-    /// <see cref="OutputProviderPolicy"/> resolves EVERY value — current,
-    /// legacy <c>"vigem-*"</c>, the old per-slot <c>"preview"</c>, empty,
-    /// or unknown — to that backend both at sink creation and at slot
-    /// load (see SlotRegistry.Load), so a stale persisted id can never
-    /// again land a slot on a silent no-device fallback. Defaults to the
-    /// platform backend rather than empty/"inherit" so a brand-new slot
-    /// never depends on whatever the profile's own default happens to be.
+    /// Output provider for this slot. Saved identifiers resolve to HIDMaestro on Windows or native gamepads on Linux and macOS.
     /// </summary>
     public string OutputProvider { get; set; } = OutputProviderPolicy.Resolve(null);
 

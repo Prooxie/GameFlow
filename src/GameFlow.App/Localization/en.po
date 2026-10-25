@@ -2986,3 +2986,18 @@ msgstr "Left"
 
 msgid "UiRight"
 msgstr "Right"
+
+msgid "NativeOutputReady"
+msgstr "Native gamepad connected"
+
+msgid "NativeOutputPending"
+msgstr "Native gamepad output"
+
+msgid "NativeOutputUnavailable"
+msgstr "Native output is unavailable. Check platform permissions and signing requirements."
+
+msgid "OutputProviderNativeLabel"
+msgstr "Native virtual gamepad"
+
+msgid "OutputProviderNativeDescription"
+msgstr "Linux needs write access to /dev/uinput. macOS needs an Apple-approved virtual HID entitlement. Output uses a standard gamepad. Rumble and Sony effects are unavailable."

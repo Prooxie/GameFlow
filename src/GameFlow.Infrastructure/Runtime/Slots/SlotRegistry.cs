@@ -337,11 +337,9 @@ public sealed class SlotRegistry
                     // ids, the old per-slot "preview" choice, and any
                     // unknown value all migrate forward via
                     // OutputProviderPolicy instead of silently resolving
-                    // to nothing (or to a preview sink that reads as
-                    // "broken output"). Non-Windows resolves to preview
-                    // the same way, since HIDMaestro can't run there.
+                    // to nothing. Linux and macOS select their native backend.
                     else if (OutputProviderPolicy.RequiresMigration(
-                                 slot.OutputTemplate.OutputProvider, OperatingSystem.IsWindows()))
+                                 slot.OutputTemplate.OutputProvider))
                     {
                         var migrated = OutputProviderPolicy.Resolve(slot.OutputTemplate.OutputProvider);
                         logger.LogInformation(

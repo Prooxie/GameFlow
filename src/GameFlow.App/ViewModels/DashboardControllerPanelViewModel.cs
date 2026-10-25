@@ -335,6 +335,10 @@ public sealed class DashboardControllerPanelViewModel : ViewModelBase, IDisposab
     {
         get
         {
+            if (outputStatus.StartsWith("native-unavailable:", StringComparison.Ordinal))
+            {
+                return UiTextResources.Get("NativeOutputUnavailable");
+            }
             if (outputStatus.Contains("not found", StringComparison.OrdinalIgnoreCase)
                 && outputStatus.Contains("HIDMaestro", StringComparison.OrdinalIgnoreCase))
             {

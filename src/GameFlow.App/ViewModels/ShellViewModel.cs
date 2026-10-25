@@ -833,6 +833,7 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     private static ControllerVisualStyle ResolveSlotVirtualStyle(GameFlow.Infrastructure.Runtime.Slots.ControllerSlot slot)
     {
+        if (!OperatingSystem.IsWindows()) { return ControllerVisualStyle.SimpleGamepad; }
         var template = slot.OutputTemplate;
         var family = string.IsNullOrWhiteSpace(template.OutputProfileId)
             ? template.OutputKind
@@ -2839,11 +2840,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
     private IReadOnlyList<OutputProviderOption> CreateOutputProviderOptions()
     {
-        // One real choice per platform — HIDMaestro is the sole Windows
-        // output backend (see OutputProviderPolicy), and it can't run
-        // anywhere else, where the in-app preview is all there is.
-        // Offering retired/unreachable options here is precisely how "I
-        // picked an output and nothing happened" used to occur.
         if (OperatingSystem.IsWindows())
         {
             return
@@ -2856,9 +2852,9 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
 
         return
         [
-            new OutputProviderOption("preview",
-                Localized("OutputProviderPreviewLabel",            "Preview only"),
-                Localized("OutputProviderPreviewDescription",      "Shows the transformed output in the dashboard without creating a virtual device. HIDMaestro output is Windows-only.")),
+            new OutputProviderOption(OutputProviderPolicy.NativeGamepad,
+                Localized("OutputProviderNativeLabel", "Native virtual gamepad"),
+                Localized("OutputProviderNativeDescription", "Linux needs write access to /dev/uinput. macOS needs an Apple-approved virtual HID entitlement. Output uses a standard gamepad. Rumble and Sony effects are unavailable.")),
         ];
     }
 

@@ -576,6 +576,7 @@ public sealed class InputDeviceCatalog
 
     private bool IsKnownVirtualDevice(InputDeviceInfo device)
     {
+        if (VirtualDeviceIdentity.IsNativeOutput(device.DisplayName, device.VendorId, device.ProductId)) { return true; }
         if (VirtualDeviceIdentity.IsPhysicalBluetooth(device.HardwarePath)) { return false; }
         if (hiddenVirtualDeviceIds.Contains(device.Id)) { return true; }
         if (!MatchesIgnoredHardwareSignature(device)) { return false; }

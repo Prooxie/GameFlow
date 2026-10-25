@@ -2986,3 +2986,18 @@ msgstr "W lewo"
 
 msgid "UiRight"
 msgstr "W prawo"
+
+msgid "NativeOutputReady"
+msgstr "Natywny kontroler podłączony"
+
+msgid "NativeOutputPending"
+msgstr "Natywne wyjście kontrolera"
+
+msgid "NativeOutputUnavailable"
+msgstr "Natywne wyjście jest niedostępne. Sprawdź uprawnienia systemowe i wymagania dotyczące podpisu."
+
+msgid "OutputProviderNativeLabel"
+msgstr "Natywny kontroler wirtualny"
+
+msgid "OutputProviderNativeDescription"
+msgstr "Linux wymaga dostępu do zapisu w /dev/uinput. macOS wymaga uprawnienia wirtualnego HID zatwierdzonego przez Apple. Wyjście używa standardowego kontrolera. Wibracje i efekty Sony są niedostępne."

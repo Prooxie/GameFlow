@@ -1,0 +1,4 @@
+# Allow members of the uinput group to create virtual input devices.
+SUBSYSTEM=="misc", KERNEL=="uinput", GROUP="uinput", MODE="0660"
+# Let the active desktop session read GameFlow gamepad events.
+SUBSYSTEM=="input", ATTRS{name}=="GameFlow Virtual Gamepad", TAG+="uaccess"

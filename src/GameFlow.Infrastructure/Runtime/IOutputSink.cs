@@ -18,6 +18,7 @@ public interface IOutputSink : IAsyncDisposable
     /// signature, so the user does not see the runtime's own output device in
     /// the input source dropdown.
     ///
+    /// Native gamepads return null because discovery excludes their explicit product marker.
     /// Returns null for sinks that don't materialise as an OS-visible device
     /// (mock/no-op sinks, log-only sinks, etc.) — those don't need filtering.
     /// </summary>

@@ -94,9 +94,10 @@ internal static partial class UinputInterop
 
     private const int O_WRONLY = 1;
     private const int O_NONBLOCK = 0x800;
+    private const int O_CLOEXEC = 0x80000;
 
     /// <summary>Opens /dev/uinput for writing. Reuses EvdevInterop's own `open` P/Invoke rather than redeclaring the same native symbol a second time.</summary>
-    internal static int OpenWriteOnlyNonBlocking(string path) => EvdevInterop.open(path, O_WRONLY | O_NONBLOCK);
+    internal static int OpenWriteOnlyNonBlocking(string path) => EvdevInterop.open(path, O_WRONLY | O_NONBLOCK | O_CLOEXEC);
 
     /// <summary>Left-justified UTF-8 name in a zero-padded MaxNameSize buffer, matching a C fixed char[80] with an implicit null terminator. Truncates safely if the name is too long to fit with room for the terminator.</summary>
     internal static byte[] BuildFixedName(string name)

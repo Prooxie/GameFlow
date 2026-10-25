@@ -17,6 +17,18 @@ namespace GameFlow.Infrastructure.Tests.Runtime;
 /// </remarks>
 public sealed class InputDeviceCatalogVirtualFilterTests
 {
+    /// <summary>Native product provenance excludes output before a sink claims its identifiers.</summary>
+    [Fact]
+    public void ReplaceDevicesNativeOutputIsNeverAnAssignableInput()
+    {
+        var catalog = NewCatalog();
+        var physical = Pad("physical", 0xBEEF, 0xF001);
+        var output = physical with { Id = "native-output", DisplayName = "GameFlow Virtual Gamepad" };
+
+        catalog.ReplaceDevices("sdl", [physical, output]);
+
+        Assert.Equal(physical, Assert.Single(catalog.Devices));
+    }
     private const ushort Xbox360Vid = 0x045E;
     private const ushort Xbox360Pid = 0x028E;
 

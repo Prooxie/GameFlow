@@ -7,9 +7,6 @@ using GameFlow.Infrastructure.Runtime.Templates;
 
 namespace GameFlow.App.ViewModels;
 
-/// <summary>Output-kind option for the template editor's combo box.</summary>
-public sealed record OutputKindOption(VirtualControllerKind Kind, string Label);
-
 /// <summary>
 /// One HIDMaestro catalog profile in the template editor's profile combo
 /// box. <see cref="Key"/> is the catalog id (empty for the "default for
@@ -55,17 +52,13 @@ public sealed class DeviceTemplateEditorViewModel : ViewModelBase, IDisposable
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.profileCatalog = profileCatalog ?? throw new ArgumentNullException(nameof(profileCatalog));
 
-        OutputKindOptions =
-        [
-            .. GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfiles.SelectableKinds
-                .Select(k => new OutputKindOption(k, GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfiles.LabelFor(k))),
-        ];
+        OutputKindOptions = OutputKindOption.Create(localization);
 
         RebuildProfileOptions();   // seed the default sentinel synchronously
-        LoadProfileCatalogAsync(); // then swap in the real catalog off-thread
+        if (OperatingSystem.IsWindows()) { LoadProfileCatalogAsync(); }
     }
 
-    public IReadOnlyList<OutputKindOption> OutputKindOptions { get; }
+    public IReadOnlyList<OutputKindOption> OutputKindOptions { get; private set; }
 
     /// <summary>
     /// HIDMaestro catalog profiles offered for this slot: a "default for
@@ -82,6 +75,9 @@ public sealed class DeviceTemplateEditorViewModel : ViewModelBase, IDisposable
 
     private void OnCultureChanged(object? sender, EventArgs e)
     {
+        OutputKindOptions = OutputKindOption.Create(localization);
+        OnPropertyChanged(nameof(OutputKindOptions));
+        OnPropertyChanged(nameof(SelectedOutputKind));
         OnPropertyChanged(nameof(EmitLabel));
         OnPropertyChanged(nameof(EmitTooltip));
         OnPropertyChanged(nameof(OutputDeviceLabel));
@@ -261,7 +257,8 @@ public sealed class DeviceTemplateEditorViewModel : ViewModelBase, IDisposable
     // ── Output kind ──
     public OutputKindOption? SelectedOutputKind
     {
-        get => OutputKindOptions.FirstOrDefault(o => o.Kind == (template?.OutputKind ?? VirtualControllerKind.Xbox360));
+        get => OutputKindOptions.FirstOrDefault(o => o.Kind == (OperatingSystem.IsWindows()
+            ? template?.OutputKind ?? VirtualControllerKind.Xbox360 : VirtualControllerKind.GenericDirectInput));
         set
         {
             if (template is null || value is null || template.OutputKind == value.Kind)
@@ -327,7 +324,7 @@ public sealed class DeviceTemplateEditorViewModel : ViewModelBase, IDisposable
     /// profile defines its own shape).
     /// </summary>
     public bool ShowGenericShape =>
-        template?.OutputKind == VirtualControllerKind.GenericDirectInput
+        OperatingSystem.IsWindows() && template?.OutputKind == VirtualControllerKind.GenericDirectInput
         && string.IsNullOrWhiteSpace(template?.OutputProfileId);
 
     // ── Demo preview ──

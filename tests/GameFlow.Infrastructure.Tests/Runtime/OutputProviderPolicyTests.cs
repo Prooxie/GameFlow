@@ -3,16 +3,21 @@ using Xunit;
 
 namespace GameFlow.Infrastructure.Tests.Runtime;
 
-/// <summary>
-/// Contract of the single-output-backend rule: on Windows every provider
-/// id — current, legacy, empty, or unknown — resolves to HIDMaestro; on
-/// non-Windows platforms everything resolves to the preview sink. This
-/// is the rule that closed the "input works but no virtual controller
-/// ever appears" class of bug, where stale ids quietly landed on a
-/// preview fallback.
-/// </summary>
+/// <summary>Checks output migration for Windows, native platforms, and unsupported operating systems.</summary>
 public sealed class OutputProviderPolicyTests
 {
+    /// <summary>Both native platforms select real output for persisted provider identifiers.</summary>
+    [Theory]
+    [InlineData("preview", true, false)]
+    [InlineData("hidmaestro", false, true)]
+    [InlineData(null, true, false)]
+    [InlineData("retired", false, true)]
+    public void ResolveNativePlatformSelectsNativeOutput(string? requested, bool isLinux, bool isMacOS)
+    {
+        var actual = OutputProviderPolicy.Resolve(requested, isWindows: false, isLinux, isMacOS);
+
+        Assert.Equal("native-gamepad", actual);
+    }
     [Theory]
     [InlineData("hidmaestro")]
     [InlineData("HIDMaestro")]
@@ -24,7 +29,7 @@ public sealed class OutputProviderPolicyTests
     [InlineData("something-unknown")]
     [InlineData("")]
     [InlineData(null)]
-    public void On_windows_everything_resolves_to_hidmaestro(string? requested)
+    public void ResolveWindowsSelectsHidMaestro(string? requested)
     {
         Assert.Equal(OutputProviderPolicy.HidMaestro, OutputProviderPolicy.Resolve(requested, isWindows: true));
     }
@@ -34,7 +39,7 @@ public sealed class OutputProviderPolicyTests
     [InlineData("preview")]
     [InlineData("vigem-ds4")]
     [InlineData(null)]
-    public void Off_windows_everything_resolves_to_preview(string? requested)
+    public void ResolveUnsupportedPlatformSelectsPreview(string? requested)
     {
         Assert.Equal(OutputProviderPolicy.Preview, OutputProviderPolicy.Resolve(requested, isWindows: false));
     }
@@ -46,13 +51,13 @@ public sealed class OutputProviderPolicyTests
     [InlineData("unknown-backend", true)]
     [InlineData("hidmaestro", false)]
     [InlineData("HidMaestro", false)]
-    public void Migration_flag_matches_windows_resolution(string requested, bool expectsMigration)
+    public void RequiresMigrationMatchesWindowsResolution(string requested, bool expectsMigration)
     {
         Assert.Equal(expectsMigration, OutputProviderPolicy.RequiresMigration(requested, isWindows: true));
     }
 
     [Fact]
-    public void Empty_id_means_inherit_and_is_not_flagged_for_migration()
+    public void RequiresMigrationEmptyIdentifierInheritsDefault()
     {
         Assert.False(OutputProviderPolicy.RequiresMigration(null, isWindows: true));
         Assert.False(OutputProviderPolicy.RequiresMigration("   ", isWindows: true));
@@ -68,13 +73,13 @@ public sealed class OutputProviderPolicyTests
     [InlineData("hidmaestro", false)]
     [InlineData("preview", false)]
     [InlineData("", false)]
-    public void Legacy_ids_are_recognised(string id, bool isLegacy)
+    public void IsLegacyProviderIdRecognizesRetiredProviders(string id, bool isLegacy)
     {
         Assert.Equal(isLegacy, OutputProviderPolicy.IsLegacyProviderId(id));
     }
 
     [Fact]
-    public void Normalize_trims_and_lowercases()
+    public void NormalizeTrimsAndLowercases()
     {
         Assert.Equal("hidmaestro", OutputProviderPolicy.Normalize("  HidMaestro "));
         Assert.Equal(string.Empty, OutputProviderPolicy.Normalize(null));

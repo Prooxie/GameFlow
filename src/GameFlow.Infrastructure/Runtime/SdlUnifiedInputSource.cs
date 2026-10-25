@@ -1637,7 +1637,8 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
                     continue;
                 }
 
-                var isVirtualGamepad = VirtualDeviceIdentity.IsVirtual(gamepadPath, serial: null);
+                var isVirtualGamepad = VirtualDeviceIdentity.IsVirtual(gamepadPath, serial: null)
+                    || VirtualDeviceIdentity.IsNativeOutput(name, vid, pid);
                 var gamepadId = BuildStableId("gamepad", vid, pid, name, isVirtualGamepad);
                 liveMap[gamepadId] = instanceId;
                 var power = GetCachedPower(gamepadId);
@@ -1698,7 +1699,8 @@ public sealed class SdlUnifiedInputSource : IInputSource, IPollRateAware, GameFl
                     continue;
                 }
 
-                var isVirtualJoystick = VirtualDeviceIdentity.IsVirtual(joystickPath, serial: null);
+                var isVirtualJoystick = VirtualDeviceIdentity.IsVirtual(joystickPath, serial: null)
+                    || VirtualDeviceIdentity.IsNativeOutput(name, vid, pid);
                 var joystickId = BuildStableId("joystick", vid, pid, name, isVirtualJoystick);
                 liveMap[joystickId] = instanceId;
                 var power = GetCachedPower(joystickId);

@@ -2986,3 +2986,18 @@ msgstr "Gauche"
 
 msgid "UiRight"
 msgstr "Droite"
+
+msgid "NativeOutputReady"
+msgstr "Manette native connectée"
+
+msgid "NativeOutputPending"
+msgstr "Sortie de manette native"
+
+msgid "NativeOutputUnavailable"
+msgstr "La sortie native est indisponible. Vérifiez les autorisations système et les exigences de signature."
+
+msgid "OutputProviderNativeLabel"
+msgstr "Manette virtuelle native"
+
+msgid "OutputProviderNativeDescription"
+msgstr "Linux nécessite un accès en écriture à /dev/uinput. macOS nécessite une autorisation HID virtuelle approuvée par Apple. La sortie utilise une manette standard. Les vibrations et les effets Sony sont indisponibles."

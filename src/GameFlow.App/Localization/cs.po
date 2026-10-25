@@ -2986,3 +2986,18 @@ msgstr "Vlevo"
 
 msgid "UiRight"
 msgstr "Vpravo"
+
+msgid "NativeOutputReady"
+msgstr "Nativní gamepad je připojen"
+
+msgid "NativeOutputPending"
+msgstr "Nativní výstup gamepadu"
+
+msgid "NativeOutputUnavailable"
+msgstr "Nativní výstup není dostupný. Zkontrolujte oprávnění systému a požadavky na podpis."
+
+msgid "OutputProviderNativeLabel"
+msgstr "Nativní virtuální gamepad"
+
+msgid "OutputProviderNativeDescription"
+msgstr "Linux vyžaduje přístup pro zápis do /dev/uinput. macOS vyžaduje oprávnění virtuálního HID schválené společností Apple. Výstup používá standardní gamepad. Vibrace a efekty Sony nejsou dostupné."

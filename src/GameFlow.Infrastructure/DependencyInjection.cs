@@ -103,6 +103,7 @@ public static class DependencyInjection
         _ = services.AddSingleton<Runtime.Slots.SlotRegistry>();
         _ = services.AddSingleton<Runtime.Slots.SlotSnapshotStore>();
         _ = services.AddSingleton<IInputSourceFactory, DefaultInputSourceFactory>();
+        _ = services.AddSingleton<Runtime.Native.INativeGamepadDeviceFactory, Runtime.Native.NativeGamepadDeviceFactory>();
         _ = services.AddSingleton<IOutputSinkFactory, DefaultOutputSinkFactory>();
         _ = services.AddSingleton<Runtime.HidMaestro.HidMaestroProfileCatalogService>();
         services.TryAddSingleton<Runtime.HidMaestro.IHidMaestroBackend, Runtime.HidMaestro.UnavailableHidMaestroBackend>();

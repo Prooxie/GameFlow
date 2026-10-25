@@ -2986,3 +2986,18 @@ msgstr "Izquierda"
 
 msgid "UiRight"
 msgstr "Derecha"
+
+msgid "NativeOutputReady"
+msgstr "Mando nativo conectado"
+
+msgid "NativeOutputPending"
+msgstr "Salida de mando nativa"
+
+msgid "NativeOutputUnavailable"
+msgstr "La salida nativa no está disponible. Compruebe los permisos del sistema y los requisitos de firma."
+
+msgid "OutputProviderNativeLabel"
+msgstr "Mando virtual nativo"
+
+msgid "OutputProviderNativeDescription"
+msgstr "Linux necesita acceso de escritura a /dev/uinput. macOS necesita una autorización de HID virtual aprobada por Apple. La salida usa un mando estándar. La vibración y los efectos de Sony no están disponibles."

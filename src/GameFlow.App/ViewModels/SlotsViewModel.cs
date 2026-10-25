@@ -243,11 +243,7 @@ public sealed class SlotsViewModel : ViewModelBase, IDisposable
         // NEW can be added while it's on).
         TemplateEditor.PropertyChanged += OnTemplateEditorPropertyChanged;
 
-        OutputKindOptions =
-        [
-            .. GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfiles.SelectableKinds
-                .Select(k => new OutputKindOption(k, GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfiles.LabelFor(k))),
-        ];
+        OutputKindOptions = OutputKindOption.Create(localization);
         newSlotKind = OutputKindOptions[0];
 
         CreateSlotCommand = new RelayCommand(CreateSlot, () => registry.CanCreate);
@@ -303,7 +299,7 @@ public sealed class SlotsViewModel : ViewModelBase, IDisposable
     /// <summary>All profiles available to add as a layer.</summary>
     public ObservableCollection<ProfileSummary> AvailableProfiles { get; } = [];
 
-    public IReadOnlyList<OutputKindOption> OutputKindOptions { get; }
+    public IReadOnlyList<OutputKindOption> OutputKindOptions { get; private set; }
     public DeviceTemplateEditorViewModel TemplateEditor { get; }
 
     /// <summary>Backs the Touchpad tab; only meaningful while <see cref="SelectedSlotHasTouchpad"/> is true.</summary>
@@ -447,8 +443,9 @@ public sealed class SlotsViewModel : ViewModelBase, IDisposable
         }
     }
 
-    public static string KindLabelFor(VirtualControllerKind kind) =>
-        GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfiles.LabelFor(kind);
+    public static string KindLabelFor(VirtualControllerKind kind) => OperatingSystem.IsWindows()
+        ? GameFlow.Infrastructure.Runtime.HidMaestro.HidMaestroProfiles.LabelFor(kind)
+        : UiTextResources.Get("StyleLabelSimpleGamepad");
 
     /// <summary>
     /// Row label for a slot's output: the explicit HIDMaestro catalog id
@@ -456,6 +453,7 @@ public sealed class SlotsViewModel : ViewModelBase, IDisposable
     /// otherwise.
     /// </summary>
     public static string KindLabelFor(DeviceOutputTemplate template) =>
+        !OperatingSystem.IsWindows() ? UiTextResources.Get("StyleLabelSimpleGamepad") :
         string.IsNullOrWhiteSpace(template.OutputProfileId)
             ? KindLabelFor(template.OutputKind)
             : template.OutputProfileId;
@@ -857,6 +855,10 @@ public sealed class SlotsViewModel : ViewModelBase, IDisposable
 
     private void OnCultureChanged(object? sender, EventArgs e)
     {
+        OutputKindOptions = OutputKindOption.Create(localization);
+        newSlotKind = OutputKindOptions.FirstOrDefault(option => option.Kind == newSlotKind.Kind) ?? OutputKindOptions[0];
+        OnPropertyChanged(nameof(OutputKindOptions));
+        OnPropertyChanged(nameof(NewSlotKind));
         OnPropertyChanged(nameof(VirtualControllersHeader));
         OnPropertyChanged(nameof(AddControllerLabel));
         OnPropertyChanged(nameof(SlotEnabledLabel));

@@ -2986,3 +2986,18 @@ msgstr "Влево"
 
 msgid "UiRight"
 msgstr "Вправо"
+
+msgid "NativeOutputReady"
+msgstr "Нативный геймпад подключён"
+
+msgid "NativeOutputPending"
+msgstr "Нативный выход геймпада"
+
+msgid "NativeOutputUnavailable"
+msgstr "Нативный выход недоступен. Проверьте системные разрешения и требования к подписи."
+
+msgid "OutputProviderNativeLabel"
+msgstr "Нативный виртуальный геймпад"
+
+msgid "OutputProviderNativeDescription"
+msgstr "Linux требует доступа на запись к /dev/uinput. macOS требует разрешения на виртуальный HID, одобренного Apple. Выход использует стандартный геймпад. Вибрация и эффекты Sony недоступны."

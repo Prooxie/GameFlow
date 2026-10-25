@@ -39,6 +39,11 @@ namespace GameFlow.Infrastructure.Runtime;
 /// </summary>
 public static class VirtualDeviceIdentity
 {
+    /// <summary>Matches the native product marker and custom identifiers together. Identifiers alone never mark a physical pad.</summary>
+    public static bool IsNativeOutput(string? name, ushort vendorId, ushort productId) =>
+        vendorId == Native.NativeGamepadReport.VendorId && productId == Native.NativeGamepadReport.ProductId
+        && string.Equals(name, Native.NativeGamepadReport.ProductName, StringComparison.Ordinal);
+
     /// <summary>
     /// Enumerator fragment a HIDMaestro device's OS path carries. The
     /// driver installs against <c>root\HIDMaestro</c> (see
@@ -139,15 +144,12 @@ public static class VirtualDeviceIdentity
     /// </summary>
     /// <param name="devicePath">The OS path or instance id of the device.</param>
     /// <param name="serial">
-    /// Not read. Only the removed claim list used it; it stays so the
-    /// callers need no change.
+    /// Native output serial marker, when the input backend exposes it.
     /// </param>
     public static bool IsVirtual(string? devicePath, string? serial)
     {
-        if (string.IsNullOrWhiteSpace(devicePath))
-        {
-            return false;
-        }
+        if (serial?.StartsWith("gameflow-output-", StringComparison.Ordinal) == true) { return true; }
+        if (string.IsNullOrWhiteSpace(devicePath)) { return false; }
 
         var path = NormalizePath(devicePath);
         if (path.Length == 0)
