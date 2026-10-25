@@ -223,18 +223,6 @@ public sealed class ThemeSurface : Control
     }
 
     /// <summary>
-    /// Pushes a new snapshot and schedules a redraw — but only when
-    /// the snapshot reference actually differs. The poll timer in
-    /// <see cref="GameFlow.App.Views.ControllerSurface"/> calls this
-    /// every 33 ms; the upstream VM, however, only re-assigns its
-    /// <c>snapshot</c> field when there's a real input change (its
-    /// own dirty-check short-circuits idle ticks). So this ref-equality
-    /// guard collapses idle ticks into no-ops, which keeps the surface
-    /// from forcing a window-wide re-composite every 33 ms — that
-    /// re-composite was interfering with the variant-picker ComboBox's
-    /// popup hover state ("flickering over the choice").
-    /// </summary>
-    /// <summary>
     /// Repaints once on becoming visible again. <see cref="UpdateState"/>
     /// suppresses invalidation while hidden, so without this a surface
     /// returning to view would keep showing whatever frame was current
@@ -282,20 +270,6 @@ public sealed class ThemeSurface : Control
     /// pack shared by eight panels is still decoded once.
     /// </para>
     /// </remarks>
-    /// <summary>
-    /// True while any theme bitmap is still being decoded.
-    /// </summary>
-    /// <remarks>
-    /// Startup faults in the better part of three hundred images across a
-    /// multi-slot dashboard, and every completed decode posts a repaint.
-    /// The dispatcher is genuinely saturated for that stretch — but by
-    /// work that ends, and that says nothing about what the machine can
-    /// sustain. The adaptive tick rate used to read it as a verdict on the
-    /// hardware and step 165 Hz down to its 10 Hz floor inside a second
-    /// and a half, then stay there.
-    /// </remarks>
-    internal static bool HasPendingDecodes => !DecodesInFlight.IsEmpty;
-
     private static void PrewarmArt(InstalledTheme? theme)
     {
         if (theme is null)

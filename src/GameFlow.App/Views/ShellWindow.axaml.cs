@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
+using GameFlow.App.Services;
 using GameFlow.App.ViewModels;
 using Serilog;
 
@@ -9,99 +9,10 @@ namespace GameFlow.App.Views;
 
 public partial class ShellWindow : Window
 {
-    private readonly DispatcherTimer refreshTimer;
-    private DateTime lastTickUtc = DateTime.UtcNow;
-    private DateTime lastTickGapWarnUtc = DateTime.UtcNow;
-
-    /// <summary>The rate the user asked for; a ceiling, not a promise. See <see cref="AdaptTickRate"/>.</summary>
-    private int configuredRefreshHz = 30;
-
-    /// <summary>When the dispatcher last overran its budget. Drives recovery.</summary>
-    private DateTime lastOverrunUtc = DateTime.MinValue;
-
-    /// <summary>
-    /// How long the UI must go without a single overrun before the tick
-    /// steps back up. Long enough that recovery cannot chase a transient.
-    /// </summary>
-    private static readonly TimeSpan RecoveryQuietPeriod = TimeSpan.FromSeconds(8);
-
-    /// <summary>
-    /// How long after the window opens the dashboard ticks gently and
-    /// ignores overruns.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Startup is the one moment the UI thread is guaranteed to be busy
-    /// with something other than the dashboard: theme artwork decoding,
-    /// the first device enumeration, and HIDMaestro walking its
-    /// profile catalog. Ticking at the display's full rate straight into
-    /// that contention did not just drop frames, it made the panels look
-    /// like they had vanished — and then the adaptive backoff read the
-    /// contention as a slow machine and stepped 165 → 83 → 41 → 21 → 10
-    /// Hz, after which the 8-second quiet period had to elapse before any
-    /// of it came back. A one-off startup cost was being converted into
-    /// fifteen seconds of degraded dashboard.
-    /// </para>
-    /// <para>
-    /// So: a fixed, modest rate while the queue drains, and no backoff
-    /// decisions taken from measurements made during it.
-    /// </para>
-    /// </remarks>
-    private static readonly TimeSpan StartupWarmUp = TimeSpan.FromSeconds(4);
-
-    /// <summary>Tick rate held during <see cref="StartupWarmUp"/>.</summary>
-    private const int WarmUpRefreshHz = 30;
-
-    private DateTime warmUpUntilUtc = DateTime.MinValue;
-
-    /// <summary>
-    /// Set once the configured rate has been applied at the end of
-    /// warm-up, so it is applied exactly once.
-    /// </summary>
-    /// <remarks>
-    /// Without this the tick handler re-asserts the configured rate every
-    /// frame, which immediately undoes whatever the adaptive backoff just
-    /// decided — the two then trade the interval back and forth forever
-    /// (165 Hz, throttle to 83, re-assert 165, …), restarting the
-    /// DispatcherTimer each time and filling the log at frame rate. The
-    /// handoff from warm-up to configured is a one-time event, so it is
-    /// modelled as one.
-    /// </remarks>
-    private bool warmUpHandedOff;
-
-    /// <summary>
-    /// The fastest interval that has already overrun on this machine, or
-    /// null before anything has. Recovery stays strictly under it.
-    /// </summary>
-    /// <remarks>
-    /// Reset when the user changes the configured rate, since that is a
-    /// deliberate instruction to try something different and the old
-    /// verdict no longer describes what was asked for.
-    /// </remarks>
-    /// <summary>Per-window dashboard tick telemetry; see RefreshTimerOnTick.</summary>
-    private int tickWindowCount;
-    private int tickWindowOverruns;
-    private double tickWindowGapMs;
-    private double tickWindowWorstGapMs;
-    private double tickWindowRefreshMs;
-    private double tickWindowWorstRefreshMs;
-
-    private TimeSpan? failedCeiling;
-
-    /// <summary>When <see cref="failedCeiling"/> was last set or relaxed.</summary>
-    private DateTime failedCeilingSetUtc = DateTime.MinValue;
-
-    /// <summary>How long a ceiling stands before a quiet machine may raise it.</summary>
-    private static readonly TimeSpan CeilingRelaxAfter = TimeSpan.FromSeconds(10);
-
-    /// <summary>Ceiling relaxation per quiet interval (shorter = faster allowed).</summary>
-    private const double CeilingRelaxFactor = 0.7;
-
-    /// <summary>How close recovery may step to a failed rate without reaching it.</summary>
-    private const double CeilingApproach = 1.15;
+    private readonly DashboardFrameClock frameClock = new();
+    private readonly Action<TimeSpan> refreshFrame;
 
     private ShellViewModel? shellViewModel;
-    private bool isRefreshing;
     private bool isClosing;
 
     /// <summary>
@@ -124,12 +35,7 @@ public partial class ShellWindow : Window
         this.services = services;
         InitializeComponent();
 
-        refreshTimer = new DispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(16)   // ~60 Hz UI tick; see ApplyConfiguredRefreshRate
-        };
-
-        refreshTimer.Tick += RefreshTimerOnTick;
+        refreshFrame = RefreshFrame;
         Opened += OnOpened;
         Closing += OnClosing;
         Closed += OnClosed;
@@ -138,84 +44,6 @@ public partial class ShellWindow : Window
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
-    }
-
-    /// <summary>
-    /// Applies the user's dashboard refresh rate to the UI tick.
-    ///
-    /// <para>
-    /// The setting was previously inert: it is persisted, exposed in the
-    /// settings dialog, documented in the README and bound from
-    /// appsettings.json, but the timer was constructed with a hard-coded
-    /// 33 ms and nothing ever wrote to it. Turning the rate down on a
-    /// weak machine therefore did nothing at all.
-    /// </para>
-    ///
-    /// <para>
-    /// This tick drives the whole dashboard redraw — every controller
-    /// surface, physical and virtual, for every slot — so it is the
-    /// dominant UI cost, and the one dial worth having.
-    /// </para>
-    ///
-    /// <para>
-    /// The default is 60 Hz. It was 30, chosen when a controller surface
-    /// cost ~19 ms to repaint and a faster tick could not have been paid
-    /// for. That cost is gone — measured against a live DualSense on
-    /// 2026-08-11, a surface now repaints in <b>0.55–0.79 ms</b> — so 30 Hz
-    /// was buying nothing and costing up to 33 ms of latency between a
-    /// finger moving and the screen showing it. That delay is precisely
-    /// what "the theme feels laggy" is, and it is most obvious on the
-    /// touchpad, where a dot visibly trails the finger that is drawing it.
-    /// Two surfaces at 60 Hz is roughly 9% of one core.
-    /// </para>
-    ///
-    /// <para>
-    /// The adaptive backoff below still protects a machine or theme that
-    /// cannot hold this, so raising the default cannot make anything
-    /// unresponsive — it degrades instead.
-    /// </para>
-    /// </summary>
-    private void ApplyConfiguredRefreshRate()
-    {
-        // Still warming up: hold the gentle rate and come back later. The
-        // caller is re-invoked from the tick, so no timer is needed.
-        if (DateTime.UtcNow < warmUpUntilUtc)
-        {
-            var warmUpInterval = TimeSpan.FromMilliseconds(1000d / WarmUpRefreshHz);
-            if (refreshTimer.Interval != warmUpInterval)
-            {
-                refreshTimer.Interval = warmUpInterval;
-            }
-
-            return;
-        }
-
-        var hz = shellViewModel?.DashboardRefreshHz ?? 60;
-
-        // Clamped to the same range the settings dialog validates, so a
-        // hand-edited settings.json cannot stall the UI with 1 Hz or spin
-        // it at 10 000.
-        hz = Math.Clamp(hz, 30, 1000);
-        configuredRefreshHz = hz;
-
-        var interval = TimeSpan.FromMilliseconds(1000d / hz);
-        if (refreshTimer.Interval != interval)
-        {
-            failedCeiling = null;
-            failedCeilingSetUtc = DateTime.MinValue;
-            refreshTimer.Interval = interval;
-
-            // Says where the number came from. "60 Hz" alone cannot be
-            // told apart from the fallback that is also 60, and those two
-            // mean very different things when someone is asking why a
-            // 144 Hz monitor is not being used.
-            var detected = Platform.DisplayRefreshRate.TryGetPrimaryHz();
-            Log.Information(
-                "Dashboard UI tick set to {Hz} Hz ({Interval:F1} ms); display reports {Display}.",
-                hz,
-                interval.TotalMilliseconds,
-                detected is { } displayHz ? $"{displayHz} Hz" : "no rate");
-        }
     }
 
     /// <summary>
@@ -524,13 +352,7 @@ public partial class ShellWindow : Window
     {
         if (!isClosing)
         {
-            // Warm-up starts when the window does, not when the app does:
-            // this is the point from which the dashboard is competing for
-            // the UI thread. See StartupWarmUp.
-            warmUpUntilUtc = DateTime.UtcNow + StartupWarmUp;
-            warmUpHandedOff = false;
-            ApplyConfiguredRefreshRate();
-            refreshTimer.Start();
+            RequestAnimationFrame(refreshFrame);
         }
         // Attach the Raw Input reader to this window's HWND so the keyboard
         // + mouse subsystem starts receiving WM_INPUT. No-op off Windows.
@@ -551,13 +373,10 @@ public partial class ShellWindow : Window
     private void OnClosing(object? sender, WindowClosingEventArgs e)
     {
         isClosing = true;
-        refreshTimer.Stop();
     }
 
     private void OnClosed(object? sender, EventArgs e)
     {
-        refreshTimer.Stop();
-        refreshTimer.Tick -= RefreshTimerOnTick;
         Opened -= OnOpened;
         Closing -= OnClosing;
         Closed -= OnClosed;
@@ -583,232 +402,27 @@ public partial class ShellWindow : Window
         }
     }
 
-    /// <summary>
-    /// Backs the UI tick off when the dispatcher cannot keep up.
-    ///
-    /// <para>
-    /// Without this the app can be configured into a state it cannot
-    /// recover from. If a repaint costs more than the frame budget, each
-    /// tick queues more work than it retires, the dispatcher backs up, and
-    /// the window stops responding — the freeze reported after opening a
-    /// tab with several controller surfaces on it. Asking for MORE frames
-    /// than the machine can paint does not produce more frames; it only
-    /// starves input handling.
-    /// </para>
-    ///
-    /// <para>
-    /// Backoff is MONOTONE within a session: the rate only ever drops, and
-    /// is restored solely when the window reopens or the setting changes.
-    /// An earlier version tried to climb back up after a run of fast
-    /// frames, which oscillated — it would speed up, immediately
-    /// re-saturate, and throttle again. Every one of those transitions
-    /// restarts the DispatcherTimer, so the oscillation was itself a
-    /// source of the stutter it was supposed to cure. A dashboard that
-    /// settles at a lower rate is fine; one that constantly renegotiates
-    /// is not.
-    /// </para>
-    /// </summary>
-    private void AdaptTickRate(TimeSpan gap)
+    /// <summary>Reads the latest state on a display frame. Only one refresh can remain active.</summary>
+    private async void RefreshFrame(TimeSpan timestamp)
     {
-        var current = refreshTimer.Interval;
-        var nowUtc = DateTime.UtcNow;
-
-        // Overruns during warm-up describe startup, not this machine.
-        // Acting on them is what used to leave the dashboard at 10 Hz
-        // long after the work that caused it had finished.
-        if (nowUtc < warmUpUntilUtc)
-        {
-            return;
-        }
-
-        // Theme art still streaming in is not evidence about this machine.
-        // The decode storm ends; a rate chosen during it does not, and the
-        // measured cost is not even in the refresh (0.2 ms against a
-        // 115 ms gap) — it is the repaint each completed decode posts.
-        // Judging the hardware while that is running is what took the
-        // dashboard from 165 Hz to its floor in a second and a half.
-        if (ThemeSurface.HasPendingDecodes)
-        {
-            lastOverrunUtc = nowUtc;
-            return;
-        }
-
-        // Only react to a real overrun — more than double the budget —
-        // so ordinary jitter does not trigger a downgrade.
-        if (gap > current + current)
-        {
-            lastOverrunUtc = nowUtc;
-
-            // Floor of 10 Hz. The dashboard is a visualisation: a slow one
-            // still works, an unresponsive window does not.
-            var slower = TimeSpan.FromMilliseconds(Math.Min(current.TotalMilliseconds * 2, 100));
-            if (slower > current)
-            {
-                // The rate that just failed becomes the ceiling recovery
-                // may not reach again. See the note in the recovery branch.
-                failedCeiling = failedCeiling is { } previous && previous > current ? previous : current;
-                failedCeilingSetUtc = nowUtc;
-                refreshTimer.Interval = slower;
-                Log.Warning(
-                    "Dashboard tick throttled to {Hz:F0} Hz — the UI thread could not keep up at {Was:F0} Hz.",
-                    1000d / slower.TotalMilliseconds, 1000d / current.TotalMilliseconds);
-            }
-
-            return;
-        }
-
-        // Recovery, on a QUIET-PERIOD basis rather than a run of fast
-        // frames. An earlier version counted consecutive in-budget ticks
-        // and oscillated: it would step up, immediately re-saturate, and
-        // step down again, and since every change restarts the
-        // DispatcherTimer the renegotiation was itself a source of
-        // stutter. Requiring a long stretch with no overrun at all makes
-        // stepping up rare and, once taken, usually durable.
-        //
-        // Recovery has to exist. Without it a single stall during startup
-        // — when themes are still loading — pinned the dashboard at 10 Hz
-        // for the rest of the session, which reads as permanently choppy
-        // even after the cause has passed.
-        var wanted = TimeSpan.FromMilliseconds(1000d / Math.Clamp(configuredRefreshHz, 30, 1000));
-        if (current <= wanted || nowUtc - lastOverrunUtc < RecoveryQuietPeriod)
-        {
-            return;
-        }
-
-        // A ceiling records what this machine could not hold AT THE TIME.
-        // Startup contention, a burst of theme decoding, another
-        // application's spike — none of them describe the machine a minute
-        // later, and nothing ever lifted the record. Relaxing it after a
-        // long quiet stretch is what stops the first few seconds of a
-        // session deciding the refresh rate for the whole of it.
-        if (failedCeiling is { } stale && nowUtc - failedCeilingSetUtc >= CeilingRelaxAfter)
-        {
-            failedCeiling = TimeSpan.FromMilliseconds(stale.TotalMilliseconds * CeilingRelaxFactor);
-            failedCeilingSetUtc = nowUtc;
-        }
-
-        var targetMs = Math.Max(current.TotalMilliseconds / 2, wanted.TotalMilliseconds);
-
-        // Step TOWARD a failed rate instead of refusing to move at all.
-        //
-        // Remembering a failed rate as a ceiling was right; testing the
-        // halved interval against it was not. Halving overshoots the
-        // ceiling in a single jump every time — from 10 Hz the step is to
-        // 20 Hz, which is past a 15 Hz ceiling — so the test rejected
-        // every recovery step that could ever be proposed and the rate
-        // could only travel downwards. One stall during startup therefore
-        // pinned the dashboard at its 10 Hz floor for the rest of the
-        // session, which is precisely the permanent choppiness the
-        // recovery path exists to prevent.
-        //
-        // Approaching the ceiling asymptotically keeps the property that
-        // matters — the rate stays strictly below what has been shown to
-        // fail, so it cannot oscillate — while still allowing movement.
-        if (failedCeiling is { } ceiling)
-        {
-            targetMs = Math.Max(targetMs, ceiling.TotalMilliseconds * CeilingApproach);
-        }
-
-        var faster = TimeSpan.FromMilliseconds(targetMs);
-        if (faster >= current)
-        {
-            return; // No headroom left under the ceiling.
-        }
-
-        refreshTimer.Interval = faster;
-
-        // Counts as activity, so the next step up needs another full quiet
-        // period rather than following immediately.
-        lastOverrunUtc = nowUtc;
-        Log.Information("Dashboard tick restored to {Hz:F0} Hz after a quiet period.", 1000d / faster.TotalMilliseconds);
-    }
-
-    private async void RefreshTimerOnTick(object? sender, EventArgs e)
-    {
-        // UI-saturation telemetry: this timer wants 33 ms ticks; if the gap
-        // between ticks balloons, something (a repaint, a handler) is eating
-        // the dispatcher and every interaction lags behind it.
-        var nowUtc = DateTime.UtcNow;
-        var gap = nowUtc - lastTickUtc;
-        lastTickUtc = nowUtc;
-
-        // Aggregate rather than sample. The old line reported ONE overrun
-        // per five seconds, which cannot distinguish "one hitch every few
-        // seconds" from "every single tick is late" — and those call for
-        // completely different fixes. Counting them, and separating the
-        // time spent inside the refresh from the time lost elsewhere on
-        // the dispatcher, says which.
-        tickWindowCount++;
-        tickWindowGapMs += gap.TotalMilliseconds;
-        if (gap.TotalMilliseconds > tickWindowWorstGapMs) { tickWindowWorstGapMs = gap.TotalMilliseconds; }
-        if (gap.TotalMilliseconds > refreshTimer.Interval.TotalMilliseconds * 2) { tickWindowOverruns++; }
-
-        if ((nowUtc - lastTickGapWarnUtc).TotalSeconds >= 5 && tickWindowCount > 0)
-        {
-            var budgetMs = refreshTimer.Interval.TotalMilliseconds;
-            var meanGap = tickWindowGapMs / tickWindowCount;
-
-            if (tickWindowOverruns > 0 || meanGap > budgetMs * 1.5)
-            {
-                Log.Warning(
-                    "Dashboard ticks: {Count} in {Window:F0}s at a {Budget:F0} ms budget — mean gap {Mean:F0} ms, "
-                    + "worst {Worst:F0} ms, {Overruns} overrun(s). Refresh work itself: mean {RefreshMean:F1} ms, "
-                    + "worst {RefreshWorst:F0} ms. Time not in refresh is elsewhere on the dispatcher.",
-                    tickWindowCount, (nowUtc - lastTickGapWarnUtc).TotalSeconds, budgetMs,
-                    meanGap, tickWindowWorstGapMs, tickWindowOverruns,
-                    tickWindowCount == 0 ? 0 : tickWindowRefreshMs / tickWindowCount,
-                    tickWindowWorstRefreshMs);
-            }
-
-            lastTickGapWarnUtc = nowUtc;
-            tickWindowCount = 0;
-            tickWindowOverruns = 0;
-            tickWindowGapMs = 0;
-            tickWindowWorstGapMs = 0;
-            tickWindowRefreshMs = 0;
-            tickWindowWorstRefreshMs = 0;
-        }
-
-        AdaptTickRate(gap);
-
-        // Hand off from the warm-up rate to the user's configured one,
-        // exactly once, on the first tick after warm-up ends.
-        if (!warmUpHandedOff && nowUtc >= warmUpUntilUtc)
-        {
-            warmUpHandedOff = true;
-            ApplyConfiguredRefreshRate();
-        }
-
-        if (isClosing || isRefreshing || DataContext is not ShellViewModel viewModel)
-        {
-            return;
-        }
-
+        if (isClosing) { return; }
         try
         {
-            isRefreshing = true;
-            var refreshStarted = System.Diagnostics.Stopwatch.GetTimestamp();
-            await viewModel.RefreshRuntimeAsync();
-            var refreshMs = System.Diagnostics.Stopwatch.GetElapsedTime(refreshStarted).TotalMilliseconds;
-            tickWindowRefreshMs += refreshMs;
-            if (refreshMs > tickWindowWorstRefreshMs) { tickWindowWorstRefreshMs = refreshMs; }
+            if (DataContext is ShellViewModel viewModel
+                && frameClock.ShouldRefresh(timestamp, viewModel.DashboardRefreshHz))
+            {
+                await viewModel.RefreshRuntimeAsync();
+            }
         }
         catch (OperationCanceledException) { }
-        catch (ObjectDisposedException)
-        {
-            refreshTimer.Stop();
-        }
-        catch (InvalidOperationException exception) when (isClosing)
-        {
-            Log.Debug(exception, "Dashboard refresh stopped because the shell window is closing.");
-        }
+        catch (ObjectDisposedException) when (isClosing) { }
         catch (Exception exception)
         {
             Log.Error(exception, "Dashboard refresh failed.");
         }
         finally
         {
-            isRefreshing = false;
+            if (!isClosing) { RequestAnimationFrame(refreshFrame); }
         }
     }
 }

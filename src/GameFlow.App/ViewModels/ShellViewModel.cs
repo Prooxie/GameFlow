@@ -20,29 +20,11 @@ using Microsoft.Extensions.Options;
 
 namespace GameFlow.App.ViewModels;
 
-/// <summary>
-/// Shell-level view-model.
-///
-/// Performance contract:
-///   Fast path  (every 33 ms tick): update controller visuals, status text,
-///              diagnostics text (no longer throttled — cheap string build).
-///   Medium path (~0.5 s / 15 ticks): rebuild controller inventory, runtime notes.
-///   Slow path  (~3 s / 90 ticks): rebuild JSON snapshots.
-///   Event path (profile or culture changed): rebuild rule summary, re-sync selections.
-/// </summary>
+/// <summary>Updates controller visuals on display frames and refreshes device details at a slower rate.</summary>
 public sealed class ShellViewModel : ViewModelBase, IDisposable
 {
-    // Refresh cadence, expressed in UI ticks (the dispatcher fires at ~30 Hz, see ShellWindow.OnOpened).
-    //   Fast path  — every tick (~33 ms).  Visible button states + diagnostics text.
-    //   Medium     — every 15 ticks (~500 ms).  Controller-inventory rebuild + runtime notes.
-    //   Slow       — every 15 ticks (~500 ms).  JSON re-serialisation of the raw snapshots.
-    //
-    // The JSON path used to fire every 90 ticks (~3 s), which made the "Raw physical/virtual
-    // snapshot" debug panes feel frozen. 500 ms keeps them legibly responsive without the
-    // serialisation cost showing up in profilers.
-    private const int SlowPathEvery = 1;
-    private const int MedPathEvery = 1;
-    private int refreshTick;
+    private long lastInventoryRefreshTimestamp;
+    private readonly int automaticDashboardRefreshHz = GameFlow.App.Platform.DisplayRefreshRate.TryGetPrimaryHz() ?? 60;
 
     private bool ruleSummaryDirty = true;
     private bool aboutTextDirty = true;
@@ -81,34 +63,12 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     /// <summary>Per-surface dashboard backgrounds. Null in hosts that register none.</summary>
     private readonly GameFlow.Infrastructure.Runtime.PanelAppearanceStore? panelAppearance;
 
-    /// <summary>
-    /// Dashboard UI tick rate, in Hz. The per-user setting supersedes the
-    /// appsettings.json value, matching the contract documented on
-    /// <see cref="GameFlow.Infrastructure.Profiles.AppSettings.DashboardRefreshHz"/>.
-    ///
-    /// <para>
-    /// Resolution order: the user's explicit setting, then an explicit
-    /// appsettings.json value, then <b>the display's own refresh rate</b>,
-    /// then 60. Following the monitor is the point — drawing 60 frames
-    /// into a 144 Hz panel wastes its headroom, and drawing 60 into a
-    /// 50 Hz one produces frames nobody sees. A value of 0 in
-    /// appsettings.json means "follow the display" rather than being
-    /// invalid.
-    /// </para>
-    ///
-    /// <para>
-    /// This is a ceiling, not a promise: see
-    /// <c>ShellWindow.ApplyConfiguredRefreshRate</c> and its adaptive
-    /// backoff. It stopped being 30 because a surface repaint went from
-    /// ~19 ms to under 1 ms, and 30 Hz was spending 33 ms of latency to
-    /// save work that no longer exists.
-    /// </para>
-    /// </summary>
+    /// <summary>Maximum dashboard refresh rate. Automatic mode follows the display. Presentation uses display frames.</summary>
     public int DashboardRefreshHz =>
         userSettings.Current.DashboardRefreshHz
         ?? (runtimeOptions.DashboardRefreshHz > 0
             ? runtimeOptions.DashboardRefreshHz
-            : GameFlow.App.Platform.DisplayRefreshRate.TryGetPrimaryHz() ?? 60);
+            : automaticDashboardRefreshHz);
     private readonly SemaphoreSlim rulesSaveGate = new(1, 1);
     private readonly SemaphoreSlim panelBackgroundSaveGate = new(1, 1);
     private int panelBackgroundPersistVersion;
@@ -1737,11 +1697,11 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
             ApplySelection(selectedControlKey, snapshot);
         }
 
-        refreshTick++;
-
-        // ── Medium path: ~0.5 s ───────────────────────────────────────────────
-        if (refreshTick % MedPathEvery == 0 || refreshTick == 1)
+        // Device details do not need the controller artwork's frame rate.
+        if (lastInventoryRefreshTimestamp == 0
+            || System.Diagnostics.Stopwatch.GetElapsedTime(lastInventoryRefreshTimestamp).TotalMilliseconds >= 500)
         {
+            lastInventoryRefreshTimestamp = System.Diagnostics.Stopwatch.GetTimestamp();
             RefreshControllerInventory();
             RuntimeNotesText = BuildRuntimeNotes(snapshot);
 

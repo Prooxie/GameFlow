@@ -13,23 +13,8 @@ namespace GameFlow.Infrastructure.Configuration;
 public sealed class AppRuntimeOptions
 {
     /// <summary>
-    /// Hertz at which the dashboard view-models recompute. May be
-    /// overridden per user via <c>AppSettings.DashboardRefreshHz</c>.
-    ///
-    /// <para>
-    /// <b>0 means "follow the display's refresh rate"</b>, which is the
-    /// default — drawing 60 frames into a 144 Hz panel wastes its
-    /// headroom, and 60 into a 50 Hz one produces frames nobody sees. Set
-    /// a positive number to pin it instead.
-    /// </para>
-    ///
-    /// <para>
-    /// It was 30 for as long as a controller surface cost ~19 ms to
-    /// repaint. It now costs about one, and 30 Hz was spending up to 33 ms
-    /// of latency to save work that no longer exists. The dashboard's
-    /// adaptive backoff still degrades a machine that cannot hold whatever
-    /// this resolves to.
-    /// </para>
+    /// Maximum dashboard refresh rate in hertz. Zero follows the detected display rate, with a 60 Hz fallback.
+    /// Per-user settings can override this value. Presentation uses display frames and drops missed frames.
     /// </summary>
     public int DashboardRefreshHz { get; set; }
 

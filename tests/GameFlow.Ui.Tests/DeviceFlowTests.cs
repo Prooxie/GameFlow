@@ -34,6 +34,62 @@ namespace GameFlow.Ui.Tests;
 
 public sealed class DeviceFlowTests(UiFixture fixture) : IClassFixture<UiFixture>
 {
+    /// <summary>A button change reaches controller artwork without waiting for another polling timer.</summary>
+    [Fact]
+    public Task ControllerArtworkUpdatesOnTheNextDisplayFrame() => Run(_ =>
+    {
+        var model = new ControllerVisualStateViewModel(_ => { }) { ThemeRegistry = new ThemeRegistry() };
+        model.Update("test", "Output", ControllerSnapshot.Empty(), ControllerVisualStyle.PlayStation5);
+        var view = new ControllerSurface { DataContext = model };
+        var window = new Window { Width = 500, Height = 400, Content = view };
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            model.SelectedThemeVariant = new InstalledTheme("frame-test", "Frame test", "", new ThemeDocument
+            {
+                Width = 100,
+                Height = 100,
+                Children = [new PBarNode
+                {
+                    Input = FleeParser.Parse("quad_right:s"),
+                    Width = 100,
+                    Height = 100,
+                    Foreground = "FFFF00FF",
+                }],
+            }, ControllerVisualStyle.PlayStation5);
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            var surface = view.FindControl<ThemeSurface>("ThemedSurface")!;
+            var before = ReadSurfacePixel(surface);
+            var buttons = ButtonMask.Empty;
+            buttons[ButtonId.South] = true;
+
+            model.Update("test", "Output", ControllerSnapshot.Empty() with { Buttons = buttons }, ControllerVisualStyle.PlayStation5);
+            var after = ReadSurfacePixel(surface);
+
+            Assert.NotEqual(before, after);
+            Assert.Equal(0xFFFF00FFu, after);
+        }
+        finally { window.Close(); }
+        return Task.CompletedTask;
+    });
+
+    /// <summary>Reads one rendered BGRA pixel without an asynchronous timer wait.</summary>
+    private static uint ReadSurfacePixel(ThemeSurface surface)
+    {
+        var size = new PixelSize((int)surface.Bounds.Width, (int)surface.Bounds.Height);
+        using var frame = new RenderTargetBitmap(size);
+        using (var context = frame.CreateDrawingContext()) { surface.Render(context); }
+        var point = new Point(size.Width / 2, size.Height / 2);
+        var buffer = System.Runtime.InteropServices.Marshal.AllocHGlobal(4);
+        try
+        {
+            frame.CopyPixels(new PixelRect((int)point.X, (int)point.Y, 1, 1), buffer, 4, 4);
+            return unchecked((uint)System.Runtime.InteropServices.Marshal.ReadInt32(buffer));
+        }
+        finally { System.Runtime.InteropServices.Marshal.FreeHGlobal(buffer); }
+    }
+
     private async Task Run(Func<IServiceProvider, Task> action)
     {
         Environment.SetEnvironmentVariable("GAMEFLOW_DATA_DIRECTORY",

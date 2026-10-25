@@ -30,6 +30,22 @@ namespace GameFlow.Infrastructure.Tests.ViewModels;
 /// </summary>
 public sealed class ControllerVisualStateSnapshotTests
 {
+    /// <summary>New snapshots reach the drawing host during the same UI refresh.</summary>
+    [Fact]
+    public void UpdateChangedSnapshotPublishesStateImmediately()
+    {
+        var vm = CreateViewModel();
+        var received = new List<ControllerSnapshot>();
+        vm.VisualStateChanged += (_, _) => received.Add(vm.RawSnapshot);
+        var first = Touching(new TouchContact(0, 0.2f, 0.5f));
+        var second = Touching(new TouchContact(0, 0.7f, 0.5f));
+
+        Push(vm, first);
+        Push(vm, second);
+        Push(vm, second);
+
+        Assert.Equal(new[] { first, second }, received);
+    }
     private static ControllerVisualStateViewModel CreateViewModel() => new(_ => { });
 
     /// <summary>

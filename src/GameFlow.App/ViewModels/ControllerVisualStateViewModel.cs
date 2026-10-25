@@ -183,6 +183,9 @@ public sealed partial class ControllerVisualStateViewModel : ViewModelBase
 
     // ─── Update (called every refresh tick from ShellViewModel) ───────────────
 
+    /// <summary>Notifies the drawing host after a visible state change. The event runs on the UI thread.</summary>
+    public event EventHandler? VisualStateChanged;
+
     public void Update(
         string panelId,
         string panelTitle,
@@ -305,6 +308,8 @@ public sealed partial class ControllerVisualStateViewModel : ViewModelBase
                 OnPropertyChanged(prop);
             }
         }
+
+        VisualStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>
