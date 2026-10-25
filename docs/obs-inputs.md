@@ -19,8 +19,8 @@ Open keyboard/mouse mapping and choose the physical device to edit. A device-spe
 
 The keyboard picture is a fixed ANSI 104-key layout. The mapping editor can capture other supported key codes, including F13–F24 and Numpad Enter. Optional OBS input text also names keys outside the pictured layout.
 
-The current mouse picture and mapping support five buttons, vertical wheel-up/down and movement. Additional vendor buttons, horizontal scrolling and precision-touchpad gestures are not represented as independent controls. Laptop input enumeration still needs platform and hardware checks. These limits are tracked in the quality report.
+The mouse picture supports five buttons, vertical wheel directions, and movement. Vendor buttons, horizontal scrolling, and precision-touchpad gestures have no independent controls. Laptop input enumeration needs platform and hardware checks.
 
 Hold duration starts when an active input is observed and ends when it is released. Controller stick and trigger readouts become active beyond 5% deflection. A lost connection clears the text while retaining the last controller picture during reconnection.
 
-The automated browser checks cover Chromium. Firefox tests are configured in CI; the local Windows test browser could not start on this review computer. Real phone browsers and OBS still need a hardware pass before release.
+Automated browser checks cover Chromium and Firefox in CI. Real phone browsers and OBS need device checks.

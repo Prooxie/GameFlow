@@ -382,6 +382,14 @@ netsh advfirewall firewall add rule name="GameFlow web controller" dir=in action
 
 ## Version 1.0.9 workflows
 
+Physical Bluetooth controller paths take precedence over vendor/product heuristics during input discovery.
+This keeps a real DualSense selectable beside a matching virtual DualSense.
+Software-created paths and explicitly ignored identifiers remain excluded.
+
+USB Sony output profiles use complete input reports for battery, motion, and touch data.
+The SDK receives battery capacity from zero to ten. A source with no battery uses full capacity.
+Bluetooth output profiles keep their feature-report handshake.
+
 Create a phone from **Devices → Add phone**.
 Each saved phone has its own private link and code.
 Removing a phone clears slot assignments and revokes the link.
@@ -453,4 +461,4 @@ Theme updates use content hashes, staged replacement, and retained user backups.
 The sibling Controllers folder is an import source. It is not required at runtime.
 Use `scripts/Import-InputAssets.mjs` with that folder and an installed `sharp` module to regenerate input resources.
 
-Read [the translation guide](docs/localization.md), [release guide](docs/release.md), and [quality report](docs/quality-report-1.0.9.md).
+Read [the translation guide](docs/localization.md), [release guide](docs/release.md), and [release notes](CHANGELOG.md#109).

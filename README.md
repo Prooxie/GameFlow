@@ -10,8 +10,6 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-informational)](#requirements)
-[![Made by Proxy Darkness](https://img.shields.io/badge/made%20by-Proxy%20Darkness-blueviolet)](https://buymeacoffee.com/ProxyDarkness)
-[![Website](https://img.shields.io/badge/website-prooxie.github.io%2FGameFlow-00D4FF)](https://prooxie.github.io/GameFlow/)
 
 ---
 
@@ -49,7 +47,7 @@ They show Preview output and do not prove physical-device operation.
 
 ## Requirements
 
-Release archives include .NET 10.0.13 and SDL3 native libraries.
+Release archives include .NET 10 and SDL3 native libraries.
 Extract the complete archive before you start the application.
 Keep `themes`, `Localization`, and `appsettings.json` beside the executable.
 
@@ -71,6 +69,10 @@ Run GameFlow as Administrator when you need virtual controllers.
 GameFlow reports a missing or unsupported SDK.
 Preview remains available.
 The release archives do not include the HIDMaestro SDK.
+
+Physical Bluetooth controllers remain selectable beside matching virtual outputs.
+USB DualSense and supported DualShock 4 outputs send complete battery, motion, and touch reports.
+A virtual output with no battery source reports full capacity.
 
 Each archive has a SHA-256 checksum file.
 The checksum checks file integrity and is not a digital signature.
@@ -198,12 +200,12 @@ Read [the release guide](docs/release.md) for local packages, checksums, Git tag
 
 - Real game output, physical feedback, and hot-plug need device and game tests.
 - Real phone browsers and OBS need a hardware check.
-- This review does not verify macOS hardware behavior.
-- The local Firefox binary cannot start on the review computer. CI retains Firefox checks.
+- macOS hardware behavior needs device tests.
+- Hosted CI checks Windows, Linux, macOS, Chromium, and Firefox.
 - GameFlow does not hide physical controllers from games. Configure a separate hiding tool if your game reads duplicate input.
 - Remote Link and native Linux/macOS virtual gamepad output remain planned.
 
-The [1.0.9 quality report](docs/quality-report-1.0.9.md) records the checks and remaining limits.
+Read the [1.0.9 release notes](CHANGELOG.md#109) for changes and verification limits.
 
 ## License and credits
 

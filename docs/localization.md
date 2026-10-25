@@ -35,6 +35,6 @@ Enum checks cover input and rule pickers and catalogued enum groups.
 Browser attributes, phone helpers, and fallback helpers are checked.
 Direct assignments to common C# status properties must use resources.
 The gate cannot discover every arbitrary C# string or prove translation quality.
-The [quality report](quality-report-1.0.9.md) records the manual message audit.
+Check new user-facing messages in each supported language before a release.
 
 Run `pwsh ./scripts/Test-LocalizationChecks.ps1` to exercise valid and deliberately broken catalogues in an isolated temporary directory. It leaves the fixture for diagnosis and never changes the working catalogues. CI runs these checks alongside builds and tests.

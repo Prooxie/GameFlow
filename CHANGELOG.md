@@ -7,6 +7,19 @@ The release workflow uses the matching section as its release notes.
 
 ## 1.0.9
 
+GameFlow 1.0.9 expands device mapping, phone controls, and controller feedback.
+It also fixes wireless DualSense discovery and Sony USB battery reports.
+
+### Controller fixes
+
+- Keep a physical Bluetooth DualSense visible when a virtual DualSense uses the same vendor and product identifiers.
+- Restore a physical controller when SDL supplies its Bluetooth path after initial discovery.
+- Send complete USB input reports for DualSense, DualSense Edge, and supported DualShock 4 profiles.
+- Convert battery percentages to the SDK capacity scale. A source with no battery reports full capacity.
+- Preserve the SDK catalog and the Bluetooth report handshake.
+
+### Mapping and device controls
+
 - Add per-device keyboard and mouse maps, extra key capture, and independent mouse preview buffers.
 - Improve phone model choices, saved phone seats, quick taps, link revocation, and disconnect cleanup.
 - Add capability-based controller lighting and trigger feedback with an authenticated external lighting API.
@@ -21,9 +34,28 @@ The release workflow uses the matching section as its release notes.
 - Add application screenshots, maintained release documentation, and a Pages deployment workflow.
 - Support numeric release tags and portable local packages for all four release targets.
 - Add guarded SDK maintenance tools and isolated maintenance checks.
+- Protect the SDK cache on Windows, Linux, and macOS.
+- Include only public documentation, screenshots, and dependency notices in release archives.
 
-Automated Windows checks pass. Physical devices, real phone browsers, OBS, and macOS hardware still need verification.
-The local Firefox binary cannot start. Hosted CI retains Firefox and platform checks.
+### Install or upgrade
+
+1. Download the archive for Windows x64, Linux x64, macOS ARM64, or macOS x64.
+2. Check its SHA-256 file and extract the complete archive into a new folder.
+3. Close the previous GameFlow process before starting the new executable.
+4. Keep the existing user-data folder to retain profiles and settings.
+
+The archives include .NET 10 and SDL3.
+Windows virtual gamepad output requires Administrator access and a separate HIDMaestro SDK version 2.0.1 or later in the 2.x series.
+The SDK is not included. See [the setup guide](README.md#requirements).
+Linux and macOS provide Preview gamepad output. The macOS archives are unsigned and are not notarized.
+
+### Validation and limits
+
+The .NET suite contains 1,575 passing checks. Browser coverage includes 12 phone, overlay, and project-page checks.
+CI checks Windows, Linux, macOS, Chromium, and Firefox.
+A live Bluetooth DualSense supplied fresh input snapshots, motion capability, and a 25% battery reading during local verification.
+Physical game output, feedback, Steam's battery display, real phone browsers, OBS, and macOS hardware still need device checks.
+The [README](README.md) describes platform permissions and other limitations.
 
 ## v1.0.8
 

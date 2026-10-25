@@ -4,7 +4,6 @@ Version 1.0.9 uses the numeric Git tag `1.0.9`.
 The CI workflow also accepts older tags with a `v` prefix.
 The tag must point to the confirmed release commit on `master`.
 
-
 ## Validate source
 
 1. Restore packages in locked mode.
@@ -13,17 +12,20 @@ The tag must point to the confirmed release commit on `master`.
 4. Run the translation rejection fixtures.
 5. Run Chromium and Firefox browser checks where those browsers can start.
 6. Inspect application captures and check local documentation links.
+7. Check the public archive contents.
 
 ```powershell
 dotnet restore GameFlow.sln --locked-mode
 dotnet build GameFlow.sln -c Release --no-restore -warnaserror
 dotnet test --solution GameFlow.sln -c Release --no-build
 pwsh ./scripts/Test-LocalizationChecks.ps1
+pwsh ./scripts/Test-HidMaestroMaintenance.ps1
+pwsh ./scripts/Test-ReleasePackaging.ps1
 dotnet format GameFlow.sln --verify-no-changes --no-restore --severity warn
 ```
 
 Read [the browser commands](../README.md#build-and-test).
-Record unavailable platform and hardware checks in the quality report.
+Record unavailable platform and hardware checks in the release notes.
 A passing build does not prove hardware behavior.
 
 ## Build local release archives
@@ -85,7 +87,7 @@ The workflow cannot deploy until the maintainer pushes it.
 
 `Update-HIDMaestro.ps1` is an explicit maintainer tool.
 It can update and build a separate HIDMaestro clone.
-The release review does not run those mutation steps against the sibling reference source.
+Use a separate SDK clone for mutation steps.
 
 Use `-WhatIf` to inspect intended actions.
 Use `-SkipUpdate -SkipBuild -SkipCopy` for a report-only run.
