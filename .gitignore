@@ -337,6 +337,20 @@ ClientBin/
 *.pfx
 *.publishsettings
 orleans.codegen.cs
+# Local working documents. Track only the public document set.
+/*.md
+!/README.md
+!/WIKI.md
+!/CHANGELOG.md
+!/THIRD-PARTY-NOTICES.md
+/docs/*.md
+!/docs/asset-pack.md
+!/docs/localization.md
+!/docs/obs-inputs.md
+!/docs/release.md
+/docs/*/
+!/docs/brand/
+!/docs/images/
 
 # Including strong name files can present a security risk
 # (https://github.com/github/gitignore/pull/2483#issue-259490424)

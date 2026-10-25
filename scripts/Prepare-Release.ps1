@@ -14,7 +14,14 @@ foreach ($file in @('README.md', 'WIKI.md', 'CHANGELOG.md', 'LICENSE', 'THIRD-PA
     Copy-Item -LiteralPath (Join-Path $repository $file) -Destination $destination
 }
 Copy-Item -LiteralPath (Join-Path $repository 'licenses') -Destination $destination -Recurse -Force
-Copy-Item -LiteralPath (Join-Path $repository 'docs') -Destination $destination -Recurse -Force
+$publicDocs = Join-Path $destination 'docs'
+New-Item -ItemType Directory -Path $publicDocs -Force | Out-Null
+foreach ($file in @('index.html', '.nojekyll', 'asset-audit.json', 'asset-pack.md', 'localization.md', 'obs-inputs.md', 'release.md')) {
+    Copy-Item -LiteralPath (Join-Path $repository "docs/$file") -Destination $publicDocs
+}
+foreach ($folder in @('images', 'brand')) {
+    Copy-Item -LiteralPath (Join-Path $repository "docs/$folder") -Destination $publicDocs -Recurse -Force
+}
 Copy-Item -LiteralPath (Join-Path $repository 'brand') -Destination $destination -Recurse -Force
 
 $inventory = foreach ($library in $assets.libraries.PSObject.Properties | Sort-Object Name) {
