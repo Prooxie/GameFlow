@@ -76,7 +76,7 @@ public sealed class HidMaestroSdkLocatorTests : IDisposable
 
         Assert.Equal(SdkLookupResult.Found, lookup.Result);
         Assert.Equal(copy, lookup.Path);
-        Assert.Equal(new Version(2, 0, 1, 0), lookup.Version);
+        Assert.Equal(new Version(2, 1, 0, 0), lookup.Version);
     }
 
     [WindowsFact]
