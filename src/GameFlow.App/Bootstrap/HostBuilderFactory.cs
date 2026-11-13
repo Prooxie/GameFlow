@@ -66,6 +66,21 @@ public static class HostBuilderFactory
             {
                 _ = configurationBuilder.SetBasePath(AppContext.BaseDirectory);
                 _ = configurationBuilder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
+                // The single-file Windows build carries appsettings.json inside
+                // GameFlow.exe and runs it from an extraction folder, so a copy
+                // next to the exe is read as well and wins over the bundled one.
+                var exeDirectory = Path.GetDirectoryName(Environment.ProcessPath);
+                if (exeDirectory is not null &&
+                    !string.Equals(
+                        Path.TrimEndingDirectorySeparator(Path.GetFullPath(exeDirectory)),
+                        Path.TrimEndingDirectorySeparator(Path.GetFullPath(AppContext.BaseDirectory)),
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    _ = configurationBuilder.AddJsonFile(
+                        Path.Combine(exeDirectory, "appsettings.json"), optional: true, reloadOnChange: true);
+                }
+
                 // Both prefixes are read, GAMEFLOW_ last so it wins on a
                 // conflict. AUTOFIRE_ is the pre-rebrand name and stays
                 // supported so an existing launcher script or service

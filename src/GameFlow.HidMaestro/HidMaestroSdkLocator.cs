@@ -56,20 +56,36 @@ internal static class HidMaestroSdkLocator
 
     /// <summary>
     /// Lists the folders to search, in priority order: the override folder (when it
-    /// exists), the app folder, then its <c>HIDMaestro</c> subfolder.
+    /// exists), the folder of GameFlow.exe and its <c>HIDMaestro</c> subfolder, then
+    /// the app's base folder and its <c>HIDMaestro</c> subfolder. The two folders
+    /// differ in a single-file build, whose base folder is the extraction folder;
+    /// the user drops the SDK next to the exe, so the exe folder comes first.
     /// </summary>
-    public static IReadOnlyList<string> SearchRoots(string? overrideDirectory, string baseDirectory)
+    public static IReadOnlyList<string> SearchRoots(
+        string? overrideDirectory, string baseDirectory, string? executableDirectory = null)
     {
-        var roots = new List<string>(3);
+        var roots = new List<string>(5);
         if (!string.IsNullOrWhiteSpace(overrideDirectory) && Directory.Exists(overrideDirectory))
         {
             roots.Add(overrideDirectory);
+        }
+
+        if (!string.IsNullOrWhiteSpace(executableDirectory) && !SameDirectory(executableDirectory, baseDirectory))
+        {
+            var exeFolder = Path.TrimEndingDirectorySeparator(executableDirectory);
+            roots.Add(exeFolder);
+            roots.Add(Path.Combine(exeFolder, "HIDMaestro"));
         }
 
         roots.Add(baseDirectory);
         roots.Add(Path.Combine(baseDirectory, "HIDMaestro"));
         return roots;
     }
+
+    private static bool SameDirectory(string a, string b) => string.Equals(
+        Path.TrimEndingDirectorySeparator(Path.GetFullPath(a)),
+        Path.TrimEndingDirectorySeparator(Path.GetFullPath(b)),
+        StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Tells whether the adapter supports the SDK version. Only major.minor.build count,

@@ -53,6 +53,18 @@
     Embed Source Link (when the file is present) so released builds can be
     debugged against the original git revision.
   -->
+  <!--
+      A single-file publish leaves only the executable: the symbols go inside
+      each assembly and the XML API docs stay out. Set here, not in the App
+      project, so the referenced projects follow too; they are built without
+      a runtime identifier, so the condition cannot test for Windows.
+  -->
+  <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
+    <DebugType>embedded</DebugType>
+    <PublishDocumentationFile>false</PublishDocumentationFile>
+    <PublishReferencesDocumentationFiles>false</PublishReferencesDocumentationFiles>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(CI)' == 'true'">
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>

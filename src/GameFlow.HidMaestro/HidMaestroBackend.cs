@@ -65,7 +65,8 @@ public sealed class HidMaestroBackend : IHidMaestroBackend
             logger,
             static () => HidMaestroSdkLocator.SearchRoots(
                 Environment.GetEnvironmentVariable(HidMaestroSdkLocator.DirectoryOverrideVariable),
-                AppContext.BaseDirectory),
+                AppContext.BaseDirectory,
+                Path.GetDirectoryName(Environment.ProcessPath)),
             static () => Environment.IsPrivilegedProcess,
             TimeProvider.System)
     {

@@ -47,6 +47,34 @@
     <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
   </PropertyGroup>
 
+  <!--
+      Portable Windows build: one GameFlow.exe and nothing beside it. A
+      single-file publish already bundles every managed and native DLL; this
+      also bundles the content files (appsettings.json, the PO catalogs and
+      the bundled themes). The host extracts the bundle once to
+      %TEMP%\.net\GameFlow\<hash>\ and runs from there, so every lookup
+      through AppContext.BaseDirectory keeps working unchanged. Compression
+      shrinks the download; extraction happens once per version either way.
+      HIDMaestro.Core.dll and HidHide are not part of the bundle: the SDK is
+      looked for next to GameFlow.exe, and HidHide is a system driver.
+  -->
+  <PropertyGroup Condition="'$(PublishSingleFile)' == 'true' and $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('win'))">
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+  </PropertyGroup>
+
+  <!--
+      Leaves symbol files out of the portable bundle and folder: ours are
+      embedded in the assemblies, and SkiaSharp and HarfBuzz ship native
+      .pdb files of about 100 MB that only a native debugger reads.
+  -->
+  <Target Name="DropSymbolsFromPortablePublish" AfterTargets="ComputeResolvedFilesToPublishList"
+          Condition="'$(IncludeAllContentForSelfExtract)' == 'true'">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.pdb'" />
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <!-- The App view-model and bootstrap tests live in the Infrastructure test project. -->
     <InternalsVisibleTo Include="GameFlow.Infrastructure.Tests" />

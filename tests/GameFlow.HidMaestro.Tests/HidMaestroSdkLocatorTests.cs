@@ -42,6 +42,31 @@ public sealed class HidMaestroSdkLocatorTests : IDisposable
     }
 
     [WindowsFact]
+    public void SearchRoots_SingleFileApp_SearchesTheExeFolderBeforeTheExtractionFolder()
+    {
+        // A single-file build runs from an extraction folder, but the user
+        // drops HIDMaestro.Core.dll next to GameFlow.exe.
+        var exeDirectory = MakeDirectory("exe");
+        var extractionDirectory = MakeDirectory("extract");
+
+        var roots = HidMaestroSdkLocator.SearchRoots(null, extractionDirectory, exeDirectory);
+
+        Assert.Equal(
+            [exeDirectory, Path.Combine(exeDirectory, "HIDMaestro"), extractionDirectory, Path.Combine(extractionDirectory, "HIDMaestro")],
+            roots);
+    }
+
+    [WindowsFact]
+    public void SearchRoots_SameExeAndBaseFolder_IsListedOnce()
+    {
+        var baseDirectory = MakeDirectory("base");
+
+        var roots = HidMaestroSdkLocator.SearchRoots(null, baseDirectory, baseDirectory + Path.DirectorySeparatorChar);
+
+        Assert.Equal([baseDirectory, Path.Combine(baseDirectory, "HIDMaestro")], roots);
+    }
+
+    [WindowsFact]
     public void SearchRoots_MissingOverride_IsSkipped()
     {
         var baseDirectory = MakeDirectory("base");
