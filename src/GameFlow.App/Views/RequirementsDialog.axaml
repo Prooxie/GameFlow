@@ -52,18 +52,35 @@
                                Foreground="{DynamicResource AppForegroundDim}"
                                TextWrapping="Wrap" />
                   </StackPanel>
-                  <Button Grid.Column="1"
-                          Classes="ghost"
-                          Content="{DynamicResource Ui.UiOpenInstallPage}"
-                          Tag="{Binding}"
-                          Click="OnOpenInstallPageClick"
-                          VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                    <!-- Only for requirements GameFlow can install itself (HidHide). -->
+                    <Button Classes="primary"
+                            Content="{DynamicResource Ui.UiInstall}"
+                            Tag="{Binding}"
+                            IsVisible="{Binding CanAutoInstall}"
+                            HorizontalAlignment="Stretch"
+                            Click="OnInstallClick" />
+                    <Button Classes="ghost"
+                            Content="{DynamicResource Ui.UiOpenInstallPage}"
+                            Tag="{Binding}"
+                            Click="OnOpenInstallPageClick" />
+                  </StackPanel>
                 </Grid>
               </Border>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
       </ScrollViewer>
+
+      <!-- Outcome of an Install click, shown above the footer. -->
+      <TextBlock Grid.Row="2"
+                 Name="InstallStatusText"
+                 IsVisible="False"
+                 Margin="0,0,0,44"
+                 FontSize="12"
+                 TextWrapping="Wrap"
+                 VerticalAlignment="Top"
+                 Foreground="{DynamicResource AppForeground}" />
 
       <!-- Footer buttons -->
       <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">

@@ -40,10 +40,15 @@ namespace GameFlow.Infrastructure.Requirements;
 /// current platform (e.g. HIDMaestro on Linux). The coordinator filters
 /// these out before deciding whether to show the dialog.
 /// </param>
+/// <param name="CanAutoInstall">
+/// <see langword="true"/> when GameFlow can install the requirement itself
+/// (for example HidHide), so the dialog offers an Install button.
+/// </param>
 public sealed record RequirementStatus(
     string Id,
     string DisplayName,
     string Description,
     bool IsSatisfied,
     Uri? InstallerUrl,
-    bool IsApplicable);
+    bool IsApplicable,
+    bool CanAutoInstall = false);

@@ -3001,3 +3001,15 @@ msgstr "Native virtual gamepad"
 
 msgid "OutputProviderNativeDescription"
 msgstr "Linux needs write access to /dev/uinput. macOS needs an Apple-approved virtual HID entitlement. Output uses a standard gamepad. Rumble and Sony effects are unavailable."
+
+msgid "UiInstall"
+msgstr "Install"
+
+msgid "UiInstalling"
+msgstr "Installing…"
+
+msgid "SettingsDialogUseHidHideLabel"
+msgstr "Hide physical controllers from games with HidHide (installs it if missing)"
+
+msgid "SettingsDialogHidHideInstallingStatus"
+msgstr "Installing HidHide…"

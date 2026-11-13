@@ -3001,3 +3001,15 @@ msgstr "Nativní virtuální gamepad"
 
 msgid "OutputProviderNativeDescription"
 msgstr "Linux vyžaduje přístup pro zápis do /dev/uinput. macOS vyžaduje oprávnění virtuálního HID schválené společností Apple. Výstup používá standardní gamepad. Vibrace a efekty Sony nejsou dostupné."
+
+msgid "UiInstall"
+msgstr "Instalovat"
+
+msgid "UiInstalling"
+msgstr "Instaluji…"
+
+msgid "SettingsDialogUseHidHideLabel"
+msgstr "Skrýt fyzické ovladače před hrami pomocí HidHide (pokud chybí, nainstaluje se)"
+
+msgid "SettingsDialogHidHideInstallingStatus"
+msgstr "Instaluji HidHide…"

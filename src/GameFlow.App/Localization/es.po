@@ -3001,3 +3001,15 @@ msgstr "Mando virtual nativo"
 
 msgid "OutputProviderNativeDescription"
 msgstr "Linux necesita acceso de escritura a /dev/uinput. macOS necesita una autorización de HID virtual aprobada por Apple. La salida usa un mando estándar. La vibración y los efectos de Sony no están disponibles."
+
+msgid "UiInstall"
+msgstr "Instalar"
+
+msgid "UiInstalling"
+msgstr "Instalando…"
+
+msgid "SettingsDialogUseHidHideLabel"
+msgstr "Ocultar los mandos físicos a los juegos con HidHide (se instala si falta)"
+
+msgid "SettingsDialogHidHideInstallingStatus"
+msgstr "Instalando HidHide…"

@@ -3,6 +3,8 @@ using CommunityToolkit.Mvvm.Input;
 using GameFlow.Infrastructure.Configuration;
 using GameFlow.Infrastructure.Localization;
 using GameFlow.Infrastructure.Profiles;
+using GameFlow.Infrastructure.Requirements.HidHide;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace GameFlow.App.ViewModels;
@@ -82,6 +84,10 @@ public sealed partial class SettingsDialogViewModel : ObservableObject, IDisposa
 
     [ObservableProperty]
     private bool checkRequirementsOnStartup = true;
+
+    /// <summary>Whether the user wants HidHide. Applying it installs HidHide when missing.</summary>
+    [ObservableProperty]
+    private bool useHidHide;
 
     /// <summary>Status line shown at the bottom of the dialog after Apply.</summary>
     [ObservableProperty]
@@ -213,6 +219,7 @@ public sealed partial class SettingsDialogViewModel : ObservableObject, IDisposa
     public string StartupHeaderLabel => localization["SettingsDialogStartupHeader"];
     public string CheckUpdatesLabel => localization["SettingsDialogCheckUpdatesLabel"];
     public string CheckRequirementsLabel => localization["SettingsDialogCheckRequirementsLabel"];
+    public string UseHidHideLabel => localization["SettingsDialogUseHidHideLabel"];
     public string ApplyButtonLabel => localization["SettingsDialogApplyButton"];
     public string CancelButtonLabel => localization["SettingsDialogCancelButton"];
     public string RestoreDefaultsButtonLabel => localization["SettingsDialogRestoreDefaultsButton"];
@@ -318,6 +325,7 @@ public sealed partial class SettingsDialogViewModel : ObservableObject, IDisposa
         LogsDirectoryOverride = s.LogsDirectoryOverride ?? string.Empty;
         CheckForUpdatesOnStartup = s.CheckForUpdatesOnStartup;
         CheckRequirementsOnStartup = s.CheckRequirementsOnStartup;
+        UseHidHide = s.UseHidHide;
         StatusMessage = string.Empty;
     }
 
@@ -339,6 +347,7 @@ public sealed partial class SettingsDialogViewModel : ObservableObject, IDisposa
         LogsDirectoryOverride = string.Empty;
         CheckForUpdatesOnStartup = d.CheckForUpdatesOnStartup;
         CheckRequirementsOnStartup = d.CheckRequirementsOnStartup;
+        UseHidHide = d.UseHidHide;
         StatusMessage = localization["SettingsDialogRestoredStatus"];
     }
 
@@ -383,6 +392,7 @@ public sealed partial class SettingsDialogViewModel : ObservableObject, IDisposa
             var logsDirectory = string.IsNullOrWhiteSpace(LogsDirectoryOverride) ? null : LogsDirectoryOverride.Trim();
             var checkForUpdates = CheckForUpdatesOnStartup;
             var checkRequirements = CheckRequirementsOnStartup;
+            var useHidHide = UseHidHide;
 
             // This command is entered on Avalonia's UI thread. Preserve its
             // synchronization context for both success and failure notifications.
@@ -398,6 +408,7 @@ public sealed partial class SettingsDialogViewModel : ObservableObject, IDisposa
                 LogsDirectoryOverride = logsDirectory,
                 CheckForUpdatesOnStartup = checkForUpdates,
                 CheckRequirementsOnStartup = checkRequirements,
+                UseHidHide = useHidHide,
             });
 
             // The path-override change may have moved the in-effect
@@ -407,6 +418,11 @@ public sealed partial class SettingsDialogViewModel : ObservableObject, IDisposa
             OnPropertyChanged(nameof(CurrentLogsPath));
 
             StatusMessage = localization["SettingsDialogAppliedStatus"];
+            if (useHidHide)
+            {
+                await InstallHidHideIfMissingAsync();
+            }
+
             return true;
         }
         catch (Exception exception)
@@ -415,6 +431,25 @@ public sealed partial class SettingsDialogViewModel : ObservableObject, IDisposa
             StatusMessage = string.Format(localization["SettingsDialogApplyFailedStatus"], exception.Message);
             return false;
         }
+    }
+
+    /// <summary>
+    /// Installs HidHide right after the user opts in, when it is missing.
+    /// The settings are already saved, so a failed install leaves the opt-in
+    /// in place and the startup check offers the install again.
+    /// </summary>
+    private async Task InstallHidHideIfMissingAsync()
+    {
+        var hidHide = services.GetService<IHidHideService>();
+        if (hidHide is null || !hidHide.IsSupported || hidHide.IsInstalled())
+        {
+            return;
+        }
+
+        StatusMessage = localization["SettingsDialogHidHideInstallingStatus"];
+        var outcome = await hidHide.InstallAsync();
+        logger.LogInformation("HidHide install from settings: {Result}.", outcome.Result);
+        StatusMessage = outcome.Message;
     }
 
     /// <summary>
@@ -444,6 +479,7 @@ public sealed partial class SettingsDialogViewModel : ObservableObject, IDisposa
         OnPropertyChanged(nameof(StartupHeaderLabel));
         OnPropertyChanged(nameof(CheckUpdatesLabel));
         OnPropertyChanged(nameof(CheckRequirementsLabel));
+        OnPropertyChanged(nameof(UseHidHideLabel));
         OnPropertyChanged(nameof(ApplyButtonLabel));
         OnPropertyChanged(nameof(CancelButtonLabel));
         OnPropertyChanged(nameof(RestoreDefaultsButtonLabel));

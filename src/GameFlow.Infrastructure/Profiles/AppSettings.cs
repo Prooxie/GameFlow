@@ -146,6 +146,14 @@ public sealed record AppSettings
     public bool CheckRequirementsOnStartup { get; init; } = true;
 
     /// <summary>
+    /// When <see langword="true"/>, the user wants HidHide, which hides the
+    /// physical controllers from games so they see only the virtual pad.
+    /// GameFlow then checks for it at startup and installs it when missing.
+    /// Off by default: HidHide is a system-wide driver.
+    /// </summary>
+    public bool UseHidHide { get; init; }
+
+    /// <summary>
     /// Whether the first-run setup walkthrough has already been shown.
     /// </summary>
     /// <remarks>

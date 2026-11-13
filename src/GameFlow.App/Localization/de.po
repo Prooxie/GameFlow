@@ -3001,3 +3001,15 @@ msgstr "Natives virtuelles Gamepad"
 
 msgid "OutputProviderNativeDescription"
 msgstr "Linux benötigt Schreibzugriff auf /dev/uinput. macOS benötigt eine von Apple genehmigte Berechtigung für virtuelle HID-Geräte. Die Ausgabe verwendet ein Standard-Gamepad. Vibration und Sony-Effekte sind nicht verfügbar."
+
+msgid "UiInstall"
+msgstr "Installieren"
+
+msgid "UiInstalling"
+msgstr "Wird installiert…"
+
+msgid "SettingsDialogUseHidHideLabel"
+msgstr "Physische Controller mit HidHide vor Spielen verbergen (wird bei Bedarf installiert)"
+
+msgid "SettingsDialogHidHideInstallingStatus"
+msgstr "HidHide wird installiert…"

@@ -1,3 +1,4 @@
+using GameFlow.Infrastructure.Requirements.HidHide;
 using GameFlow.Infrastructure.Runtime.HidMaestro;
 using Microsoft.Extensions.Logging;
 
@@ -26,14 +27,20 @@ public sealed class DefaultRequirementChecker : IRequirementChecker
 
     private readonly ILogger<DefaultRequirementChecker> logger;
     private readonly IHidMaestroBackend backend;
+    private readonly IHidHideService? hidHide;
 
     /// <summary>
-    /// Constructs the checker.
+    /// Constructs the checker. <paramref name="hidHide"/> adds the optional
+    /// HidHide entry; without it only HIDMaestro is checked.
     /// </summary>
-    public DefaultRequirementChecker(ILogger<DefaultRequirementChecker> logger, IHidMaestroBackend backend)
+    public DefaultRequirementChecker(
+        ILogger<DefaultRequirementChecker> logger,
+        IHidMaestroBackend backend,
+        IHidHideService? hidHide = null)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.backend = backend ?? throw new ArgumentNullException(nameof(backend));
+        this.hidHide = hidHide;
     }
 
     /// <inheritdoc />
@@ -45,6 +52,10 @@ public sealed class DefaultRequirementChecker : IRequirementChecker
         {
             CheckHidMaestro(),
         };
+        if (hidHide is not null)
+        {
+            results.Add(CheckHidHide(hidHide));
+        }
 
         // Log a one-line summary so support bundles always carry the
         // outcome of every check.
@@ -60,6 +71,22 @@ public sealed class DefaultRequirementChecker : IRequirementChecker
         IReadOnlyList<RequirementStatus> view = results;
         return Task.FromResult(view);
     }
+
+    /// <summary>
+    /// HidHide is optional: it applies only on Windows when the user ticked
+    /// "use HidHide", and GameFlow can install it itself.
+    /// </summary>
+    internal static RequirementStatus CheckHidHide(IHidHideService hidHide) => new(
+        Id: "hidhide",
+        DisplayName: "HidHide",
+        Description:
+            "You asked GameFlow to use HidHide, which hides your physical controllers from games so they " +
+            "see only the virtual controller. It is not installed. Install downloads the official, signed " +
+            $"HidHide {HidHideService.PinnedVersion} installer from Nefarius and runs it.",
+        IsSatisfied: !hidHide.IsWanted || hidHide.IsInstalled(),
+        InstallerUrl: HidHideService.ReleasesUrl,
+        IsApplicable: hidHide.IsWanted,
+        CanAutoInstall: true);
 
     /// <summary>
     /// Maps the backend status onto the requirement: not applicable off

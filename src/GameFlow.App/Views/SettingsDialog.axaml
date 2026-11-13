@@ -200,6 +200,10 @@
                 <CheckBox IsChecked="{Binding CheckRequirementsOnStartup, Mode=TwoWay}"
                           Content="{Binding CheckRequirementsLabel}"
                           Foreground="{DynamicResource AppForeground}" />
+                <!-- Opt-in. Applying it installs HidHide when it is missing. -->
+                <CheckBox IsChecked="{Binding UseHidHide, Mode=TwoWay}"
+                          Content="{Binding UseHidHideLabel}"
+                          Foreground="{DynamicResource AppForeground}" />
               </StackPanel>
 
               <Border Classes="divider" />

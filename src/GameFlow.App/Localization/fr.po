@@ -3001,3 +3001,15 @@ msgstr "Manette virtuelle native"
 
 msgid "OutputProviderNativeDescription"
 msgstr "Linux nécessite un accès en écriture à /dev/uinput. macOS nécessite une autorisation HID virtuelle approuvée par Apple. La sortie utilise une manette standard. Les vibrations et les effets Sony sont indisponibles."
+
+msgid "UiInstall"
+msgstr "Installer"
+
+msgid "UiInstalling"
+msgstr "Installation…"
+
+msgid "SettingsDialogUseHidHideLabel"
+msgstr "Masquer les manettes physiques aux jeux avec HidHide (installé s'il manque)"
+
+msgid "SettingsDialogHidHideInstallingStatus"
+msgstr "Installation de HidHide…"

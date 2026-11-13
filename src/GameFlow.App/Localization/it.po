@@ -3001,3 +3001,15 @@ msgstr "Controller virtuale nativo"
 
 msgid "OutputProviderNativeDescription"
 msgstr "Linux richiede accesso in scrittura a /dev/uinput. macOS richiede un’autorizzazione HID virtuale approvata da Apple. L’uscita usa un controller standard. La vibrazione e gli effetti Sony non sono disponibili."
+
+msgid "UiInstall"
+msgstr "Installa"
+
+msgid "UiInstalling"
+msgstr "Installazione…"
+
+msgid "SettingsDialogUseHidHideLabel"
+msgstr "Nascondi i controller fisici ai giochi con HidHide (viene installato se manca)"
+
+msgid "SettingsDialogHidHideInstallingStatus"
+msgstr "Installazione di HidHide…"

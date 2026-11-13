@@ -182,6 +182,7 @@ public static class DependencyInjection
         _ = services.AddHostedService(sp => sp.GetRequiredService<Runtime.Motion.DsuServer>());
 
         // Step 3 of the roadmap: requirement & update checks.
+        _ = services.AddSingleton<Requirements.HidHide.IHidHideService, Requirements.HidHide.HidHideService>();
         _ = services.AddSingleton<IRequirementChecker, DefaultRequirementChecker>();
         _ = services.AddSingleton<IUpdateChecker, GitHubUpdateChecker>();
         _ = services.AddSingleton<IUpdateInstaller, DefaultUpdateInstaller>();

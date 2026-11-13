@@ -30,6 +30,12 @@ public partial class RequirementsDialog : Window
     public bool DontAskAgain { get; private set; }
 
     /// <summary>
+    /// Installs a requirement that has <see cref="RequirementStatus.CanAutoInstall"/>
+    /// and returns a sentence for the user. Set by the hosting coordinator.
+    /// </summary>
+    public Func<RequirementStatus, Task<string>>? InstallAsync { get; set; }
+
+    /// <summary>
     /// XAML loader entry point. The actual <c>Items</c> binding happens
     /// after construction via <see cref="SetRequirements"/>.
     /// </summary>
@@ -94,6 +100,43 @@ public partial class RequirementsDialog : Window
                 "Could not open installer URL {Url} for requirement {RequirementId}.",
                 requirement.InstallerUrl,
                 requirement.Id);
+        }
+    }
+
+    /// <summary>
+    /// Handles the Install button of a requirement GameFlow can install
+    /// itself. The button is disabled while it runs and shows the outcome.
+    /// </summary>
+    private async void OnInstallClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not RequirementStatus requirement || InstallAsync is null)
+        {
+            return;
+        }
+
+        var label = button.Content;
+        button.IsEnabled = false;
+        button.Content = UiTextResources.Get("UiInstalling");
+        try
+        {
+            var message = await InstallAsync(requirement);
+            button.Content = label;
+            ToolTip.SetTip(button, message);
+            var status = this.FindControl<TextBlock>("InstallStatusText");
+            if (status is not null)
+            {
+                status.Text = message;
+                status.IsVisible = true;
+            }
+        }
+        catch (Exception exception)
+        {
+            Log.Warning(exception, "Installing requirement {RequirementId} failed.", requirement.Id);
+            button.Content = label;
+        }
+        finally
+        {
+            button.IsEnabled = true;
         }
     }
 

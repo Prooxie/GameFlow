@@ -5,6 +5,7 @@ using GameFlow.App.Views;
 using GameFlow.Infrastructure.Configuration;
 using GameFlow.Infrastructure.Profiles;
 using GameFlow.Infrastructure.Requirements;
+using GameFlow.Infrastructure.Requirements.HidHide;
 using GameFlow.Infrastructure.Updates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -197,6 +198,7 @@ public sealed class StartupChecksCoordinator
         {
             var dialog = new RequirementsDialog();
             dialog.SetRequirements(missing);
+            dialog.InstallAsync = requirement => InstallRequirementAsync(requirement, cancellationToken);
             await dialog.ShowDialog(ownerWindow);
             return dialog.DontAskAgain;
         }).ConfigureAwait(false);
@@ -207,6 +209,22 @@ public sealed class StartupChecksCoordinator
                 settings => settings with { CheckRequirementsOnStartup = false }, cancellationToken).ConfigureAwait(false);
             logger.LogInformation("User opted out of further startup requirement checks.");
         }
+    }
+
+    /// <summary>
+    /// Installs a requirement GameFlow can install itself. Only HidHide can,
+    /// today; anything else answers with a pointer to its install page.
+    /// </summary>
+    private async Task<string> InstallRequirementAsync(RequirementStatus requirement, CancellationToken cancellationToken)
+    {
+        if (requirement.Id == "hidhide" && services.GetService<IHidHideService>() is { } hidHide)
+        {
+            var outcome = await hidHide.InstallAsync(progress: null, cancellationToken);
+            logger.LogInformation("HidHide install from the requirements dialog: {Result}.", outcome.Result);
+            return outcome.Message;
+        }
+
+        return requirement.InstallerUrl?.ToString() ?? requirement.DisplayName;
     }
 
     /// <summary>
