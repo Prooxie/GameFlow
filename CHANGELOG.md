@@ -5,6 +5,39 @@ The heading must match the Git tag exactly.
 Older releases retain their `v` prefix.
 The release workflow uses the matching section as its release notes.
 
+## 1.2.0
+
+GameFlow 1.2.0 ships Windows as one portable executable, adds optional HidHide installation, moves to the HIDMaestro 2.1.0 SDK, and makes rules edited on a virtual controller take effect.
+
+### Portable Windows executable
+
+- Publish Windows as a single `GameFlow.exe` with every managed and native library, the translations, the bundled themes and `appsettings.json` inside it.
+- Extract the bundle once per version to the .NET bundle cache and run from there.
+- Embed debug symbols in the assemblies and leave XML API documentation and native symbol files out of the package.
+- Look for `HIDMaestro.Core.dll` next to `GameFlow.exe` and in its `HIDMaestro` subfolder before the extraction folder.
+- Read an `appsettings.json` placed next to `GameFlow.exe` over the bundled copy.
+
+### HidHide
+
+- Add an Options switch that hides physical controllers from games with HidHide.
+- Install HidHide 1.5.230 when the switch is on and HidHide is missing, from Options or from the startup requirements dialog.
+- Run the downloaded installer only when its Authenticode signature is valid and signed by Nefarius.
+- Add `GameFlow.exe` to HidHide's allowed applications after installation.
+- Show the new option and buttons in all eight interface languages.
+
+### HIDMaestro
+
+- Build against the HIDMaestro 2.1.0 SDK. GameFlow still accepts any 2.x release from 2.0.1.
+
+### Mapping
+
+- Run the active profile on a virtual controller that has no profiles of its own, so rules added by clicking the virtual controller reach its output and its preview.
+
+### Verification limits
+
+- The HidHide installer opens its own window; it has no documented silent mode. A restart may be needed before it hides devices.
+- HidHide installation and allow-listing were not run against a real HidHide install for this release.
+
 ## 1.1.0
 
 GameFlow 1.1.0 adds native standard-gamepad output backends for Linux and macOS.

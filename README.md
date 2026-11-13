@@ -6,7 +6,7 @@
 
 **Any input in. Your controller mapping out.**
 
-**v1.1.0** · Built with **.NET 10** · **Avalonia UI** · **SDL3** · **HIDMaestro**
+**v1.2.0** · Built with **.NET 10** · **Avalonia UI** · **SDL3** · **HIDMaestro**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-informational)](#requirements)
@@ -252,10 +252,10 @@ Read [the release guide](docs/release.md) for local packages, checksums, Git tag
 - Real phone browsers and OBS need a hardware check.
 - macOS hardware behavior needs device tests.
 - Hosted CI checks Windows, Linux, macOS, Chromium, and Firefox.
-- GameFlow does not hide physical controllers from games. Configure a separate hiding tool if your game reads duplicate input.
+- To hide physical controllers from games, turn on the HidHide option. GameFlow installs HidHide when it is missing.
 - Remote Link and native Linux/macOS virtual gamepad output remain planned.
 
-Read the [1.1.0 release notes](CHANGELOG.md#110) for changes and verification limits.
+Read the [1.2.0 release notes](CHANGELOG.md#120) for changes and verification limits.
 
 ## License and credits
 

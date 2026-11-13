@@ -1,6 +1,6 @@
 # Release maintenance
 
-Version 1.1.0 uses the numeric Git tag `1.1.0`.
+Version 1.2.0 uses the numeric Git tag `1.2.0`.
 The CI workflow also accepts older tags with a `v` prefix.
 The tag must point to the confirmed release commit on `master`.
 
@@ -39,7 +39,7 @@ The script reads the version from `Directory.Build.props`.
 pwsh ./scripts/Publish-Release.ps1
 ```
 
-The default output is `artifacts/releases/1.1.0`.
+The default output is `artifacts/releases/1.2.0`.
 The script creates four self-contained archives and four SHA-256 files.
 It refuses to reuse a populated publish directory.
 Select another `-OutputDirectory` for another validation run.
@@ -50,7 +50,8 @@ pwsh ./scripts/Publish-Release.ps1 -Runtime win-x64 -OutputDirectory ./artifacts
 
 The archives include documentation, screenshots, dependency notices, and license files.
 The Unix archives retain executable permission for `GameFlow`, including inside the Mac application bundle.
-The optional HIDMaestro runtime remains separate.
+The Windows archive holds one portable `GameFlow.exe`; its libraries, translations, themes and `appsettings.json` are inside it.
+The optional HIDMaestro runtime and HidHide remain separate.
 
 Check each checksum against its archive before distribution.
 Extract the complete Windows archive into an isolated folder for a startup check.
@@ -117,7 +118,7 @@ The maintainer pushes them when ready.
 
 ```powershell
 git push origin master
-git push origin 1.1.0
+git push origin 1.2.0
 ```
 
 The tag starts the release workflow.
