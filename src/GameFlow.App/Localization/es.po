@@ -1821,9 +1821,6 @@ msgstr "Añade un teléfono como mando con un código QR."
 msgid "UiDeleteThisVirtualController"
 msgstr "Eliminar este mando virtual"
 
-msgid "UiChooseWhichKeysAndMouseInputsProduceEachController"
-msgstr "Elige las teclas y entradas del ratón para cada control."
-
 msgid "UiWalksYouThroughConnectingAControllerAndCreatingA"
 msgstr "Conecta un dispositivo y crea un mando virtual."
 
@@ -2001,9 +1998,6 @@ msgstr "Cancelar descarga"
 
 msgid "UiDownloadUpdate"
 msgstr "Descargar actualización"
-
-msgid "SidebarKeyboardMouse"
-msgstr "Teclado y ratón"
 
 msgid "DevicesAddPhone"
 msgstr "Añadir teléfono"

@@ -1821,9 +1821,6 @@ msgstr "Přidejte telefon jako ovladač pomocí QR kódu."
 msgid "UiDeleteThisVirtualController"
 msgstr "Smazat virtuální ovladač"
 
-msgid "UiChooseWhichKeysAndMouseInputsProduceEachController"
-msgstr "Zvolte klávesy a vstupy myši pro ovládací prvky ovladače."
-
 msgid "UiWalksYouThroughConnectingAControllerAndCreatingA"
 msgstr "Připojte vstupní zařízení a vytvořte virtuální ovladač."
 
@@ -2001,9 +1998,6 @@ msgstr "Zrušit stahování"
 
 msgid "UiDownloadUpdate"
 msgstr "Stáhnout aktualizaci"
-
-msgid "SidebarKeyboardMouse"
-msgstr "Klávesnice a myš"
 
 msgid "DevicesAddPhone"
 msgstr "Přidat telefon"

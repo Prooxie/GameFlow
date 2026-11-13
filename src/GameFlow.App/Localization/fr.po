@@ -1821,9 +1821,6 @@ msgstr "Ajoutez un téléphone comme manette avec un code QR."
 msgid "UiDeleteThisVirtualController"
 msgstr "Supprimer cette manette virtuelle"
 
-msgid "UiChooseWhichKeysAndMouseInputsProduceEachController"
-msgstr "Choisissez les touches et entrées de souris pour chaque contrôle."
-
 msgid "UiWalksYouThroughConnectingAControllerAndCreatingA"
 msgstr "Connectez un périphérique et créez une manette virtuelle."
 
@@ -2001,9 +1998,6 @@ msgstr "Annuler le téléchargement"
 
 msgid "UiDownloadUpdate"
 msgstr "Télécharger la mise à jour"
-
-msgid "SidebarKeyboardMouse"
-msgstr "Clavier et souris"
 
 msgid "DevicesAddPhone"
 msgstr "Ajouter un téléphone"

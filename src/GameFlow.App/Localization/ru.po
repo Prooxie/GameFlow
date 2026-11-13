@@ -1821,9 +1821,6 @@ msgstr "Добавьте телефон как контроллер с помо�
 msgid "UiDeleteThisVirtualController"
 msgstr "Удалить виртуальный контроллер"
 
-msgid "UiChooseWhichKeysAndMouseInputsProduceEachController"
-msgstr "Выберите клавиши и ввод мыши для элементов контроллера."
-
 msgid "UiWalksYouThroughConnectingAControllerAndCreatingA"
 msgstr "Подключите устройство ввода и создайте виртуальный контроллер."
 
@@ -2001,9 +1998,6 @@ msgstr "Отменить загрузку"
 
 msgid "UiDownloadUpdate"
 msgstr "Загрузить обновление"
-
-msgid "SidebarKeyboardMouse"
-msgstr "Клавиатура и мышь"
 
 msgid "DevicesAddPhone"
 msgstr "Добавить телефон"

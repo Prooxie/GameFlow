@@ -282,18 +282,6 @@
                 furniture rather than something that appears once and is
                 then gone forever.
             -->
-            <!-- Keyboard & mouse gets a menu of its own: it is a controller
-                 in its own right here, with every pad control bindable to a
-                 key or mouse input, and nothing else in the app edits that. -->
-            <Button Classes="nav" Padding="8,8"
-                    ToolTip.Tip="{DynamicResource Ui.UiChooseWhichKeysAndMouseInputsProduceEachController}"
-                    Command="{Binding OpenKeyboardMouseMapCommand}">
-              <Grid ColumnDefinitions="24,*" ColumnSpacing="6">
-                <TextBlock Grid.Column="0" Text="⌨" FontSize="14" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1" Text="{Binding SidebarKeyboardMouseLabel}"
-                           FontSize="12" FontWeight="Medium" VerticalAlignment="Center" />
-              </Grid>
-            </Button>
             <Button Classes="nav" Padding="8,8"
                     ToolTip.Tip="{DynamicResource Ui.UiWalksYouThroughConnectingAControllerAndCreatingA}"
                     Command="{Binding OpenWalkthroughCommand}">

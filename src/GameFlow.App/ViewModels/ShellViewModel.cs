@@ -333,7 +333,6 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
     public event EventHandler<KeyboardMouseMapRequest>? KeyboardMouseMapRequested;
     private void OnInputMappingRequested(object? sender, KeyboardMouseMapRequest request) => KeyboardMouseMapRequested?.Invoke(this, request);
 
-    public string SidebarKeyboardMouseLabel => Localized("SidebarKeyboardMouse", "Keyboard & mouse");
 
     /// <summary>Raised with a phone's seat when its sheet should open.</summary>
     public event EventHandler<int>? PhoneControllerRequested;

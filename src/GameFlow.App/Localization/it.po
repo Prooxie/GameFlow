@@ -1821,9 +1821,6 @@ msgstr "Aggiungi un telefono come controller con un codice QR."
 msgid "UiDeleteThisVirtualController"
 msgstr "Elimina questo controller virtuale"
 
-msgid "UiChooseWhichKeysAndMouseInputsProduceEachController"
-msgstr "Scegli tasti e input del mouse per ogni comando."
-
 msgid "UiWalksYouThroughConnectingAControllerAndCreatingA"
 msgstr "Collega un dispositivo e crea un controller virtuale."
 
@@ -2001,9 +1998,6 @@ msgstr "Annulla download"
 
 msgid "UiDownloadUpdate"
 msgstr "Scarica aggiornamento"
-
-msgid "SidebarKeyboardMouse"
-msgstr "Tastiera e mouse"
 
 msgid "DevicesAddPhone"
 msgstr "Aggiungi telefono"
