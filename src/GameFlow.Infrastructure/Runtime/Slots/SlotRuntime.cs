@@ -176,7 +176,7 @@ public sealed class SlotRuntime : IAsyncDisposable
                     slot.Id, slot.Name, slot.ProfileIds.Count, slot.InputDeviceIds.Count);
 
                 var profileSw = System.Diagnostics.Stopwatch.StartNew();
-                var slotProfile = await ResolveSlotProfileAsync(slot);
+                var slotProfile = await ResolveSlotProfileAsync(slot, activeProfile);
                 profileSw.Stop();
                 logger.LogInformation(
                     "Slot runtime: ResolveSlotProfileAsync completed for slot {SlotId} in {ElapsedMs} ms.",
@@ -511,15 +511,17 @@ public sealed class SlotRuntime : IAsyncDisposable
 
     /// <summary>
     /// Loads and composes the slot's layered profiles, then appends the
-    /// slot's own touchpad rule. Missing ids are skipped; an empty/
-    /// all-missing set yields the neutral empty profile (no remapping) —
-    /// slots are independent of the global active profile.
+    /// slot's own touchpad rule. Missing ids are skipped. A slot with no
+    /// profiles of its own runs <paramref name="activeProfile"/>: rules
+    /// edited by clicking a virtual controller are saved there, so without
+    /// this fallback they never reached the virtual pad. A slot that lists
+    /// profiles stays independent of the active one.
     /// </summary>
-    private async Task<ProfileDocument> ResolveSlotProfileAsync(ControllerSlot slot)
+    private async Task<ProfileDocument> ResolveSlotProfileAsync(ControllerSlot slot, ProfileDocument activeProfile)
     {
         if (slot.ProfileIds.Count == 0)
         {
-            return WithSlotTouchpad(SlotProfileComposer.Empty, slot);
+            return WithSlotTouchpad(ProfileMigrator.Migrate(activeProfile), slot);
         }
 
         var layers = new List<ProfileDocument>(slot.ProfileIds.Count);

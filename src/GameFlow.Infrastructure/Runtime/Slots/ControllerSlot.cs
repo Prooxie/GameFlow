@@ -47,7 +47,8 @@ public sealed class ControllerSlot
 
     /// <summary>
     /// Ordered ids of the mapping profiles layered onto this slot. Empty
-    /// runs a neutral empty profile (no remapping). Later entries are
+    /// runs the global active profile, so rules edited on the virtual
+    /// controller take effect. Later entries are
     /// applied after earlier ones (their rules win on overlap).
     /// </summary>
     public List<string> ProfileIds { get; set; } = [];
