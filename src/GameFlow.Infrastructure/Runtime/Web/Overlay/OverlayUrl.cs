@@ -15,7 +15,7 @@ namespace GameFlow.Infrastructure.Runtime.Web.Overlay;
 /// </summary>
 public static class OverlayUrl
 {
-    /// <param name="baseUrl">The server's local address, e.g. <c>http://localhost:8080</c>.</param>
+    /// <param name="baseUrl">The server address, e.g. <c>http://localhost:8080</c> or the LAN address.</param>
     /// <param name="slotId">Virtual controller, or null for a lone device.</param>
     /// <param name="deviceId">Lone physical device (a pinned panel), or null.</param>
     /// <param name="physical">The pad in the player's hands rather than the game's view.</param>
@@ -28,6 +28,10 @@ public static class OverlayUrl
     /// <param name="themeId">An explicit skin, or null to follow the dashboard's.</param>
     /// <param name="inputText">Show the active input names.</param>
     /// <param name="holdTimes">Show how long each active input has been held.</param>
+    /// <param name="accessToken">
+    /// The network access token. A device that is not this PC needs it.
+    /// Null or empty gives a link for this PC only.
+    /// </param>
     public static string Build(
         string baseUrl,
         string? slotId,
@@ -36,11 +40,17 @@ public static class OverlayUrl
         string? background = null,
         string? themeId = null,
         bool inputText = false,
-        bool holdTimes = false)
+        bool holdTimes = false,
+        string? accessToken = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(baseUrl);
 
-        var query = new List<string>(5);
+        var query = new List<string>(6);
+        if (!string.IsNullOrEmpty(accessToken))
+        {
+            query.Add("token=" + Uri.EscapeDataString(accessToken));
+        }
+
         if (!string.IsNullOrWhiteSpace(deviceId))
         {
             query.Add("device=" + Uri.EscapeDataString(deviceId));

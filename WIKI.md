@@ -330,8 +330,11 @@ The route is `/overlay` with optional query parameters:
 | `slot=<id>` | Pin the overlay to one controller slot. Omit it to use the first configured slot. |
 | `theme=<id>` | Pin a specific installed skin. Omit it to follow the skin that the slot's dashboard panel shows, or the default skin of the slot's output style when the slot has no dashboard panel. |
 | `side=physical` | Show the raw assigned input. Omit it to show the mapped virtual output the game receives. |
+| `token=<token>` | The network access token. A device that is not this PC needs it. The copied link adds it when phone sharing is on. |
 
-For example, `http://10.0.0.5:8080/overlay?slot=player-one&side=physical` follows the physical side of `player-one`. The URL is the complete configuration and remains reusable across OBS launches. If the PC's LAN address changes, copy the regenerated address from Settings.
+When phone sharing is on and the server listens on the network, the copied link uses the LAN address and the token. Another PC on the network can then open it in OBS. When sharing is off, the copied link uses `localhost` and works on this PC only. Anyone with a shared link can watch the controller input. Reset the token in Options to cancel all shared links.
+
+For example, `http://10.0.0.5:8080/overlay?token=<token>&slot=player-one&side=physical` follows the physical side of `player-one`. The URL is the complete configuration and remains reusable across OBS launches. If the PC's LAN address changes, copy the regenerated address from Settings.
 
 The Browser source receives a compiled theme when it connects, then controller frames at 60 Hz over an output-only WebSocket. Theme images are served by numeric indexes from the already-resolved theme program, so the route cannot browse arbitrary filesystem paths. The page automatically reconnects if GameFlow restarts and keeps a transparent canvas at any OBS source size.
 

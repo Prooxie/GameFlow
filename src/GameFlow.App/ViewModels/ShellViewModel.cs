@@ -1016,14 +1016,18 @@ public sealed class ShellViewModel : ViewModelBase, IDisposable
         }
 
         var visual = physical || panel.IsPhysicalOnly ? panel.PhysicalVisual : panel.VirtualVisual;
+
+        // A shared link must work on another PC, so it needs the LAN address and the token.
+        var isShared = server.IsShared;
         var url = GameFlow.Infrastructure.Runtime.Web.Overlay.OverlayUrl.Build(
-            server.LocalUrl,
+            isShared ? server.SharedUrl : server.LocalUrl,
             slotId: panel.IsPhysicalOnly ? null : panel.SlotId,
             deviceId: panel.IsPhysicalOnly ? panel.SlotId[5..] : null,
             physical: physical,
             background: visual.PanelBackgroundBrush,
             inputText: panel.OverlayInputText,
-            holdTimes: panel.OverlayHoldTimes);
+            holdTimes: panel.OverlayHoldTimes,
+            accessToken: isShared ? server.AccessToken : null);
         OverlayUrlCopyRequested?.Invoke(this, url);
     }
 

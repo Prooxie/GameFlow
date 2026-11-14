@@ -98,14 +98,20 @@ public sealed class WebControllerServer(
     public string SharedUrl => $"http://{GetLocalAddress()}:{Port}";
 
     /// <summary>
+    /// True when other devices on the network can open the server.
+    /// Sharing is on, the server runs, and it listens on more than localhost.
+    /// </summary>
+    public bool IsShared =>
+        AllowsRemote && IsRunning && ListenUrl is { } listen
+            && !listen.Contains("localhost", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
     /// The link one registered phone opens: the shared address, the access
     /// token, and the phone's seat, so it always becomes that phone. Empty
     /// while sharing is off or the server is not reachable from the network.
     /// </summary>
     public string PhoneLink(int seat) =>
-        AllowsRemote && IsRunning && ListenUrl is { } listen
-            && !listen.Contains("localhost", StringComparison.OrdinalIgnoreCase)
-            && seat is >= 0 and < WebControllerHub.MaxPads
+        IsShared && seat is >= 0 and < WebControllerHub.MaxPads
             ? $"{SharedUrl}/?token={Uri.EscapeDataString(AccessToken)}&seat={seat}"
             : string.Empty;
 
